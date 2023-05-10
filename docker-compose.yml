@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: EliteAPI/Dockerfile
     ports:
-        - "9464:9464"
+        - "9102:9102"
     networks: 
         - eliteapi-network
   database:
@@ -37,7 +37,7 @@ services:
         - ./EliteAPI/Data/Grafana/Datasources:/etc/grafana/provisioning/datasources
         - ./EliteAPI/Data/Grafana/Dashboards:/etc/grafana/provisioning/dashboards
         - ./EliteAPI/Data/Grafana/config.ini:/etc/grafana/config.ini
-        - grafana-data:/data
+        - grafana-data:/var/lib/grafana
     depends_on:
         - prometheus
     networks:
