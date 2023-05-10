@@ -2,7 +2,64 @@ version: '3.4'
 
 services:
   eliteapi:
-    image: ${DOCKER_REGISTRY-}eliteapi
+    image: eliteapi:latest
     build:
       context: .
       dockerfile: EliteAPI/Dockerfile
+    ports:
+        - "9464:9464"
+    networks: 
+        - eliteapi-network
+  database:
+    image: postgres:15.2
+    restart: always
+    environment:
+        - POSTGRES_USER=user
+        - POSTGRES_PASSWORD=postgres123
+        - POSTGRES_DB=eliteapi
+    ports:
+        - '5436:5432' 
+    expose:
+        - '5436'
+    volumes:
+        - db-data:/var/lib/postgresql/data
+        - ./EliteAPI/Data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+        - eliteapi-network
+  logging:
+    image: grafana/grafana-oss:9.5.1
+    restart: unless-stopped
+    ports:
+        - '8081:3000'
+    expose:
+        - '8081'
+    volumes:
+        - ./EliteAPI/Data/Grafana/Datasources:/etc/grafana/provisioning/datasources
+        - ./EliteAPI/Data/Grafana/Dashboards:/etc/grafana/provisioning/dashboards
+        - ./EliteAPI/Data/Grafana/config.ini:/etc/grafana/config.ini
+        - grafana-data:/data
+    depends_on:
+        - prometheus
+    networks:
+        - eliteapi-network
+  prometheus:
+    image: prom/prometheus:v2.43.1
+    restart: unless-stopped
+    ports:
+        - '9090:9090'
+    expose:
+        - '9090'
+    volumes:
+        - ./EliteAPI/Data/Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        - prometheus-data:/data
+    networks:
+        - eliteapi-network
+        
+networks:
+    eliteapi-network:
+        driver: bridge
+
+volumes:
+    db-data: {}
+    grafana-data: {}
+    prometheus-data: {}
