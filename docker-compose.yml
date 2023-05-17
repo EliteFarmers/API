@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: EliteAPI/Dockerfile
+    env_file:
+      - ./EliteAPI/.env
     ports:
         - "9102:9102"
     networks: 

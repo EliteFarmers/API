@@ -1,43 +1,49 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EliteAPI.Services.HypixelService;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace EliteAPI.Controllers
+namespace EliteAPI.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public partial class ProfileController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProfileController : ControllerBase
+    private readonly IHypixelService _hypixelService;
+    [GeneratedRegex("[a-zA-Z0-9]{32}")] private static partial Regex IsAlphaNumeric();
+    public ProfileController(IHypixelService hypixelService)
     {
-        // GET: api/<ProfileController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        _hypixelService = hypixelService;
+    }
+
+    // GET api/<ProfileController>/5
+    [HttpGet("{uuid}")]
+    public async Task<ActionResult> Get(string uuid)
+    {
+        if (uuid == null || uuid.Length != 32)
         {
-            return new string[] { "value1", "value2" };
+            return BadRequest("UUID must be 32 characters in length and match [a-Z0-9].");
         }
 
-        // GET api/<ProfileController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        return await _hypixelService.FetchProfiles(uuid);
+    }
 
-        // POST api/<ProfileController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+    // POST api/<ProfileController>
+    [HttpPost]
+    public void Post([FromBody] string value)
+    {
+    }
 
-        // PUT api/<ProfileController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+    // PUT api/<ProfileController>/5
+    [HttpPut("{id}")]
+    public void Put(int id, [FromBody] string value)
+    {
+    }
 
-        // DELETE api/<ProfileController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+    // DELETE api/<ProfileController>/5
+    [HttpDelete("{id}")]
+    public void Delete(int id)
+    {
     }
 }

@@ -5,16 +5,17 @@ namespace EliteAPI.Data.Models;
 
 public class Account
 {
-    public int Id { get; set; }
+    [Key] public int Id { get; set; }
     public required DiscordAccount DiscordAccount { get; set; }
-    public Premium? PremiumUser { get; set; }
+
+    public required Premium PremiumUser { get; set; }
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = new();
 }
 
 public class MinecraftAccount
 {
-    [Key]
-    public required string Id { get; set; }
+    [Key] public int MinecraftAccountId { get; set; }
+    public string Id { get; set; } = string.Empty;
     public string UUID => Id;
     public required string Name { get; set; }
     public string IGN => Name;
@@ -25,7 +26,7 @@ public class MinecraftAccount
 
 public class DiscordAccount
 {
-    public required ulong Id { get; set; }
+    [Key] public ulong Id { get; set; }
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
     public string? Discriminator { get; set; }

@@ -5,10 +5,11 @@ namespace EliteAPI.Data.Models;
 public class Premium
 {
     public int Id { get; set; }
-    [ForeignKey("Account")] public int AccountId { get; set; }
-    public virtual Account? Account { get; set; }
     public List<Purchase> Purchases { get; set; } = new();
     public bool Active { get; set; } = false;
+
+    [ForeignKey("Account")] public int AccountId { get; set; }
+    public required Account Account { get; set; }
 }
 
 public class Purchase
