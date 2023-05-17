@@ -5,6 +5,7 @@ using EliteAPI.Services;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.ContestService;
 using EliteAPI.Services.HypixelService;
+using EliteAPI.Services.MojangService;
 using EliteAPI.Transformers.Skyblock;
 using Prometheus;
 
@@ -15,11 +16,8 @@ builder.Services.AddSingleton<MetricsService>();
 
 var client = builder.Services.AddHttpClient(HypixelService.HttpClientName, client =>
 {
-    client.BaseAddress = new Uri("https://api.hypixel.net/");
     client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI");
 }).UseHttpClientMetrics();
-builder.Services.AddSingleton<IHypixelService>(hypixel => new HypixelService(hypixel.GetService<IHttpClientFactory>()!));
-builder.Services.AddSingleton<ProfilesTransformer>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -28,8 +26,13 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DataContext>();
 
+builder.Services.AddSingleton<IHypixelService, HypixelService>();
+builder.Services.AddSingleton<IMojangService, MojangService>();
+builder.Services.AddSingleton<ProfilesTransformer>();
+
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IContestService, ContestService>();
+
 
 var app = builder.Build();
 
