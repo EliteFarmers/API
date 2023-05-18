@@ -30,6 +30,11 @@ public class HypixelService : IHypixelService
         });
     }
 
+    public Task<ActionResult> FetchPlayer(string uuid)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<ActionResult<RawProfilesResponse>> FetchProfiles(string uuid) 
     {
         Console.WriteLine("Fetching profiles");
@@ -39,7 +44,7 @@ public class HypixelService : IHypixelService
         
         try
         {
-            var data = await client.GetFromJsonAsync<RawProfilesResponse>($"skyblock/profiles?uuid={uuid}&key={HypixelAPIKey}");
+            var data = await client.GetFromJsonAsync<RawProfilesResponse>($"https://api.hypixel.net/skyblock/profiles?uuid={uuid}&key={HypixelAPIKey}");
 
             if (data == null || !data.Success)
             {
