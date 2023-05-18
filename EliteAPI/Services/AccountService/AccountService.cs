@@ -39,7 +39,8 @@ public class AccountService : IAccountService
     public async Task<Account?> GetAccountByDiscordID(ulong id)
     {
         return await context.Accounts
-            .Where(account => account.DiscordAccount != null && account.DiscordAccount.Id == id)
+            .Include(account => account.DiscordAccount)
+            .Where(account => account.DiscordAccount.Id == id)
             .FirstOrDefaultAsync();
     }
 
