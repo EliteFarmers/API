@@ -37,7 +37,7 @@ public class ContestService : IContestService
             .Include(cp => cp.ProfileMember.Profile)
             .Where(cp =>
                 cp.ProfileMember.MinecraftAccount.UUID == playerUUID &&
-                cp.ProfileMember.Profile.ProfileUUID == profileId)
+                cp.ProfileMember.Profile.ProfileId == profileId)
             .ToListAsync();
 
         return participations;
@@ -54,7 +54,7 @@ public class ContestService : IContestService
             .Include(entry => entry.ProfileMember.Profile)
             .Include(entry => entry.JacobContest)
             .FirstOrDefaultAsync(entry =>
-                entry.ProfileMember.Profile.ProfileUUID == profileId &&
+                entry.ProfileMember.Profile.ProfileId == profileId &&
                 entry.JacobContest.Crop == crop &&
                 entry.JacobContest.Timestamp == timestamp);
     }
