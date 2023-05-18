@@ -241,13 +241,13 @@ public class Abiphone
     [JsonPropertyName("contact_data")]
     public JsonObject? ContactData { get; set; }
 
-    public JsonObject? games { get; set; }
+    public JsonObject? Games { get; set; }
 
     [JsonPropertyName("active_contacts")]
     public string[]? ActiveContacts { get; set; }
 
     [JsonPropertyName("operator_chip")]
-    public JsonObject OperatorChip { get; set; }
+    public JsonObject? OperatorChip { get; set; }
 
     [JsonPropertyName("trio_contact_addons")]
     public int TrioContactAddons { get; set; }

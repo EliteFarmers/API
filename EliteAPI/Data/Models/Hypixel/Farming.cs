@@ -7,9 +7,9 @@ namespace EliteAPI.Data.Models.Hypixel;
 public class JacobData
 {
     [Key] public int Id { get; set; }
-    public required MedalInventory Medals { get; set; }
-    public required MedalInventory EarnedMedals { get; set; }
-    public required JacobPerks Perks { get; set; }
+    public MedalInventory Medals { get; set; } = new();
+    public MedalInventory EarnedMedals { get; set; } = new();
+    public JacobPerks Perks { get; set; } = new();
     public int Participations { get; set; } = 0;
     public List<ContestParticipation> Contests { get; set; } = new();
 

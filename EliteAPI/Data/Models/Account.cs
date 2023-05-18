@@ -15,7 +15,7 @@ public class Account
 public class MinecraftAccount
 {
     [Key] public int MinecraftAccountId { get; set; }
-    public string Id { get; set; } = string.Empty;
+    public required string Id { get; set; }
     public string UUID => Id;
     public required string Name { get; set; }
     public string IGN => Name;

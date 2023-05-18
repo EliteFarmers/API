@@ -6,14 +6,14 @@ namespace EliteAPI.Data.Models.Hypixel;
 
 public class Profile
 {
-    [Key] public int Id { get; set; }
-    public string? ProfileUUID { get; set; }
+    [Key] public required string ProfileId { get; set; }
     public required string ProfileName { get; set; }
     public string? GameMode { get; set; }
     public DateTime? LastSave { get; set; }
     public List<ProfileMember> Members { get; set; } = new();
     public ProfileBanking Banking { get; set; } = new();
-    public List<CraftedMinion> CraftedMinions { get; set; } = new(); 
+    public List<CraftedMinion> CraftedMinions { get; set; } = new();
+    public bool IsDeleted { get; set; } = false;
 }
 
 public class ProfileMember
@@ -24,11 +24,12 @@ public class ProfileMember
     public List<Pet> Pets { get; set; } = new();
     public List<Skill> Skills { get; set; } = new();
     public bool IsSelected { get; set; }
+    public bool WasRemoved { get; set; } = false;
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
 
     [ForeignKey("PlayerData")]
     public int PlayerDataId { get; set; }
-    public required PlayerData PlayerData { get; set; }
+    public PlayerData? PlayerData { get; set; }
 
     [ForeignKey("MinecraftAccount")]
     public int MinecraftAccountId { get; set; }
