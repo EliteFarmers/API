@@ -2,8 +2,12 @@
 using EliteAPI.Data.Models.Hypixel;
 using EliteAPI.Services;
 using EliteAPI.Services.ContestService;
+using EliteAPI.Services.MojangService;
+using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using System.Xml.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EliteAPI.Transformers.Skyblock;
 
@@ -12,13 +16,16 @@ public class ProfilesTransformer
 
     private readonly DataContext context;
     private readonly IContestService contestService;
-    public ProfilesTransformer(DataContext context, IContestService contests)
+    private readonly IMojangService mojangService;
+
+    public ProfilesTransformer(DataContext context, IContestService contestService, IMojangService mojangService)
     {
         this.context = context;
-        this.contestService = contests;
+        this.contestService = contestService;
+        this.mojangService = mojangService;
     }
 
-    public void TransformProfilesResponse(RawProfilesResponse data)
+    public async void TransformProfilesResponse(RawProfilesResponse data)
     {
         if (!data.Success || data.Profiles == null || data.Profiles.Length <= 0) return;
         
@@ -26,52 +33,68 @@ public class ProfilesTransformer
         {
             if (profile == null) continue;
 
-            var profileObj = new Profile
-            {
-                ProfileUUID = profile.ProfileId,
-                ProfileName = profile.CuteName,
-                GameMode = profile.GameMode,
-            };
-            context.Profiles.Add(profileObj);
+            var newProfile = await TransformSingleProfile(profile);
+            if (newProfile == null) continue;
 
-            MetricsService.IncrementProfilesTransformedCount(profileId?.ToString() ?? "Unknown");
+            // Check if profile already exists, if so, update it
+            var oldProfile = await context.Profiles.FindAsync(newProfile.ProfileId);
+            if (oldProfile == null) continue;
 
-
-            var membersArray = members?.AsArray();
-            if (membersArray == null || membersArray.Count == 0) continue;
-
-            foreach (var member in membersArray)
-            {
-                if (member == null) continue;
-
-                TransformMemberResponse(member.AsObject(), profileObj, isSelected);
-            }
+            // Updating profile persists togglable fields if they've been disabled (ex: collections)
+            UpdateProfile(oldProfile, newProfile);
         }
     }
 
-    public void TransformMemberResponse(JsonObject data, Profile profile, bool selected)
+    public async Task<Profile?> TransformSingleProfile(RawProfileData profile)
     {
-        // Get key of the data object
-        if (data == null) return;
-        
-        data.TryGetPropertyValue("pets", out var pets);
-        data.TryGetPropertyValue("collection", out var collection);
-        data.TryGetPropertyValue("jacob2", out var jacob);
-        data.TryGetPropertyValue("fairy_souls_collected", out var fairySoulsCollected);
-        data.TryGetPropertyValue("fairy_souls", out var fairySouls);
-        data.TryGetPropertyValue("coin_purse", out var coinPurse);
+        var profileId = profile.ProfileId.Replace("-", "");
+
+        var profileObj = new Profile
+        {
+            ProfileId = profileId,
+            ProfileName = profile.CuteName,
+            GameMode = profile.GameMode,
+        };
+        context.Profiles.Add(profileObj);
+
+        MetricsService.IncrementProfilesTransformedCount(profileId?.ToString() ?? "Unknown");
+
+        var members = profile.Members;
+        if (members == null || members.Count == 0) return null;
+
+        foreach (var member in members)
+        {
+            // Hyphens shouldn't be included anyways, but just in case Hypixel pulls another fast one
+            var memberId = member.Key.Replace("-", "");
+            var memberData = member.Value;
+
+            await TransformMemberResponse(memberId, memberData, profileObj, profile.Selected);
+        }
+
+        await context.SaveChangesAsync();
+
+        return profileObj;
+    }
+
+    public async Task TransformMemberResponse(string memberId, RawMemberData memberData, Profile profile, bool selected)
+    {
+        if (memberData == null) return;
+
+        var minecraftAccount = await mojangService.GetMinecraftAccountByUUID(memberId);
+        if (minecraftAccount == null) return;
+
+        var jacob = ProcessJacob(memberData);
 
         var member = new ProfileMember
         {
+            MinecraftAccount = minecraftAccount,
             IsSelected = selected,
             Profile = profile,
+            JacobData = ProcessJacob(memberData)
         };
 
-        if (collection != null) 
-        {
-            ProcessCollections(collection.AsObject(), member);
-        }
-
+        member.Collections = await ProcessCollections(memberData, member);
+        /*
         if (pets != null) 
         {
             ProcessPets(pets.AsObject(), member);
@@ -80,32 +103,59 @@ public class ProfilesTransformer
         if (jacob != null)
         {
             ProcessJacob(jacob.AsObject(), member);
-        }
+        }*/
     }
 
-    private void ProcessCollections(JsonObject collections, ProfileMember member)
+    public void UpdateProfile(Profile oldProfile, Profile newProfile)
     {
-        if (collections == null) return;
-        foreach (var collection in collections)
+        oldProfile.ProfileName = newProfile.ProfileName;
+        oldProfile.GameMode = newProfile.GameMode;
+        //oldProfile.Members = newProfile.Members;
+        context.SaveChanges();
+    }
+
+    private async Task<List<Collection>> ProcessCollections(RawMemberData member, ProfileMember profileMember)
+    {
+        if (member.Collection == null)
         {
-            if (collection.Value == null) continue;
+            var oldCollections = context.Collections.Where(c => c.ProfileMemberId == profileMember.Id);
+            return oldCollections.ToList() ?? new();
+        };
 
+        var list = new List<Collection>();
+
+        foreach (var collection in member.Collection)
+        {
             var collectionName = collection.Key;
-            var hasAmount = collection.Value.AsValue().TryGetValue(out long amount);
-            if (!hasAmount) continue;
+            var amount = collection.Value;
 
-            var collectionObj = new Collection
+            var old = context.Collections.FirstOrDefault(c => c.Name == collectionName && c.ProfileMemberId == profileMember.Id);
+
+            if (old != null)
             {
-                Name = collectionName,
-                Amount = amount,
-                ProfileMember = member,
-            };
+                old.Amount = amount;
+                continue;
+            }
 
-            context.Collections.Add(collectionObj);
-            member.Collections.Add(collectionObj);
+            try
+            {
+                var collectionObj = new Collection
+                {
+                    Name = collectionName,
+                    Amount = amount,
+                    ProfileMember = profileMember,
+                };
+
+                await context.Collections.AddAsync(collectionObj);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+            }
         }
 
-        context.SaveChanges();
+        await context.SaveChangesAsync();
+        return list;
     }
 
     private void ProcessPets(JsonObject pets, ProfileMember member)
@@ -143,50 +193,38 @@ public class ProfilesTransformer
         context.SaveChanges();  
     }
 
-    private void ProcessJacob(JsonObject jacob, ProfileMember member)
+    private JacobData ProcessJacob(RawMemberData member)
     {
-        if (jacob == null) return;
+        var jacob = new JacobData();
+        var jacobData = member.Jacob;
 
-        var jacobData = member.JacobData;
+        if (jacobData == null) return jacob;
 
-        jacob.TryGetPropertyValue("medals_inv", out var medalsInv);
-        jacob.TryGetPropertyValue("perks", out var perks);
-        jacob.TryGetPropertyValue("contests", out var contests);
-
-        if (medalsInv != null)
+        if (jacobData.MedalsInventory != null)
         {
-            var medalsInvData = medalsInv.AsObject();
-            medalsInvData.TryGetPropertyValue("gold", out var gold);
-            medalsInvData.TryGetPropertyValue("silver", out var silver);
-            medalsInvData.TryGetPropertyValue("bronze", out var bronze);
-
-            jacobData.Medals.Gold = int.Parse(gold?.ToString() ?? "0");
-            jacobData.Medals.Silver = int.Parse(silver?.ToString() ?? "0");
-            jacobData.Medals.Bronze = int.Parse(bronze?.ToString() ?? "0");
+            jacob.Medals.Gold = jacobData.MedalsInventory.Gold;
+            jacob.Medals.Silver = jacobData.MedalsInventory.Silver;
+            jacob.Medals.Bronze = jacobData.MedalsInventory.Bronze;
         }
 
-        if (perks != null)
+        if (jacobData.Perks != null)
         {
-            var perksData = perks.AsObject();
-            perksData.TryGetPropertyValue("double_drops", out var doubleDrops);
-            perksData.TryGetPropertyValue("farming_level_cap", out var levelCap);
-
-            jacobData.Perks.DoubleDrops = int.Parse(doubleDrops?.ToString() ?? "0");
-            jacobData.Perks.LevelCap = int.Parse(levelCap?.ToString() ?? "0");
+            jacob.Perks.DoubleDrops = jacobData.Perks.DoubleDrops ?? 0;
+            jacob.Perks.LevelCap = jacobData.Perks.FarmingLevelCap ?? 0;
         }
 
-        if (contests != null)
+        if (jacobData.Contests != null)
         {
-            ProcessContests(contests.AsObject(), jacobData, member.LastUpdated);
+            // TODO: Figure out how to get the last updated time
+            ProcessContests(jacob, jacobData.Contests, DateTime.MinValue);
         }
 
-        member.JacobData = jacobData;
-        context.SaveChanges();
+        return jacob;
     }
 
-    private void ProcessContests(JsonObject contests, JacobData jacobData, DateTime LastUpdated)
+    private void ProcessContests(JacobData jacobData, RawJacobContest[] contests, DateTime LastUpdated)
     {
-
+        /*
         foreach (var contest in contests)
         {
             var key = contest.Key;
@@ -219,6 +257,6 @@ public class ProfilesTransformer
                     jacobData.Contests.Add(existingContest);
                 }
             }
-        }
+        }*/
     }
 }
