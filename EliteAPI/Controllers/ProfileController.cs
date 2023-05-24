@@ -1,6 +1,8 @@
-﻿using EliteAPI.Services.HypixelService;
+﻿using EliteAPI.Data.Models.Hypixel;
+using EliteAPI.Services.HypixelService;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using EliteAPI.Services.ProfileService;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,23 +12,30 @@ namespace EliteAPI.Controllers;
 [ApiController]
 public partial class ProfileController : ControllerBase
 {
-    private readonly IHypixelService _hypixelService;
+    private readonly IProfileService _profileService;
     [GeneratedRegex("[a-zA-Z0-9]{32}")] private static partial Regex IsAlphaNumeric();
-    public ProfileController(IHypixelService hypixelService)
+    public ProfileController(IProfileService profileService)
     {
-        _hypixelService = hypixelService;
+        _profileService = profileService;
     }
 
     // GET api/<ProfileController>/5
-    [HttpGet("{uuid}")]
-    public async Task<ActionResult> Get(string uuid)
+    [HttpGet("{uuid}/selected")]
+    public async Task<ActionResult<ProfileMember>> Get(string uuid)
     {
-        if (uuid == null || uuid.Length != 32)
+        if (uuid is not { Length: 32 })
         {
             return BadRequest("UUID must be 32 characters in length and match [a-Z0-9].");
         }
 
-        return await _hypixelService.FetchProfiles(uuid);
+        var member = await _profileService.GetSelectedProfileMember(uuid);
+
+        if (member is null)
+        {
+            return NotFound("No selected profile member found for this UUID.");
+        }
+
+        return Ok(member);
     }
 
     // POST api/<ProfileController>

@@ -12,7 +12,7 @@ public class DataContext : DbContext
     {
         base.OnConfiguring(optionsBuilder);
         // Get connection string from secrets
-        string connection = Environment.GetEnvironmentVariable("PostgresConnection") ?? "Server=database;Port=5432;Database=eliteapi;Username=user;Password=postgres123";
+        string connection = Environment.GetEnvironmentVariable("PostgresConnection") ?? "Server=database;Port=5432;Database=eliteapi;Username=user;Password=postgres123;Include Error Detail=true";
 
         if (!string.IsNullOrEmpty(connection))
         {
@@ -26,23 +26,21 @@ public class DataContext : DbContext
         }
     }
 
-    public DbSet<Account> Accounts { get; set; }
-    public DbSet<DiscordAccount> DiscordAccounts { get; set; }
-    public DbSet<MinecraftAccount> MinecraftAccounts { get; set; }
-    public DbSet<Profile> Profiles { get; set; }
-    public DbSet<ProfileMember> ProfileMembers { get; set; }
-    public DbSet<PlayerData> PlayerData { get; set; }
-    public DbSet<Premium> PremiumUsers { get; set; }
-    public DbSet<Purchase> Purchases { get; set; }
-    public DbSet<Collection> Collections { get; set; }
-    public DbSet<JacobData> JacobData { get; set; }
-    public DbSet<MedalInventory> MedalInventories { get; set; }
-    public DbSet<JacobPerks> JacobPerks { get; set; }
-    public DbSet<JacobContest> JacobContests { get; set; }
-    public DbSet<ContestParticipation> ContestParticipations { get; set; }
-    public DbSet<JacobContestEvent> JacobContestEvents { get; set; }
-    public DbSet<Pet> Pets { get; set; }
-    public DbSet<Skill> Skills { get; set; }
-    public DbSet<ProfileBanking> ProfileBanking { get; set; }
-    public DbSet<CraftedMinion> CraftedMinions { get; set; }
+    public DbSet<Account> Accounts { get; set; } = null!;
+    public DbSet<DiscordAccount> DiscordAccounts { get; set; } = null!;
+    public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
+    public DbSet<Profile> Profiles { get; set; } = null!;
+    public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
+    public DbSet<PlayerData> PlayerData { get; set; } = null!;
+    public DbSet<Premium> PremiumUsers { get; set; } = null!;
+    public DbSet<Purchase> Purchases { get; set; } = null!;
+    public DbSet<Collection> Collections { get; set; } = null!;
+    public DbSet<JacobData> JacobData { get; set; } = null!;
+    public DbSet<JacobContest> JacobContests { get; set; } = null!;
+    public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
+    public DbSet<JacobContestEvent> JacobContestEvents { get; set; } = null!;
+    public DbSet<Pet> Pets { get; set; } = null!;
+    public DbSet<Skill> Skills { get; set; } = null!;
+    public DbSet<ProfileBanking> ProfileBanking { get; set; } = null!;
+    public DbSet<CraftedMinion> CraftedMinions { get; set; } = null!;
 }

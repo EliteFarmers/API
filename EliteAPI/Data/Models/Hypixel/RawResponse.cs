@@ -12,7 +12,7 @@ public class RawProfilesResponse
 public class RawProfileData
 {
     public required Dictionary<string, RawMemberData> Members { get; set; }
-    public required RawBanking Banking { get; set; }
+    public RawBanking? Banking { get; set; }
     public bool Selected { get; set; } = false;
 
     [JsonPropertyName("cute_name")]
@@ -33,7 +33,7 @@ public class RawProfileData
 
 public class RawMemberData
 {
-    public Pet[]? Pets { get; set; }
+    public RawPetData[]? Pets { get; set; }
 
     public JsonObject? Dungeons { get; set; }
 
@@ -46,7 +46,7 @@ public class RawMemberData
     [JsonPropertyName("jacob2")]
     public RawJacobData? Jacob { get; set; }
 
-    public Dictionary<string, int> Stats { get; set; } = new();
+    public Dictionary<string, double> Stats { get; set; } = new();
 
     [JsonPropertyName("death_count")]
     public long? DeathCount { get; set; }
@@ -166,19 +166,19 @@ public class RawMemberData
 
     [JsonPropertyName("essence_undead")]
     public long? EssenceUndead { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_dragon")]
     public long? EssenceDragon { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_gold")]
     public long? EssenceGold { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_diamond")]
     public long? EssenceDiamond { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_crimson")]
     public long? EssenceCrimson { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_spider")]
     public long? EssenceSpider { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_wither")]
     public long? EssenceWither { get; set; }
-    [JsonPropertyName("essence_undead")]
+    [JsonPropertyName("essence_ice")]
     public long? EssenceIce { get; set; }
 
     public Dictionary<string, long>? Collection { get; set; }
@@ -256,7 +256,7 @@ public class RawJacobData
 {
     public RawJacobPerks? Perks { get; set; }
     public bool Talked { get; set; }
-    public RawJacobContest[]? Contests { get; set; }
+    public Dictionary<string, RawJacobContest> Contests { get; set; } = new();
 
     [JsonPropertyName("medals_inv")]
     public RawMedalsInventory? MedalsInventory { get; set; }
@@ -319,7 +319,7 @@ public class RawPetData
     public required string Tier { get; set; }
     public string? HeldItem { get; set; }
     public int CandyUsed { get; set; }
-    public object? Skin { get; set; }
+    public string? Skin { get; set; }
 }
 
 public class RawCommunityUpgrades

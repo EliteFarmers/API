@@ -1,12 +1,14 @@
 global using EliteAPI.Data.Models;
 
 using EliteAPI.Data;
+using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.ContestService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
-using EliteAPI.Transformers.Skyblock;
+using EliteAPI.Services.ProfileService;
+using Microsoft.EntityFrameworkCore;
 using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,12 +28,14 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<DataContext>();
 
-builder.Services.AddSingleton<IHypixelService, HypixelService>();
-builder.Services.AddSingleton<IMojangService, MojangService>();
-builder.Services.AddSingleton<ProfilesTransformer>();
-
+builder.Services.AddScoped<IHypixelService, HypixelService>();
+builder.Services.AddScoped<IMojangService, MojangService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IContestService, ContestService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+
+builder.Services.AddScoped<ProfileMapper>();
+
 
 
 var app = builder.Build();
@@ -52,6 +56,11 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapMetrics();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+    db.Database.Migrate();
+}
 
 new Task(() =>
 {

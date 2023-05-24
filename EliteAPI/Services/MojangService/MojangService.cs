@@ -21,7 +21,7 @@ public class MojangService : IMojangService
     public async Task<MinecraftAccount?> GetMinecraftAccountByIGN(string ign)
     {
         var account = await context.MinecraftAccounts
-            .Where(mc => mc.IGN.Equals(ign))
+            .Where(mc => mc.Name.Equals(ign))
             .FirstOrDefaultAsync();
 
         // TODO: Fetch account again if it's older than x amount of time
@@ -36,7 +36,7 @@ public class MojangService : IMojangService
     public async Task<MinecraftAccount?> GetMinecraftAccountByUUID(string uuid)
     {
         var account = await context.MinecraftAccounts
-            .Where(mc => mc.UUID.Equals(uuid))
+            .Where(mc => mc.Id.Equals(uuid))
             .FirstOrDefaultAsync();
 
         // TODO: Fetch account again if it's older than x amount of time

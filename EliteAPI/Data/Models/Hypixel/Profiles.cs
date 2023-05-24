@@ -19,6 +19,8 @@ public class Profile
 public class ProfileMember
 {
     [Key] public int Id { get; set; }
+    public required string PlayerUuid { get; set; }
+
     public List<Collection> Collections { get; set; } = new();
     public required JacobData JacobData { get; set; }
     public List<Pet> Pets { get; set; } = new();
@@ -27,15 +29,11 @@ public class ProfileMember
     public bool WasRemoved { get; set; } = false;
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
 
-    [ForeignKey("PlayerData")]
-    public int PlayerDataId { get; set; }
-    public PlayerData? PlayerData { get; set; }
-
     [ForeignKey("MinecraftAccount")]
     public int MinecraftAccountId { get; set; }
     public required MinecraftAccount MinecraftAccount { get; set; }
 
     [ForeignKey("Profile")]
-    public int ProfileId { get; set; }
+    public required string ProfileId { get; set; }
     public required Profile Profile { get; set; }
 }

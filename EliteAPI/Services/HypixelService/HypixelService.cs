@@ -10,10 +10,11 @@ namespace EliteAPI.Services.HypixelService;
 public class HypixelService : IHypixelService
 {
     public static readonly string HttpClientName = "EliteDev";
-    private readonly string HypixelAPIKey = Environment.GetEnvironmentVariable("HYPIXEL_API_KEY") ?? throw new Exception("HYPIXEL_API_KEY env variable is not set.");
+    private readonly string _hypixelApiKey = Environment.GetEnvironmentVariable("HYPIXEL_API_KEY") 
+                                             ?? throw new Exception("HYPIXEL_API_KEY env variable is not set.");
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly RateLimiter RateLimiter;
-    private int RequestsPerMinute;
+    private readonly RateLimiter _rateLimiter;
+    private int _requestsPerMinute;
 
 
     public HypixelService(IHttpClientFactory httpClientFactory)
@@ -21,8 +22,8 @@ public class HypixelService : IHypixelService
         GetRequestLimit();
         _httpClientFactory = httpClientFactory;
 
-        var tokensPerBucket = (int) Math.Floor(RequestsPerMinute / 6f);
-        RateLimiter = new TokenBucketRateLimiter(new()
+        var tokensPerBucket = (int) Math.Floor(_requestsPerMinute / 6f);
+        _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
         {
             ReplenishmentPeriod = TimeSpan.FromSeconds(10),
             TokensPerPeriod = tokensPerBucket,
@@ -38,15 +39,15 @@ public class HypixelService : IHypixelService
     public async Task<ActionResult<RawProfilesResponse>> FetchProfiles(string uuid) 
     {
         Console.WriteLine("Fetching profiles");
-        await RateLimiter.AcquireAsync(1);
+        await _rateLimiter.AcquireAsync(1);
 
         var client = _httpClientFactory.CreateClient(HttpClientName);
         
         try
         {
-            var data = await client.GetFromJsonAsync<RawProfilesResponse>($"https://api.hypixel.net/skyblock/profiles?uuid={uuid}&key={HypixelAPIKey}");
+            var data = await client.GetFromJsonAsync<RawProfilesResponse>($"https://api.hypixel.net/skyblock/profiles?uuid={uuid}&key={_hypixelApiKey}");
 
-            if (data == null || !data.Success)
+            if (data is not { Success: true })
             {
                 return new NotFoundResult();
             }
@@ -65,12 +66,12 @@ public class HypixelService : IHypixelService
         var limit = Environment.GetEnvironmentVariable("HYPIXEL_REQUEST_LIMIT") ?? "60";
         try
         {
-            RequestsPerMinute = int.Parse(limit);
+            _requestsPerMinute = int.Parse(limit);
         }
         catch (Exception)
         {
             Console.Error.WriteLine("HYPIXEL_REQUEST_LIMIT env variable is not a valid number, defaulting to 60.");
-            RequestsPerMinute = 60;
+            _requestsPerMinute = 60;
         }
     }
 }
