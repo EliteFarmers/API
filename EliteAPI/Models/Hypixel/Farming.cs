@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EliteAPI.Data.Models.Hypixel;
+namespace EliteAPI.Models.Hypixel;
 
 public class JacobData
 {
@@ -53,7 +53,8 @@ public class JacobContest
     public required JacobContestEvent JacobContestEvent { get; set; }
 }
 
-public class ContestParticipation {
+public class ContestParticipation
+{
     [Key] public int Id { get; set; }
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;

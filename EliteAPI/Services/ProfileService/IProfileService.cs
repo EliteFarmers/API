@@ -1,4 +1,4 @@
-﻿using EliteAPI.Data.Models.Hypixel;
+﻿using EliteAPI.Models.Hypixel;
 
 namespace EliteAPI.Services.ProfileService;
 

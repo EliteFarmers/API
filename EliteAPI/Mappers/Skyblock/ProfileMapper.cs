@@ -1,10 +1,11 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Data.Models.Hypixel;
 using EliteAPI.Services;
 using EliteAPI.Services.ContestService;
 using EliteAPI.Services.MojangService;
 using System.Text.Json.Nodes;
 using EliteAPI.Services.ProfileService;
+using EliteAPI.Models.Hypixel;
+using EliteAPI.Models.DTOs.Incoming;
 
 namespace EliteAPI.Mappers.Skyblock;
 

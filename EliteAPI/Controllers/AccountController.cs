@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
+using EliteAPI.Models;
 using EliteAPI.Services.AccountService;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

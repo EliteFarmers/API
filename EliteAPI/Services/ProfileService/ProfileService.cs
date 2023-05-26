@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Data.Models.Hypixel;
 using EliteAPI.Mappers.Skyblock;
+using EliteAPI.Models.Hypixel;
 using EliteAPI.Services.HypixelService;
 using Microsoft.EntityFrameworkCore;
 
@@ -84,16 +84,19 @@ public class ProfileService : IProfileService
 
     public async Task<ProfileMember?> GetProfileMember(string profileUuid, string playerUuid)
     {
-
-
         var member = await _context.ProfileMembers
             .Include(p => p.Profile)
+            .Include(p => p.Collections)
+            .Include(p => p.Skills)
+            .Include(p => p.Pets)
+            .Include(p => p.JacobData)
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .FirstOrDefaultAsync();
 
         // TODO: Check if the member data is old
         if (member != null)
         {
+            Console.WriteLine("Member data is not old");
             return member;
         }
 
@@ -106,6 +109,10 @@ public class ProfileService : IProfileService
 
         return await _context.ProfileMembers
             .Include(p => p.Profile)
+            .Include(p => p.Collections)
+            .Include(p => p.Skills)
+            .Include(p => p.Pets)
+            .Include(p => p.JacobData)
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .FirstOrDefaultAsync();
     }

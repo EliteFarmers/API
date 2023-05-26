@@ -1,10 +1,9 @@
-﻿using EliteAPI.Data.Models.Hypixel;
+﻿using EliteAPI.Models.Hypixel;
 
 namespace EliteAPI.Utilities;
 
 public static class FormatUtils
 {
-    private static readonly int SkyblockEpochSeconds = 1560275700;
     public static DateTime GetTimeFromContestKey(string contestKey)
     {
         var split = contestKey.Split(":");
@@ -27,7 +26,7 @@ public static class FormatUtils
 
         var seconds = days * 1200; // 1200 (60 * 20) seconds per day
 
-        var unixTime = SkyblockEpochSeconds + seconds;
+        var unixTime = SkyblockDate.SkyblockEpochSeconds + seconds;
 
         return DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
     }

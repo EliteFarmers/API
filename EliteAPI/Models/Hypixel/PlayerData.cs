@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace EliteAPI.Data.Models.Hypixel;
+namespace EliteAPI.Models.Hypixel;
 
 public class PlayerData
 {

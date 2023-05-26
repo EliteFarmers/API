@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Services.AccountService;
+﻿using EliteAPI.Models;
+
+namespace EliteAPI.Services.AccountService;
 
 public interface IAccountService
 {

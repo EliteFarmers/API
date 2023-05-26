@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace EliteAPI.Data.Models.Hypixel;
+namespace EliteAPI.Models.DTOs.Incoming;
 
 public class RawProfilesResponse
 {
@@ -25,7 +25,7 @@ public class RawProfileData
     public string? GameMode { get; set; }
 
     [JsonPropertyName("community_upgrades")]
-    public required RawCommunityUpgrades CommunityUpgrades { get; set; }
+    public RawCommunityUpgrades? CommunityUpgrades { get; set; }
 
     [JsonPropertyName("last_save")]
     public long LastSave { get; set; }

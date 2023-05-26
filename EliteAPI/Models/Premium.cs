@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EliteAPI.Data.Models;
+namespace EliteAPI.Models;
 
 public class Premium
 {

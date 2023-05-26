@@ -1,4 +1,4 @@
-﻿using EliteAPI.Data.Models.Hypixel;
+﻿using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.HypixelService;

@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Services.MojangService;
+﻿using EliteAPI.Models;
+
+namespace EliteAPI.Services.MojangService;
 
 public interface IMojangService
 {

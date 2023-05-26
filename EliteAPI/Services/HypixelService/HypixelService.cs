@@ -1,5 +1,5 @@
 ﻿using Discord;
-using EliteAPI.Data.Models.Hypixel;
+using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Nodes;

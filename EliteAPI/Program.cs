@@ -1,5 +1,3 @@
-global using EliteAPI.Data.Models;
-
 using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services;
@@ -12,6 +10,10 @@ using Microsoft.EntityFrameworkCore;
 using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Add AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Add services to the container.
 builder.Services.AddSingleton<MetricsService>();
@@ -36,8 +38,6 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 
 builder.Services.AddScoped<ProfileMapper>();
 
-
-
 var app = builder.Build();
 
 app.UseMetricServer(9102);
@@ -59,7 +59,14 @@ app.MapMetrics();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception e)
+    {
+        Console.Error.WriteLine(e);
+    }
 }
 
 new Task(() =>

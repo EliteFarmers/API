@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Data;
+using EliteAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services.AccountService;

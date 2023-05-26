@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Nodes;
-using EliteAPI.Data.Models.Hypixel;
+using EliteAPI.Models.Hypixel;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Data.Models;
+namespace EliteAPI.Models;
 
 public class Account
 {
@@ -41,4 +41,4 @@ public class MinecraftAccountProperty
 {
     public required string Name { get; set; }
     public required string Value { get; set; }
-}   
+}

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EliteAPI.Data.Models.Hypixel;
+namespace EliteAPI.Models.Hypixel;
 
 public class ProfileBanking
 {
