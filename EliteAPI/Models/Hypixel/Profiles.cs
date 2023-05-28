@@ -7,7 +7,9 @@ namespace EliteAPI.Models.Hypixel;
 
 public class Profile
 {
-    [Key] public required string ProfileId { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public required string ProfileId { get; set; }
+    
     public required string ProfileName { get; set; }
     public string? GameMode { get; set; }
     public DateTime? LastSave { get; set; }
@@ -19,7 +21,9 @@ public class Profile
 
 public class ProfileMember
 {
-    [Key] public int Id { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    
     public required string PlayerUuid { get; set; }
 
     public List<Collection> Collections { get; set; } = new();

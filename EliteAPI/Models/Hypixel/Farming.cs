@@ -6,7 +6,9 @@ namespace EliteAPI.Models.Hypixel;
 
 public class JacobData
 {
-    [Key] public int Id { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    
     public MedalInventory Medals { get; set; } = new();
     public MedalInventory EarnedMedals { get; set; } = new();
     public JacobPerks Perks { get; set; } = new();
@@ -35,14 +37,18 @@ public class JacobPerks
 
 public class JacobContestEvent
 {
-    [Key] public int Id { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    
     public DateTime Timestamp { get; set; }
     public List<JacobContest> JacobContests { get; set; } = new();
 }
 
 public class JacobContest
 {
-    [Key] public int Id { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    
     public Crop Crop { get; set; }
     public DateTime Timestamp { get; set; }
     public int Participants => Participations.Count;
@@ -55,7 +61,9 @@ public class JacobContest
 
 public class ContestParticipation
 {
-    [Key] public int Id { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;
     public ContestMedal MedalEarned { get; set; } = ContestMedal.None;

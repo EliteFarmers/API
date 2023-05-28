@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Hypixel;
 
 public class PlayerData
 {
-    [Key] public int Id { get; set; }
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    
     public string? Rank { get; set; }
     public string? NewPackageRank { get; set; }
     public string? MonthlyPackageRank { get; set; }

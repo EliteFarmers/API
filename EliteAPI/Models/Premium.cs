@@ -1,10 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models;
 
 public class Premium
 {
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public List<Purchase> Purchases { get; set; } = new();
     public bool Active { get; set; } = false;
 
@@ -14,7 +17,9 @@ public class Premium
 
 public class Purchase
 {
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public DateTime PurchasedTime { get; set; }
     public PurchaseType PurchaseType { get; set; }
     public decimal Price { get; set; } = 0;
