@@ -9,6 +9,8 @@ using EliteAPI.Services.ProfileService;
 using Microsoft.EntityFrameworkCore;
 using Prometheus;
 
+DotNetEnv.Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 

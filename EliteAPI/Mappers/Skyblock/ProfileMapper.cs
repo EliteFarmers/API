@@ -81,7 +81,9 @@ public class ProfileMapper
         var minecraftAccount = await _mojangService.GetMinecraftAccountByUUID(memberId);
         if (minecraftAccount == null) return;
 
-        var member = new ProfileMember
+        var existing = profile.Members.Find(p => p.PlayerUuid.Equals(memberId));
+
+        var member = existing ?? new ProfileMember
         {
             PlayerUuid = memberId,
             MinecraftAccount = minecraftAccount,
@@ -91,18 +93,26 @@ public class ProfileMapper
             JacobData = ProcessJacob(memberData)
         };
 
-        member.Collections = await ProcessCollections(memberData, member);
-        member.Pets = await ProcessPets(memberData.Pets, member);
-        /*
-        if (pets != null) 
+        if (existing != null)
         {
-            ProcessPets(pets.AsObject(), member);
+            member.IsSelected = selected;
+            member.JacobData = ProcessJacob(memberData);
         }
 
-        if (jacob != null)
+        member.Collections = await ProcessCollections(memberData, member);
+        member.Pets = await ProcessPets(memberData.Pets, member);
+        member.LastUpdated = DateTime.UtcNow;
+
+        if (existing == null)
         {
-            ProcessJacob(jacob.AsObject(), member);
-        }*/
+            await _context.ProfileMembers.AddAsync(member);
+        }
+        else
+        { 
+            _context.ProfileMembers.Update(member);
+        }
+        
+        await _context.SaveChangesAsync();
     }
 
     public void UpdateProfile(Profile oldProfile, Profile newProfile)
@@ -118,7 +128,7 @@ public class ProfileMapper
         if (member.Collection == null)
         {
             var oldCollections = _context.Collections.Where(c => c.ProfileMemberId == profileMember.Id);
-            return oldCollections.ToList() ?? new List<Collection>();
+            return oldCollections.ToList();
         };
 
         var list = new List<Collection>();
@@ -142,7 +152,7 @@ public class ProfileMapper
                     ProfileMember = profileMember,
                 };
 
-                await _context.Collections.AddAsync(collectionObj);
+                _context.Collections.Add(collectionObj);
             }
             catch (Exception e)
             {

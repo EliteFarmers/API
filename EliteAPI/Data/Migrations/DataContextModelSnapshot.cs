@@ -22,7 +22,7 @@ namespace EliteAPI.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Account", b =>
+            modelBuilder.Entity("EliteAPI.Models.Account", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,7 +40,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.DiscordAccount", b =>
+            modelBuilder.Entity("EliteAPI.Models.DiscordAccount", b =>
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
@@ -68,7 +68,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("DiscordAccounts");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Collection", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Collection", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -96,7 +96,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Collections");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ContestParticipation", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ContestParticipation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,7 +133,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("ContestParticipations");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.CraftedMinion", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.CraftedMinion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -162,7 +162,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("CraftedMinions");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobContest", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobContest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -186,7 +186,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("JacobContests");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobContestEvent", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobContestEvent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -202,7 +202,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("JacobContestEvents");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobData", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -224,7 +224,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("JacobData");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Pet", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Pet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -266,7 +266,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Pets");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.PlayerData", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.PlayerData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -294,7 +294,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("PlayerData");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Profile", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Profile", b =>
                 {
                     b.Property<string>("ProfileId")
                         .HasColumnType("text");
@@ -327,7 +327,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Profiles");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileBanking", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileBanking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -343,7 +343,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("ProfileBanking");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileBankingTransaction", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileBankingTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -373,7 +373,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("ProfileBankingTransaction");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileMember", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileMember", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -410,7 +410,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("ProfileMembers");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Skill", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Skill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -434,7 +434,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.MinecraftAccount", b =>
+            modelBuilder.Entity("EliteAPI.Models.MinecraftAccount", b =>
                 {
                     b.Property<int>("MinecraftAccountId")
                         .ValueGeneratedOnAdd()
@@ -465,7 +465,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("MinecraftAccounts");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Premium", b =>
+            modelBuilder.Entity("EliteAPI.Models.Premium", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -487,7 +487,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("PremiumUsers");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Purchase", b =>
+            modelBuilder.Entity("EliteAPI.Models.Purchase", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -514,9 +514,9 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Purchases");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Account", b =>
+            modelBuilder.Entity("EliteAPI.Models.Account", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.DiscordAccount", "DiscordAccount")
+                    b.HasOne("EliteAPI.Models.DiscordAccount", "DiscordAccount")
                         .WithMany()
                         .HasForeignKey("DiscordAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -525,9 +525,9 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("DiscordAccount");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Collection", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Collection", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileMember", "ProfileMember")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileMember", "ProfileMember")
                         .WithMany("Collections")
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -536,19 +536,19 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ContestParticipation", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ContestParticipation", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.JacobContest", "JacobContest")
+                    b.HasOne("EliteAPI.Models.Hypixel.JacobContest", "JacobContest")
                         .WithMany("Participations")
                         .HasForeignKey("JacobContestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.JacobData", null)
+                    b.HasOne("EliteAPI.Models.Hypixel.JacobData", null)
                         .WithMany("Contests")
                         .HasForeignKey("JacobDataId");
 
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileMember", "ProfileMember")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileMember", "ProfileMember")
                         .WithMany()
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -559,13 +559,13 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.CraftedMinion", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.CraftedMinion", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.Profile", null)
+                    b.HasOne("EliteAPI.Models.Hypixel.Profile", null)
                         .WithMany("CraftedMinions")
                         .HasForeignKey("ProfileId");
 
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileMember", "ProfileMember")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileMember", "ProfileMember")
                         .WithMany()
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -574,9 +574,9 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobContest", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobContest", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.JacobContestEvent", "JacobContestEvent")
+                    b.HasOne("EliteAPI.Models.Hypixel.JacobContestEvent", "JacobContestEvent")
                         .WithMany("JacobContests")
                         .HasForeignKey("JacobContestEventId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -585,15 +585,15 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("JacobContestEvent");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobData", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobData", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileMember", "ProfileMember")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileMember", "ProfileMember")
                         .WithOne("JacobData")
-                        .HasForeignKey("EliteAPI.Data.Models.Hypixel.JacobData", "ProfileMemberId")
+                        .HasForeignKey("EliteAPI.Models.Hypixel.JacobData", "ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("EliteAPI.Data.Models.Hypixel.MedalInventory", "EarnedMedals", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Hypixel.MedalInventory", "EarnedMedals", b1 =>
                         {
                             b1.Property<int>("JacobDataId")
                                 .HasColumnType("integer");
@@ -615,7 +615,7 @@ namespace EliteAPI.Data.Migrations
                                 .HasForeignKey("JacobDataId");
                         });
 
-                    b.OwnsOne("EliteAPI.Data.Models.Hypixel.MedalInventory", "Medals", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Hypixel.MedalInventory", "Medals", b1 =>
                         {
                             b1.Property<int>("JacobDataId")
                                 .HasColumnType("integer");
@@ -637,7 +637,7 @@ namespace EliteAPI.Data.Migrations
                                 .HasForeignKey("JacobDataId");
                         });
 
-                    b.OwnsOne("EliteAPI.Data.Models.Hypixel.JacobPerks", "Perks", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Hypixel.JacobPerks", "Perks", b1 =>
                         {
                             b1.Property<int>("JacobDataId")
                                 .HasColumnType("integer");
@@ -668,9 +668,9 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Pet", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Pet", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileMember", "ProfileMember")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileMember", "ProfileMember")
                         .WithMany("Pets")
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -679,24 +679,24 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Profile", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Profile", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileBanking", "Banking")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileBanking", "Banking")
                         .WithMany()
                         .HasForeignKey("BankingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Data.Models.MinecraftAccount", null)
+                    b.HasOne("EliteAPI.Models.MinecraftAccount", null)
                         .WithMany("Profiles")
                         .HasForeignKey("MinecraftAccountId");
 
                     b.Navigation("Banking");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileBankingTransaction", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileBankingTransaction", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileBanking", "ProfileBanking")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileBanking", "ProfileBanking")
                         .WithMany("Transactions")
                         .HasForeignKey("ProfileBankingId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -705,15 +705,15 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileBanking");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileMember", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileMember", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.MinecraftAccount", "MinecraftAccount")
+                    b.HasOne("EliteAPI.Models.MinecraftAccount", "MinecraftAccount")
                         .WithMany()
                         .HasForeignKey("MinecraftAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.Profile", "Profile")
+                    b.HasOne("EliteAPI.Models.Hypixel.Profile", "Profile")
                         .WithMany("Members")
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -724,9 +724,9 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Profile");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Skill", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Skill", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.ProfileMember", "ProfileMember")
+                    b.HasOne("EliteAPI.Models.Hypixel.ProfileMember", "ProfileMember")
                         .WithMany("Skills")
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -735,19 +735,19 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.MinecraftAccount", b =>
+            modelBuilder.Entity("EliteAPI.Models.MinecraftAccount", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Account", null)
+                    b.HasOne("EliteAPI.Models.Account", null)
                         .WithMany("MinecraftAccounts")
                         .HasForeignKey("AccountId");
 
-                    b.HasOne("EliteAPI.Data.Models.Hypixel.PlayerData", "PlayerData")
+                    b.HasOne("EliteAPI.Models.Hypixel.PlayerData", "PlayerData")
                         .WithMany()
                         .HasForeignKey("PlayerDataId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsMany("EliteAPI.Data.Models.MinecraftAccountProperty", "Properties", b1 =>
+                    b.OwnsMany("EliteAPI.Models.MinecraftAccountProperty", "Properties", b1 =>
                         {
                             b1.Property<int>("MinecraftAccountId")
                                 .HasColumnType("integer");
@@ -779,59 +779,59 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Properties");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Premium", b =>
+            modelBuilder.Entity("EliteAPI.Models.Premium", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Account", "Account")
+                    b.HasOne("EliteAPI.Models.Account", "Account")
                         .WithOne("PremiumUser")
-                        .HasForeignKey("EliteAPI.Data.Models.Premium", "AccountId")
+                        .HasForeignKey("EliteAPI.Models.Premium", "AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Account");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Purchase", b =>
+            modelBuilder.Entity("EliteAPI.Models.Purchase", b =>
                 {
-                    b.HasOne("EliteAPI.Data.Models.Premium", null)
+                    b.HasOne("EliteAPI.Models.Premium", null)
                         .WithMany("Purchases")
                         .HasForeignKey("PremiumId");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Account", b =>
+            modelBuilder.Entity("EliteAPI.Models.Account", b =>
                 {
                     b.Navigation("MinecraftAccounts");
 
                     b.Navigation("PremiumUser");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobContest", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobContest", b =>
                 {
                     b.Navigation("Participations");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobContestEvent", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobContestEvent", b =>
                 {
                     b.Navigation("JacobContests");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.JacobData", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.JacobData", b =>
                 {
                     b.Navigation("Contests");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.Profile", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.Profile", b =>
                 {
                     b.Navigation("CraftedMinions");
 
                     b.Navigation("Members");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileBanking", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileBanking", b =>
                 {
                     b.Navigation("Transactions");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Hypixel.ProfileMember", b =>
+            modelBuilder.Entity("EliteAPI.Models.Hypixel.ProfileMember", b =>
                 {
                     b.Navigation("Collections");
 
@@ -843,12 +843,12 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Skills");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.MinecraftAccount", b =>
+            modelBuilder.Entity("EliteAPI.Models.MinecraftAccount", b =>
                 {
                     b.Navigation("Profiles");
                 });
 
-            modelBuilder.Entity("EliteAPI.Data.Models.Premium", b =>
+            modelBuilder.Entity("EliteAPI.Models.Premium", b =>
                 {
                     b.Navigation("Purchases");
                 });

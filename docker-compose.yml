@@ -8,6 +8,8 @@ services:
       dockerfile: EliteAPI/Dockerfile
     env_file:
       - ./EliteAPI/.env
+    environment:
+      - POSTGRES_CONNECTION="Server=database;Port=5432;Database=eliteapi;Username=user;Password=postgres123;Include Error Detail=true"
     ports:
         - "9102:9102"
     networks: 

@@ -42,3 +42,19 @@ public class JacobContestParticipationsMapper : Profile
             .ForMember(j => j.MedalEarned, opt => opt.MapFrom(x => x.MedalEarned));
     }
 }
+
+public class JacobPerksMapper : Profile
+{
+    public JacobPerksMapper()
+    {
+        CreateMap<JacobPerks, JacobPerksDto>();
+    }
+}
+
+public class MedalInventoryMapper : Profile
+{
+    public MedalInventoryMapper()
+    {
+        CreateMap<MedalInventory, MedalInventoryDto>();
+    }
+}

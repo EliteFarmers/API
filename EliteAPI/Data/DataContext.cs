@@ -13,7 +13,7 @@ public class DataContext : DbContext
     {
         base.OnConfiguring(optionsBuilder);
         // Get connection string from secrets
-        string connection = Environment.GetEnvironmentVariable("PostgresConnection") ?? "Server=database;Port=5432;Database=eliteapi;Username=user;Password=postgres123;Include Error Detail=true";
+        var connection = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
 
         if (!string.IsNullOrEmpty(connection))
         {
@@ -23,7 +23,7 @@ public class DataContext : DbContext
         {
             // Quit
             Console.WriteLine("No connection string found. Quitting...");
-            Environment.Exit(1);
+            //Environment.Exit(1);
         }
     }
 

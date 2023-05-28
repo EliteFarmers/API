@@ -93,10 +93,9 @@ public class ProfileService : IProfileService
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .FirstOrDefaultAsync();
 
-        // TODO: Check if the member data is old
-        if (member != null)
+        // Return member if it exists and is not old
+        if (member != null && member.LastUpdated.AddMinutes(10) > DateTime.Now)
         {
-            Console.WriteLine("Member data is not old");
             return member;
         }
 
@@ -123,22 +122,9 @@ public class ProfileService : IProfileService
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
             .FirstOrDefaultAsync();
 
-        // TODO: Check if the member data is old
-        if (member != null)
-        {
-            return member;
-        }
+        if (member == null) return null;
 
-        var rawData = await _hypixelService.FetchProfiles(playerUuid);
-        var profiles = rawData.Value;
-
-        if (profiles == null) return null;
-
-        await _mapper.TransformProfilesResponse(profiles);
-
-        return await _context.ProfileMembers
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
-            .FirstOrDefaultAsync();
+        return await GetProfileMember(member.ProfileId, playerUuid);
     }
 
     public async Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName)
