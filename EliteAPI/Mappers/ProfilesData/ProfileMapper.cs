@@ -1,7 +1,7 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Hypixel;
+using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
-using Skill = EliteAPI.Models.Hypixel.Skill;
+using Skill = EliteAPI.Models.Entities.Hypixel.Skill;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
@@ -9,7 +9,7 @@ public class ProfileMapper : Profile
 {
     public ProfileMapper()
     {
-        CreateMap<EliteAPI.Models.Hypixel.Profile, ProfileDto>()
+        CreateMap<Models.Entities.Hypixel.Profile, ProfileDto>()
             .ForMember(x => x.Members, opt => opt.MapFrom(x => x.Members))
             .ForMember(x => x.Banking, opt => opt.MapFrom(x => x.Banking))
             .ForMember(x => x.CraftedMinions, opt => opt.MapFrom(x => x.CraftedMinions));

@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace EliteAPI.Models.Hypixel;
+namespace EliteAPI.Models.Entities.Hypixel;
 
 public class Collection
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     public required string Name { get; set; }
@@ -19,9 +20,10 @@ public class Collection
 
 public class CraftedMinion
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    
+
     public string? Type { get; set; }
     public int Tiers { get; set; } = 0;
 
@@ -44,9 +46,10 @@ public class CraftedMinion
 
 public class Pet
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    
+
     public string? UUID { get; set; }
     public string? Type { get; set; }
     public double Exp { get; set; } = 0;

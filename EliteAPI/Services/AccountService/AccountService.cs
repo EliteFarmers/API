@@ -1,5 +1,5 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models;
+using EliteAPI.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services.AccountService;

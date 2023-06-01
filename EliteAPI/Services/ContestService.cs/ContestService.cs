@@ -1,5 +1,5 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models.Hypixel;
+using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services.ContestService;

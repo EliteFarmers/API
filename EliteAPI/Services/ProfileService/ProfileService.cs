@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
-using EliteAPI.Models.Hypixel;
+using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.HypixelService;
 using Microsoft.EntityFrameworkCore;
 
@@ -86,25 +86,14 @@ public class ProfileService : IProfileService
     {
         var member = await _context.ProfileMembers
             .Include(p => p.Profile)
-            .Include(p => p.Collections)
-            .Include(p => p.Skills)
-            .Include(p => p.Pets)
-            .Include(p => p.JacobData)
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .FirstOrDefaultAsync();
 
-        // Return member if it exists and is not old
-        if (member != null && member.LastUpdated.AddMinutes(10) > DateTime.Now)
+        // Fetch new data if it doesn't exists or is old
+        if (member == null || member.LastUpdated.AddMinutes(10) < DateTime.Now || true)
         {
-            return member;
+            await RefreshProfileMembers(playerUuid);
         }
-
-        var rawData = await _hypixelService.FetchProfiles(playerUuid);
-        var profiles = rawData.Value;
-
-        if (profiles == null) return null;
-
-        await _mapper.TransformProfilesResponse(profiles);
 
         return await _context.ProfileMembers
             .Include(p => p.Profile)
@@ -122,9 +111,19 @@ public class ProfileService : IProfileService
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
             .FirstOrDefaultAsync();
 
-        if (member == null) return null;
+        if (member == null || true)
+        {
+            await RefreshProfileMembers(playerUuid);
+        }
 
-        return await GetProfileMember(member.ProfileId, playerUuid);
+        return await _context.ProfileMembers
+            .Include(p => p.Profile)
+            .Include(p => p.Collections)
+            .Include(p => p.Skills)
+            .Include(p => p.Pets)
+            .Include(p => p.JacobData)
+            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName)
@@ -179,5 +178,16 @@ public class ProfileService : IProfileService
         await _context.SaveChangesAsync();
 
         return true;
+    }
+
+    private async Task RefreshProfileMembers(string playerUuid)
+    {
+        var rawData = await _hypixelService.FetchProfiles(playerUuid);
+        var profiles = rawData.Value;
+
+        if (profiles != null)
+        {
+            await _mapper.TransformProfilesResponse(profiles);
+        }
     }
 }

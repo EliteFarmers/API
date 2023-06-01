@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using EliteAPI.Models;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities;
 
 namespace EliteAPI.Mappers.ProfilesData;
 

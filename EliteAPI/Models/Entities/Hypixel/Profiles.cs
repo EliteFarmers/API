@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EliteAPI.Models.Hypixel;
+namespace EliteAPI.Models.Entities.Hypixel;
 
 public class Profile
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key]
     public required string ProfileId { get; set; }
     
     public required string ProfileName { get; set; }
@@ -27,7 +27,7 @@ public class ProfileMember
     public required string PlayerUuid { get; set; }
 
     public List<Collection> Collections { get; set; } = new();
-    public required JacobData JacobData { get; set; }
+    public JacobData JacobData { get; set; } = new();
     public List<Pet> Pets { get; set; } = new();
     public List<Skill> Skills { get; set; } = new();
     public bool IsSelected { get; set; }

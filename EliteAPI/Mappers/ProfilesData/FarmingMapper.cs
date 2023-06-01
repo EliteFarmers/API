@@ -1,5 +1,5 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Hypixel;
+using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;

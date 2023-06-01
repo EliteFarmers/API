@@ -1,5 +1,5 @@
-﻿using EliteAPI.Models;
-using EliteAPI.Models.Hypixel;
+﻿using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NuGet.Protocol;

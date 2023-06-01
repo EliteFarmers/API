@@ -1,5 +1,5 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models;
+using EliteAPI.Models.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +62,7 @@ public class MojangService : IMojangService
         {
             var data = await response.Content.ReadFromJsonAsync<MojangProfilesResponse>();
 
-            if (data == null || data.Id == null) return null;
+            if (data?.Id == null) return null;
 
             return await FetchMinecraftAccountByUUID(data.Id);
         }
@@ -87,7 +87,7 @@ public class MojangService : IMojangService
         {
             var data = await response.Content.ReadFromJsonAsync<MinecraftAccount>();
 
-            if (data == null || data.Id == null) return null;
+            if (data?.Id == null) return null;
 
             await context.MinecraftAccounts.AddAsync(data);
             await context.SaveChangesAsync();

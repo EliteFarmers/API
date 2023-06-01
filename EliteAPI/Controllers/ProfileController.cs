@@ -28,7 +28,7 @@ public partial class ProfileController : ControllerBase
 
     // GET api/<ProfileController>/[uuid]/Selected
     [HttpGet("{uuid}/Selected")]
-    public async Task<ActionResult<ProfileMemberDto>> Get(string uuid)
+    public async Task<ActionResult<ProfileMemberDto>> GetSelectedByPlayerUuid(string uuid)
     {
         if (uuid is not { Length: 32 })
         {
@@ -50,9 +50,17 @@ public partial class ProfileController : ControllerBase
     }
 
     // POST api/<ProfileController>
-    [HttpPost]
-    public void Post([FromBody] string value)
+    [HttpGet("{profileUuid}")]
+    public async Task<ActionResult<ProfileDto>> Get(string profileUuid)
     {
+        var profile = await _profileService.GetProfile(profileUuid);
+        if (profile is null)
+        {
+            return NotFound("No profile matching this UUID was found");
+        }
+
+        var mapped = _mapper.Map<ProfileDto>(profile);
+        return Ok(mapped);
     }
 
     // PUT api/<ProfileController>/5

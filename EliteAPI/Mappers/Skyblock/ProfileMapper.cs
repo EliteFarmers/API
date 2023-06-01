@@ -4,8 +4,9 @@ using EliteAPI.Services.ContestService;
 using EliteAPI.Services.MojangService;
 using System.Text.Json.Nodes;
 using EliteAPI.Services.ProfileService;
-using EliteAPI.Models.Hypixel;
 using EliteAPI.Models.DTOs.Incoming;
+using Microsoft.EntityFrameworkCore;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Mappers.Skyblock;
 
@@ -37,7 +38,7 @@ public class ProfileMapper
             if (oldProfile == null) continue;
 
             // Updating profile persists toggleable fields if they've been disabled (ex: collections)
-            UpdateProfile(oldProfile, newProfile);
+            //UpdateProfile(oldProfile, newProfile);
         }
 
         await _context.SaveChangesAsync();
@@ -47,7 +48,17 @@ public class ProfileMapper
     {
         var profileId = profile.ProfileId.Replace("-", "");
 
-        var existing = await _context.Profiles.FindAsync(profileId);
+        var existing = await _context.Profiles
+            .Include(p => p.Members)
+            .ThenInclude(p => p.Collections)
+            .Include(p => p.Members)
+            .ThenInclude(p => p.Pets)
+            .Include(p => p.Members)
+            .ThenInclude(p => p.JacobData)
+            .Include(p => p.Members)
+            .ThenInclude(p => p.Skills)
+            .Where(p => p.ProfileId.Equals(profileId))
+            .FirstOrDefaultAsync();
 
         var profileObj = existing ?? new Profile
         {
@@ -55,8 +66,6 @@ public class ProfileMapper
             ProfileName = profile.CuteName,
             GameMode = profile.GameMode,
         };
-
-        if (existing == null) await _context.Profiles.AddAsync(profileObj);
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
 
@@ -69,6 +78,16 @@ public class ProfileMapper
             var memberId = key.Replace("-", "");
 
             await TransformMemberResponse(memberId, memberData, profileObj, profile.Selected);
+            await _context.SaveChangesAsync();
+        }
+
+        if (existing == null)
+        {
+            _context.Profiles.Add(profileObj);
+        }
+        else
+        {
+            _context.Profiles.Update(profileObj);
         }
 
         await _context.SaveChangesAsync();
@@ -82,30 +101,29 @@ public class ProfileMapper
         if (minecraftAccount == null) return;
 
         var existing = profile.Members.Find(p => p.PlayerUuid.Equals(memberId));
+        if (existing is not null)
+        {
+            Console.WriteLine($"Updating member {memberId} in profile {profile.ProfileId}");
+        }
 
-        var member = existing ?? new ProfileMember
+        var member = existing ?? (new ProfileMember
         {
             PlayerUuid = memberId,
             MinecraftAccount = minecraftAccount,
             IsSelected = selected,
             Profile = profile,
             ProfileId = profile.ProfileId,
-            JacobData = ProcessJacob(memberData)
-        };
+        });
 
-        if (existing != null)
-        {
-            member.IsSelected = selected;
-            member.JacobData = ProcessJacob(memberData);
-        }
-
+        member.IsSelected = selected;
         member.Collections = await ProcessCollections(memberData, member);
         member.Pets = await ProcessPets(memberData.Pets, member);
+        member.JacobData = ProcessJacob(memberData, member.Id, member.JacobData);
         member.LastUpdated = DateTime.UtcNow;
 
         if (existing == null)
         {
-            await _context.ProfileMembers.AddAsync(member);
+            _context.ProfileMembers.Add(member);
         }
         else
         { 
@@ -125,21 +143,25 @@ public class ProfileMapper
 
     private async Task<List<Collection>> ProcessCollections(RawMemberData member, ProfileMember profileMember)
     {
+        var oldCollections = await _context.Collections
+            .Where(c => c.ProfileMemberId == profileMember.Id)
+            .ToListAsync();
+
         if (member.Collection == null)
         {
-            var oldCollections = _context.Collections.Where(c => c.ProfileMemberId == profileMember.Id);
-            return oldCollections.ToList();
+            return oldCollections;
         };
 
         var list = new List<Collection>();
 
         foreach (var (collectionName, amount) in member.Collection)
         {
-            var old = _context.Collections.FirstOrDefault(c => c.Name == collectionName && c.ProfileMemberId == profileMember.Id);
+            var old = oldCollections.Find(c => c.Name.Equals(collectionName));
 
             if (old != null)
             {
                 old.Amount = amount;
+                _context.Collections.Update(old);
                 continue;
             }
 
@@ -150,6 +172,7 @@ public class ProfileMapper
                     Name = collectionName,
                     Amount = amount,
                     ProfileMember = profileMember,
+                    ProfileMemberId = profileMember.Id,
                 };
 
                 _context.Collections.Add(collectionObj);
@@ -168,6 +191,11 @@ public class ProfileMapper
     {
         if (pets is not { Length: > 0 }) return new List<Pet>();
 
+        foreach (var pet in member.Pets)
+        {
+            _context.Pets.Remove(pet);
+        }
+
         var list = new List<Pet>();
         foreach (var pet in pets)
         {
@@ -185,7 +213,7 @@ public class ProfileMapper
                 ProfileMember = member,
             };
 
-            await _context.Pets.AddAsync(petObj);
+            _context.Pets.Add(petObj);
             list.Add(petObj);
         }
 
@@ -193,9 +221,9 @@ public class ProfileMapper
         return list;
     }
 
-    private JacobData ProcessJacob(RawMemberData member)
+    private JacobData ProcessJacob(RawMemberData member, int profileMemberId, JacobData? existing)
     {
-        var jacob = new JacobData();
+        var jacob = existing ?? new JacobData();
         var jacobData = member.Jacob;
 
         if (jacobData == null) return jacob;
@@ -217,6 +245,17 @@ public class ProfileMapper
         {
             // TODO: Figure out how to get the last updated time
             ProcessContests(jacob, jacobData.Contests, DateTime.MinValue);
+        }
+
+        jacob.ProfileMemberId = profileMemberId;
+
+        if (existing == null)
+        {
+            _context.JacobData.Add(jacob);
+        }
+        else
+        {
+            _context.JacobData.Update(jacob);
         }
 
         return jacob;

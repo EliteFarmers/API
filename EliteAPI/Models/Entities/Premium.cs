@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities;
 
-namespace EliteAPI.Models;
+namespace EliteAPI.Models.Entities;
 
 public class Premium
 {

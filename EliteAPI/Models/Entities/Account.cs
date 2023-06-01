@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Models.Hypixel;
+using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace EliteAPI.Models;
+namespace EliteAPI.Models.Entities;
 
 public class Account
 {

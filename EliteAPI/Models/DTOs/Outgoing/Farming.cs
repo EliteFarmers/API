@@ -1,4 +1,4 @@
-﻿using EliteAPI.Models.Hypixel;
+﻿using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
