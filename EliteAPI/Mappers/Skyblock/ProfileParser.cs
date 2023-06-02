@@ -27,22 +27,14 @@ public class ProfileParser
         _mapper = mapper;
     }
 
-    public async Task<List<Profile>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
+    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
     {
-        var profiles = new List<Profile>();
-        if (!data.Success || data.Profiles is not { Length: > 0 }) return profiles;
+        if (!data.Success || data.Profiles is not { Length: > 0 }) return;
         
         foreach (var profile in data.Profiles)
         {
-            var newProfile = await TransformSingleProfile(profile, playerUuid);
-
-            if (newProfile is not null)
-            {
-                profiles.Add(newProfile);
-            }
+            await TransformSingleProfile(profile, playerUuid);
         }
-
-        return profiles;
     }
 
     public async Task<Profile?> TransformSingleProfile(RawProfileData profile, string? playerUuid)
@@ -98,7 +90,7 @@ public class ProfileParser
         var minecraftAccount = await _mojangService.GetMinecraftAccountByUUID(memberId);
         if (minecraftAccount == null) return;
 
-        var existing = _context.ProfileMembers            
+        var existing = _context.ProfileMembers
             .Include(m => m.Collections)
             .Include(m => m.Pets)
             .Include(m => m.JacobData)
@@ -140,6 +132,10 @@ public class ProfileParser
             LastUpdated = DateTime.UtcNow,
             WasRemoved = false
         };
+
+        _context.ProfileMembers.Add(member);
+        await _context.SaveChangesAsync();
+        await _context.Entry(member).GetDatabaseValuesAsync();
 
         member.Collections = ProcessCollections(memberData, member);
         member.Pets = ProcessPets(memberData.Pets, member);
@@ -236,13 +232,14 @@ public class ProfileParser
 
     private async Task<JacobData> ProcessJacob(RawMemberData member, ProfileMember profileMember, JacobData? existing)
     {
-        var jacob = existing ?? new JacobData();
+        var jacob = existing ?? new JacobData()
+        {
+            ProfileMember = profileMember,
+            ProfileMemberId = profileMember.Id
+        };
         var jacobData = member.Jacob;
 
         if (jacobData == null) return jacob;
-
-        jacob.ProfileMemberId = profileMember.Id;
-        jacob.ProfileMember = profileMember;
 
         if (jacobData.MedalsInventory != null)
         {
@@ -257,13 +254,6 @@ public class ProfileParser
             jacob.Perks.LevelCap = jacobData.Perks.FarmingLevelCap ?? 0;
         }
 
-        if (jacobData.Contests.Count > 0)
-        {
-            // TODO: Figure out how to get the last updated time
-            await ProcessContests(jacob, jacobData.Contests);
-        }
-
-
         if (existing == null)
         {
             _context.JacobData.Add(jacob);
@@ -273,16 +263,24 @@ public class ProfileParser
             _context.Entry(existing).CurrentValues.SetValues(jacob);
         }
 
+        await _context.SaveChangesAsync();
+
+        if (jacobData.Contests.Count > 0)
+        {
+            await ProcessContests(jacob, jacobData.Contests);
+        }
+
         return jacob;
     }
 
     private async Task ProcessContests(JacobData jacobData, Dictionary<string, RawJacobContest> contests)
     {
         foreach (var (key, contest) in contests)
-        {
-            if (key is null || contest is null) continue;
+        { 
             await ProcessContest(jacobData, key, contest);
         }
+
+        jacobData.ContestsLastUpdated = DateTime.UtcNow;
     }
 
     private async Task ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest)
@@ -296,11 +294,8 @@ public class ProfileParser
         if (crop == null) return;
 
         // Only process if the contest is either newer than the last updated time or if the contest has not been collected
-        var old = jacob.Contests.Find(c => c.Crop == crop && c.JacobContest?.Timestamp == timestamp);
-        if (old is not null && timestamp < lastUpdatedTime && old.Collected > 0) return;
-
-        var existing = await _context.ContestParticipations
-            .FirstOrDefaultAsync(c => c.Crop == crop && c.JacobContest.Timestamp == timestamp && jacob.ProfileMemberId == c.ProfileMemberId);
+        var existing = jacob.Contests.Find(c => c.Crop == crop && c.JacobContest?.Timestamp == timestamp);
+        if (existing is not null && timestamp < lastUpdatedTime && existing.Collected > 0) return;
 
         if (existing != null)
         {
@@ -312,16 +307,11 @@ public class ProfileParser
             jacob.EarnedMedals.Silver += existing.MedalEarned == ContestMedal.Silver ? 1 : 0;
             jacob.EarnedMedals.Bronze += existing.MedalEarned == ContestMedal.Bronze ? 1 : 0;
 
-            if (!jacob.Contests.Contains(existing))
-            {
-                jacob.Contests.Add(existing);
-            }
-
             return;
         }
 
-        var jacobContestEvent = await _context.JacobContestEvents
-            .FirstOrDefaultAsync(c => c.Timestamp == timestamp);
+        var jacobContest = existing?.JacobContest;
+        var jacobContestEvent = jacobContest?.JacobContestEvent;
 
         if (jacobContestEvent == null)
         {
@@ -333,23 +323,17 @@ public class ProfileParser
             _context.JacobContestEvents.Add(jacobContestEvent);
         }
 
-        var jacobContest = await _context.JacobContests
-            .FirstOrDefaultAsync(c => c.Timestamp == timestamp && c.Crop == crop);
-
         if (jacobContest == null)
         {
             jacobContest = new JacobContest
             {
                 Timestamp = timestamp,
                 JacobContestEvent = jacobContestEvent,
+                Crop = (Crop) crop,
             };
 
-            _context.JacobContests.Add(jacobContest);
-        }
-
-        if (!jacobContestEvent.JacobContests.Contains(jacobContest))
-        {
             jacobContestEvent.JacobContests.Add(jacobContest);
+            _context.JacobContests.Add(jacobContest);
         }
 
         var participation = new ContestParticipation
@@ -368,10 +352,7 @@ public class ProfileParser
         jacob.EarnedMedals.Silver += participation.MedalEarned == ContestMedal.Silver ? 1 : 0;
         jacob.EarnedMedals.Bronze += participation.MedalEarned == ContestMedal.Bronze ? 1 : 0;
 
-        if (!jacob.Contests.Contains(participation))
-        {
-            jacob.Contests.Add(participation);
-        }
+        jacob.Contests.Add(participation);
 
         jacobContest.Participations.Add(participation);
         _context.ContestParticipations.Add(participation);
