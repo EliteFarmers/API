@@ -379,5 +379,5 @@ public class RawTransaction
     public required string Action { get; set; }
 
     [JsonPropertyName("initiator_name")]
-    public required string InitiatorName { get; set; }
+    public required string Initiator { get; set; }
 }

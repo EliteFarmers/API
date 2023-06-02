@@ -10,9 +10,9 @@ public class ProfileService : IProfileService
 {
     private readonly DataContext _context;
     private readonly IHypixelService _hypixelService;
-    private readonly ProfileMapper _mapper;
+    private readonly ProfileParser _mapper;
 
-    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileMapper mapper)
+    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileParser mapper)
     {
         _context = context;
         _hypixelService = hypixelService;
@@ -101,6 +101,7 @@ public class ProfileService : IProfileService
             .Include(p => p.Skills)
             .Include(p => p.Pets)
             .Include(p => p.JacobData)
+            .ThenInclude(j => j.Contests)
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .FirstOrDefaultAsync();
     }
@@ -122,6 +123,7 @@ public class ProfileService : IProfileService
             .Include(p => p.Skills)
             .Include(p => p.Pets)
             .Include(p => p.JacobData)
+            .ThenInclude(j => j.Contests)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
             .FirstOrDefaultAsync();
     }
@@ -187,7 +189,7 @@ public class ProfileService : IProfileService
 
         if (profiles != null)
         {
-            await _mapper.TransformProfilesResponse(profiles);
+            await _mapper.TransformProfilesResponse(profiles, playerUuid);
         }
     }
 }

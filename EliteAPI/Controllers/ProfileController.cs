@@ -1,12 +1,8 @@
-﻿using EliteAPI.Services.HypixelService;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 using EliteAPI.Services.ProfileService;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Hypixel;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 

@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.DTOs.Outgoing;
+﻿using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.DTOs.Outgoing;
 using Profile = AutoMapper.Profile;
 using EliteAPI.Models.Entities.Hypixel;
 
@@ -9,12 +10,8 @@ public class CollectionMapper : Profile
     public CollectionMapper()
     {
         CreateMap<Collection, CollectionDto>()
-            .ForMember(
-                x => x.Name,
-                x => x.MapFrom(y => y.Name))
-            .ForMember(
-                x => x.Amount,
-                x => x.MapFrom(y => y.Amount));
+            .ForMember(x => x.Name, x => x.MapFrom(y => y.Name))
+            .ForMember(x => x.Amount, x => x.MapFrom(y => y.Amount));
     }
 }
 
@@ -30,6 +27,8 @@ public class PetMapper : Profile
 {
     public PetMapper()
     {
+        CreateMap<RawPetData, Pet>();
+
         CreateMap<Pet, PetDto>();
     }
 }

@@ -7,12 +7,12 @@ public static class FormatUtils
     public static DateTime GetTimeFromContestKey(string contestKey)
     {
         var split = contestKey.Split(":");
-        if (split.Length != 3) return DateTime.MinValue;
+        if (split.Length != 3) return DateTime.MinValue.ToUniversalTime();
 
         var year = int.Parse(split[0]);
 
         int[] monthDay = split[1].Split("_").Select(int.Parse).ToArray();
-        if (monthDay.Length != 2) return DateTime.MinValue;
+        if (monthDay.Length != 2) return DateTime.MinValue.ToUniversalTime();
 
         var month = monthDay[0] - 1;
         var day = monthDay[1];
@@ -28,7 +28,7 @@ public static class FormatUtils
 
         var unixTime = SkyblockDate.SkyblockEpochSeconds + seconds;
 
-        return DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
+        return DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime.ToUniversalTime();
     }
 
     public static SkyblockDate GetSkyblockDate(DateTime dateTime) => new(dateTime);
@@ -56,6 +56,21 @@ public static class FormatUtils
         "SUGAR_CANE" => Crop.SugarCane,
         "WHEAT" => Crop.Wheat,
         _ => null
+    };
+
+    public static string GetFormattedCropName(Crop crop) => crop switch
+    {
+        Crop.Cactus => "Cactus",
+        Crop.Carrot => "Carrot",
+        Crop.CocoaBeans => "Cocoa Beans",
+        Crop.Melon => "Melon",
+        Crop.Mushroom => "Mushroom",
+        Crop.NetherWart => "Nether Wart",
+        Crop.Potato => "Potato",
+        Crop.Pumpkin => "Pumpkin",
+        Crop.SugarCane => "Sugar Cane",
+        Crop.Wheat => "Wheat",
+        _ => "Invalid Crop"
     };
 
     public static string GetSkyblockMonthName(int month) => month switch

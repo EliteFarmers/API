@@ -40,7 +40,10 @@ public class JacobContestDto
 
 public class ContestParticipationDto
 {
+    public string Crop { get; set; } = "";
+    public DateTime Timestamp { get; set; }
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;
+    public int Participants { get; set; } = 0;
     public ContestMedal MedalEarned { get; set; } = ContestMedal.None;
 }

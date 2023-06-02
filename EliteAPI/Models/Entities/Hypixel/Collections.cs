@@ -50,7 +50,7 @@ public class Pet
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    public string? UUID { get; set; }
+    public string? Uuid { get; set; }
     public string? Type { get; set; }
     public double Exp { get; set; } = 0;
     public bool Active { get; set; } = false;

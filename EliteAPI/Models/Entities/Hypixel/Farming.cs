@@ -15,6 +15,7 @@ public class JacobData
     public JacobPerks Perks { get; set; } = new();
     public int Participations { get; set; } = 0;
     public List<ContestParticipation> Contests { get; set; } = new();
+    public DateTime ContestsLastUpdated { get; set; } = DateTime.MinValue.ToUniversalTime();
 
     [ForeignKey("ProfileMember")]
     public int ProfileMemberId { get; set; }
@@ -55,7 +56,7 @@ public class JacobContest
     public Crop Crop { get; set; }
     public DateTime Timestamp { get; set; }
     public int Participants => Participations.Count;
-    public List<ContestParticipation> Participations { get; set; } = new();
+    public virtual List<ContestParticipation> Participations { get; set; } = new();
 
     [ForeignKey("JacobContestEvent")]
     public int JacobContestEventId { get; set; }
@@ -68,6 +69,7 @@ public class ContestParticipation
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+    public Crop Crop { get; set; }
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;
     public ContestMedal MedalEarned { get; set; } = ContestMedal.None;

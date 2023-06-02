@@ -38,7 +38,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IContestService, ContestService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 
-builder.Services.AddScoped<ProfileMapper>();
+builder.Services.AddScoped<ProfileParser>();
 
 var app = builder.Build();
 
