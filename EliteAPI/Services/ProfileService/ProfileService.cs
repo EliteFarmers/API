@@ -10,13 +10,13 @@ public class ProfileService : IProfileService
 {
     private readonly DataContext _context;
     private readonly IHypixelService _hypixelService;
-    private readonly ProfileParser _mapper;
+    private readonly ProfileParser _profileParser;
 
-    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileParser mapper)
+    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileParser profileParser)
     {
         _context = context;
         _hypixelService = hypixelService;
-        _mapper = mapper;
+        _profileParser = profileParser;
     }
 
     public async Task<Profile?> GetProfile(string profileId)
@@ -82,6 +82,19 @@ public class ProfileService : IProfileService
         return true;
     }
 
+    private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
+        EF.CompileAsyncQuery((DataContext context, string profileUuid, string playerUuid) =>            
+            context.ProfileMembers
+                   .Include(p => p.Profile)
+                   .Include(p => p.Collections)
+                   .Include(p => p.Skills)
+                   .Include(p => p.Pets)
+                   .Include(p => p.JacobData)
+                   .ThenInclude(j => j.Contests)
+                   .AsSplitQuery()
+                   .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+        );
+
     public async Task<ProfileMember?> GetProfileMember(string profileUuid, string playerUuid)
     {
         var member = await _context.ProfileMembers
@@ -102,6 +115,7 @@ public class ProfileService : IProfileService
             .Include(p => p.Pets)
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)
+            .AsSplitQuery()
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .FirstOrDefaultAsync();
     }
@@ -114,18 +128,12 @@ public class ProfileService : IProfileService
 
         if (member == null || true)
         {
-            await RefreshProfileMembers(playerUuid);
+            var data = await RefreshProfileMembers(playerUuid);
+
+            return data.FirstOrDefault(p => p.IsSelected);
         }
 
-        return await _context.ProfileMembers
-            .Include(p => p.Profile)
-            .Include(p => p.Collections)
-            .Include(p => p.Skills)
-            .Include(p => p.Pets)
-            .Include(p => p.JacobData)
-            .ThenInclude(j => j.Contests)
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
-            .FirstOrDefaultAsync();
+        return null;
     }
 
     public async Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName)
@@ -182,14 +190,13 @@ public class ProfileService : IProfileService
         return true;
     }
 
-    private async Task RefreshProfileMembers(string playerUuid)
+    private async Task<List<ProfileMember>> RefreshProfileMembers(string playerUuid)
     {
         var rawData = await _hypixelService.FetchProfiles(playerUuid);
         var profiles = rawData.Value;
 
-        if (profiles != null)
-        {
-            await _mapper.TransformProfilesResponse(profiles, playerUuid);
-        }
+        if (profiles == null) return new List<ProfileMember>();
+
+        return await _profileParser.TransformProfilesResponse(profiles, playerUuid);
     }
 }

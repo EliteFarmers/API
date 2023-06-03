@@ -19,6 +19,20 @@ public class ProfileParser
     private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
 
+    private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
+        EF.CompileAsyncQuery((DataContext context, string profileUuid, string playerUuid) =>            
+            context.ProfileMembers
+                .Include(p => p.Profile)
+                .Include(p => p.Collections)
+                .Include(p => p.Skills)
+                .Include(p => p.Pets)
+                .Include(p => p.JacobData)
+                .ThenInclude(j => j.Contests)
+                .ThenInclude(c => c.JacobContest)
+                .AsSplitQuery()
+                .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+        );
+
     public ProfileParser(DataContext context, IContestService contestService, IMojangService mojangService, IMapper mapper)
     {
         _context = context;
@@ -27,14 +41,22 @@ public class ProfileParser
         _mapper = mapper;
     }
 
-    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
+    public async Task<List<ProfileMember>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
     {
-        if (!data.Success || data.Profiles is not { Length: > 0 }) return;
+        var profiles = new List<ProfileMember>();
+        if (!data.Success || data.Profiles is not { Length: > 0 }) return profiles;
         
         foreach (var profile in data.Profiles)
         {
-            await TransformSingleProfile(profile, playerUuid);
+            var transformed = await TransformSingleProfile(profile, playerUuid);
+
+            if (transformed != null)
+            {
+                profiles.AddRange(transformed.Members.Where(member => member.MinecraftAccount.Id.Equals(playerUuid)));
+            }
         }
+
+        return profiles;
     }
 
     public async Task<Profile?> TransformSingleProfile(RawProfileData profile, string? playerUuid)
@@ -90,14 +112,16 @@ public class ProfileParser
         var minecraftAccount = await _mojangService.GetMinecraftAccountByUUID(memberId);
         if (minecraftAccount == null) return;
 
-        var existing = _context.ProfileMembers
+        var existing = await _fetchProfileMemberData(_context, memberId, profile.ProfileId);
+        /*_context.ProfileMembers
             .Include(m => m.Collections)
             .Include(m => m.Pets)
             .Include(m => m.JacobData)
             .ThenInclude(j => j.Contests)
             .ThenInclude(c => c.JacobContest)
             .Include(m => m.Skills)
-            .FirstOrDefault(m => m.PlayerUuid.Equals(memberId) && m.ProfileId.Equals(profile.ProfileId));
+            .AsSplitQuery()
+            .FirstOrDefault(m => m.PlayerUuid.Equals(memberId) && m.ProfileId.Equals(profile.ProfileId));*/
 
         if (existing != null)
         {
@@ -267,23 +291,23 @@ public class ProfileParser
 
         if (jacobData.Contests.Count > 0)
         {
-            await ProcessContests(jacob, jacobData.Contests);
+            ProcessContests(jacob, jacobData.Contests);
         }
 
         return jacob;
     }
 
-    private async Task ProcessContests(JacobData jacobData, Dictionary<string, RawJacobContest> contests)
+    private void ProcessContests(JacobData jacobData, Dictionary<string, RawJacobContest> contests)
     {
         foreach (var (key, contest) in contests)
         { 
-            await ProcessContest(jacobData, key, contest);
+            ProcessContest(jacobData, key, contest);
         }
 
         jacobData.ContestsLastUpdated = DateTime.UtcNow;
     }
 
-    private async Task ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest)
+    private void ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest)
     {
         if (contest.Collected < 100) return;
 

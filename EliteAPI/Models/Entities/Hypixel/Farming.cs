@@ -14,7 +14,7 @@ public class JacobData
     public MedalInventory EarnedMedals { get; set; } = new();
     public JacobPerks Perks { get; set; } = new();
     public int Participations { get; set; } = 0;
-    public List<ContestParticipation> Contests { get; set; } = new();
+    public virtual List<ContestParticipation> Contests { get; set; } = new();
     public DateTime ContestsLastUpdated { get; set; } = DateTime.MinValue.ToUniversalTime();
 
     [ForeignKey("ProfileMember")]
@@ -76,11 +76,11 @@ public class ContestParticipation
 
     [ForeignKey("JacobContest")]
     public int JacobContestId { get; set; }
-    public required JacobContest JacobContest { get; set; }
+    public virtual JacobContest? JacobContest { get; set; }
 
     [ForeignKey("ProfileMember")]
     public int ProfileMemberId { get; set; }
-    public required ProfileMember ProfileMember { get; set; }
+    public virtual ProfileMember? ProfileMember { get; set; }
 }
 
 public enum Crop
