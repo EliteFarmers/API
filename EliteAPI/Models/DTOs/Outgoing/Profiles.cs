@@ -18,9 +18,9 @@ public class ProfileMemberDto
     public required string PlayerUuid { get; set; }
 
     public List<CollectionDto> Collections { get; set; } = new();
-    public required JacobDataDto JacobData { get; set; }
+    public required JacobDataDto Jacob { get; set; }
     public List<PetDto> Pets { get; set; } = new();
-    public List<SkillDto> Skills { get; set; } = new();
+    public SkillsDto Skills { get; set; } = new();
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; } = false;
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;

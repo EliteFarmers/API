@@ -130,6 +130,16 @@ public class ProfileService : IProfileService
         {
             var data = await RefreshProfileMembers(playerUuid);
 
+            // save _context after returning data
+            try
+            {
+                _ = _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+            }
+
             return data.FirstOrDefault(p => p.IsSelected);
         }
 

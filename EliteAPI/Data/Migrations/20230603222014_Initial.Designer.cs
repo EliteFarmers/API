@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230601215851_ContestsLastUpdated")]
-    partial class ContestsLastUpdated
+    [Migration("20230603222014_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,6 +108,9 @@ namespace EliteAPI.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Collected")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Crop")
                         .HasColumnType("integer");
 
                     b.Property<int>("JacobContestId")
@@ -416,7 +419,7 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("ProfileMembers");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Skill", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Skills", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -424,18 +427,46 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("Exp")
+                    b.Property<double>("Alchemy")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Carpentry")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Combat")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Enchanting")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Farming")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Fishing")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Foraging")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Mining")
                         .HasColumnType("double precision");
 
                     b.Property<int>("ProfileMemberId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
+                    b.Property<double>("Runecrafting")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Social")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Taming")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProfileMemberId");
+                    b.HasIndex("ProfileMemberId")
+                        .IsUnique();
 
                     b.ToTable("Skills");
                 });
@@ -730,11 +761,11 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Profile");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Skill", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Skills", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
-                        .WithMany("Skills")
-                        .HasForeignKey("ProfileMemberId")
+                        .WithOne("Skills")
+                        .HasForeignKey("EliteAPI.Models.Entities.Hypixel.Skills", "ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -846,7 +877,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.Navigation("Pets");
 
-                    b.Navigation("Skills");
+                    b.Navigation("Skills")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.MinecraftAccount", b =>

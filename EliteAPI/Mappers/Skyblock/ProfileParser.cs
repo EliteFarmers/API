@@ -65,7 +65,7 @@ public class ProfileParser
         if (members.Count == 0) return null;
 
         var profileId = profile.ProfileId.Replace("-", "");
-        var existing = await _context.Profiles.FindAsync(profileId);
+        var existing = await _context.Profiles.FirstOrDefaultAsync(p => p.ProfileId.Equals(profileId));
 
         var profileObj = existing ?? new Profile
         {
@@ -94,15 +94,22 @@ public class ProfileParser
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
 
-        if (existing == null)
+        if (existing is null)
         {
-            _context.Profiles.Add(profileObj);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Profiles.Add(profileObj);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
             return profileObj;
         }
 
         _context.Entry(existing).CurrentValues.SetValues(profileObj);
-        await _context.SaveChangesAsync();
 
         return profileObj;
     }
@@ -113,17 +120,8 @@ public class ProfileParser
         if (minecraftAccount == null) return;
 
         var existing = await _fetchProfileMemberData(_context, memberId, profile.ProfileId);
-        /*_context.ProfileMembers
-            .Include(m => m.Collections)
-            .Include(m => m.Pets)
-            .Include(m => m.JacobData)
-            .ThenInclude(j => j.Contests)
-            .ThenInclude(c => c.JacobContest)
-            .Include(m => m.Skills)
-            .AsSplitQuery()
-            .FirstOrDefault(m => m.PlayerUuid.Equals(memberId) && m.ProfileId.Equals(profile.ProfileId));*/
 
-        if (existing != null)
+        if (existing is not null)
         {
             existing.IsSelected = selected;
             existing.LastUpdated = DateTime.UtcNow;
@@ -158,8 +156,17 @@ public class ProfileParser
         };
 
         _context.ProfileMembers.Add(member);
-        await _context.SaveChangesAsync();
-        await _context.Entry(member).GetDatabaseValuesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            await _context.Entry(member).GetDatabaseValuesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return;
+        }
 
         member.Collections = ProcessCollections(memberData, member);
         member.Pets = ProcessPets(memberData.Pets, member);
@@ -171,14 +178,6 @@ public class ProfileParser
         {
             CombineMinions(profile, member, memberData.CraftedGenerators);
         }
-    }
-
-    public void UpdateProfile(Profile oldProfile, Profile newProfile)
-    {
-        oldProfile.ProfileName = newProfile.ProfileName;
-        oldProfile.GameMode = newProfile.GameMode;
-        //oldProfile.Members = newProfile.Members;
-        _context.SaveChanges();
     }
 
     private List<Collection> ProcessCollections(RawMemberData member, ProfileMember profileMember)
@@ -291,27 +290,27 @@ public class ProfileParser
 
         if (jacobData.Contests.Count > 0)
         {
-            ProcessContests(jacob, jacobData.Contests);
+            await ProcessContests(jacob, jacobData.Contests);
         }
 
         return jacob;
     }
 
-    private void ProcessContests(JacobData jacobData, Dictionary<string, RawJacobContest> contests)
+    private async Task ProcessContests(JacobData jacobData, Dictionary<string, RawJacobContest> contests)
     {
         foreach (var (key, contest) in contests)
         { 
-            ProcessContest(jacobData, key, contest);
+            await ProcessContest(jacobData, key, contest);
         }
 
         jacobData.ContestsLastUpdated = DateTime.UtcNow;
     }
 
-    private void ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest)
+    private async Task ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest)
     {
         if (contest.Collected < 100) return;
 
-        var lastUpdatedTime = jacob.ContestsLastUpdated;
+        var lastUpdatedTime = DateTime.MinValue; //jacob.ContestsLastUpdated;
 
         var timestamp = FormatUtils.GetTimeFromContestKey(contestKey);
         var crop = FormatUtils.GetCropFromContestKey(contestKey);
@@ -334,7 +333,8 @@ public class ProfileParser
             return;
         }
 
-        var jacobContest = existing?.JacobContest;
+        var jacobContest = await _context.JacobContests.Include(c => c.JacobContestEvent)
+            .FirstOrDefaultAsync(c => c.Crop == (Crop) crop && c.JacobContestEvent.Timestamp == timestamp);
         var jacobContestEvent = jacobContest?.JacobContestEvent;
 
         if (jacobContestEvent == null)
@@ -454,45 +454,28 @@ public class ProfileParser
         }
     }
 
-    private List<Skill> ProcessSkills(RawMemberData data, ProfileMember member)
+    private Skills ProcessSkills(RawMemberData data, ProfileMember member)
     {
-        var skills = new List<Skill>();
-        
-        if (data.ExperienceSkillCombat is null) return skills;
-
-        skills.Add(ProcessSkill(SkillName.Combat, data.ExperienceSkillCombat, member));
-        skills.Add(ProcessSkill(SkillName.Foraging, data.ExperienceSkillForaging, member));
-        skills.Add(ProcessSkill(SkillName.Mining, data.ExperienceSkillMining, member));
-        skills.Add(ProcessSkill(SkillName.Farming, data.ExperienceSkillFarming, member));
-        skills.Add(ProcessSkill(SkillName.Fishing, data.ExperienceSkillFishing, member));
-        skills.Add(ProcessSkill(SkillName.Enchanting, data.ExperienceSkillEnchanting, member));
-        skills.Add(ProcessSkill(SkillName.Alchemy, data.ExperienceSkillAlchemy, member));
-        skills.Add(ProcessSkill(SkillName.Taming, data.ExperienceSkillTaming, member));
-        skills.Add(ProcessSkill(SkillName.Carpentry, data.ExperienceSkillCarpentry, member));
-        skills.Add(ProcessSkill(SkillName.RuneCrafting, data.ExperienceSkillRunecrafting, member));
-        skills.Add(ProcessSkill(SkillName.Social, data.ExperienceSkillSocial, member));
-
-        return skills;
-    }
-
-    private Skill ProcessSkill(string name, double? exp, ProfileMember member)
-    {
-        var existing = member.Skills.FirstOrDefault(s => s.Type == name);
-
-        if (existing != null)
+        var skills = member.Skills ?? new Skills()
         {
-            existing.Exp = exp ?? 0.0;
-            return existing;
-        }
-
-        var skill = new Skill
-        {
-            Type = name,
-            Exp = exp ?? 0.0,
             ProfileMember = member,
             ProfileMemberId = member.Id
         };
+        
+        if (data.ExperienceSkillCombat is null) return skills;
 
-        return skill;
+        skills.Combat = data.ExperienceSkillCombat ?? skills.Combat;
+        skills.Mining = data.ExperienceSkillMining ?? skills.Mining;
+        skills.Foraging = data.ExperienceSkillForaging ?? skills.Foraging;
+        skills.Fishing = data.ExperienceSkillFishing ?? skills.Fishing;
+        skills.Enchanting = data.ExperienceSkillEnchanting ?? skills.Enchanting;
+        skills.Alchemy = data.ExperienceSkillAlchemy ?? skills.Alchemy;
+        skills.Taming = data.ExperienceSkillTaming ?? skills.Taming;
+        skills.Carpentry = data.ExperienceSkillCarpentry ?? skills.Carpentry;
+        skills.Runecrafting = data.ExperienceSkillRunecrafting ?? skills.Runecrafting;
+        skills.Social = data.ExperienceSkillSocial ?? skills.Social;
+        skills.Farming = data.ExperienceSkillFarming ?? skills.Farming;
+
+        return skills;
     }
 }

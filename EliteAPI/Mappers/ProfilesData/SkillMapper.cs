@@ -8,6 +8,6 @@ public class SkillMapper : Profile
 {
     public SkillMapper()
     {
-        CreateMap<Skill, SkillDto>();
+        CreateMap<Skills, SkillsDto>();
     }
 }

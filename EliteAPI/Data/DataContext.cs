@@ -41,7 +41,7 @@ public class DataContext : DbContext
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<JacobContestEvent> JacobContestEvents { get; set; } = null!;
     public DbSet<Pet> Pets { get; set; } = null!;
-    public DbSet<Skill> Skills { get; set; } = null!;
+    public DbSet<Skills> Skills { get; set; } = null!;
     public DbSet<ProfileBanking> ProfileBanking { get; set; } = null!;
     public DbSet<CraftedMinion> CraftedMinions { get; set; } = null!;
 }

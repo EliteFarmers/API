@@ -32,18 +32,25 @@ public class JacobContestEventDto
 
 public class JacobContestDto
 {
-    public Crop Crop { get; set; }
-    public DateTime Timestamp { get; set; }
+    public required string Crop { get; set; }
+    public long Timestamp { get; set; }
     public int Participants => Participations.Count;
-    public List<ContestParticipationDto> Participations { get; set; } = new();
+    public List<StrippedContestParticipationDto> Participations { get; set; } = new();
+}
+
+public class StrippedContestParticipationDto {
+    public int Collected { get; set; } = 0;
+    public int Position { get; set; } = -1;
+    public string? Medal { get; set; }
+    public string PlayerUuid { get; set; } = "";
 }
 
 public class ContestParticipationDto
 {
     public string Crop { get; set; } = "";
-    public DateTime Timestamp { get; set; }
+    public long Timestamp { get; set; }
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;
     public int Participants { get; set; } = 0;
-    public ContestMedal MedalEarned { get; set; } = ContestMedal.None;
+    public string? Medal { get; set; }
 }

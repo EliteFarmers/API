@@ -1,7 +1,6 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
-using Skill = EliteAPI.Models.Entities.Hypixel.Skill;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
@@ -22,7 +21,7 @@ public class ProfileMemberMapper : Profile
     {
         CreateMap<ProfileMember, ProfileMemberDto>()
             .ForMember(x => x.Collections, opt => opt.MapFrom(x => x.Collections))
-            .ForMember(x => x.JacobData, opt => opt.MapFrom(x => x.JacobData))
+            .ForMember(x => x.Jacob, opt => opt.MapFrom(x => x.JacobData))
             .ForMember(x => x.Pets, opt => opt.MapFrom(x => x.Pets))
             .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills));
     }

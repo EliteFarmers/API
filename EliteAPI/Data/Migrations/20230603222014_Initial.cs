@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Reset : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -142,7 +142,6 @@ namespace EliteAPI.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Properties = table.Column<string>(type: "text", nullable: false),
                     PlayerDataId = table.Column<int>(type: "integer", nullable: false),
                     AccountId = table.Column<int>(type: "integer", nullable: true)
                 },
@@ -179,6 +178,27 @@ namespace EliteAPI.Data.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MinecraftAccountProperty",
+                columns: table => new
+                {
+                    MinecraftAccountId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MinecraftAccountProperty", x => new { x.MinecraftAccountId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_MinecraftAccountProperty_MinecraftAccounts_MinecraftAccount~",
+                        column: x => x.MinecraftAccountId,
+                        principalTable: "MinecraftAccounts",
+                        principalColumn: "MinecraftAccountId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -241,7 +261,6 @@ namespace EliteAPI.Data.Migrations
                     IsSelected = table.Column<bool>(type: "boolean", nullable: false),
                     WasRemoved = table.Column<bool>(type: "boolean", nullable: false),
                     LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    PlayerDataId = table.Column<int>(type: "integer", nullable: false),
                     MinecraftAccountId = table.Column<int>(type: "integer", nullable: false),
                     ProfileId = table.Column<string>(type: "text", nullable: false)
                 },
@@ -253,12 +272,6 @@ namespace EliteAPI.Data.Migrations
                         column: x => x.MinecraftAccountId,
                         principalTable: "MinecraftAccounts",
                         principalColumn: "MinecraftAccountId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProfileMembers_PlayerData_PlayerDataId",
-                        column: x => x.PlayerDataId,
-                        principalTable: "PlayerData",
-                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProfileMembers_Profiles_ProfileId",
@@ -332,6 +345,7 @@ namespace EliteAPI.Data.Migrations
                     Perks_DoubleDrops = table.Column<int>(type: "integer", nullable: false),
                     Perks_LevelCap = table.Column<int>(type: "integer", nullable: false),
                     Participations = table.Column<int>(type: "integer", nullable: false),
+                    ContestsLastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ProfileMemberId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -351,7 +365,7 @@ namespace EliteAPI.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UUID = table.Column<string>(type: "text", nullable: true),
+                    Uuid = table.Column<string>(type: "text", nullable: true),
                     Type = table.Column<string>(type: "text", nullable: true),
                     Exp = table.Column<double>(type: "double precision", nullable: false),
                     Active = table.Column<bool>(type: "boolean", nullable: false),
@@ -378,8 +392,17 @@ namespace EliteAPI.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Type = table.Column<string>(type: "text", nullable: true),
-                    Exp = table.Column<long>(type: "bigint", nullable: false),
+                    Combat = table.Column<double>(type: "double precision", nullable: false),
+                    Mining = table.Column<double>(type: "double precision", nullable: false),
+                    Foraging = table.Column<double>(type: "double precision", nullable: false),
+                    Fishing = table.Column<double>(type: "double precision", nullable: false),
+                    Enchanting = table.Column<double>(type: "double precision", nullable: false),
+                    Alchemy = table.Column<double>(type: "double precision", nullable: false),
+                    Carpentry = table.Column<double>(type: "double precision", nullable: false),
+                    Runecrafting = table.Column<double>(type: "double precision", nullable: false),
+                    Taming = table.Column<double>(type: "double precision", nullable: false),
+                    Farming = table.Column<double>(type: "double precision", nullable: false),
+                    Social = table.Column<double>(type: "double precision", nullable: false),
                     ProfileMemberId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -399,6 +422,7 @@ namespace EliteAPI.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Crop = table.Column<int>(type: "integer", nullable: false),
                     Collected = table.Column<int>(type: "integer", nullable: false),
                     Position = table.Column<int>(type: "integer", nullable: false),
                     MedalEarned = table.Column<int>(type: "integer", nullable: false),
@@ -506,11 +530,6 @@ namespace EliteAPI.Data.Migrations
                 column: "MinecraftAccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProfileMembers_PlayerDataId",
-                table: "ProfileMembers",
-                column: "PlayerDataId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ProfileMembers_ProfileId",
                 table: "ProfileMembers",
                 column: "ProfileId");
@@ -533,7 +552,8 @@ namespace EliteAPI.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Skills_ProfileMemberId",
                 table: "Skills",
-                column: "ProfileMemberId");
+                column: "ProfileMemberId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -547,6 +567,9 @@ namespace EliteAPI.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "CraftedMinions");
+
+            migrationBuilder.DropTable(
+                name: "MinecraftAccountProperty");
 
             migrationBuilder.DropTable(
                 name: "Pets");

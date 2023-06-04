@@ -76,7 +76,7 @@ public class ContestParticipation
 
     [ForeignKey("JacobContest")]
     public int JacobContestId { get; set; }
-    public virtual JacobContest? JacobContest { get; set; }
+    public required JacobContest JacobContest { get; set; }
 
     [ForeignKey("ProfileMember")]
     public int ProfileMemberId { get; set; }

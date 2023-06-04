@@ -29,7 +29,7 @@ public class ProfileMember
     public List<Collection> Collections { get; set; } = new();
     public JacobData JacobData { get; set; } = new();
     public List<Pet> Pets { get; set; } = new();
-    public List<Skill> Skills { get; set; } = new();
+    public Skills Skills { get; set; } = new();
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; } = false;
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;

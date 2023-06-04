@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
+﻿using System.Diagnostics;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Utilities;
 
@@ -88,6 +89,14 @@ public static class FormatUtils
         10 => "Winter",
         11 => "Late Winter",
         _ => "Invalid Month"
+    };
+
+    public static string GetMedalName(ContestMedal medal) => medal switch
+    {
+        ContestMedal.Bronze => "bronze",
+        ContestMedal.Silver => "silver",
+        ContestMedal.Gold => "gold",
+        _ => "none"
     };
 
     public static string AppendOrdinalSuffix(int number)
