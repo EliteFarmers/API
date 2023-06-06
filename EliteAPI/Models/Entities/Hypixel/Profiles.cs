@@ -15,18 +15,22 @@ public class Profile
     public DateTime? LastSave { get; set; }
     public List<ProfileMember> Members { get; set; } = new();
     public ProfileBanking Banking { get; set; } = new();
-    public List<CraftedMinion> CraftedMinions { get; set; } = new();
     public bool IsDeleted { get; set; } = false;
+
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, string> CraftedMinions { get; set; } = new();
 }
 
 public class ProfileMember
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-    
+    [Key] public required Guid Id { get; set; }
     public required string PlayerUuid { get; set; }
 
-    public List<Collection> Collections { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, long> Collections { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, double> Stats { get; set; } = new();
+
     public JacobData JacobData { get; set; } = new();
     public List<Pet> Pets { get; set; } = new();
     public Skills Skills { get; set; } = new();
@@ -35,7 +39,7 @@ public class ProfileMember
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
 
     [ForeignKey("MinecraftAccount")]
-    public int MinecraftAccountId { get; set; }
+    public required string MinecraftAccountId { get; set; }
     public required MinecraftAccount MinecraftAccount { get; set; }
 
     [ForeignKey("Profile")]

@@ -36,6 +36,6 @@ public class Skills
     public double Social { get; set; } = 0;
 
     [ForeignKey("ProfileMember")]
-    public int ProfileMemberId { get; set; }
+    public Guid ProfileMemberId { get; set; }
     public ProfileMember? ProfileMember { get; set; }
 }

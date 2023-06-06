@@ -28,14 +28,12 @@ public class DataContext : DbContext
     }
 
     public DbSet<Account> Accounts { get; set; } = null!;
-    public DbSet<DiscordAccount> DiscordAccounts { get; set; } = null!;
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
     public DbSet<Premium> PremiumUsers { get; set; } = null!;
     public DbSet<Purchase> Purchases { get; set; } = null!;
-    public DbSet<Collection> Collections { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
@@ -43,5 +41,4 @@ public class DataContext : DbContext
     public DbSet<Pet> Pets { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
     public DbSet<ProfileBanking> ProfileBanking { get; set; } = null!;
-    public DbSet<CraftedMinion> CraftedMinions { get; set; } = null!;
 }

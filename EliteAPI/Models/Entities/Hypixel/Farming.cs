@@ -18,7 +18,7 @@ public class JacobData
     public DateTime ContestsLastUpdated { get; set; } = DateTime.MinValue.ToUniversalTime();
 
     [ForeignKey("ProfileMember")]
-    public int ProfileMemberId { get; set; }
+    public Guid ProfileMemberId { get; set; }
     public ProfileMember? ProfileMember { get; set; }
 }
 
@@ -79,7 +79,7 @@ public class ContestParticipation
     public required JacobContest JacobContest { get; set; }
 
     [ForeignKey("ProfileMember")]
-    public int ProfileMemberId { get; set; }
+    public Guid ProfileMemberId { get; set; }
     public virtual ProfileMember? ProfileMember { get; set; }
 }
 

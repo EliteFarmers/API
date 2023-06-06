@@ -9,7 +9,6 @@ public class AccountMapper : Profile
     public AccountMapper()
     {
         CreateMap<Account, AccountDto>()
-            .ForMember(a => a.DiscordAccount, opt => opt.MapFrom(a => a.DiscordAccount))
             .ForMember(a => a.PremiumUser, opt => opt.MapFrom(a => a.PremiumUser))
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts));
     }

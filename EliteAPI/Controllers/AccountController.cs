@@ -56,7 +56,7 @@ public class AccountsController : ControllerBase
             return BadRequest("Invalid Discord access token.");
         }
 
-        var user = new DiscordAccount()
+        var user = new Account()
         {
             DisplayName = discordUser.Username,
             Id = discordUser.Id,
@@ -65,11 +65,7 @@ public class AccountsController : ControllerBase
             Email = discordUser.Email,
         };
 
-        var account = new Account() {
-            DiscordAccount = user 
-        };
-
-        await _accountService.AddAccount(account);
+        await _accountService.AddAccount(user);
 
         return Ok();
     }

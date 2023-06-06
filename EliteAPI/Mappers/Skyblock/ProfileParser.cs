@@ -135,7 +135,7 @@ public class ProfileParser
             // Add CraftedMinions to profile
             if (memberData.CraftedGenerators is not { Length: 0 })
             {
-                CombineMinions(profile, existing, memberData.CraftedGenerators);
+                CombineMinions(profile, memberData.CraftedGenerators);
             }
 
             _context.ProfileMembers.Update(existing);
@@ -146,7 +146,9 @@ public class ProfileParser
 
         var member = new ProfileMember
         {
+            Id = Guid.NewGuid(),
             PlayerUuid = memberId,
+            MinecraftAccountId = minecraftAccount.Id,
             MinecraftAccount = minecraftAccount,
             IsSelected = selected,
             Profile = profile,
@@ -176,11 +178,11 @@ public class ProfileParser
         // Add CraftedMinions to profile
         if (memberData.CraftedGenerators is not { Length: 0 })
         {
-            CombineMinions(profile, member, memberData.CraftedGenerators);
+            CombineMinions(profile, memberData.CraftedGenerators);
         }
     }
 
-    private List<Collection> ProcessCollections(RawMemberData member, ProfileMember profileMember)
+    private Dictionary<string, long> ProcessCollections(RawMemberData member, ProfileMember profileMember)
     {
         var oldCollections = profileMember.Collections;
 
@@ -189,37 +191,7 @@ public class ProfileParser
             return oldCollections;
         };
 
-        var list = new List<Collection>();
-
-        foreach (var (collectionName, amount) in member.Collection)
-        {
-            var old = oldCollections.Find(c => c.Name.Equals(collectionName));
-
-            if (old != null)
-            {
-                old.Amount = amount;
-                continue;
-            }
-
-            try
-            {
-                var collectionObj = new Collection
-                {
-                    Name = collectionName,
-                    Amount = amount,
-                    ProfileMember = profileMember,
-                    ProfileMemberId = profileMember.Id,
-                };
-
-                _context.Collections.Add(collectionObj);
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(e);
-            }
-        }
-        
-        return list;
+        return member.Collection;
     }
 
     private List<Pet> ProcessPets(RawPetData[]? pets, ProfileMember member)
@@ -414,7 +386,7 @@ public class ProfileParser
         return ContestMedal.None;
     }
 
-    private void CombineMinions(Profile profile, ProfileMember member, string[]? minionStrings)
+    private void CombineMinions(Profile profile, string[]? minionStrings)
     {
         if (minionStrings is null) return;
 
@@ -431,26 +403,20 @@ public class ProfileParser
 
             var level = int.TryParse(minionLevel, out var l) ? l : 0;
 
-            var existing = craftedMinions.FirstOrDefault(m => m.Type == minionType);
+            var existing = craftedMinions[minionType];
 
-            if (existing != null)
+            // Existing Ex: "111011101" (Crafted tiers 1-10, skipping 4 and 9)
+            if (existing.Length < level)
             {
-                existing.RegisterTier(level);
-                _context.Update(existing);
+                // Add 0s to the end of the string to match the level
+                existing += new string('0', level - existing.Length - 1) + "1";
             }
             else
-            { 
-                var newMinion = new CraftedMinion 
-                {
-                    Type = minionType,
-                    ProfileMember = member,
-                    ProfileMemberId = member.Id
-                };
-
-                newMinion.RegisterTier(level);
-
-                _context.Add(newMinion);
+            {
+                existing = existing[..(level - 1)] + "1" + existing[level..];
             }
+
+            craftedMinions[minionType] = existing;
         }
     }
 

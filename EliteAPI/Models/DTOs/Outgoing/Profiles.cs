@@ -8,7 +8,7 @@ public class ProfileDto
     public DateTime? LastSave { get; set; }
     public List<ProfileMemberDto> Members { get; set; } = new();
     public ProfileBankingDto Banking { get; set; } = new();
-    public List<CraftedMinionDto> CraftedMinions { get; set; } = new();
+    public Dictionary<string, string> CraftedMinions { get; set; } = new();
     public bool IsDeleted { get; set; } = false;
 }
 
@@ -17,7 +17,7 @@ public class ProfileMemberDto
     public required string ProfileId { get; set; }
     public required string PlayerUuid { get; set; }
 
-    public List<CollectionDto> Collections { get; set; } = new();
+    public Dictionary<string, long> Collections { get; set; } = new();
     public required JacobDataDto Jacob { get; set; }
     public List<PetDto> Pets { get; set; } = new();
     public SkillsDto Skills { get; set; } = new();

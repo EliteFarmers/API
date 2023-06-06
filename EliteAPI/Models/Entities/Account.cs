@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography.X509Certificates;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -8,42 +9,85 @@ namespace EliteAPI.Models.Entities;
 
 public class Account
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    [Key]
+    public required ulong Id { get; set; }
+    public int Permissions { get; set; } = 0;
     
-    public required DiscordAccount DiscordAccount { get; set; }
+    public required string DisplayName { get; set; }
+    public required string Username { get; set; }
+    public string? Discriminator { get; set; } = "0";
 
-    public Premium? PremiumUser { get; set; }
+    public string? Avatar { get; set; }
+    public string? Email { get; set; }
+    public string? Locale { get; set; }
+
+    [Column(TypeName = "jsonb")]
+    public List<Purchase> Purchases { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public List<Redemption> Redemptions { get; set; } = new();
+    [Column(TypeName = "jsonb")] 
+    public EliteInventory Inventory { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public EliteSettings Settings { get; set; } = new();
+    
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = new();
+}
+
+public class Purchase
+{
+    public PurchaseType PurchaseType { get; set; }
+    public DateTime Timestamp { get; set; }
+    public decimal Price { get; set; } = 0;
+}
+
+public class Redemption
+{
+    public required string ItemId { get; set; }
+    public required string Cost { get; set; }
+    public DateTime Timestamp { get; set; }
+}
+
+public enum PurchaseType
+{
+    Donation = 0,
+    Bronze = 1,
+    Silver = 2,
+    Gold = 3,
+}
+
+public class EliteInventory
+{
+    public MedalInventory TotalEarnedMedals { get; set; } = new();
+    public MedalInventory SpentMedals { get; set; } = new();
+
+    public int EventTokens { get; set; } = 0;
+    public int EventTokensSpent { get; set; } = 0;
+
+    public int LeaderboardTokens { get; set; } = 0;
+    public int LeaderboardTokensSpent { get; set; } = 0;
+
+    public List<string> UnlockedCosmetics { get; set; } = new();
+}
+
+public class EliteSettings
+{
+    public string ActiveCosmetic { get; set; } = "default";
+
 }
 
 public class MinecraftAccount
 {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)] [JsonIgnore]
-    public int MinecraftAccountId { get; set; }
-    
+    [Key]
     public required string Id { get; set; }
-    public string UUID => Id;
     public required string Name { get; set; }
-    public string IGN => Name;
-    public List<MinecraftAccountProperty> Properties { get; set; } = new();
-    public List<Profile> Profiles { get; set; } = new();
+
+    public List<ProfileMember> Profiles { get; set; } = new();
     public PlayerData PlayerData { get; set; } = new();
+
+    [Column(TypeName = "jsonb")]
+    public List<MinecraftAccountProperty> Properties { get; set; } = new();
 }
 
-public class DiscordAccount
-{
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public ulong Id { get; set; }
-    
-    public required string DisplayName { get; set; }
-    public required string Username { get; set; }
-    public string? Discriminator { get; set; }
-    public string? Email { get; set; }
-    public string? Locale { get; set; }
-}
-
-[Owned]
 public class MinecraftAccountProperty
 {
     public required string Name { get; set; }
