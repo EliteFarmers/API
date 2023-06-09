@@ -2,7 +2,6 @@ using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services;
 using EliteAPI.Services.AccountService;
-using EliteAPI.Services.ContestService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
@@ -12,7 +11,6 @@ using Prometheus;
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 // Add AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -35,7 +33,6 @@ builder.Services.AddDbContext<DataContext>();
 builder.Services.AddScoped<IHypixelService, HypixelService>();
 builder.Services.AddScoped<IMojangService, MojangService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IContestService, ContestService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 
 builder.Services.AddScoped<ProfileParser>();

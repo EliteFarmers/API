@@ -71,8 +71,8 @@ public class EliteInventory
 
 public class EliteSettings
 {
-    public string ActiveCosmetic { get; set; } = "default";
-
+    public string DefaultPlayerUuid { get; set; } = string.Empty;
+    public bool HideDiscordTag { get; set; } = false;
 }
 
 public class MinecraftAccount
@@ -86,6 +86,8 @@ public class MinecraftAccount
 
     [Column(TypeName = "jsonb")]
     public List<MinecraftAccountProperty> Properties { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, long> PreviousNames { get; set; } = new();
 }
 
 public class MinecraftAccountProperty

@@ -70,13 +70,11 @@ public class ContestParticipation
     public int Id { get; set; }
 
     public Crop Crop { get; set; }
-    public int Collected { get; set; } = 0;
-    public int Position { get; set; } = -1;
     public ContestMedal MedalEarned { get; set; } = ContestMedal.None;
 
-    [ForeignKey("JacobContest")]
-    public int JacobContestId { get; set; }
-    public required JacobContest JacobContest { get; set; }
+    public int Collected { get; set; } = 0;
+    public int Position { get; set; } = -1;
+    public long Timestamp { get; set; } = 0;
 
     [ForeignKey("ProfileMember")]
     public Guid ProfileMemberId { get; set; }

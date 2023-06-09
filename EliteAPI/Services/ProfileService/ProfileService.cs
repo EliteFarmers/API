@@ -86,7 +86,6 @@ public class ProfileService : IProfileService
         EF.CompileAsyncQuery((DataContext context, string profileUuid, string playerUuid) =>            
             context.ProfileMembers
                    .Include(p => p.Profile)
-                   .Include(p => p.Collections)
                    .Include(p => p.Skills)
                    .Include(p => p.Pets)
                    .Include(p => p.JacobData)
@@ -110,7 +109,6 @@ public class ProfileService : IProfileService
 
         return await _context.ProfileMembers
             .Include(p => p.Profile)
-            .Include(p => p.Collections)
             .Include(p => p.Skills)
             .Include(p => p.Pets)
             .Include(p => p.JacobData)

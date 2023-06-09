@@ -9,19 +9,19 @@ namespace EliteAPI.Services.MojangService;
 
 public class MojangService : IMojangService
 {
-    private readonly string ClientName = "EliteAPI";
-    private readonly IHttpClientFactory httpClientFactory;
-    private readonly DataContext context;
+    private const string ClientName = "EliteAPI";
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly DataContext _context;
 
     public MojangService(IHttpClientFactory httpClientFactory, DataContext context)
     {
-        this.httpClientFactory = httpClientFactory;
-        this.context = context;
+        _httpClientFactory = httpClientFactory;
+        _context = context;
     }
 
     public async Task<MinecraftAccount?> GetMinecraftAccountByIGN(string ign)
     {
-        var account = await context.MinecraftAccounts
+        var account = await _context.MinecraftAccounts
             .Where(mc => mc.Name.Equals(ign))
             .FirstOrDefaultAsync();
 
@@ -36,7 +36,7 @@ public class MojangService : IMojangService
 
     public async Task<MinecraftAccount?> GetMinecraftAccountByUUID(string uuid)
     {
-        var account = await context.MinecraftAccounts
+        var account = await _context.MinecraftAccounts
             .Where(mc => mc.Id.Equals(uuid))
             .FirstOrDefaultAsync();
 
@@ -52,7 +52,7 @@ public class MojangService : IMojangService
     public async Task<MinecraftAccount?> FetchMinecraftAccountByIGN(string ign)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.mojang.com/users/profiles/minecraft/{ign}");
-        var client = httpClientFactory.CreateClient(ClientName);
+        var client = _httpClientFactory.CreateClient(ClientName);
 
         var response = await client.SendAsync(request);
 
@@ -77,7 +77,7 @@ public class MojangService : IMojangService
     public async Task<MinecraftAccount?> FetchMinecraftAccountByUUID(string uuid)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");
-        var client = httpClientFactory.CreateClient(ClientName);
+        var client = _httpClientFactory.CreateClient(ClientName);
 
         var response = await client.SendAsync(request);
 
@@ -89,8 +89,8 @@ public class MojangService : IMojangService
 
             if (data?.Id == null) return null;
 
-            await context.MinecraftAccounts.AddAsync(data);
-            await context.SaveChangesAsync();
+            await _context.MinecraftAccounts.AddAsync(data);
+            await _context.SaveChangesAsync();
 
             return data;
         }

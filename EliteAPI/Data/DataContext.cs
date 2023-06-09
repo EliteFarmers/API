@@ -32,13 +32,10 @@ public class DataContext : DbContext
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
-    public DbSet<Premium> PremiumUsers { get; set; } = null!;
-    public DbSet<Purchase> Purchases { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<JacobContestEvent> JacobContestEvents { get; set; } = null!;
     public DbSet<Pet> Pets { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
-    public DbSet<ProfileBanking> ProfileBanking { get; set; } = null!;
 }

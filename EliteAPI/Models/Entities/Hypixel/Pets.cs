@@ -19,6 +19,6 @@ public class Pet
     public string? Skin { get; set; }
 
     [ForeignKey("ProfileMember")]
-    public int ProfileMemberId { get; set; }
+    public Guid ProfileMemberId { get; set; }
     public ProfileMember? ProfileMember { get; set; }
 }

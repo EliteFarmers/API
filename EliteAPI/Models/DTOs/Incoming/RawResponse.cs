@@ -94,7 +94,7 @@ public class RawMemberData
     [JsonPropertyName("accessory_bag_storage")]
     public JsonObject? AccessoryBag { get; set; }
 
-    public JsonObject? Leveling { get; set; }
+    public RawLeveling? Leveling { get; set; }
 
     [JsonPropertyName("crafted_generators")]
     public string[]? CraftedGenerators { get; set; }
@@ -209,6 +209,11 @@ public class RawMemberData
 
     [JsonPropertyName("candy_inventory_contents")]
     public JsonObject? CandyInventoryContents { get; set; }
+}
+
+public class RawLeveling
+{
+    public int? Experience { get; set; }
 }
 
 public class RawNetherPlayerData
