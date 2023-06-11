@@ -59,7 +59,7 @@ public class ProfileParser
         if (members.Count == 0) return null;
 
         var profileId = profile.ProfileId.Replace("-", "");
-        var existing = await _context.Profiles.FirstOrDefaultAsync(p => p.ProfileId.Equals(profileId));
+        var existing = await _context.Profiles.FindAsync(profileId);
 
         var profileObj = existing ?? new Profile
         {
@@ -102,9 +102,7 @@ public class ProfileParser
             
             return profileObj;
         }
-
-        _context.Entry(existing).CurrentValues.SetValues(profileObj);
-
+        
         return profileObj;
     }
 
@@ -125,6 +123,9 @@ public class ProfileParser
             existing.Skills = ProcessSkills(memberData, existing);
             existing.Pets = ProcessPets(memberData.Pets, existing);
             existing.Collections = ProcessCollections(memberData, existing);
+            existing.SkyblockXp = memberData.Leveling?.Experience ?? 0;
+            existing.Purse = memberData.CoinPurse ?? 0;
+            existing.CollectionTiers = CombineCollectionTiers(memberData.UnlockedCollTiers);
 
             // Add CraftedMinions to profile
             if (memberData.CraftedGenerators is not { Length: 0 })
@@ -163,7 +164,6 @@ public class ProfileParser
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            return;
         }
 
         member.Collections = ProcessCollections(memberData, member);
@@ -257,7 +257,11 @@ public class ProfileParser
             _context.Entry(existing).CurrentValues.SetValues(jacob);
         }
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex) { Console.WriteLine(ex); }
 
         if (jacobData.Contests.Count > 0)
         {
@@ -404,12 +408,14 @@ public class ProfileParser
             var minionType = minion[..lastUnderscore];
             var minionLevel = minion[(lastUnderscore + 1)..];
 
-            if (int.TryParse(minionLevel, out var level)) continue;
+            if (!int.TryParse(minionLevel, out var level)) continue;
 
-            var existing = craftedMinions[minionType];
+            craftedMinions.TryGetValue(minionType, out var current);
             // Set the bit at the level to 1
-            craftedMinions[minionType] = existing | (1 << level);
+            craftedMinions[minionType] = current | (1 << level);
         }
+
+        profile.CraftedMinions = craftedMinions;
     }
 
     private Skills ProcessSkills(RawMemberData data, ProfileMember member)
@@ -447,7 +453,7 @@ public class ProfileParser
             var collectionType = collection[..lastUnderscore];
             var collectionTier = collection[(lastUnderscore + 1)..];
 
-            if (int.TryParse(collectionTier, out var tier)) continue;
+            if (!int.TryParse(collectionTier, out var tier)) continue;
 
             if (collections.ContainsKey(collectionType))
             {
