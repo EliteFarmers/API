@@ -29,7 +29,7 @@ namespace EliteAPI.Controllers
             var data = await _context.JacobContests
                 .Include(j => j.Participations)
                 .ThenInclude(p => p.ProfileMember)
-                .ThenInclude(p => p == null ? null : p.MinecraftAccount)
+                .ThenInclude(p => p.MinecraftAccount)
                 .Where(j => j.Participations.Count > 1)
                 .ToListAsync();
 

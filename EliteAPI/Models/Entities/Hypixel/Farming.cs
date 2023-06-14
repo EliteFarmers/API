@@ -47,20 +47,17 @@ public class JacobContestEvent
     public List<JacobContest> JacobContests { get; set; } = new();
 }
 
+[Index(nameof(Timestamp))]
 public class JacobContest
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public Crop Crop { get; set; }
-    public DateTime Timestamp { get; set; }
-    public int Participants => Participations.Count;
-    public virtual List<ContestParticipation> Participations { get; set; } = new();
+    public long Timestamp { get; set; }
+    public int Participants { get; set; }
 
-    [ForeignKey("JacobContestEvent")]
-    public int JacobContestEventId { get; set; }
-    public required JacobContestEvent JacobContestEvent { get; set; }
+    public List<ContestParticipation> Participations { get; set; } = new();
 }
 
 public class ContestParticipation
@@ -69,16 +66,17 @@ public class ContestParticipation
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    public Crop Crop { get; set; }
-    public ContestMedal MedalEarned { get; set; } = ContestMedal.None;
-
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;
-    public long Timestamp { get; set; } = 0;
+    public ContestMedal MedalEarned { get; set; } = ContestMedal.None;
 
     [ForeignKey("ProfileMember")]
     public Guid ProfileMemberId { get; set; }
-    public virtual ProfileMember? ProfileMember { get; set; }
+    public ProfileMember ProfileMember { get; set; } = null!;
+
+    [ForeignKey("JacobContest")]
+    public long JacobContestId { get; set; }
+    public JacobContest JacobContest { get; set; } = null!;
 }
 
 public enum Crop

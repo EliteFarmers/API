@@ -34,7 +34,7 @@ public class JacobContestDto
 {
     public required string Crop { get; set; }
     public long Timestamp { get; set; }
-    public int Participants => Participations.Count;
+    public int Participants { get; set; }
     public List<StrippedContestParticipationDto> Participations { get; set; } = new();
 }
 

@@ -88,11 +88,12 @@ namespace EliteAPI.Data.Migrations
                 name: "JacobContests",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Crop = table.Column<int>(type: "integer", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    JacobContestEventId = table.Column<int>(type: "integer", nullable: false)
+                    Timestamp = table.Column<long>(type: "bigint", nullable: false),
+                    Participants = table.Column<int>(type: "integer", nullable: false),
+                    JacobContestEventId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,8 +102,7 @@ namespace EliteAPI.Data.Migrations
                         name: "FK_JacobContests_JacobContestEvents_JacobContestEventId",
                         column: x => x.JacobContestEventId,
                         principalTable: "JacobContestEvents",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -259,13 +259,11 @@ namespace EliteAPI.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Crop = table.Column<int>(type: "integer", nullable: false),
-                    MedalEarned = table.Column<int>(type: "integer", nullable: false),
                     Collected = table.Column<int>(type: "integer", nullable: false),
                     Position = table.Column<int>(type: "integer", nullable: false),
-                    Timestamp = table.Column<long>(type: "bigint", nullable: false),
+                    MedalEarned = table.Column<int>(type: "integer", nullable: false),
                     ProfileMemberId = table.Column<Guid>(type: "uuid", nullable: false),
-                    JacobContestId = table.Column<int>(type: "integer", nullable: true),
+                    JacobContestId = table.Column<long>(type: "bigint", nullable: false),
                     JacobDataId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -275,7 +273,8 @@ namespace EliteAPI.Data.Migrations
                         name: "FK_ContestParticipations_JacobContests_JacobContestId",
                         column: x => x.JacobContestId,
                         principalTable: "JacobContests",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ContestParticipations_JacobData_JacobDataId",
                         column: x => x.JacobDataId,
@@ -308,6 +307,11 @@ namespace EliteAPI.Data.Migrations
                 name: "IX_JacobContests_JacobContestEventId",
                 table: "JacobContests",
                 column: "JacobContestEventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JacobContests_Timestamp",
+                table: "JacobContests",
+                column: "Timestamp");
 
             migrationBuilder.CreateIndex(
                 name: "IX_JacobData_ProfileMemberId",

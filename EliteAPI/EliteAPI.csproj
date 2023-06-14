@@ -31,7 +31,6 @@
 	<ItemGroup>
 		<Folder Include="Data\Grafana\Datasources\" />
 		<Folder Include="Data\Grafana\Dashboards\" />
-		<Folder Include="Data\Migrations\" />
 		<Folder Include="Data\Prometheus\" />
 		<Folder Include="Services\DiscordService\" />
 	</ItemGroup>

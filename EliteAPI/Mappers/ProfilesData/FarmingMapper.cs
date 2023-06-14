@@ -23,7 +23,8 @@ public class JacobContestsMapper : Profile
     {
         CreateMap<JacobContest, JacobContestDto>()
             .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)))
-            .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => ((DateTimeOffset)x.Timestamp).ToUnixTimeSeconds()))
+            .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.Timestamp))
+            .ForMember(j => j.Participants, opt => opt.MapFrom(x => x.Participants))
             .ForMember(j => j.Participations, opt => opt.MapFrom(x => x.Participations));
     }
 }
@@ -43,15 +44,15 @@ public class JacobContestParticipationsMapper : Profile
     {
         CreateMap<ContestParticipation, ContestParticipationDto>()
             .ForMember(j => j.Medal, opt => opt.MapFrom(x => FormatUtils.GetMedalName(x.MedalEarned)))
-            //.ForMember(j => j.Participants, opt => opt.MapFrom(x => x.JacobContest.Participants))
-            .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.Timestamp))
-            .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)));
+            .ForMember(j => j.Participants, opt => opt.MapFrom(x => x.JacobContest.Participants))
+            .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.JacobContest.Timestamp))
+            .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.JacobContest.Crop)));
 
         CreateMap<ContestParticipation, StrippedContestParticipationDto>()
             .ForMember(j => j.Collected, opt => opt.MapFrom(x => x.Collected))
             .ForMember(j => j.Position, opt => opt.MapFrom(x => x.Position))
             .ForMember(j => j.Medal, opt => opt.MapFrom(x => FormatUtils.GetMedalName(x.MedalEarned)))
-            .ForMember(j => j.PlayerUuid, opt => opt.MapFrom(x => x.ProfileMember == null ? "" : x.ProfileMember.MinecraftAccount.Id));
+            .ForMember(j => j.PlayerUuid, opt => opt.MapFrom(x => x.ProfileMember.MinecraftAccount.Id));
     }
 }
 

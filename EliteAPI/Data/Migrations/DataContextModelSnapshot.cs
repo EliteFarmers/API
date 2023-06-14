@@ -86,11 +86,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Collected")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Crop")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("JacobContestId")
-                        .HasColumnType("integer");
+                    b.Property<long>("JacobContestId")
+                        .HasColumnType("bigint");
 
                     b.Property<int?>("JacobDataId")
                         .HasColumnType("integer");
@@ -103,9 +100,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<Guid>("ProfileMemberId")
                         .HasColumnType("uuid");
-
-                    b.Property<long>("Timestamp")
-                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -120,24 +114,29 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContest", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Crop")
                         .HasColumnType("integer");
 
-                    b.Property<int>("JacobContestEventId")
+                    b.Property<int?>("JacobContestEventId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("Participants")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Timestamp")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("JacobContestEventId");
+
+                    b.HasIndex("Timestamp");
 
                     b.ToTable("JacobContests");
                 });
@@ -428,9 +427,11 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
                 {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobContest", null)
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobContest", "JacobContest")
                         .WithMany("Participations")
-                        .HasForeignKey("JacobContestId");
+                        .HasForeignKey("JacobContestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobData", null)
                         .WithMany("Contests")
@@ -442,18 +443,16 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("JacobContest");
+
                     b.Navigation("ProfileMember");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContest", b =>
                 {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobContestEvent", "JacobContestEvent")
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobContestEvent", null)
                         .WithMany("JacobContests")
-                        .HasForeignKey("JacobContestEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("JacobContestEvent");
+                        .HasForeignKey("JacobContestEventId");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>
