@@ -21,7 +21,10 @@ public class ProfileService : IProfileService
 
     public async Task<Profile?> GetProfile(string profileId)
     {
-        return await _context.Profiles.FindAsync(profileId);
+        return await _context.Profiles
+            .Include(p => p.Members)
+            .ThenInclude(m => m.MinecraftAccount)
+            .FirstOrDefaultAsync(p => p.ProfileId.Equals(profileId));
     }
 
     public async Task<Profile?> GetPlayersProfileByName(string playerUuid, string profileName)
@@ -87,9 +90,8 @@ public class ProfileService : IProfileService
             context.ProfileMembers
                    .Include(p => p.Profile)
                    .Include(p => p.Skills)
-                   .Include(p => p.Pets)
                    .Include(p => p.JacobData)
-                   .ThenInclude(j => j.Contests)
+                   //.ThenInclude(j => j.Contests)
                    .AsSplitQuery()
                    .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
@@ -110,7 +112,6 @@ public class ProfileService : IProfileService
         return await _context.ProfileMembers
             .Include(p => p.Profile)
             .Include(p => p.Skills)
-            .Include(p => p.Pets)
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)
             .AsSplitQuery()

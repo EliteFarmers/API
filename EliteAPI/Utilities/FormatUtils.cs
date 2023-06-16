@@ -8,11 +8,11 @@ public static class FormatUtils
     public static DateTime GetTimeFromContestKey(string contestKey)
     {
         var split = contestKey.Split(":");
-        if (split.Length != 3) return DateTime.MinValue.ToUniversalTime();
+        if (split.Length < 3) return DateTime.MinValue.ToUniversalTime();
 
         var year = int.Parse(split[0]);
 
-        int[] monthDay = split[1].Split("_").Select(int.Parse).ToArray();
+        var monthDay = split[1].Split("_").Select(int.Parse).ToArray();
         if (monthDay.Length != 2) return DateTime.MinValue.ToUniversalTime();
 
         var month = monthDay[0] - 1;
@@ -21,9 +21,9 @@ public static class FormatUtils
         return GetTimeFromSkyblockDate(year, month, day);
     }
 
-    public static DateTime GetTimeFromSkyblockDate(int SkyblockYear, int SkyblockMonth, int SkyblockDay)
+    public static DateTime GetTimeFromSkyblockDate(int skyblockYear, int skyblockMonth, int skyblockDay)
     {
-        var days = SkyblockYear * 372 + SkyblockMonth * 31 + SkyblockDay;
+        var days = skyblockYear * 372 + skyblockMonth * 31 + skyblockDay;
 
         var seconds = days * 1200; // 1200 (60 * 20) seconds per day
 
@@ -39,7 +39,7 @@ public static class FormatUtils
     public static Crop? GetCropFromContestKey(string contestKey)
     {
         var split = contestKey.Split(":");
-        if (split.Length != 3) return null;
+        if (split.Length < 3) return null;
 
         return GetCropFromItemId(split[2]);
     }
@@ -48,6 +48,7 @@ public static class FormatUtils
     {
         "CACTUS" => Crop.Cactus,
         "CARROT_ITEM" => Crop.Carrot,
+        "INK_SACK" => Crop.CocoaBeans,
         "INK_SACK:3" => Crop.CocoaBeans,
         "MELON" => Crop.Melon,
         "MUSHROOM_COLLECTION" => Crop.Mushroom,

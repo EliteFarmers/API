@@ -15,7 +15,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230613215634_Init")]
+    [Migration("20230616040430_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -126,9 +126,6 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Crop")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("JacobContestEventId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Participants")
                         .HasColumnType("integer");
 
@@ -137,27 +134,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("JacobContestEventId");
-
                     b.HasIndex("Timestamp");
 
                     b.ToTable("JacobContests");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContestEvent", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("JacobContestEvents");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>
@@ -183,48 +162,6 @@ namespace EliteAPI.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("JacobData");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Pet", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<short>("CandyUsed")
-                        .HasColumnType("smallint");
-
-                    b.Property<double>("Exp")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("HeldItem")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ProfileMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Skin")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Tier")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Uuid")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileMemberId");
-
-                    b.ToTable("Pets");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.PlayerData", b =>
@@ -274,8 +211,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("LastSave")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<long>("LastSave")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("ProfileName")
                         .IsRequired()
@@ -313,6 +250,10 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("MinecraftAccountId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<List<Pet>>("Pets")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("PlayerUuid")
                         .IsRequired()
@@ -451,13 +392,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContest", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobContestEvent", null)
-                        .WithMany("JacobContests")
-                        .HasForeignKey("JacobContestEventId");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
@@ -541,17 +475,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Pet", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
-                        .WithMany("Pets")
-                        .HasForeignKey("ProfileMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProfileMember");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.MinecraftAccount", "MinecraftAccount")
@@ -607,11 +530,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Participations");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContestEvent", b =>
-                {
-                    b.Navigation("JacobContests");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>
                 {
                     b.Navigation("Contests");
@@ -626,8 +544,6 @@ namespace EliteAPI.Data.Migrations
                 {
                     b.Navigation("JacobData")
                         .IsRequired();
-
-                    b.Navigation("Pets");
 
                     b.Navigation("Skills")
                         .IsRequired();

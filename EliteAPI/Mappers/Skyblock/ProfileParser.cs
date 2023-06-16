@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 using EliteAPI.Utilities;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace EliteAPI.Mappers.Skyblock;
 
@@ -28,7 +27,6 @@ public class ProfileParser
             context.ProfileMembers
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
-                .Include(p => p.Pets)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(c => c.JacobContest)
@@ -216,12 +214,7 @@ public class ProfileParser
     {
         if (pets is not { Length: > 0 }) return new List<Pet>();
 
-        _context.Pets.RemoveRange(member.Pets);
-
-        var list = new List<Pet>();
-        foreach (var pet in pets)
-        {
-            var petObj = new Pet
+        return pets.Select(pet => new Pet
             {
                 Uuid = pet.Uuid,
                 Type = pet.Type,
@@ -229,18 +222,9 @@ public class ProfileParser
                 Exp = pet.Exp,
                 Active = pet.Active,
                 HeldItem = pet.HeldItem,
-                CandyUsed = (short) pet.CandyUsed,
+                CandyUsed = (short)pet.CandyUsed,
                 Skin = pet.Skin,
-
-                ProfileMember = member,
-            };
-
-            list.Add(petObj);
-        }
-
-        _context.Pets.AddRange(list);
-
-        return list;
+            }).ToList();
     }
 
     private async Task<JacobData> ProcessJacob(RawMemberData member, ProfileMember profileMember, JacobData? existing)
@@ -255,6 +239,7 @@ public class ProfileParser
         jacob.EarnedMedals.Gold = 0;
         jacob.EarnedMedals.Silver = 0;
         jacob.EarnedMedals.Bronze = 0;
+        jacob.Participations = 0;
 
         if (jacobData == null) return jacob;
 
@@ -303,8 +288,6 @@ public class ProfileParser
         {
             var key = contest.JacobContest.Timestamp + (int) contest.JacobContest.Crop;
 
-            if (existingContests.ContainsKey(key)) continue;
-
             existingContests.Add(key, contest);
         }
 
@@ -322,51 +305,64 @@ public class ProfileParser
     {
         if (contest.Collected < 100) return;
 
-        var timestamp = ((DateTimeOffset) FormatUtils.GetTimeFromContestKey(contestKey)).ToUnixTimeSeconds();
         var crop = FormatUtils.GetCropFromContestKey(contestKey);
         if (crop == null) return;
 
+        jacob.Participations++;
+
+        var medal = GetContestMedal(contest);
+
+        if (medal != ContestMedal.None)
+        {
+            switch (medal)
+            {
+                case ContestMedal.Bronze:
+                    jacob.EarnedMedals.Bronze++;
+                    break;
+                case ContestMedal.Silver:
+                    jacob.EarnedMedals.Silver++;
+                    break;
+                case ContestMedal.Gold:
+                    jacob.EarnedMedals.Gold++;
+                    break;
+            }
+        }
+
+        var timestamp = ((DateTimeOffset) FormatUtils.GetTimeFromContestKey(contestKey)).ToUnixTimeSeconds();
+        
         // Only process if the contest is newer than the last updated time
         // or if the contest has not been claimed (in case it got claimed after the last update)
         var existing = existingContests.GetValueOrDefault(timestamp + (int) crop);
 
-        if (existing is not null && existing.MedalEarned != ContestMedal.None)
-        {
-            if (existing.MedalEarned == ContestMedal.Bronze) jacob.EarnedMedals.Bronze++;
-            else if (existing.MedalEarned == ContestMedal.Silver) jacob.EarnedMedals.Silver++;
-            else if (existing.MedalEarned == ContestMedal.Gold) jacob.EarnedMedals.Gold++;
-        }
-
         if (existing is not null && timestamp < lastUpdatedTime && existing.Position >= 0) return;
 
-        if (existing != null)
+        if (existing is not null)
         {
             existing.Collected = contest.Collected;
             existing.MedalEarned = GetContestMedal(contest);
             existing.Position = contest.Position ?? -1;
 
-            if (existing.MedalEarned == ContestMedal.None) return;
-
-            jacob.EarnedMedals.Gold += existing.MedalEarned == ContestMedal.Gold ? 1 : 0;
-            jacob.EarnedMedals.Silver += existing.MedalEarned == ContestMedal.Silver ? 1 : 0;
-            jacob.EarnedMedals.Bronze += existing.MedalEarned == ContestMedal.Bronze ? 1 : 0;
-
             return;
         }
 
-        var jacobContest = await _fetchJacobContest(_context, timestamp + (int) crop);
+        var key = timestamp + (int) crop;
+        var jacobContest = await _fetchJacobContest(_context, key);
 
         if (jacobContest is null)
         {
             jacobContest = new JacobContest
             {
-                Id = timestamp + (int) crop,
+                Id = key,
                 Timestamp = timestamp,
                 Crop = (Crop) crop,
                 Participants = contest.Participants ?? -1,
             };
 
-            _context.JacobContests.Add(jacobContest);
+            try
+            {
+                await _context.SaveChangesAsync(); }
+            catch (Exception ex) { Console.WriteLine(ex); }
+            
         }
         else
         {
@@ -380,7 +376,7 @@ public class ProfileParser
         var participation = new ContestParticipation
         {
             Collected = contest.Collected,
-            MedalEarned = GetContestMedal(contest),
+            MedalEarned = medal,
             Position = contest.Position ?? -1,
 
             ProfileMemberId = jacob.ProfileMemberId,
@@ -388,13 +384,6 @@ public class ProfileParser
             JacobContestId = jacobContest.Id,
             JacobContest = jacobContest,
         };
-
-        if (participation.MedalEarned != ContestMedal.None)
-        {
-            if (participation.MedalEarned == ContestMedal.Bronze) jacob.EarnedMedals.Bronze++;
-            else if (participation.MedalEarned == ContestMedal.Silver) jacob.EarnedMedals.Silver++;
-            else if (participation.MedalEarned == ContestMedal.Gold) jacob.EarnedMedals.Gold++;
-        }
 
         jacob.Contests.Add(participation);
         jacobContest.Participations.Add(participation);
@@ -417,20 +406,13 @@ public class ProfileParser
 
         var participants = contest.Participants;
         var position = contest.Position;
+        
         if (position is null || participants is null) return ContestMedal.None;
 
-        if (position <= (participants * 0.05) + 1) {
-            return ContestMedal.Gold;
-        }
+        if (position <= (participants * 0.05) + 1) return ContestMedal.Gold;
+        if (position <= (participants * 0.25) + 1) return ContestMedal.Silver;
+        if (position <= (participants * 0.6) + 1) return ContestMedal.Bronze;
         
-        if (position <= (participants * 0.25) + 1) {
-            return ContestMedal.Silver;
-        }
-        
-        if (position <= (participants * 0.6) + 1) {
-            return ContestMedal.Bronze;
-        }
-
         return ContestMedal.None;
     }
 

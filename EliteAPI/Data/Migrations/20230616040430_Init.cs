@@ -38,16 +38,18 @@ namespace EliteAPI.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "JacobContestEvents",
+                name: "JacobContests",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Crop = table.Column<int>(type: "integer", nullable: false),
+                    Timestamp = table.Column<long>(type: "bigint", nullable: false),
+                    Participants = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_JacobContestEvents", x => x.Id);
+                    table.PrimaryKey("PK_JacobContests", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -74,7 +76,7 @@ namespace EliteAPI.Data.Migrations
                     ProfileId = table.Column<string>(type: "text", nullable: false),
                     ProfileName = table.Column<string>(type: "text", nullable: false),
                     GameMode = table.Column<string>(type: "text", nullable: true),
-                    LastSave = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastSave = table.Column<long>(type: "bigint", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     Banking = table.Column<ProfileBanking>(type: "jsonb", nullable: false),
                     CraftedMinions = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false)
@@ -82,27 +84,6 @@ namespace EliteAPI.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Profiles", x => x.ProfileId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "JacobContests",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Crop = table.Column<int>(type: "integer", nullable: false),
-                    Timestamp = table.Column<long>(type: "bigint", nullable: false),
-                    Participants = table.Column<int>(type: "integer", nullable: false),
-                    JacobContestEventId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_JacobContests", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_JacobContests_JacobContestEvents_JacobContestEventId",
-                        column: x => x.JacobContestEventId,
-                        principalTable: "JacobContestEvents",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -147,6 +128,7 @@ namespace EliteAPI.Data.Migrations
                     CollectionTiers = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false),
                     Stats = table.Column<Dictionary<string, double>>(type: "jsonb", nullable: false),
                     Essence = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false),
+                    Pets = table.Column<List<Pet>>(type: "jsonb", nullable: false),
                     MinecraftAccountId = table.Column<string>(type: "text", nullable: false),
                     ProfileId = table.Column<string>(type: "text", nullable: false)
                 },
@@ -190,33 +172,6 @@ namespace EliteAPI.Data.Migrations
                     table.PrimaryKey("PK_JacobData", x => x.Id);
                     table.ForeignKey(
                         name: "FK_JacobData_ProfileMembers_ProfileMemberId",
-                        column: x => x.ProfileMemberId,
-                        principalTable: "ProfileMembers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Pets",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Uuid = table.Column<string>(type: "text", nullable: true),
-                    Type = table.Column<string>(type: "text", nullable: true),
-                    Exp = table.Column<double>(type: "double precision", nullable: false),
-                    Active = table.Column<bool>(type: "boolean", nullable: false),
-                    Tier = table.Column<string>(type: "text", nullable: true),
-                    HeldItem = table.Column<string>(type: "text", nullable: true),
-                    CandyUsed = table.Column<short>(type: "smallint", nullable: false),
-                    Skin = table.Column<string>(type: "text", nullable: true),
-                    ProfileMemberId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Pets", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Pets_ProfileMembers_ProfileMemberId",
                         column: x => x.ProfileMemberId,
                         principalTable: "ProfileMembers",
                         principalColumn: "Id",
@@ -304,11 +259,6 @@ namespace EliteAPI.Data.Migrations
                 column: "ProfileMemberId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JacobContests_JacobContestEventId",
-                table: "JacobContests",
-                column: "JacobContestEventId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_JacobContests_Timestamp",
                 table: "JacobContests",
                 column: "Timestamp");
@@ -328,11 +278,6 @@ namespace EliteAPI.Data.Migrations
                 name: "IX_MinecraftAccounts_PlayerDataId",
                 table: "MinecraftAccounts",
                 column: "PlayerDataId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Pets_ProfileMemberId",
-                table: "Pets",
-                column: "ProfileMemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProfileMembers_MinecraftAccountId",
@@ -358,9 +303,6 @@ namespace EliteAPI.Data.Migrations
                 name: "ContestParticipations");
 
             migrationBuilder.DropTable(
-                name: "Pets");
-
-            migrationBuilder.DropTable(
                 name: "Skills");
 
             migrationBuilder.DropTable(
@@ -368,9 +310,6 @@ namespace EliteAPI.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "JacobData");
-
-            migrationBuilder.DropTable(
-                name: "JacobContestEvents");
 
             migrationBuilder.DropTable(
                 name: "ProfileMembers");

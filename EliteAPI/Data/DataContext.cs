@@ -18,6 +18,7 @@ public class DataContext : DbContext
         if (!string.IsNullOrEmpty(connection))
         {
             optionsBuilder.UseNpgsql(connection);
+            optionsBuilder.EnableSensitiveDataLogging();
         }
         else
         {
@@ -35,7 +36,5 @@ public class DataContext : DbContext
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
-    public DbSet<JacobContestEvent> JacobContestEvents { get; set; } = null!;
-    public DbSet<Pet> Pets { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
 }
