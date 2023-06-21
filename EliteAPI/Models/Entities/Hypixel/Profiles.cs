@@ -24,7 +24,6 @@ public class Profile
 public class ProfileMember
 {
     [Key] public required Guid Id { get; set; }
-    public required string PlayerUuid { get; set; }
 
     public int SkyblockXp { get; set; } = 0;
     public double Purse { get; set; } = 0;
@@ -33,7 +32,7 @@ public class ProfileMember
     public Skills Skills { get; set; } = new();
     public bool IsSelected { get; set; } = false;
     public bool WasRemoved { get; set; } = false;
-    public DateTime LastUpdated { get; set; } = DateTime.MinValue;
+    public long LastUpdated { get; set; } = 0;
 
     [Column(TypeName = "jsonb")]
     public Dictionary<string, long> Collections { get; set; } = new();
@@ -46,9 +45,8 @@ public class ProfileMember
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();
 
-
     [ForeignKey("MinecraftAccount")]
-    public required string MinecraftAccountId { get; set; }
+    public required string PlayerUuid { get; set; }
     public required MinecraftAccount MinecraftAccount { get; set; }
 
     [ForeignKey("Profile")]

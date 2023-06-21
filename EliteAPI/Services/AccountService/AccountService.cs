@@ -15,7 +15,7 @@ public class AccountService : IAccountService
 
     public async Task<Account?> AddAccount(Account account)
     {
-        await _context.Accounts.AddAsync(account);
+        _context.Accounts.Add(account);
         await _context.SaveChangesAsync();
 
         return account;
@@ -32,24 +32,29 @@ public class AccountService : IAccountService
         return account ?? null;
     }
 
+    public async Task<Account?> GetAccountByApiKey(string key)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<Account?> GetAccount(int accountId)
     {
         return await _context.Accounts.FindAsync(accountId);
     }
 
-    public async Task<Account?> GetAccountByDiscordID(ulong id)
+    public async Task<Account?> GetAccountByDiscordId(ulong id)
     {
         return await _context.Accounts.FindAsync(id);
     }
 
-    public async Task<Account?> GetAccountByIGN(string ign)
+    public async Task<Account?> GetAccountByIgn(string ign)
     {
         return await _context.Accounts
            .Where(account => account.MinecraftAccounts.Exists(mc => mc.Name.Equals(ign)))
            .FirstOrDefaultAsync();
     }
 
-    public async Task<Account?> GetAccountByMinecraftUUID(string uuid)
+    public async Task<Account?> GetAccountByMinecraftUuid(string uuid)
     {
         return await _context.Accounts
            .Where(account => account.MinecraftAccounts.Exists(mc => mc.Id.Equals(uuid)))

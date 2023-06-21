@@ -5,6 +5,7 @@ using AutoMapper;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Profiles;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 using EliteAPI.Utilities;
 
@@ -45,16 +46,39 @@ public class ProfileParser
     {
         var profiles = new List<ProfileMember>();
         if (!data.Success || data.Profiles is not { Length: > 0 }) return profiles;
+
+        var existingProfileIds = new List<string>();
         
         foreach (var profile in data.Profiles)
         {
             var transformed = await TransformSingleProfile(profile, playerUuid);
 
-            if (transformed != null)
-            {
-                profiles.AddRange(transformed.Members.Where(member => member.MinecraftAccount.Id.Equals(playerUuid)));
-            }
+            if (transformed == null) continue;
+
+            var owned = transformed.Members
+                .Where(member => member.PlayerUuid.Equals(playerUuid));
+
+            profiles.AddRange(owned);
+            existingProfileIds.Add(transformed.ProfileId);
         }
+
+        var deletedMemberIds = await _context.ProfileMembers               
+            .Where(p => !p.WasRemoved && !existingProfileIds.Contains(p.Profile.ProfileId))
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        if (deletedMemberIds.Count == 0) return profiles;
+
+        // Mark all members that were not returned as deleted
+        foreach (var memberId in deletedMemberIds)
+        {
+            var member = await _context.ProfileMembers.FindAsync(memberId);
+            if (member is null) continue;
+
+            member.WasRemoved = true;
+        }
+
+        await _context.SaveChangesAsync();
 
         return profiles;
     }
@@ -101,7 +125,7 @@ public class ProfileParser
             var memberId = key.Replace("-", "");
 
             var selected = playerUuid?.Equals(memberId) == true && profile.Selected;
-            await TransformMemberResponse(key, memberData, profileObj, selected);
+            await TransformMemberResponse(memberId, memberData, profileObj, selected);
         }
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
@@ -132,25 +156,12 @@ public class ProfileParser
 
         if (existing is not null)
         {
+            //if (existing.WasRemoved) return;
+
             existing.IsSelected = selected;
-            existing.LastUpdated = DateTime.UtcNow;
-            existing.WasRemoved = false;
+            existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            existing.JacobData = await ProcessJacob(memberData, existing, existing.JacobData);
-            existing.Skills = ProcessSkills(memberData, existing);
-            existing.Pets = ProcessPets(memberData.Pets, existing);
-            existing.Collections = ProcessCollections(memberData, existing);
-            existing.SkyblockXp = memberData.Leveling?.Experience ?? 0;
-            existing.Purse = memberData.CoinPurse ?? 0;
-            existing.CollectionTiers = CombineCollectionTiers(memberData.UnlockedCollTiers);
-
-            // Add CraftedMinions to profile
-            if (memberData.CraftedGenerators is not { Length: 0 })
-            {
-                CombineMinions(profile, memberData.CraftedGenerators);
-            }
-
-            _context.ProfileMembers.Update(existing);
+            await UpdateProfileMember(profile, existing, memberData);
             await _context.SaveChangesAsync();
 
             return;
@@ -163,15 +174,15 @@ public class ProfileParser
             
             Profile = profile,
             ProfileId = profile.ProfileId,
-            MinecraftAccountId = minecraftAccount.Id,
             MinecraftAccount = minecraftAccount,
 
-            LastUpdated = DateTime.UtcNow,
+            LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,
             WasRemoved = false
         };
 
         _context.ProfileMembers.Add(member);
+        profile.Members.Add(member);
 
         try
         {
@@ -183,31 +194,26 @@ public class ProfileParser
             Console.WriteLine(ex);
         }
 
-        member.Collections = ProcessCollections(memberData, member);
-        member.Pets = ProcessPets(memberData.Pets, member);
-        member.JacobData = await ProcessJacob(memberData, member, member.JacobData);
-        member.Skills = ProcessSkills(memberData, member);
-        member.SkyblockXp = memberData.Leveling?.Experience ?? 0;
-        member.Purse = memberData.CoinPurse ?? 0;
-        member.CollectionTiers = CombineCollectionTiers(memberData.UnlockedCollTiers);
-
-        // Add CraftedMinions to profile
-        if (memberData.CraftedGenerators is not { Length: 0 })
-        {
-            CombineMinions(profile, memberData.CraftedGenerators);
-        }
+        await UpdateProfileMember(profile, member, memberData);
     }
 
-    private Dictionary<string, long> ProcessCollections(RawMemberData member, ProfileMember profileMember)
+    private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
     {
-        var oldCollections = profileMember.Collections;
+        member.Collections = incomingData.Collection ?? member.Collections;
+        member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
+        member.Purse = incomingData.CoinPurse ?? 0;
 
-        if (member.Collection == null)
-        {
-            return oldCollections;
-        };
+        member.Pets = ProcessPets(incomingData.Pets, member);
+        member.JacobData = await ProcessJacob(incomingData, member, member.JacobData);
+        
+        member.ParseJacob(incomingData.Jacob);
+        await _context.SaveChangesAsync();
+        await member.ParseJacobContests(incomingData.Jacob);
 
-        return member.Collection;
+        member.ParseSkills(incomingData);
+        member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
+
+        profile.CraftedMinions = CraftedMinionParser.Combine(profile.CraftedMinions, incomingData.CraftedGenerators);
     }
 
     private List<Pet> ProcessPets(RawPetData[]? pets, ProfileMember member)
@@ -291,22 +297,30 @@ public class ProfileParser
             existingContests.Add(key, contest);
         }
 
+
+        var newParticipations = new List<ContestParticipation>();
         foreach (var (key, contest) in contests)
         {
-            await ProcessContest(jacobData, key, contest, lastUpdatedTime, existingContests);
+            var contestParticipation = await ProcessContest(jacobData, key, contest, lastUpdatedTime, existingContests);
+
+            if (contestParticipation is null) continue;
+            
+            newParticipations.Add(contestParticipation);
         }
+
+        _context.ContestParticipations.AddRange(newParticipations);
 
         jacobData.ContestsLastUpdated = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
     }
 
-    private async Task ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest, long lastUpdatedTime, Dictionary<long, ContestParticipation> existingContests)
+    private async Task<ContestParticipation?> ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest, long lastUpdatedTime, Dictionary<long, ContestParticipation> existingContests)
     {
-        if (contest.Collected < 100) return;
+        if (contest.Collected < 100) return null;
 
         var crop = FormatUtils.GetCropFromContestKey(contestKey);
-        if (crop == null) return;
+        if (crop == null) return null;
 
         jacob.Participations++;
 
@@ -334,7 +348,7 @@ public class ProfileParser
         // or if the contest has not been claimed (in case it got claimed after the last update)
         var existing = existingContests.GetValueOrDefault(timestamp + (int) crop);
 
-        if (existing is not null && timestamp < lastUpdatedTime && existing.Position >= 0) return;
+        if (existing is not null && timestamp < lastUpdatedTime && existing.Position >= 0) return null;
 
         if (existing is not null)
         {
@@ -342,7 +356,7 @@ public class ProfileParser
             existing.MedalEarned = GetContestMedal(contest);
             existing.Position = contest.Position ?? -1;
 
-            return;
+            return null;
         }
 
         var key = timestamp + (int) crop;
@@ -357,12 +371,7 @@ public class ProfileParser
                 Crop = (Crop) crop,
                 Participants = contest.Participants ?? -1,
             };
-
-            try
-            {
-                await _context.SaveChangesAsync(); }
-            catch (Exception ex) { Console.WriteLine(ex); }
-            
+            _context.JacobContests.Add(jacobContest);
         }
         else
         {
@@ -385,14 +394,13 @@ public class ProfileParser
             JacobContest = jacobContest,
         };
 
-        jacob.Contests.Add(participation);
         jacobContest.Participations.Add(participation);
-
-        _context.ContestParticipations.Add(participation);
+        return participation;
     }
 
     public ContestMedal GetContestMedal(RawJacobContest contest)
     {
+        // Respect given medal if it exists
         if (contest.Medal is not null)
         {
             return contest.Medal switch
@@ -409,84 +417,11 @@ public class ProfileParser
         
         if (position is null || participants is null) return ContestMedal.None;
 
+        // Calculate medal based on position
         if (position <= (participants * 0.05) + 1) return ContestMedal.Gold;
         if (position <= (participants * 0.25) + 1) return ContestMedal.Silver;
         if (position <= (participants * 0.6) + 1) return ContestMedal.Bronze;
         
         return ContestMedal.None;
     }
-
-    private void CombineMinions(Profile profile, string[]? minionStrings)
-    {
-        if (minionStrings is null) return;
-
-        var craftedMinions = profile.CraftedMinions;
-
-        // Ex: "WHEAT_1", "SUGAR_CANE_1"
-        foreach (var minion in minionStrings)
-        {
-            // Split at last underscore of multiple underscores
-            var lastUnderscore = minion.LastIndexOf("_", StringComparison.Ordinal);
-
-            var minionType = minion[..lastUnderscore];
-            var minionLevel = minion[(lastUnderscore + 1)..];
-
-            if (!int.TryParse(minionLevel, out var level)) continue;
-
-            craftedMinions.TryGetValue(minionType, out var current);
-            // Set the bit at the level to 1
-            craftedMinions[minionType] = current | (1 << level);
-        }
-
-        profile.CraftedMinions = craftedMinions;
-    }
-
-    private Skills ProcessSkills(RawMemberData data, ProfileMember member)
-    {
-        var skills = member.Skills;
-        
-        if (data.ExperienceSkillCombat is null) return skills;
-
-        skills.Combat = data.ExperienceSkillCombat ?? skills.Combat;
-        skills.Mining = data.ExperienceSkillMining ?? skills.Mining;
-        skills.Foraging = data.ExperienceSkillForaging ?? skills.Foraging;
-        skills.Fishing = data.ExperienceSkillFishing ?? skills.Fishing;
-        skills.Enchanting = data.ExperienceSkillEnchanting ?? skills.Enchanting;
-        skills.Alchemy = data.ExperienceSkillAlchemy ?? skills.Alchemy;
-        skills.Taming = data.ExperienceSkillTaming ?? skills.Taming;
-        skills.Carpentry = data.ExperienceSkillCarpentry ?? skills.Carpentry;
-        skills.Runecrafting = data.ExperienceSkillRunecrafting ?? skills.Runecrafting;
-        skills.Social = data.ExperienceSkillSocial ?? skills.Social;
-        skills.Farming = data.ExperienceSkillFarming ?? skills.Farming;
-
-        return skills;
-    }
-
-    private Dictionary<string, int> CombineCollectionTiers(string[]? collectionStrings)
-    {
-        var collections = new Dictionary<string, int>();
-
-        if (collectionStrings is null) return collections;
-
-        foreach (var collection in collectionStrings)
-        {
-            // Split at last underscore of multiple underscores
-            var lastUnderscore = collection.LastIndexOf("_", StringComparison.Ordinal);
-
-            var collectionType = collection[..lastUnderscore];
-            var collectionTier = collection[(lastUnderscore + 1)..];
-
-            if (!int.TryParse(collectionTier, out var tier)) continue;
-
-            if (collections.ContainsKey(collectionType))
-            {
-                collections[collectionType] = Math.Max(collections[collectionType], tier);
-                continue;
-            }
-
-            collections[collectionType] = tier;
-        }
-
-        return collections;
-    }   
 }

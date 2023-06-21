@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Rest;
+using EliteAPI.Authentication;
 using EliteAPI.Models.Entities;
 using EliteAPI.Services.AccountService;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -23,6 +24,7 @@ public class AccountsController : ControllerBase
 
     // GET api/<ValuesController>/5
     [HttpGet("{id}")]
+    //[ApiKeyAuthFilter]
     public async Task<ActionResult<Account>> Get(int id)
     {
         var result = await _accountService.GetAccount(id);

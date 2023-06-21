@@ -30,6 +30,6 @@ public class ProfileMemberMapper : Profile
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
             .ForMember(x => x.Username, opt => opt.MapFrom(x => x.MinecraftAccount.Name))
-            .ForMember(x => x.Active, opt => opt.MapFrom(x => x.MinecraftAccount.Profiles.Exists(p => p.ProfileId.Equals(x.ProfileId))));
+            .ForMember(x => x.Active, opt => opt.MapFrom(x => x.MinecraftAccount.Profiles.Exists(p => p.ProfileId.Equals(x.ProfileId) && !p.WasRemoved)));
     }
 }

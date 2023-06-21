@@ -1,3 +1,4 @@
+using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services;
@@ -50,6 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
