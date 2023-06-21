@@ -27,10 +27,7 @@ namespace EliteAPI.Controllers
         public async Task<IEnumerable<JacobContestDto>> Get()
         {
             var data = await _context.JacobContests
-                .Include(j => j.Participations)
-                .ThenInclude(p => p.ProfileMember)
-                .ThenInclude(p => p.MinecraftAccount)
-                .Where(j => j.Participations.Count > 1)
+                .Where(j => j.Participants > 1)
                 .ToListAsync();
 
             return _mapper.Map<IEnumerable<JacobContestDto>>(data);

@@ -24,7 +24,7 @@ public class ProfileParser
         );
 
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
-        EF.CompileAsyncQuery((DataContext context, string profileUuid, string playerUuid) =>            
+        EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
             context.ProfileMembers
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
@@ -62,15 +62,15 @@ public class ProfileParser
             existingProfileIds.Add(transformed.ProfileId);
         }
 
-        var deletedMemberIds = await _context.ProfileMembers               
-            .Where(p => !p.WasRemoved && !existingProfileIds.Contains(p.Profile.ProfileId))
+        var missingProfileIds = await _context.ProfileMembers               
+            .Where(p => p.PlayerUuid.Equals(playerUuid) && !p.WasRemoved && !existingProfileIds.Contains(p.ProfileId))
             .Select(p => p.Id)
             .ToListAsync();
 
-        if (deletedMemberIds.Count == 0) return profiles;
+        if (missingProfileIds.Count == 0) return profiles;
 
         // Mark all members that were not returned as deleted
-        foreach (var memberId in deletedMemberIds)
+        foreach (var memberId in missingProfileIds)
         {
             var member = await _context.ProfileMembers.FindAsync(memberId);
             if (member is null) continue;
@@ -162,7 +162,6 @@ public class ProfileParser
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             await UpdateProfileMember(profile, existing, memberData);
-            await _context.SaveChangesAsync();
 
             return;
         }
@@ -202,226 +201,18 @@ public class ProfileParser
         member.Collections = incomingData.Collection ?? member.Collections;
         member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
         member.Purse = incomingData.CoinPurse ?? 0;
+        member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
 
-        member.Pets = ProcessPets(incomingData.Pets, member);
-        member.JacobData = await ProcessJacob(incomingData, member, member.JacobData);
-        
         member.ParseJacob(incomingData.Jacob);
         await _context.SaveChangesAsync();
-        await member.ParseJacobContests(incomingData.Jacob);
+        
+        await member.ParseJacobContests(incomingData.Jacob, _context);
 
         member.ParseSkills(incomingData);
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
 
-        profile.CraftedMinions = CraftedMinionParser.Combine(profile.CraftedMinions, incomingData.CraftedGenerators);
-    }
-
-    private List<Pet> ProcessPets(RawPetData[]? pets, ProfileMember member)
-    {
-        if (pets is not { Length: > 0 }) return new List<Pet>();
-
-        return pets.Select(pet => new Pet
-            {
-                Uuid = pet.Uuid,
-                Type = pet.Type,
-                Tier = pet.Tier,
-                Exp = pet.Exp,
-                Active = pet.Active,
-                HeldItem = pet.HeldItem,
-                CandyUsed = (short)pet.CandyUsed,
-                Skin = pet.Skin,
-            }).ToList();
-    }
-
-    private async Task<JacobData> ProcessJacob(RawMemberData member, ProfileMember profileMember, JacobData? existing)
-    {
-        var jacob = existing ?? new JacobData()
-        {
-            ProfileMember = profileMember,
-            ProfileMemberId = profileMember.Id
-        };
-        var jacobData = member.Jacob;
-
-        jacob.EarnedMedals.Gold = 0;
-        jacob.EarnedMedals.Silver = 0;
-        jacob.EarnedMedals.Bronze = 0;
-        jacob.Participations = 0;
-
-        if (jacobData == null) return jacob;
-
-        if (jacobData.MedalsInventory != null)
-        {
-            jacob.Medals.Gold = jacobData.MedalsInventory.Gold;
-            jacob.Medals.Silver = jacobData.MedalsInventory.Silver;
-            jacob.Medals.Bronze = jacobData.MedalsInventory.Bronze;
-        }
-
-        if (jacobData.Perks != null)
-        {
-            jacob.Perks.DoubleDrops = jacobData.Perks.DoubleDrops ?? 0;
-            jacob.Perks.LevelCap = jacobData.Perks.FarmingLevelCap ?? 0;
-        }
-
-        if (existing == null)
-        {
-            _context.JacobData.Add(jacob);
-        }
-        else
-        {
-            _context.Entry(existing).CurrentValues.SetValues(jacob);
-        }
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (Exception ex) { Console.WriteLine(ex); }
-
-        if (jacobData.Contests.Count > 0)
-        {
-            await ProcessContests(jacob, jacobData.Contests);
-        }
-
-        return jacob;
-    }
-
-    private async Task ProcessContests(JacobData jacobData, Dictionary<string, RawJacobContest> contests)
-    {
-        var lastUpdatedTime = 0;//((DateTimeOffset) jacobData.ContestsLastUpdated).ToUnixTimeSeconds();
-        var existingContests = new Dictionary<long, ContestParticipation>();
-
-        foreach (var contest in jacobData.Contests)
-        {
-            var key = contest.JacobContest.Timestamp + (int) contest.JacobContest.Crop;
-
-            existingContests.Add(key, contest);
-        }
-
-
-        var newParticipations = new List<ContestParticipation>();
-        foreach (var (key, contest) in contests)
-        {
-            var contestParticipation = await ProcessContest(jacobData, key, contest, lastUpdatedTime, existingContests);
-
-            if (contestParticipation is null) continue;
-            
-            newParticipations.Add(contestParticipation);
-        }
-
-        _context.ContestParticipations.AddRange(newParticipations);
-
-        jacobData.ContestsLastUpdated = DateTime.UtcNow;
+        profile.CombineMinions(incomingData.CraftedGenerators);
 
         await _context.SaveChangesAsync();
-    }
-
-    private async Task<ContestParticipation?> ProcessContest(JacobData jacob, string contestKey, RawJacobContest contest, long lastUpdatedTime, Dictionary<long, ContestParticipation> existingContests)
-    {
-        if (contest.Collected < 100) return null;
-
-        var crop = FormatUtils.GetCropFromContestKey(contestKey);
-        if (crop == null) return null;
-
-        jacob.Participations++;
-
-        var medal = GetContestMedal(contest);
-
-        if (medal != ContestMedal.None)
-        {
-            switch (medal)
-            {
-                case ContestMedal.Bronze:
-                    jacob.EarnedMedals.Bronze++;
-                    break;
-                case ContestMedal.Silver:
-                    jacob.EarnedMedals.Silver++;
-                    break;
-                case ContestMedal.Gold:
-                    jacob.EarnedMedals.Gold++;
-                    break;
-            }
-        }
-
-        var timestamp = ((DateTimeOffset) FormatUtils.GetTimeFromContestKey(contestKey)).ToUnixTimeSeconds();
-        
-        // Only process if the contest is newer than the last updated time
-        // or if the contest has not been claimed (in case it got claimed after the last update)
-        var existing = existingContests.GetValueOrDefault(timestamp + (int) crop);
-
-        if (existing is not null && timestamp < lastUpdatedTime && existing.Position >= 0) return null;
-
-        if (existing is not null)
-        {
-            existing.Collected = contest.Collected;
-            existing.MedalEarned = GetContestMedal(contest);
-            existing.Position = contest.Position ?? -1;
-
-            return null;
-        }
-
-        var key = timestamp + (int) crop;
-        var jacobContest = await _fetchJacobContest(_context, key);
-
-        if (jacobContest is null)
-        {
-            jacobContest = new JacobContest
-            {
-                Id = key,
-                Timestamp = timestamp,
-                Crop = (Crop) crop,
-                Participants = contest.Participants ?? -1,
-            };
-            _context.JacobContests.Add(jacobContest);
-        }
-        else
-        {
-            var participants = contest.Participants ?? -1;
-            if (contest.Participants > jacobContest.Participants)
-            {
-                jacobContest.Participants = participants;
-            }
-        }
-
-        var participation = new ContestParticipation
-        {
-            Collected = contest.Collected,
-            MedalEarned = medal,
-            Position = contest.Position ?? -1,
-
-            ProfileMemberId = jacob.ProfileMemberId,
-            ProfileMember = jacob.ProfileMember!,
-            JacobContestId = jacobContest.Id,
-            JacobContest = jacobContest,
-        };
-
-        jacobContest.Participations.Add(participation);
-        return participation;
-    }
-
-    public ContestMedal GetContestMedal(RawJacobContest contest)
-    {
-        // Respect given medal if it exists
-        if (contest.Medal is not null)
-        {
-            return contest.Medal switch
-            { 
-                "gold" => ContestMedal.Gold,
-                "silver" => ContestMedal.Silver,
-                "bronze" => ContestMedal.Bronze,
-                _ => ContestMedal.None
-            };
-        }
-
-        var participants = contest.Participants;
-        var position = contest.Position;
-        
-        if (position is null || participants is null) return ContestMedal.None;
-
-        // Calculate medal based on position
-        if (position <= (participants * 0.05) + 1) return ContestMedal.Gold;
-        if (position <= (participants * 0.25) + 1) return ContestMedal.Silver;
-        if (position <= (participants * 0.6) + 1) return ContestMedal.Bronze;
-        
-        return ContestMedal.None;
     }
 }

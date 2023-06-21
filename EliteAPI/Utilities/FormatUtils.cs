@@ -1,19 +1,18 @@
-﻿using System.Diagnostics;
-using EliteAPI.Models.Entities.Hypixel;
+﻿using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Utilities;
 
 public static class FormatUtils
 {
-    public static DateTime GetTimeFromContestKey(string contestKey)
+    public static long GetTimeFromContestKey(string contestKey)
     {
         var split = contestKey.Split(":");
-        if (split.Length < 3) return DateTime.MinValue.ToUniversalTime();
+        if (split.Length < 3) return 0;
 
         var year = int.Parse(split[0]);
 
         var monthDay = split[1].Split("_").Select(int.Parse).ToArray();
-        if (monthDay.Length != 2) return DateTime.MinValue.ToUniversalTime();
+        if (monthDay.Length != 2) return 0;
 
         var month = monthDay[0] - 1;
         var day = monthDay[1];
@@ -21,15 +20,13 @@ public static class FormatUtils
         return GetTimeFromSkyblockDate(year, month, day);
     }
 
-    public static DateTime GetTimeFromSkyblockDate(int skyblockYear, int skyblockMonth, int skyblockDay)
+    public static long GetTimeFromSkyblockDate(int skyblockYear, int skyblockMonth, int skyblockDay)
     {
         var days = skyblockYear * 372 + skyblockMonth * 31 + skyblockDay;
 
         var seconds = days * 1200; // 1200 (60 * 20) seconds per day
 
-        var unixTime = SkyblockDate.SkyblockEpochSeconds + seconds;
-
-        return DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime.ToUniversalTime();
+        return SkyblockDate.SkyblockEpochSeconds + seconds;
     }
 
     public static SkyblockDate GetSkyblockDate(DateTime dateTime) => new(dateTime);
@@ -119,18 +116,21 @@ public class SkyblockDate
     public int Year { get; set; }
     public int Month { get; set; }
     public int Day { get; set; }
+    public long UnixSeconds { get; set; }
+
     public SkyblockDate(int year, int month, int day)
     {
         Year = year;
         Month = month;
         Day = day;
+
+        UnixSeconds = FormatUtils.GetTimeFromSkyblockDate(year, month, day);
     }
 
-    public SkyblockDate(DateTime dateTime)
+    public SkyblockDate(long unixSeconds)
     {
-        var unixSeconds = new DateTimeOffset(dateTime).ToUnixTimeSeconds();
-        var seconds = SkyblockEpochSeconds - unixSeconds;
-        var days = seconds / 1200;
+        UnixSeconds = SkyblockEpochSeconds - unixSeconds;
+        var days = UnixSeconds / 1200;
 
         var month = (int) Math.Floor(days % 372f / 31f);
         var day = (int) Math.Floor(days % 372f % 31f);
@@ -140,7 +140,8 @@ public class SkyblockDate
         Day = day == 0 ? 31 : day;
     }
 
-    public DateTime GetDateTime() => FormatUtils.GetTimeFromSkyblockDate(Year, Month, Day);
+    public SkyblockDate(DateTime dateTime) : this(new DateTimeOffset(dateTime).ToUnixTimeSeconds()) { }
+
     public string MonthName() => FormatUtils.GetSkyblockMonthName(Month);
     public override string ToString()
     {

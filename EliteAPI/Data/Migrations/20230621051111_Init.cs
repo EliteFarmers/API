@@ -118,26 +118,25 @@ namespace EliteAPI.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    PlayerUuid = table.Column<string>(type: "text", nullable: false),
                     SkyblockXp = table.Column<int>(type: "integer", nullable: false),
                     Purse = table.Column<double>(type: "double precision", nullable: false),
                     IsSelected = table.Column<bool>(type: "boolean", nullable: false),
                     WasRemoved = table.Column<bool>(type: "boolean", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastUpdated = table.Column<long>(type: "bigint", nullable: false),
                     Collections = table.Column<Dictionary<string, long>>(type: "jsonb", nullable: false),
                     CollectionTiers = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false),
                     Stats = table.Column<Dictionary<string, double>>(type: "jsonb", nullable: false),
                     Essence = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false),
                     Pets = table.Column<List<Pet>>(type: "jsonb", nullable: false),
-                    MinecraftAccountId = table.Column<string>(type: "text", nullable: false),
+                    PlayerUuid = table.Column<string>(type: "text", nullable: false),
                     ProfileId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProfileMembers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProfileMembers_MinecraftAccounts_MinecraftAccountId",
-                        column: x => x.MinecraftAccountId,
+                        name: "FK_ProfileMembers_MinecraftAccounts_PlayerUuid",
+                        column: x => x.PlayerUuid,
                         principalTable: "MinecraftAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -164,7 +163,7 @@ namespace EliteAPI.Data.Migrations
                     Perks_DoubleDrops = table.Column<int>(type: "integer", nullable: false),
                     Perks_LevelCap = table.Column<int>(type: "integer", nullable: false),
                     Participations = table.Column<int>(type: "integer", nullable: false),
-                    ContestsLastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ContestsLastUpdated = table.Column<long>(type: "bigint", nullable: false),
                     ProfileMemberId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -280,9 +279,9 @@ namespace EliteAPI.Data.Migrations
                 column: "PlayerDataId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProfileMembers_MinecraftAccountId",
+                name: "IX_ProfileMembers_PlayerUuid",
                 table: "ProfileMembers",
-                column: "MinecraftAccountId");
+                column: "PlayerUuid");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProfileMembers_ProfileId",

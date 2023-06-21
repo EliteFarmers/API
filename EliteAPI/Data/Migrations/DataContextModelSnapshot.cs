@@ -144,8 +144,8 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("ContestsLastUpdated")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<long>("ContestsLastUpdated")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Participations")
                         .HasColumnType("integer");
@@ -241,12 +241,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("IsSelected")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("MinecraftAccountId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<long>("LastUpdated")
+                        .HasColumnType("bigint");
 
                     b.Property<List<Pet>>("Pets")
                         .IsRequired()
@@ -275,7 +271,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MinecraftAccountId");
+                    b.HasIndex("PlayerUuid");
 
                     b.HasIndex("ProfileId");
 
@@ -476,7 +472,7 @@ namespace EliteAPI.Data.Migrations
                 {
                     b.HasOne("EliteAPI.Models.Entities.MinecraftAccount", "MinecraftAccount")
                         .WithMany("Profiles")
-                        .HasForeignKey("MinecraftAccountId")
+                        .HasForeignKey("PlayerUuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

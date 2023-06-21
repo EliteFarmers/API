@@ -16,7 +16,7 @@ public class CollectionTierParserTests
             { "POTATO_ITEM", 3 }
         };
 
-        var actual = CollectionTierParser.Parse(input);
+        var actual = CollectionTierParser.ParseCollectionTiers(input);
 
         actual.Should().Equal(expected);
     }

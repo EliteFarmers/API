@@ -104,7 +104,7 @@ public class ProfileService : IProfileService
             .FirstOrDefaultAsync();
 
         // Fetch new data if it doesn't exists or is old
-        if (member == null || member.LastUpdated.AddMinutes(10) < DateTime.Now || true)
+        if (member == null || member.LastUpdated + 600 < DateTimeOffset.UtcNow.ToUnixTimeSeconds() || true)
         {
             await RefreshProfileMembers(playerUuid);
         }

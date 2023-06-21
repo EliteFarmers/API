@@ -1,8 +1,15 @@
-﻿namespace EliteAPI.Parsers.Profiles;
+﻿using EliteAPI.Models.Entities.Hypixel;
+
+namespace EliteAPI.Parsers.Profiles;
 
 public static class CraftedMinionParser
 {
-    public static Dictionary<string, int> Combine(Dictionary<string, int> craftedMinions, string[]? minionStrings)
+    public static void CombineMinions(this Profile profile, string[]? minionStrings)
+    {
+        profile.CraftedMinions = CombineMinions(profile.CraftedMinions, minionStrings);
+    }
+
+    public static Dictionary<string, int> CombineMinions(Dictionary<string, int> craftedMinions, string[]? minionStrings)
     {
         if (minionStrings is null) return craftedMinions;
 

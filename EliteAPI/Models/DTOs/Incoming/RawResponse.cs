@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Pet = EliteAPI.Models.Entities.Hypixel.Pet;
 
 namespace EliteAPI.Models.DTOs.Incoming;
 
@@ -33,7 +34,7 @@ public class RawProfileData
 
 public class RawMemberData
 {
-    public RawPetData[]? Pets { get; set; }
+    public Pet[]? Pets { get; set; }
 
     public JsonObject? Dungeons { get; set; }
 

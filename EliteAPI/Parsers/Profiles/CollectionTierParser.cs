@@ -6,10 +6,10 @@ public static class CollectionTierParser
 {
     public static void ParseCollectionTiers(this ProfileMember member, string[]? collectionStrings)
     {
-        member.CollectionTiers = Parse(collectionStrings);
+        member.CollectionTiers = ParseCollectionTiers(collectionStrings);
     }
 
-    public static Dictionary<string, int> Parse(string[]? collectionStrings)
+    public static Dictionary<string, int> ParseCollectionTiers(string[]? collectionStrings)
     {
         var collections = new Dictionary<string, int>();
 
