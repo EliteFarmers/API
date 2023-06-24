@@ -15,8 +15,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230624065015_PlayerData")]
-    partial class PlayerData
+    [Migration("20230624211049_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -199,8 +199,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("MostRecentMonthlyPackageRank")
                         .HasColumnType("text");
 
-                    b.Property<int>("NetworkExp")
-                        .HasColumnType("integer");
+                    b.Property<double>("NetworkExp")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("NewPackageRank")
                         .HasColumnType("text");

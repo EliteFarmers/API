@@ -97,8 +97,10 @@ public class ProfileParser
             ProfileName = profile.CuteName,
             GameMode = profile.GameMode,
             Members = new List<ProfileMember>(),
-            IsDeleted = false
+            IsDeleted = false,
         };
+
+        profileObj.Banking.Balance = profile.Banking?.Balance ?? 0.0;
 
         if (existing is not null)
         {

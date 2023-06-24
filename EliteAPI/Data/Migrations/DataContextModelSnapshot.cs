@@ -196,8 +196,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("MostRecentMonthlyPackageRank")
                         .HasColumnType("text");
 
-                    b.Property<int>("NetworkExp")
-                        .HasColumnType("integer");
+                    b.Property<double>("NetworkExp")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("NewPackageRank")
                         .HasColumnType("text");

@@ -53,23 +53,6 @@ namespace EliteAPI.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PlayerData",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Rank = table.Column<string>(type: "text", nullable: true),
-                    NewPackageRank = table.Column<string>(type: "text", nullable: true),
-                    MonthlyPackageRank = table.Column<string>(type: "text", nullable: true),
-                    RankPlusColor = table.Column<string>(type: "text", nullable: true),
-                    SocialMedia = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PlayerData", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Profiles",
                 columns: table => new
                 {
@@ -92,7 +75,6 @@ namespace EliteAPI.Data.Migrations
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    PlayerDataId = table.Column<int>(type: "integer", nullable: false),
                     Properties = table.Column<List<MinecraftAccountProperty>>(type: "jsonb", nullable: false),
                     PreviousNames = table.Column<Dictionary<string, long>>(type: "jsonb", nullable: false),
                     AccountId = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
@@ -105,10 +87,44 @@ namespace EliteAPI.Data.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlayerData",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Uuid = table.Column<string>(type: "text", nullable: false),
+                    DisplayName = table.Column<string>(type: "text", nullable: true),
+                    FirstLogin = table.Column<long>(type: "bigint", nullable: false),
+                    LastLogin = table.Column<long>(type: "bigint", nullable: false),
+                    LastLogout = table.Column<long>(type: "bigint", nullable: false),
+                    Karma = table.Column<int>(type: "integer", nullable: false),
+                    NetworkExp = table.Column<double>(type: "double precision", nullable: false),
+                    RewardHighScore = table.Column<int>(type: "integer", nullable: false),
+                    RewardScore = table.Column<int>(type: "integer", nullable: false),
+                    RewardStreak = table.Column<int>(type: "integer", nullable: false),
+                    TotalDailyRewards = table.Column<int>(type: "integer", nullable: false),
+                    TotalRewards = table.Column<int>(type: "integer", nullable: false),
+                    Rank = table.Column<string>(type: "text", nullable: true),
+                    NewPackageRank = table.Column<string>(type: "text", nullable: true),
+                    RankPlusColor = table.Column<string>(type: "text", nullable: true),
+                    MonthlyPackageRank = table.Column<string>(type: "text", nullable: true),
+                    MostRecentMonthlyPackageRank = table.Column<string>(type: "text", nullable: true),
+                    MonthlyRankColor = table.Column<string>(type: "text", nullable: true),
+                    SocialMedia_Discord = table.Column<string>(type: "text", nullable: true),
+                    SocialMedia_Hypixel = table.Column<string>(type: "text", nullable: true),
+                    SocialMedia_Youtube = table.Column<string>(type: "text", nullable: true),
+                    LastUpdated = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlayerData", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MinecraftAccounts_PlayerData_PlayerDataId",
-                        column: x => x.PlayerDataId,
-                        principalTable: "PlayerData",
+                        name: "FK_PlayerData_MinecraftAccounts_Uuid",
+                        column: x => x.Uuid,
+                        principalTable: "MinecraftAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -274,9 +290,10 @@ namespace EliteAPI.Data.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MinecraftAccounts_PlayerDataId",
-                table: "MinecraftAccounts",
-                column: "PlayerDataId");
+                name: "IX_PlayerData_Uuid",
+                table: "PlayerData",
+                column: "Uuid",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProfileMembers_PlayerUuid",
@@ -302,6 +319,9 @@ namespace EliteAPI.Data.Migrations
                 name: "ContestParticipations");
 
             migrationBuilder.DropTable(
+                name: "PlayerData");
+
+            migrationBuilder.DropTable(
                 name: "Skills");
 
             migrationBuilder.DropTable(
@@ -321,9 +341,6 @@ namespace EliteAPI.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Accounts");
-
-            migrationBuilder.DropTable(
-                name: "PlayerData");
         }
     }
 }

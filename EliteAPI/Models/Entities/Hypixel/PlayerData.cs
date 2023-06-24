@@ -6,8 +6,7 @@ namespace EliteAPI.Models.Entities.Hypixel;
 
 public class PlayerData
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     [ForeignKey("MinecraftAccount")]
@@ -21,7 +20,7 @@ public class PlayerData
     public long LastLogout { get; set; }
 
     public int Karma { get; set; }
-    public int NetworkExp { get; set; }
+    public double NetworkExp { get; set; }
    
     public int RewardHighScore { get; set; }
     public int RewardScore { get; set; }

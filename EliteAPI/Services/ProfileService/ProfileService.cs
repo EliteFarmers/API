@@ -115,12 +115,12 @@ public class ProfileService : IProfileService
         var rawData = await _hypixelService.FetchPlayer(playerUuid);
         var player = rawData.Value;
 
-        if (player is null) return null;
+        if (player?.Player is null) return null;
 
         var minecraftAccount = await _context.MinecraftAccounts.FindAsync(playerUuid);
         if (minecraftAccount is null) return null;
 
-        var playerData = _mapper.Map<PlayerData>(player);
+        var playerData = _mapper.Map<PlayerData>(player.Player);
         playerData.MinecraftAccount = minecraftAccount;
 
         _context.PlayerData.Add(playerData);

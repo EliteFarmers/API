@@ -27,12 +27,13 @@ public class ProfileMemberDto
 
     public int SkyblockXp { get; set; } = 0;
     public double Purse { get; set; } = 0;
+    public double BankBalance { get; set; } = 0;
 
     public Dictionary<string, long> Collections { get; set; } = new();
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
-    public Dictionary<string, double> Stats { get; set; } = new();
-    public Dictionary<string, int> Essence { get; set; } = new();
+    // public Dictionary<string, double> Stats { get; set; } = new(); // Currently unused
+    // public Dictionary<string, int> Essence { get; set; } = new();
     public List<PetDto> Pets { get; set; } = new();
 
     public required JacobDataDto Jacob { get; set; }

@@ -9,12 +9,12 @@ namespace EliteAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class PlayerDataController : ControllerBase
+public class PlayerController : ControllerBase
 {
     private readonly IProfileService _profileService;
     private readonly IMapper _mapper;
 
-    public PlayerDataController(IProfileService profileService, IMapper mapper)
+    public PlayerController(IProfileService profileService, IMapper mapper)
     {
         _profileService = profileService;
         _mapper = mapper;

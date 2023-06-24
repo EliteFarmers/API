@@ -24,3 +24,11 @@ public class PlayerDataMapper : Profile
             .ForMember(p => p.SocialMedia, opt => opt.MapFrom(x => x.SocialMedia));
     }
 }
+
+public class SocialMediaLinksMapper : Profile
+{
+    public SocialMediaLinksMapper()
+    {
+        CreateMap<SocialMediaLinks, SocialMediaLinksDto>();
+    }
+}

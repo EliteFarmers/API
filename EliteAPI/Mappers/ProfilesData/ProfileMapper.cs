@@ -25,7 +25,8 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.CraftedMinions, opt => opt.MapFrom(x => x.Profile.CraftedMinions))
             .ForMember(x => x.Jacob, opt => opt.MapFrom(x => x.JacobData))
             .ForMember(x => x.Pets, opt => opt.MapFrom(x => x.Pets))
-            .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills));
+            .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills))
+            .ForMember(x => x.BankBalance, opt => opt.MapFrom(x => x.Profile.Banking.Balance));
 
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
