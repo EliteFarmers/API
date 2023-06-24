@@ -25,6 +25,11 @@ public class JacobContestsMapper : Profile
             .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)))
             .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.Timestamp))
             .ForMember(j => j.Participants, opt => opt.MapFrom(x => x.Participants));
+
+        CreateMap<JacobContest, JacobContestWithParticipationsDto>()
+            .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)))
+            .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.Timestamp))
+            .ForMember(j => j.Participants, opt => opt.MapFrom(x => x.Participants));
     }
 }
 
@@ -42,7 +47,8 @@ public class JacobContestParticipationsMapper : Profile
             .ForMember(j => j.Collected, opt => opt.MapFrom(x => x.Collected))
             .ForMember(j => j.Position, opt => opt.MapFrom(x => x.Position))
             .ForMember(j => j.Medal, opt => opt.MapFrom(x => FormatUtils.GetMedalName(x.MedalEarned)))
-            .ForMember(j => j.PlayerUuid, opt => opt.MapFrom(x => x.ProfileMember.MinecraftAccount.Id));
+            .ForMember(j => j.PlayerUuid, opt => opt.MapFrom(x => x.ProfileMember.PlayerUuid))
+            .ForMember(j => j.PlayerName, opt => opt.MapFrom(x => x.ProfileMember.MinecraftAccount.Name));
     }
 }
 
