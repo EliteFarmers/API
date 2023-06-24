@@ -4,58 +4,55 @@ using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+namespace EliteAPI.Controllers;
 
-namespace EliteAPI.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class ContestsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ContestsController : ControllerBase
+
+    private readonly DataContext _context;
+    private readonly IMapper _mapper;
+
+    public ContestsController(DataContext dataContext, IMapper mapper)
     {
+        _context = dataContext;
+        _mapper = mapper;
+    }
 
-        private readonly DataContext _context;
-        private readonly IMapper _mapper;
+    // GET: api/<ContestsController>
+    [HttpGet]
+    public async Task<IEnumerable<JacobContestDto>> Get()
+    {
+        var data = await _context.JacobContests
+            .Where(j => j.Participants > 1)
+            .ToListAsync();
 
-        public ContestsController(DataContext dataContext, IMapper mapper)
-        {
-            _context = dataContext;
-            _mapper = mapper;
-        }
+        return _mapper.Map<IEnumerable<JacobContestDto>>(data);
+    }
 
-        // GET: api/<ContestsController>
-        [HttpGet]
-        public async Task<IEnumerable<JacobContestDto>> Get()
-        {
-            var data = await _context.JacobContests
-                .Where(j => j.Participants > 1)
-                .ToListAsync();
+    // GET api/<ContestsController>/5
+    [HttpGet("{id}")]
+    public string Get(int id)
+    {
+        return "value";
+    }
 
-            return _mapper.Map<IEnumerable<JacobContestDto>>(data);
-        }
+    // POST api/<ContestsController>
+    [HttpPost]
+    public void Post([FromBody] string value)
+    {
+    }
 
-        // GET api/<ContestsController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+    // PUT api/<ContestsController>/5
+    [HttpPut("{id}")]
+    public void Put(int id, [FromBody] string value)
+    {
+    }
 
-        // POST api/<ContestsController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/<ContestsController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<ContestsController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+    // DELETE api/<ContestsController>/5
+    [HttpDelete("{id}")]
+    public void Delete(int id)
+    {
     }
 }

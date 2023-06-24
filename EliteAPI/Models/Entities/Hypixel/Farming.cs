@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
@@ -37,16 +38,6 @@ public class JacobPerks
     public int LevelCap { get; set; } = 0;
 }
 
-public class JacobContestEvent
-{
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-
-    public DateTime Timestamp { get; set; }
-    public List<JacobContest> JacobContests { get; set; } = new();
-}
-
 [Index(nameof(Timestamp))]
 public class JacobContest
 {
@@ -60,8 +51,7 @@ public class JacobContest
 
 public class ContestParticipation
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     public int Collected { get; set; } = 0;
@@ -75,6 +65,29 @@ public class ContestParticipation
     [ForeignKey("JacobContest")]
     public long JacobContestId { get; set; }
     public JacobContest JacobContest { get; set; } = null!;
+}
+
+public class FarmingInventory
+{
+    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    public int BaseCalculatedFortune { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public Dictionary<Crop, int> CropCalculatedFortune { get; set; } = new();
+
+    [Column(TypeName = "jsonb")]
+    public List<object> Armor { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public List<object> Tools { get; set; } = new();
+    [Column(TypeName = "jsonb")]
+    public List<object> Equipment { get; set; } = new();
+
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, int> GlobalFortune { get; set; } = new();
+
+    [Column(TypeName = "jsonb")]
+    public Dictionary<string, int> SpecificFortune { get; set; } = new();
 }
 
 public enum Crop

@@ -1,8 +1,10 @@
-﻿using EliteAPI.Data;
+﻿using AutoMapper;
+using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.HypixelService;
 using Microsoft.EntityFrameworkCore;
+using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Services.ProfileService;
 
@@ -11,12 +13,14 @@ public class ProfileService : IProfileService
     private readonly DataContext _context;
     private readonly IHypixelService _hypixelService;
     private readonly ProfileParser _profileParser;
+    private readonly IMapper _mapper;
 
-    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileParser profileParser)
+    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileParser profileParser, IMapper mapper)
     {
         _context = context;
         _hypixelService = hypixelService;
         _profileParser = profileParser;
+        _mapper = mapper;
     }
 
     public async Task<Profile?> GetProfile(string profileId)
@@ -40,49 +44,6 @@ public class ProfileService : IProfileService
     public async Task<Profile?> GetPlayersSelectedProfile(string playerUuid)
     {
         return (await GetSelectedProfileMember(playerUuid))?.Profile;
-    }
-
-    public async Task<bool> AddProfile(Profile profile)
-    {
-        try
-        {
-            await _context.Profiles.AddAsync(profile);
-            return true;
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            return false;
-        }
-    }
-
-    public async Task<bool> UpdateProfile(string profileUuid, Profile newProfile)
-    {
-        var profile = await GetProfile(profileUuid);
-        if (profile == null) return false;
-
-        profile.ProfileName = newProfile.ProfileName;
-        profile.GameMode = newProfile.GameMode;
-        profile.LastSave = newProfile.LastSave;
-        profile.Banking = newProfile.Banking;
-        profile.CraftedMinions = newProfile.CraftedMinions;
-        profile.Members = newProfile.Members;
-
-        _context.Profiles.Update(profile);
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<bool> DeleteProfile(string profileUuid)
-    {
-        var profile = await GetProfile(profileUuid);
-        if (profile == null) return false;
-        
-        _context.Profiles.Remove(profile);
-        await _context.SaveChangesAsync();
-
-        return true;
     }
 
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
@@ -143,50 +104,29 @@ public class ProfileService : IProfileService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> AddProfileMember(ProfileMember member)
+    public async Task<PlayerData?> GetPlayerData(string playerUuid)
     {
-        try
-        {
-            await _context.ProfileMembers.AddAsync(member);
-            return true;
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            return false;
-        }
-    }
+        var data = await _context.PlayerData
+            .FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
 
-    public async Task<bool> UpdateProfileMember(string profileUuid, string playerUuid, ProfileMember newMember)
-    {
-        var member = await GetProfileMember(profileUuid, playerUuid);
-        if (member == null) return false;
+        // 3 day cooldown
+        if (data is not null && data.LastUpdated + 259_200 >= DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return data;
 
-        member.IsSelected = newMember.IsSelected;
-        member.Skills = newMember.Skills;
-        member.Pets = newMember.Pets;
-        member.Collections = newMember.Collections;
-        member.JacobData = newMember.JacobData;
-        member.WasRemoved = newMember.WasRemoved;
-        member.LastUpdated = newMember.LastUpdated;
+        var rawData = await _hypixelService.FetchPlayer(playerUuid);
+        var player = rawData.Value;
 
-        _context.ProfileMembers.Update(member);
+        if (player is null) return null;
+
+        var minecraftAccount = await _context.MinecraftAccounts.FindAsync(playerUuid);
+        if (minecraftAccount is null) return null;
+
+        var playerData = _mapper.Map<PlayerData>(player);
+        playerData.MinecraftAccount = minecraftAccount;
+
+        _context.PlayerData.Add(playerData);
         await _context.SaveChangesAsync();
 
-        return true;
-    }
-
-    public async Task<bool> DeleteProfileMember(string profileUuid, string playerUuid)
-    {
-        var member = await GetProfileMember(profileUuid, playerUuid);
-        if (member == null) return false;
-
-        member.WasRemoved = true;
-
-        _context.ProfileMembers.Update(member);
-        await _context.SaveChangesAsync();
-
-        return true;
+        return playerData;
     }
 
     private async Task<List<ProfileMember>> RefreshProfileMembers(string playerUuid)

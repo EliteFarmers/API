@@ -28,15 +28,6 @@ public class JacobContestsMapper : Profile
     }
 }
 
-public class JacobContestEventsMapper : Profile
-{
-    public JacobContestEventsMapper()
-    {
-        CreateMap<JacobContestEvent, JacobContestEventDto>()
-            .ForMember(j => j.JacobContests, opt => opt.MapFrom(x => x.JacobContests));
-    }
-}
-
 public class JacobContestParticipationsMapper : Profile
 {
     public JacobContestParticipationsMapper()

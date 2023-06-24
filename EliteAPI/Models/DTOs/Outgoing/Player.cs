@@ -1,19 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json.Serialization;
 
-namespace EliteAPI.Models.Entities.Hypixel;
+namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class PlayerData
+public class PlayerDataDto
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-
-    [ForeignKey("MinecraftAccount")]
     public required string Uuid { get; set; }
-    public MinecraftAccount? MinecraftAccount { get; set; }
 
+    [JsonPropertyName("displayname")]
     public string? DisplayName { get; set; }
 
     public long FirstLogin { get; set; }
@@ -36,13 +29,10 @@ public class PlayerData
     public string? MostRecentMonthlyPackageRank { get; set; }
     public string? MonthlyRankColor { get; set; }
 
-    public SocialMediaLinks SocialMedia { get; set; } = new();
-
-    public long LastUpdated { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    public SocialMediaLinksDto? SocialMedia { get; set; }
 }
 
-[Owned]
-public class SocialMediaLinks
+public class SocialMediaLinksDto
 {
     public string? Discord { get; set; }
     public string? Hypixel { get; set; }

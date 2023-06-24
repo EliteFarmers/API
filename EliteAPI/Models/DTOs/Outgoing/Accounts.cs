@@ -1,8 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using EliteAPI.Models.Entities;
 using System.Text.Json;
-using EliteAPI.Models.Entities;
-using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -15,7 +12,7 @@ public class AccountDto
     public string? Email { get; set; }
     public string? Locale { get; set; }
 
-    public JsonDocument? Redemptions { get; set; }
+    public List<RedemptionDto> Redemptions { get; set; } = new();
     public EliteInventoryDto Inventory { get; set; } = new();
     public EliteSettingsDto Settings { get; set; } = new();
 
@@ -58,11 +55,11 @@ public class EliteSettingsDto
     public bool HideDiscordTag { get; set; } = false;
 }
 
-public class PurchaseDto
+public class RedemptionDto
 {
-    public DateTime PurchasedTime { get; set; }
-    public PurchaseType PurchaseType { get; set; }
-    public decimal Price { get; set; } = 0;
+    public required string ItemId { get; set; }
+    public required string Cost { get; set; }
+    public DateTime Timestamp { get; set; }
 }
 
 public enum PurchaseType

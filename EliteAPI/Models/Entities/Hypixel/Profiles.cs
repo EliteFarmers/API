@@ -45,6 +45,10 @@ public class ProfileMember
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();
 
+    // [ForeignKey("FarmingInventory")]
+    // public required string FarmingInventoryId { get; set; }
+    // public required FarmingInventory FarmingInventory { get; set; } = new();
+
     [ForeignKey("MinecraftAccount")]
     public required string PlayerUuid { get; set; }
     public required MinecraftAccount MinecraftAccount { get; set; }

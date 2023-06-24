@@ -1,19 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json.Serialization;
 
-namespace EliteAPI.Models.Entities.Hypixel;
+namespace EliteAPI.Models.DTOs.Incoming;
 
-public class PlayerData
+public class RawPlayerResponse
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public bool Success { get; set; }
+    public RawPlayerData? Player { get; set; }
+}
 
-    [ForeignKey("MinecraftAccount")]
+public class RawPlayerData
+{
     public required string Uuid { get; set; }
-    public MinecraftAccount? MinecraftAccount { get; set; }
 
+    [JsonPropertyName("displayname")]
     public string? DisplayName { get; set; }
 
     public long FirstLogin { get; set; }
@@ -36,15 +35,27 @@ public class PlayerData
     public string? MostRecentMonthlyPackageRank { get; set; }
     public string? MonthlyRankColor { get; set; }
 
-    public SocialMediaLinks SocialMedia { get; set; } = new();
+    public RawSocialMedia? SocialMedia { get; set; }
 
-    public long LastUpdated { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    /*
+    public long claimed_potato_talisman { get; set; }
+    public long skyblock_free_cookie { get; set; }
+    public long scorpius_bribe_96 { get; set; }
+    public long claimed_century_cake { get; set; }
+    */
 }
 
-[Owned]
-public class SocialMediaLinks
+public class RawSocialMedia
 {
+    public RawSocialMediaLinks? Links { get; set; }
+}
+
+public class RawSocialMediaLinks
+{
+    [JsonPropertyName("DISCORD")]
     public string? Discord { get; set; }
+    [JsonPropertyName("HYPIXEL")]
     public string? Hypixel { get; set; }
+    [JsonPropertyName("YOUTUBE")]
     public string? Youtube { get; set; }
 }

@@ -82,7 +82,7 @@ public class MinecraftAccount
     public required string Name { get; set; }
 
     public List<ProfileMember> Profiles { get; set; } = new();
-    public PlayerData PlayerData { get; set; } = new();
+    public PlayerData? PlayerData { get; set; }
 
     [Column(TypeName = "jsonb")]
     public List<MinecraftAccountProperty> Properties { get; set; } = new();
