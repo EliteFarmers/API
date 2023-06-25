@@ -4,10 +4,13 @@ namespace EliteAPI.Services.MojangService;
 
 public interface IMojangService
 {
-    public Task<MinecraftAccount?> FetchMinecraftAccountByUUID(string uuid);
-    public Task<MinecraftAccount?> FetchMinecraftAccountByIGN(string ign);
+    public Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid);
+    public Task<MinecraftAccount?> FetchMinecraftAccountByIgn(string ign);
 
-    public Task<MinecraftAccount?> GetMinecraftAccountByUUID(string uuid);
-    public Task<MinecraftAccount?> GetMinecraftAccountByIGN(string ign);
-    public Task<MinecraftAccount?> GetMinecraftAccountByUUIDOrIGN(string uuidOrIgn);
+    public Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid);
+    public Task<MinecraftAccount?> GetMinecraftAccountByIgn(string ign);
+    public Task<MinecraftAccount?> GetMinecraftAccountByUuidOrIgn(string uuidOrIgn);
+
+    public Task<string?> GetUuidFromIgn(string ign);
+    public Task<string?> GetIgnFromUuid(string uuid);
 }

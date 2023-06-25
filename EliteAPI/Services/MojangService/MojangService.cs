@@ -19,7 +19,7 @@ public class MojangService : IMojangService
         _context = context;
     }
 
-    public async Task<MinecraftAccount?> GetMinecraftAccountByIGN(string ign)
+    public async Task<MinecraftAccount?> GetMinecraftAccountByIgn(string ign)
     {
         var account = await _context.MinecraftAccounts
             .Where(mc => mc.Name.Equals(ign))
@@ -28,13 +28,13 @@ public class MojangService : IMojangService
         // TODO: Fetch account again if it's older than x amount of time
         if (account == null)
         {
-            return await FetchMinecraftAccountByIGN(ign);
+            return await FetchMinecraftAccountByIgn(ign);
         };
 
         return account;
     }
 
-    public async Task<MinecraftAccount?> GetMinecraftAccountByUUID(string uuid)
+    public async Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid)
     {
         var account = await _context.MinecraftAccounts
             .Where(mc => mc.Id.Equals(uuid))
@@ -43,13 +43,13 @@ public class MojangService : IMojangService
         // TODO: Fetch account again if it's older than x amount of time
         if (account == null)
         {
-            return await FetchMinecraftAccountByUUID(uuid);
+            return await FetchMinecraftAccountByUuid(uuid);
         };
 
         return account;
     }
 
-    public async Task<MinecraftAccount?> FetchMinecraftAccountByIGN(string ign)
+    public async Task<MinecraftAccount?> FetchMinecraftAccountByIgn(string ign)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.mojang.com/users/profiles/minecraft/{ign}");
         var client = _httpClientFactory.CreateClient(ClientName);
@@ -64,7 +64,7 @@ public class MojangService : IMojangService
 
             if (data?.Id == null) return null;
 
-            return await FetchMinecraftAccountByUUID(data.Id);
+            return await FetchMinecraftAccountByUuid(data.Id);
         }
         catch (Exception e)
         {
@@ -74,7 +74,7 @@ public class MojangService : IMojangService
         return null;
     }
 
-    public async Task<MinecraftAccount?> FetchMinecraftAccountByUUID(string uuid)
+    public async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");
         var client = _httpClientFactory.CreateClient(ClientName);
@@ -102,16 +102,30 @@ public class MojangService : IMojangService
         return null;
     }
 
-    public async Task<MinecraftAccount?> GetMinecraftAccountByUUIDOrIGN(string uuidOrIgn)
+    public async Task<MinecraftAccount?> GetMinecraftAccountByUuidOrIgn(string uuidOrIgn)
     {
         if (uuidOrIgn.Length < 32)
         {
-            return await GetMinecraftAccountByIGN(uuidOrIgn);
+            return await GetMinecraftAccountByIgn(uuidOrIgn);
         }
-        else
-        {
-            return await GetMinecraftAccountByUUID(uuidOrIgn);
-        }
+
+        return await GetMinecraftAccountByUuid(uuidOrIgn);
+    }
+
+    public async Task<string?> GetUuidFromIgn(string ign)
+    {
+        return await _context.MinecraftAccounts
+            .Where(mc => mc.Name.Equals(ign))
+            .Select(mc => mc.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<string?> GetIgnFromUuid(string uuid)
+    {
+        return await _context.MinecraftAccounts
+            .Where(mc => mc.Id.Equals(uuid))
+            .Select(mc => mc.Name)
+            .FirstOrDefaultAsync();
     }
 }
 

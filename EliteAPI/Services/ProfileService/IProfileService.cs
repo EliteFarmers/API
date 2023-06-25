@@ -13,4 +13,6 @@ public interface IProfileService
     public Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName);
 
     public Task<PlayerData?> GetPlayerData(string playerUuid);
+    public Task<PlayerData?> GetPlayerDataByIgn(string playerName);
+    public Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn);
 }

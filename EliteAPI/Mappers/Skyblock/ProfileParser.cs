@@ -151,7 +151,7 @@ public class ProfileParser
 
     public async Task TransformMemberResponse(string memberId, RawMemberData memberData, Profile profile, bool selected)
     {
-        var minecraftAccount = await _mojangService.GetMinecraftAccountByUUID(memberId);
+        var minecraftAccount = await _mojangService.GetMinecraftAccountByUuid(memberId);
         if (minecraftAccount == null) return;
 
         var existing = await _fetchProfileMemberData(_context, memberId, profile.ProfileId);

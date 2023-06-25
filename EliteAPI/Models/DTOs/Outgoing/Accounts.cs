@@ -24,8 +24,8 @@ public class MinecraftAccountDto
     public required string Id { get; set; }
     public required string Name { get; set; }
 
-    public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
-    public List<ProfileMemberDto> Profiles { get; set; } = new();
+    // public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
+    // public List<ProfileMemberDto> Profiles { get; set; } = new();
     // public PlayerData PlayerData { get; set; } = new();
 }
 

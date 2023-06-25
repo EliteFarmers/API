@@ -20,9 +20,7 @@ public class MinecraftAccountMapper : Profile
 {
     public MinecraftAccountMapper()
     {
-        CreateMap<MinecraftAccount, MinecraftAccountDto>()
-            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties))
-            .ForMember(a => a.Profiles, opt => opt.MapFrom(a => a.Profiles));
+        CreateMap<MinecraftAccount, MinecraftAccountDto>();
     }
 }
 

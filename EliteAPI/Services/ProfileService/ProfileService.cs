@@ -3,6 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.HypixelService;
+using EliteAPI.Services.MojangService;
 using Microsoft.EntityFrameworkCore;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
@@ -11,14 +12,17 @@ namespace EliteAPI.Services.ProfileService;
 public class ProfileService : IProfileService
 {
     private readonly DataContext _context;
-    private readonly IHypixelService _hypixelService;
     private readonly ProfileParser _profileParser;
+
+    private readonly IHypixelService _hypixelService;
+    private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
 
-    public ProfileService(DataContext context, IHypixelService hypixelService, ProfileParser profileParser, IMapper mapper)
+    public ProfileService(DataContext context, IHypixelService hypixelService, IMojangService mojangService, ProfileParser profileParser, IMapper mapper)
     {
         _context = context;
         _hypixelService = hypixelService;
+        _mojangService = mojangService;
         _profileParser = profileParser;
         _mapper = mapper;
     }
@@ -107,6 +111,7 @@ public class ProfileService : IProfileService
     public async Task<PlayerData?> GetPlayerData(string playerUuid)
     {
         var data = await _context.PlayerData
+            .Include(p => p.MinecraftAccount)
             .FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
 
         // 3 day cooldown
@@ -127,6 +132,20 @@ public class ProfileService : IProfileService
         await _context.SaveChangesAsync();
 
         return playerData;
+    }
+
+    public async Task<PlayerData?> GetPlayerDataByIgn(string playerName)
+    {
+        var minecraftAccount = await _mojangService.GetMinecraftAccountByIgn(playerName);
+        if (minecraftAccount is null) return null;
+
+        return await GetPlayerData(minecraftAccount.Id);
+    }
+
+    public async Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn)
+    {
+        if (uuidOrIgn.Length == 32) return await GetPlayerData(uuidOrIgn);
+        return await GetPlayerDataByIgn(uuidOrIgn);
     }
 
     private async Task<List<ProfileMember>> RefreshProfileMembers(string playerUuid)
