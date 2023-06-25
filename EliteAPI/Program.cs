@@ -3,6 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
@@ -19,7 +20,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Add services to the container.
 builder.Services.AddSingleton<MetricsService>();
 
-var client = builder.Services.AddHttpClient(HypixelService.HttpClientName, client =>
+builder.Services.AddHttpClient(HypixelService.HttpClientName, client =>
 {
     client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI");
 }).UseHttpClientMetrics();
@@ -35,8 +36,11 @@ builder.Services.AddScoped<IHypixelService, HypixelService>();
 builder.Services.AddScoped<IMojangService, MojangService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IDiscordService, DiscordService>();
 
 builder.Services.AddScoped<ProfileParser>();
+
+builder.Services.AddScoped<DiscordAuthFilter>();
 
 var app = builder.Build();
 

@@ -58,16 +58,4 @@ public partial class ProfileController : ControllerBase
         var mapped = _mapper.Map<ProfileDto>(profile);
         return Ok(mapped);
     }
-
-    // PUT api/<ProfileController>/5
-    [HttpPut("{id}")]
-    public void Put(int id, [FromBody] string value)
-    {
-    }
-
-    // DELETE api/<ProfileController>/5
-    [HttpDelete("{id}")]
-    public void Delete(int id)
-    {
-    }
 }

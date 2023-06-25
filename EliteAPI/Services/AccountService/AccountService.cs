@@ -37,14 +37,9 @@ public class AccountService : IAccountService
         throw new NotImplementedException();
     }
 
-    public async Task<Account?> GetAccount(int accountId)
+    public async Task<Account?> GetAccount(ulong accountId)
     {
         return await _context.Accounts.FindAsync(accountId);
-    }
-
-    public async Task<Account?> GetAccountByDiscordId(ulong id)
-    {
-        return await _context.Accounts.FindAsync(id);
     }
 
     public async Task<Account?> GetAccountByIgn(string ign)
