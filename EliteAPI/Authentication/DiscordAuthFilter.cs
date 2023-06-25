@@ -1,5 +1,4 @@
-﻿using EliteAPI.Services.AccountService;
-using EliteAPI.Services.DiscordService;
+﻿using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -7,8 +6,6 @@ namespace EliteAPI.Authentication;
 
 public class DiscordAuthFilter : IAsyncAuthorizationFilter
 {
-    //public DiscordAuthFilter() : base(typeof(DiscordAuthFilter)) { }
-
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         context.HttpContext.Request.Cookies.TryGetValue("discord_access_token", out var authToken);
