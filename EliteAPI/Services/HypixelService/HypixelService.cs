@@ -1,8 +1,5 @@
-﻿using Discord;
-using EliteAPI.Models.DTOs.Incoming;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Nodes;
 using System.Threading.RateLimiting;
 
 namespace EliteAPI.Services.HypixelService;

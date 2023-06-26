@@ -32,11 +32,6 @@ public class AccountService : IAccountService
         return account ?? null;
     }
 
-    public async Task<Account?> GetAccountByApiKey(string key)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<Account?> GetAccount(ulong accountId)
     {
         return await _context.Accounts.FindAsync(accountId);

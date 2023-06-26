@@ -38,12 +38,20 @@ public class DiscordService : IDiscordService
             if (refreshed is null) return null;
 
             refreshed.Account = await FetchDiscordUser(refreshed.AccessToken);
-
             return refreshed;
         }
 
-        if (accessToken is null || refreshToken is null) return null;
+        if (accessToken is not null && refreshToken is null)
+        {
+            var refresh = await FetchRefreshToken(accessToken);
+            if (refresh is null) return null;
 
+            refresh.Account = await FetchDiscordUser(refresh.AccessToken);
+            return refresh;
+        }
+
+        if (accessToken is null) return null;
+        
         var account = await FetchDiscordUser(accessToken);
         if (account is null) return null;
 
@@ -120,30 +128,62 @@ public class DiscordService : IDiscordService
         try
         {
             var refreshTokenResponse = await response.Content.ReadFromJsonAsync<RefreshTokenResponse>();
-            if (refreshTokenResponse?.Error is not null) return null;
-
-            if (refreshTokenResponse?.AccessToken is null || refreshTokenResponse?.RefreshToken is null) return null;
-
-            DateTimeOffset? accessTokenExpires = refreshTokenResponse.ExpiresIn > 0 ? DateTimeOffset.UtcNow.AddSeconds(refreshTokenResponse.ExpiresIn) : null;
-            var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);
-
-            var data = new DiscordUpdateResponse()
-            {
-                AccessToken = refreshTokenResponse.AccessToken,
-                RefreshToken = refreshTokenResponse.RefreshToken,
-                AccessTokenExpires = accessTokenExpires,
-                RefreshTokenExpires = refreshTokenExpires,
-                Account = null
-            };
-
-            return data;
+            return ProcessResponse(refreshTokenResponse);
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
             return null;
         }
-    } 
+    }
+
+    public async Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken)
+    {
+        var client = _httpClientFactory.CreateClient(ClientName);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        // application/x-www-form-urlencoded
+        var body = new Dictionary<string, string>()
+        {
+            { "client_id", _clientId },
+            { "client_secret", _clientSecret },
+            { "grant_type", "authorization_code" },
+            { "code", accessToken },
+            { "scope", "identify guilds" },
+        };
+
+        var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
+
+        if (!response.IsSuccessStatusCode) return null;
+
+        try
+        {
+            var tokenResponse = await response.Content.ReadFromJsonAsync<RefreshTokenResponse>();
+            return ProcessResponse(tokenResponse);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+    }
+
+    private DiscordUpdateResponse? ProcessResponse(RefreshTokenResponse? tokenResponse)
+    {
+        if (tokenResponse?.AccessToken is null || tokenResponse?.RefreshToken is null || tokenResponse.Error is not null) return null;
+
+        DateTimeOffset? accessTokenExpires = tokenResponse.ExpiresIn > 0 ? DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn) : null;
+        var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);
+
+        return new DiscordUpdateResponse()
+        {
+            AccessToken = tokenResponse.AccessToken,
+            RefreshToken = tokenResponse.RefreshToken,
+            AccessTokenExpires = accessTokenExpires,
+            RefreshTokenExpires = refreshTokenExpires,
+            Account = null
+        };
+    }
 }
 
 public class DiscordUpdateResponse

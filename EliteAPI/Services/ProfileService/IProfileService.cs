@@ -12,7 +12,7 @@ public interface IProfileService
     public Task<ProfileMember?> GetSelectedProfileMember(string playerUuid);
     public Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName);
 
-    public Task<PlayerData?> GetPlayerData(string playerUuid);
-    public Task<PlayerData?> GetPlayerDataByIgn(string playerName);
-    public Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn);
+    public Task<PlayerData?> GetPlayerData(string playerUuid, bool skipCooldown = false);
+    public Task<PlayerData?> GetPlayerDataByIgn(string playerName, bool skipCooldown = false);
+    public Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn, bool skipCooldown = false);
 }

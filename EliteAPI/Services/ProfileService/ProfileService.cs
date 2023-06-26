@@ -108,14 +108,14 @@ public class ProfileService : IProfileService
             .FirstOrDefaultAsync();
     }
 
-    public async Task<PlayerData?> GetPlayerData(string playerUuid)
+    public async Task<PlayerData?> GetPlayerData(string playerUuid, bool skipCooldown = false)
     {
         var data = await _context.PlayerData
             .Include(p => p.MinecraftAccount)
             .FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
 
         // 3 day cooldown
-        if (data is not null && data.LastUpdated + 259_200 >= DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return data;
+        if (data is not null && data.LastUpdated + (skipCooldown ? 259_200 : 30) >= DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return data;
 
         var rawData = await _hypixelService.FetchPlayer(playerUuid);
         var player = rawData.Value;
@@ -134,18 +134,18 @@ public class ProfileService : IProfileService
         return playerData;
     }
 
-    public async Task<PlayerData?> GetPlayerDataByIgn(string playerName)
+    public async Task<PlayerData?> GetPlayerDataByIgn(string playerName, bool skipCooldown = false)
     {
         var minecraftAccount = await _mojangService.GetMinecraftAccountByIgn(playerName);
         if (minecraftAccount is null) return null;
 
-        return await GetPlayerData(minecraftAccount.Id);
+        return await GetPlayerData(minecraftAccount.Id, skipCooldown);
     }
 
-    public async Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn)
+    public async Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn, bool skipCooldown = false)
     {
         if (uuidOrIgn.Length == 32) return await GetPlayerData(uuidOrIgn);
-        return await GetPlayerDataByIgn(uuidOrIgn);
+        return await GetPlayerDataByIgn(uuidOrIgn, skipCooldown);
     }
 
     private async Task<List<ProfileMember>> RefreshProfileMembers(string playerUuid)

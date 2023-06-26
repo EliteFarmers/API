@@ -10,5 +10,4 @@ public interface IAccountService
     Task<Account?> AddAccount(Account account);
     Task<Account?> UpdateAccount(int id, Account request);
     Task<Account?> DeleteAccount(int id);
-    Task<Account?> GetAccountByApiKey(string key);
 }

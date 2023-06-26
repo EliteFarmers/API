@@ -70,7 +70,7 @@ public class AccountController : ControllerBase
             return BadRequest("Player has already linked this account.");
         }
 
-        var playerData = await _profileService.GetPlayerDataByUuidOrIgn(id);
+        var playerData = await _profileService.GetPlayerDataByUuidOrIgn(id, true);
 
         if (playerData?.MinecraftAccount is null)
         {
