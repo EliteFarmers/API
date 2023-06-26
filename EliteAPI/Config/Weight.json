@@ -1,0 +1,37 @@
+{
+  "FarmingWeight": {
+    "CropItemIds": [ "CACTUS", "CARROT_ITEM", "INK_SACK:3", "MELON", "MUSHROOM_COLLECTION", "NETHER_STALK", "POTATO_ITEM", "PUMPKIN", "SUGAR_CANE", "WHEAT" ],
+    "CropsPerOneWeight": {
+      "WHEAT": "100000",
+      "CARROT_ITEM": "300000",
+      "POTATO_ITEM": "300000",
+      "SUGAR_CANE": "200000",
+      "NETHER_STALK": "250000",
+      "PUMPKIN": "90066.27",
+      "MELON": "450324.6",
+      "MUSHROOM_COLLECTION": "90178.06",
+      "INK_SACK_3": "267174.04",
+      "CACTUS": "177254.45"
+    },
+    "Farming60Bonus": 250,
+    "Farming50Bonus": 100,
+    "AnitaBuffBonusMultiplier": 2,
+    "MaxMedalsCounted": 1000,
+    "GoldMedalRewardInterval": 50,
+    "WeightPerGoldMedal": 0.5,
+    "MinionRewardTier": 12,
+    "MinionRewardWeight": 5,
+    "FarmingMinions": [
+      "WHEAT",
+      "CARROT",
+      "POTATO",
+      "PUMPKIN",
+      "MELON",
+      "MUSHROOM",
+      "COCOA",
+      "CACTUS",
+      "SUGAR_CANE",
+      "NETHER_WARTS"
+    ]
+  }
+}

@@ -5,6 +5,7 @@ using AutoMapper;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.FarmingWeight;
 using EliteAPI.Parsers.Profiles;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 using EliteAPI.Utilities;
@@ -100,7 +101,7 @@ public class ProfileParser
             IsDeleted = false,
         };
 
-        profileObj.Banking.Balance = profile.Banking?.Balance ?? 0.0;
+        profileObj.BankBalance = profile.Banking?.Balance ?? 0.0;
 
         if (existing is not null)
         {
@@ -131,21 +132,16 @@ public class ProfileParser
         }
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
-
-        if (existing is null)
-        {
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            
-            return profileObj;
-        }
         
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
         return profileObj;
     }
 
@@ -214,6 +210,8 @@ public class ProfileParser
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
 
         profile.CombineMinions(incomingData.CraftedGenerators);
+
+        member.ParseFarmingWeight(profile.CraftedMinions);
 
         await _context.SaveChangesAsync();
     }

@@ -8,9 +8,8 @@ public class ProfileDto
     public long LastSave { get; set; }
     public bool IsDeleted { get; set; } = false;
 
-    public ProfileBankingDto Banking { get; set; } = new();
+    public double BankBalance { get; set; }
     public List<MemberDetailsDto> Members { get; set; } = new();
-    public Dictionary<string, string> CraftedMinions { get; set; } = new();
 }
 
 public class MemberDetailsDto
@@ -37,7 +36,9 @@ public class ProfileMemberDto
     public List<PetDto> Pets { get; set; } = new();
 
     public required JacobDataDto Jacob { get; set; }
+    public required FarmingWeightDto FarmingWeight { get; set; }
     public SkillsDto Skills { get; set; } = new();
+
     public bool IsSelected { get; set; } = false;
     public bool WasRemoved { get; set; } = false;
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;

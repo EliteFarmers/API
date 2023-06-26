@@ -72,6 +72,12 @@ public static class FormatUtils
         _ => "Invalid Crop"
     };
 
+    public static string? GetFormattedCropName(string itemId)
+    {
+        var crop = GetCropFromItemId(itemId);
+        return crop is null ? null : GetFormattedCropName((Crop) crop);
+    }
+
     public static string GetSkyblockMonthName(int month) => month switch
     {
         0 => "Early Spring",

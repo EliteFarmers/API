@@ -9,9 +9,7 @@ public class ProfileMapper : Profile
     public ProfileMapper()
     {
         CreateMap<Models.Entities.Hypixel.Profile, ProfileDto>()
-            .ForMember(x => x.Members, opt => opt.MapFrom(x => x.Members))
-            .ForMember(x => x.Banking, opt => opt.MapFrom(x => x.Banking))
-            .ForMember(x => x.CraftedMinions, opt => opt.MapFrom(x => x.CraftedMinions));
+            .ForMember(x => x.Members, opt => opt.MapFrom(x => x.Members));
     }
 }
 
@@ -26,7 +24,8 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.Jacob, opt => opt.MapFrom(x => x.JacobData))
             .ForMember(x => x.Pets, opt => opt.MapFrom(x => x.Pets))
             .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills))
-            .ForMember(x => x.BankBalance, opt => opt.MapFrom(x => x.Profile.Banking.Balance));
+            .ForMember(x => x.BankBalance, opt => opt.MapFrom(x => x.Profile.BankBalance))
+            .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.FarmingWeight));
 
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))

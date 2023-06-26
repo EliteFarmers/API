@@ -21,8 +21,9 @@ public class ContestsController : ControllerBase
         _mapper = mapper;
     }
 
+    // TODO: Remove this
     // GET: api/<ContestsController>
-    [HttpGet] 
+    [HttpGet]
     public async Task<IEnumerable<JacobContestDto>> GetAll()
     {
         var data = await _context.JacobContests
@@ -34,6 +35,7 @@ public class ContestsController : ControllerBase
 
     // GET api/<ContestsController>/200/12/5
     [HttpGet("{year:int}/{month:int}/{day:int}")]
+    [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<IEnumerable<JacobContestWithParticipationsDto>> GetContestsAt(int year, int month, int day)
     {
         var timestamp = FormatUtils.GetTimeFromSkyblockDate(year, month, day);
@@ -43,6 +45,7 @@ public class ContestsController : ControllerBase
 
     // GET api/<ContestsController>/200/12
     [HttpGet("{year:int}/{month:int}")]
+    [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<Dictionary<int, List<JacobContestDto>>> GetAllContestsInOneMonth(int year, int month)
     {
         var startTime = FormatUtils.GetTimeFromSkyblockDate(year, month, 0);
@@ -76,6 +79,7 @@ public class ContestsController : ControllerBase
 
     // GET api/<ContestsController>/1604957700
     [HttpGet("{timestamp:long}")]
+    [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<IEnumerable<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp)
     {
         var contests = await _context.JacobContests
@@ -105,6 +109,7 @@ public class ContestsController : ControllerBase
 
     // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
+    [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
     public async Task<IEnumerable<ContestParticipationDto>> GetAllOfOnePlayersContests(string playerUuid)
     {
         var profileMembers = await _context.ProfileMembers

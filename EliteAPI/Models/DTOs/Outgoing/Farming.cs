@@ -24,12 +24,6 @@ public class JacobPerksDto
     public int LevelCap { get; set; } = 0;
 }
 
-public class JacobContestEventDto
-{
-    public DateTime Timestamp { get; set; }
-    public List<JacobContestDto> JacobContests { get; set; } = new();
-}
-
 public class JacobContestDto
 {
     public required string Crop { get; set; }

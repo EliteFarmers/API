@@ -17,14 +17,17 @@ public class ProfileService : IProfileService
     private readonly IHypixelService _hypixelService;
     private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
+    private readonly ILogger<ProfileService> _logger;
 
-    public ProfileService(DataContext context, IHypixelService hypixelService, IMojangService mojangService, ProfileParser profileParser, IMapper mapper)
+
+    public ProfileService(DataContext context, IHypixelService hypixelService, IMojangService mojangService, ProfileParser profileParser, IMapper mapper, ILogger<ProfileService> logger)
     {
         _context = context;
         _hypixelService = hypixelService;
         _mojangService = mojangService;
         _profileParser = profileParser;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<Profile?> GetProfile(string profileId)
@@ -50,6 +53,23 @@ public class ProfileService : IProfileService
         return (await GetSelectedProfileMember(playerUuid))?.Profile;
     }
 
+    public async Task<List<Profile>> GetPlayersProfiles(string playerUuid)
+    {
+        var profileIds = await _context.ProfileMembers
+            .Where(m => m.PlayerUuid.Equals(playerUuid))
+            .Select(m => m.ProfileId)
+            .ToListAsync();
+
+        var profiles = await _context.Profiles
+            //.Include(p => p.Banking)
+            .Include(p => p.Members)
+            .ThenInclude(m => m.MinecraftAccount)
+            .Where(p => profileIds.Contains(p.ProfileId))
+            .ToListAsync();
+
+        return profiles;
+    }
+
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string profileUuid, string playerUuid) =>            
             context.ProfileMembers
@@ -60,6 +80,7 @@ public class ProfileService : IProfileService
                    .AsSplitQuery()
                    .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
+
 
     public async Task<ProfileMember?> GetProfileMember(string profileUuid, string playerUuid)
     {

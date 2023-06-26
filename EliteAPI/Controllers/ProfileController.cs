@@ -58,4 +58,19 @@ public partial class ProfileController : ControllerBase
         var mapped = _mapper.Map<ProfileDto>(profile);
         return Ok(mapped);
     }
+
+    // POST api/<ProfileController>s
+    [Route("/api/[controller]s/{playerUuid}")]
+    [HttpGet]
+    public async Task<ActionResult<List<ProfileDto>>> GetProfiles(string playerUuid)
+    {
+        var profiles = await _profileService.GetPlayersProfiles(playerUuid);
+
+        if (profiles.Count == 0)
+        {
+            return NotFound("No profiles matching this UUID were found");
+        }
+
+        return Ok(_mapper.Map<List<ProfileDto>>(profiles));
+    }
 }

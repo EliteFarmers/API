@@ -8,7 +8,7 @@ public class AccountMapper : Profile
 {
     public AccountMapper()
     {
-        CreateMap<Account, AccountDto>()
+        CreateMap<AccountEntities, AccountDto>()
             .ForMember(a => a.Inventory, opt => opt.MapFrom(a => a.Inventory))
             .ForMember(a => a.Redemptions, opt => opt.MapFrom(a => a.Redemptions))
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.Settings))

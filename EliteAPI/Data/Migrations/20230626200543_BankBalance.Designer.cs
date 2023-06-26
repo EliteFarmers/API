@@ -6,6 +6,7 @@ using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -14,9 +15,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230626200543_BankBalance")]
+    partial class BankBalance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +28,7 @@ namespace EliteAPI.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.AccountEntities", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Account", b =>
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
@@ -73,36 +76,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Accounts");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.FarmingWeight", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<Dictionary<string, int>>("BonusWeight")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<Dictionary<string, double>>("CropWeight")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<Guid>("ProfileMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("TotalWeight")
-                        .HasColumnType("double precision");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileMemberId")
-                        .IsUnique();
-
-                    b.ToTable("FarmingWeights");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
@@ -283,7 +256,7 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<long>("LastUpdated")
+                    b.Property<long>("LastSave")
                         .HasColumnType("bigint");
 
                     b.Property<string>("ProfileName")
@@ -410,7 +383,7 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<decimal?>("AccountEntitiesId")
+                    b.Property<decimal?>("AccountId")
                         .HasColumnType("numeric(20,0)");
 
                     b.Property<string>("Name")
@@ -427,20 +400,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountEntitiesId");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("MinecraftAccounts");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.FarmingWeight", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
-                        .WithOne("FarmingWeight")
-                        .HasForeignKey("EliteAPI.Models.Entities.FarmingWeight", "ProfileMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProfileMember");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
@@ -617,12 +579,12 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.MinecraftAccount", b =>
                 {
-                    b.HasOne("EliteAPI.Models.Entities.AccountEntities", null)
+                    b.HasOne("EliteAPI.Models.Entities.Account", null)
                         .WithMany("MinecraftAccounts")
-                        .HasForeignKey("AccountEntitiesId");
+                        .HasForeignKey("AccountId");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.AccountEntities", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Account", b =>
                 {
                     b.Navigation("MinecraftAccounts");
                 });
@@ -639,9 +601,6 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
-                    b.Navigation("FarmingWeight")
-                        .IsRequired();
-
                     b.Navigation("JacobData")
                         .IsRequired();
 

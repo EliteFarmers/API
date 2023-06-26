@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace EliteAPI.Models.Entities;
 
-public class Account
+public class AccountEntities
 {
     [Key]
     public required ulong Id { get; set; }

@@ -29,9 +29,9 @@ public class AccountController : ControllerBase
     // GET api/<ValuesController>
     [HttpGet]
     [ServiceFilter(typeof(DiscordAuthFilter))]
-    public ActionResult<Account> Get()
+    public ActionResult<AccountEntities> Get()
     {
-        if (HttpContext.Items["Account"] is not Account result)
+        if (HttpContext.Items["Account"] is not AccountEntities result)
         {
             return Unauthorized("Account not found.");
         }
@@ -45,9 +45,9 @@ public class AccountController : ControllerBase
 
     [HttpPost("{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
-    public async Task<ActionResult<Account>> LinkAccount(string playerUuidOrIgn)
+    public async Task<ActionResult<AccountEntities>> LinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not Account loggedInAccount)
+        if (HttpContext.Items["Account"] is not AccountEntities loggedInAccount)
         {
             return Unauthorized("Account not found.");
         }
@@ -112,9 +112,9 @@ public class AccountController : ControllerBase
 
     [HttpDelete("{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
-    public async Task<ActionResult<Account>> UnlinkAccount(string playerUuidOrIgn)
+    public async Task<ActionResult<AccountEntities>> UnlinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not Account linkedAccount)
+        if (HttpContext.Items["Account"] is not AccountEntities linkedAccount)
         {
             return Unauthorized("Account not found.");
         }

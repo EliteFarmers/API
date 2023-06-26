@@ -10,15 +10,15 @@ public class Profile
     
     public required string ProfileName { get; set; }
     public string? GameMode { get; set; }
-    public long LastSave { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public double BankBalance { get; set; }
 
     public List<ProfileMember> Members { get; set; } = new();
 
     [Column(TypeName = "jsonb")]
-    public ProfileBanking Banking { get; set; } = new();
-    [Column(TypeName = "jsonb")]
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
+
+    public long LastUpdated { get; set; }
 }
 
 public class ProfileMember
@@ -30,6 +30,10 @@ public class ProfileMember
 
     public JacobData JacobData { get; set; } = new();
     public Skills Skills { get; set; } = new();
+
+    // public FarmingInventory FarmingInventory { get; set; } = new();
+    public FarmingWeight FarmingWeight { get; set; } = new();
+
     public bool IsSelected { get; set; } = false;
     public bool WasRemoved { get; set; } = false;
     public long LastUpdated { get; set; } = 0;
@@ -44,10 +48,6 @@ public class ProfileMember
     public Dictionary<string, int> Essence { get; set; } = new();
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();
-
-    // [ForeignKey("FarmingInventory")]
-    // public required string FarmingInventoryId { get; set; }
-    // public required FarmingInventory FarmingInventory { get; set; } = new();
 
     [ForeignKey("MinecraftAccount")]
     public required string PlayerUuid { get; set; }

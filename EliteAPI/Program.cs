@@ -1,4 +1,5 @@
 using EliteAPI.Authentication;
+using EliteAPI.Config;
 using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services;
@@ -8,6 +9,8 @@ using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Options;
 using Prometheus;
 
 DotNetEnv.Env.Load();
@@ -42,6 +45,13 @@ builder.Services.AddScoped<ProfileParser>();
 
 builder.Services.AddScoped<DiscordAuthFilter>();
 
+builder.Configuration.Sources.Add(new JsonConfigurationSource()
+{
+    Path = "Config\\Weight.json",
+});
+
+builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
+
 var app = builder.Build();
 
 app.UseMetricServer(9102);
@@ -63,6 +73,8 @@ app.MapMetrics();
 
 using (var scope = app.Services.CreateScope())
 {
+    FarmingWeightConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
+
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try
     {
@@ -73,16 +85,5 @@ using (var scope = app.Services.CreateScope())
         Console.Error.WriteLine(e);
     }
 }
-
-new Task(() =>
-{
-    Thread.Sleep(3000);
-    
-    while (true)
-    {
-        MetricsService.IncrementRequestCount("GET", "/api/v1/account", "200", "10");
-        Thread.Sleep(1000);
-    }
-}).Start();
 
 app.Run();

@@ -28,7 +28,7 @@ public class DataContext : DbContext
         }
     }
 
-    public DbSet<Account> Accounts { get; set; } = null!;
+    public DbSet<AccountEntities> Accounts { get; set; } = null!;
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
@@ -37,4 +37,6 @@ public class DataContext : DbContext
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
+    public DbSet<FarmingWeight> FarmingWeights { get; set; } = null!;
+    // public DbSet<FarmingInventory> FarmingInventories { get; set; } = null!;
 }
