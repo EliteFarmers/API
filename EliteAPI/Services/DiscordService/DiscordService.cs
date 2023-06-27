@@ -58,7 +58,7 @@ public class DiscordService : IDiscordService
         return new DiscordUpdateResponse()
         {
             AccessToken = accessToken,
-            RefreshToken = refreshToken,
+            RefreshToken = refreshToken ?? "",
             Account = account
         };
     }

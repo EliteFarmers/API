@@ -1,0 +1,8 @@
+{
+  "CooldownSeconds": {
+    "HypixelPlayerDataCooldown": 43200,
+    "HypixelPlayerDataLinkingCooldown": 60,
+    "SkyblockProfileCooldown": 600,
+    "MinecraftAccountCooldown": 43200
+  }
+}

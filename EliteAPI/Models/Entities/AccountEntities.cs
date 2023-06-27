@@ -88,6 +88,8 @@ public class MinecraftAccount
     public List<MinecraftAccountProperty> Properties { get; set; } = new();
     [Column(TypeName = "jsonb")]
     public Dictionary<string, long> PreviousNames { get; set; } = new();
+
+    public long LastUpdated { get; set; }
 }
 
 public class MinecraftAccountProperty

@@ -29,6 +29,7 @@ public class ProfileParser
             context.ProfileMembers
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
+                .Include(p => p.FarmingWeight)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(c => c.JacobContest)
@@ -178,6 +179,8 @@ public class ProfileParser
             WasRemoved = false
         };
 
+        await UpdateProfileMember(profile, member, memberData);
+
         _context.ProfileMembers.Add(member);
         profile.Members.Add(member);
 
@@ -190,8 +193,6 @@ public class ProfileParser
         {
             Console.WriteLine(ex);
         }
-
-        await UpdateProfileMember(profile, member, memberData);
     }
 
     private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
@@ -212,6 +213,12 @@ public class ProfileParser
         profile.CombineMinions(incomingData.CraftedGenerators);
 
         member.ParseFarmingWeight(profile.CraftedMinions);
+
+        _context.ProfileMembers.Update(member);
+        _context.FarmingWeights.Update(member.FarmingWeight);
+        _context.JacobData.Update(member.JacobData);
+
+        _context.Profiles.Update(profile);
 
         await _context.SaveChangesAsync();
     }

@@ -10,6 +10,17 @@ public class FarmingWeightDto
     public Dictionary<string, double> BonusWeight { get; set; } = new();
 }
 
+public class FarmingWeightWithProfileDto
+{
+    public required string ProfileId { get; set; }
+    public required string ProfileName { get; set; }
+
+    public double TotalWeight { get; set; } = 0;
+
+    public Dictionary<string, double> CropWeight { get; set; } = new();
+    public Dictionary<string, double> BonusWeight { get; set; } = new();
+}
+
 public class FarmingInventoryDto
 {
     public int BaseCalculatedFortune { get; set; } = new();

@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
+using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Services.CacheService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
+using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Services.ProfileService;
@@ -13,21 +17,25 @@ public class ProfileService : IProfileService
 {
     private readonly DataContext _context;
     private readonly ProfileParser _profileParser;
+    private readonly ConfigCooldownSettings _coolDowns;
 
     private readonly IHypixelService _hypixelService;
     private readonly IMojangService _mojangService;
+    private readonly ICacheService _cache;
     private readonly IMapper _mapper;
-    private readonly ILogger<ProfileService> _logger;
 
-
-    public ProfileService(DataContext context, IHypixelService hypixelService, IMojangService mojangService, ProfileParser profileParser, IMapper mapper, ILogger<ProfileService> logger)
+    public ProfileService(DataContext context, 
+        IHypixelService hypixelService, IMojangService mojangService, 
+        ProfileParser profileParser, IMapper mapper, ICacheService cacheService,
+        IOptions<ConfigCooldownSettings> coolDowns)
     {
         _context = context;
         _hypixelService = hypixelService;
         _mojangService = mojangService;
         _profileParser = profileParser;
+        _cache = cacheService;
         _mapper = mapper;
-        _logger = logger;
+        _coolDowns = coolDowns.Value;
     }
 
     public async Task<Profile?> GetProfile(string profileId)
@@ -75,34 +83,28 @@ public class ProfileService : IProfileService
             context.ProfileMembers
                    .Include(p => p.Profile)
                    .Include(p => p.Skills)
+                   .Include(p => p.FarmingWeight)
                    .Include(p => p.JacobData)
-                   //.ThenInclude(j => j.Contests)
+                   .ThenInclude(j => j.Contests)
                    .AsSplitQuery()
                    .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
 
-
     public async Task<ProfileMember?> GetProfileMember(string profileUuid, string playerUuid)
     {
-        var member = await _context.ProfileMembers
+        var lastUpdated = await _context.ProfileMembers
             .Include(p => p.Profile)
             .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+            .Select(p => p.LastUpdated)
             .FirstOrDefaultAsync();
 
         // Fetch new data if it doesn't exists or is old
-        if (member == null || member.LastUpdated + 600 < DateTimeOffset.UtcNow.ToUnixTimeSeconds() || true)
+        if (lastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
         {
             await RefreshProfileMembers(playerUuid);
         }
 
-        return await _context.ProfileMembers
-            .Include(p => p.Profile)
-            .Include(p => p.Skills)
-            .Include(p => p.JacobData)
-            .ThenInclude(j => j.Contests)
-            .AsSplitQuery()
-            .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
-            .FirstOrDefaultAsync();
+        return await _fetchProfileMemberData(_context, profileUuid, playerUuid);
     }
 
     public async Task<ProfileMember?> GetSelectedProfileMember(string playerUuid)
@@ -111,22 +113,29 @@ public class ProfileService : IProfileService
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
             .FirstOrDefaultAsync();
 
-        if (member == null || true)
+        if (member is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
         {
-            var data = await RefreshProfileMembers(playerUuid);
-
-            return data.FirstOrDefault(p => p.IsSelected);
+            var members = await RefreshProfileMembers(playerUuid);
+            return members.FirstOrDefault(m => m.IsSelected);
         }
 
-        return null;
+        return await _fetchProfileMemberData(_context, member.ProfileId, playerUuid);
     }
 
     public async Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName)
     {
-        return await _context.ProfileMembers
+        var member = await _context.ProfileMembers
             .Include(p => p.Profile)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.Profile.ProfileName.Equals(profileName))
             .FirstOrDefaultAsync();
+
+        if (member is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
+        {
+            var members = await RefreshProfileMembers(playerUuid);
+            return members.FirstOrDefault(m => m.Profile.ProfileName.Equals(profileName));
+        }
+
+        return await _fetchProfileMemberData(_context, member.ProfileId, playerUuid);
     }
 
     public async Task<PlayerData?> GetPlayerData(string playerUuid, bool skipCooldown = false)
@@ -134,16 +143,16 @@ public class ProfileService : IProfileService
         var data = await _context.PlayerData
             .Include(p => p.MinecraftAccount)
             .FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
-
-        // 3 day cooldown
-        if (data is not null && data.LastUpdated + (skipCooldown ? 259_200 : 30) >= DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return data;
+        
+        if (data is not null && !data.LastUpdated.OlderThanSeconds(skipCooldown ? _coolDowns.HypixelPlayerDataCooldown : _coolDowns.HypixelPlayerDataLinkingCooldown))
+                return data;
 
         var rawData = await _hypixelService.FetchPlayer(playerUuid);
         var player = rawData.Value;
 
         if (player?.Player is null) return null;
 
-        var minecraftAccount = await _context.MinecraftAccounts.FindAsync(playerUuid);
+        var minecraftAccount = await _mojangService.GetMinecraftAccountByUuid(playerUuid);
         if (minecraftAccount is null) return null;
 
         var playerData = _mapper.Map<PlayerData>(player.Player);
@@ -157,10 +166,10 @@ public class ProfileService : IProfileService
 
     public async Task<PlayerData?> GetPlayerDataByIgn(string playerName, bool skipCooldown = false)
     {
-        var minecraftAccount = await _mojangService.GetMinecraftAccountByIgn(playerName);
-        if (minecraftAccount is null) return null;
+        var uuid = await _cache.GetUuidFromUsername(playerName);
+        if (uuid is null) return null;
 
-        return await GetPlayerData(minecraftAccount.Id, skipCooldown);
+        return await GetPlayerData(uuid, skipCooldown);
     }
 
     public async Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn, bool skipCooldown = false)

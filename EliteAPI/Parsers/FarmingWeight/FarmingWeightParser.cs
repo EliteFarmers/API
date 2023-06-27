@@ -1,5 +1,5 @@
 ﻿using System.Configuration;
-using EliteAPI.Config;
+using EliteAPI.Config.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 
@@ -9,15 +9,14 @@ public static class FarmingWeightParser
 {
     public static void ParseFarmingWeight(this ProfileMember member, Dictionary<string, int> craftedMinions)
     {
-        var weightInfo = member.FarmingWeight;
+        member.FarmingWeight.ProfileMemberId = member.Id;
+        member.FarmingWeight.ProfileMember = member;
 
-        weightInfo.ProfileMemberId = member.Id;
-        weightInfo.ProfileMember = member;
+        member.FarmingWeight.CropWeight = ParseCropWeight(member.Collections);
+        member.FarmingWeight.BonusWeight = ParseBonusWeight(member, craftedMinions);
 
-        weightInfo.CropWeight = ParseCropWeight(member.Collections);
-        weightInfo.BonusWeight = ParseBonusWeight(member, craftedMinions);
-
-        weightInfo.TotalWeight = weightInfo.CropWeight.Sum(x => x.Value) + weightInfo.BonusWeight.Sum(x => x.Value);
+        member.FarmingWeight.TotalWeight = member.FarmingWeight.CropWeight.Sum(x => x.Value) 
+                                           + member.FarmingWeight.BonusWeight.Sum(x => x.Value);
     }
 
     public static Dictionary<string, double> ParseCropWeight(Dictionary<string, long> collections)

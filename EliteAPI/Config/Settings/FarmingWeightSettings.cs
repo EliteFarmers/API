@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Config;
+namespace EliteAPI.Config.Settings;
 
 public static class FarmingWeightConfig
 {
