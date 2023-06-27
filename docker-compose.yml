@@ -10,6 +10,11 @@ services:
       - ./EliteAPI/.env
     environment:
       - POSTGRES_CONNECTION="Server=database;Port=5432;Database=eliteapi;Username=user;Password=postgres123;Include Error Detail=true"
+    depends_on:
+      - database
+      - cache
+      - logging
+      - prometheus
     ports:
         - "9102:9102"
     networks: 
@@ -28,6 +33,18 @@ services:
     volumes:
         - db-data:/var/lib/postgresql/data
         - ./EliteAPI/Data/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+        - eliteapi-network
+  cache:
+    image: redis:7.0.11
+    restart: always
+    ports:
+        - '6380:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass redisCachePassword123
+    expose:
+        - '6379'
+    volumes:
+        - redis-data:/data
     networks:
         - eliteapi-network
   logging:
@@ -67,3 +84,4 @@ volumes:
     db-data: {}
     grafana-data: {}
     prometheus-data: {}
+    redis-data: {}

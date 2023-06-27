@@ -25,6 +25,7 @@
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
 		<PackageReference Include="prometheus-net" Version="8.0.0" />
 		<PackageReference Include="prometheus-net.AspNetCore" Version="8.0.0" />
+		<PackageReference Include="StackExchange.Redis" Version="2.6.116" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	</ItemGroup>
 
