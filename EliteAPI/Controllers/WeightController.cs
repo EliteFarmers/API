@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Services.ProfileService;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,11 +18,15 @@ namespace EliteAPI.Controllers
     {
         private readonly DataContext _context;
         private readonly IMapper _mapper;
+        private readonly ConfigCooldownSettings _coolDowns;
+        private readonly IProfileService _profileService;
 
-        public WeightController(DataContext context, IMapper mapper)
+        public WeightController(DataContext context, IMapper mapper, IOptions<ConfigCooldownSettings> coolDowns, IProfileService profileService)
         {
             _context = context;
             _mapper = mapper;
+            _profileService = profileService;
+            _coolDowns = coolDowns.Value;
         }
 
         // GET api/<WeightController>/7da0c47581dc42b4962118f8049147b7/
@@ -27,11 +35,25 @@ namespace EliteAPI.Controllers
         {
             var uuid = playerUuid.Replace("-", "");
 
-            var farmingWeightIds = await _context.ProfileMembers
+            var members = await _context.ProfileMembers
                 .Where(x => x.PlayerUuid.Equals(uuid))
                 .Include(x => x.FarmingWeight)
-                .Select(f => f.FarmingWeight.Id)
                 .ToListAsync();
+
+            var farmingWeightIds = new List<int>();
+            
+            // Check if any of the profiles are old
+            if (members.Count == 0 || members.Exists(member => member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))) {
+                await _profileService.GetSelectedProfileMember(playerUuid);
+                
+                farmingWeightIds = await _context.ProfileMembers
+                    .Where(x => x.PlayerUuid.Equals(uuid))
+                    .Include(x => x.FarmingWeight)
+                    .Select(x => x.FarmingWeight.Id)
+                    .ToListAsync();
+            } else {
+                farmingWeightIds = members.Select(x => x.FarmingWeight.Id).ToList();
+            }
 
             var farmingWeights = await _context.FarmingWeights
                 .Where(x => farmingWeightIds.Contains(x.Id))
@@ -60,7 +82,13 @@ namespace EliteAPI.Controllers
 
             if (member?.FarmingWeight is null)
             {
-                return NotFound("No farming weight for the player matching this UUID was found");
+                var newMember = await _profileService.GetSelectedProfileMember(playerUuid);
+                
+                if (newMember is null) {
+                    return NotFound("No farming weight for the player matching this UUID was found");
+                }
+                
+                return Ok(_mapper.Map<FarmingWeightDto>(newMember.FarmingWeight));
             }
 
             return Ok(_mapper.Map<FarmingWeightDto>(member.FarmingWeight));
