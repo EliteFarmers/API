@@ -13,7 +13,6 @@ public class HypixelService : IHypixelService
     private readonly RateLimiter _rateLimiter;
     private int _requestsPerMinute;
 
-
     public HypixelService(IHttpClientFactory httpClientFactory)
     {
         GetRequestLimit();

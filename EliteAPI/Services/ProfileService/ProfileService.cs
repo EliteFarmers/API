@@ -21,19 +21,17 @@ public class ProfileService : IProfileService
 
     private readonly IHypixelService _hypixelService;
     private readonly IMojangService _mojangService;
-    private readonly ICacheService _cache;
     private readonly IMapper _mapper;
 
     public ProfileService(DataContext context, 
         IHypixelService hypixelService, IMojangService mojangService, 
-        ProfileParser profileParser, IMapper mapper, ICacheService cacheService,
+        ProfileParser profileParser, IMapper mapper,
         IOptions<ConfigCooldownSettings> coolDowns)
     {
         _context = context;
         _hypixelService = hypixelService;
         _mojangService = mojangService;
         _profileParser = profileParser;
-        _cache = cacheService;
         _mapper = mapper;
         _coolDowns = coolDowns.Value;
     }
@@ -166,7 +164,7 @@ public class ProfileService : IProfileService
 
     public async Task<PlayerData?> GetPlayerDataByIgn(string playerName, bool skipCooldown = false)
     {
-        var uuid = await _cache.GetUuidFromUsername(playerName);
+        var uuid = await _mojangService.GetUuidFromUsername(playerName);
         if (uuid is null) return null;
 
         return await GetPlayerData(uuid, skipCooldown);

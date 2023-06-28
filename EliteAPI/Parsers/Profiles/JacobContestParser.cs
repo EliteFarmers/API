@@ -28,7 +28,7 @@ public static class JacobContestParser
         var newParticipations = new List<ContestParticipation>();
         foreach (var (key, contest) in contests)
         {
-            var contestParticipation = await ParseContestParticipation(contest, key, existingContests, jacob, context);
+            var contestParticipation = await ParseContestParticipation(contest, key, existingContests, jacob, context, member);
 
             if (contestParticipation is null) continue;
             
@@ -43,8 +43,8 @@ public static class JacobContestParser
         await context.SaveChangesAsync();
     }
 
-    public static async Task<ContestParticipation?> ParseContestParticipation(this RawJacobContest contest,
-        string contestKey, Dictionary<long, ContestParticipation> existingContests, JacobData jacob, DataContext context)
+    private static async Task<ContestParticipation?> ParseContestParticipation(this RawJacobContest contest,
+        string contestKey, Dictionary<long, ContestParticipation> existingContests, JacobData jacob, DataContext context, ProfileMember member)
     {
         if (contest.Collected < 100) return null;
 
@@ -117,8 +117,8 @@ public static class JacobContestParser
             MedalEarned = medal,
             Position = contest.Position ?? -1,
 
-            ProfileMemberId = jacob.ProfileMemberId,
-            ProfileMember = jacob.ProfileMember!,
+            ProfileMemberId = member.Id,
+            ProfileMember = member,
             JacobContestId = jacobContest.Id,
             JacobContest = jacobContest,
         };

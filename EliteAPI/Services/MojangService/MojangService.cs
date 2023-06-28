@@ -32,14 +32,25 @@ public class MojangService : IMojangService
         var account = await _context.MinecraftAccounts
             .Where(mc => mc.Name.Equals(ign))
             .FirstOrDefaultAsync();
-
-        // TODO: Fetch account again if it's older than x amount of time
+        
         if (account is null || account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown))
         {
             return await FetchMinecraftAccountByIgn(ign);
-        };
+        }
+        
+        // Get the expiry time for the cache with the last updated time in mind
+        var expiry = TimeSpan.FromSeconds(_coolDowns.MinecraftAccountCooldown - (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - account.LastUpdated));
+        _cache.SetUsernameUuidCombo(account.Name, account.Id, expiry);
 
         return account;
+    }
+
+    public async Task<string?> GetUsernameFromUuid(string uuid) {
+        return await _cache.GetUsernameFromUuid(uuid) ?? (await GetMinecraftAccountByUuid(uuid))?.Name;
+    }
+
+    public async Task<string?> GetUuidFromUsername(string username) {
+        return await _cache.GetUuidFromUsername(username) ?? (await GetMinecraftAccountByIgn(username))?.Id;
     }
 
     public async Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid)
@@ -51,7 +62,11 @@ public class MojangService : IMojangService
         if (account is null || account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown))
         {
             return await FetchMinecraftAccountByUuid(uuid);
-        };
+        }
+        
+        // Get the expiry time for the cache with the last updated time in mind
+        var expiry = TimeSpan.FromSeconds(_coolDowns.MinecraftAccountCooldown - (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - account.LastUpdated));
+        _cache.SetUsernameUuidCombo(account.Name, account.Id, expiry);
 
         return account;
     }
@@ -124,7 +139,7 @@ public class MojangService : IMojangService
     }
 }
 
-public class MojangProfilesResponse
+public abstract class MojangProfilesResponse
 {
     public required string Id { get; set; }
     public required string Name { get; set; }

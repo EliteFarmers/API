@@ -83,7 +83,7 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<Dictionary<string, int>>("BonusWeight")
+                    b.Property<Dictionary<string, double>>("BonusWeight")
                         .IsRequired()
                         .HasColumnType("jsonb");
 
@@ -412,6 +412,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<decimal?>("AccountEntitiesId")
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<long>("LastUpdated")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()

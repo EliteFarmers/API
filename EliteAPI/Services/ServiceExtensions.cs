@@ -3,6 +3,7 @@ using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
@@ -39,8 +40,8 @@ public static class ServiceExtensions
         services.AddSwaggerGen();
     }
 
-    public static void AddEliteScopedServices(this IServiceCollection services)
-    {
+    public static void AddEliteScopedServices(this IServiceCollection services) {
+        services.AddScoped<ICacheService, CacheService.CacheService>();
         services.AddScoped<IHypixelService, HypixelService.HypixelService>();
         services.AddScoped<IMojangService, MojangService.MojangService>(); 
         services.AddScoped<IAccountService, AccountService.AccountService>();

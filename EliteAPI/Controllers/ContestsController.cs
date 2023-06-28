@@ -21,20 +21,36 @@ public class ContestsController : ControllerBase
         _mapper = mapper;
     }
 
-    // TODO: Remove this
-    // GET: api/<ContestsController>
-    [HttpGet]
-    public async Task<IEnumerable<JacobContestDto>> GetAll()
+    // GET api/<ContestsController>/285
+    [HttpGet("at/{year:int}")]
+    [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<Dictionary<long, List<string>>>> GetAllContestsInOneYear(int year)
     {
-        var data = await _context.JacobContests
-            .Where(j => j.Participants > 1)
+        var startTime = FormatUtils.GetTimeFromSkyblockDate(year, 0, 0);
+        var endTime = FormatUtils.GetTimeFromSkyblockDate(year + 1, 0, 0);
+        
+        var contests = await _context.JacobContests
+            .Where(j => j.Timestamp >= startTime && j.Timestamp < endTime)
             .ToListAsync();
 
-        return _mapper.Map<IEnumerable<JacobContestDto>>(data);
+        var result = new Dictionary<long, List<string>>();
+
+        foreach (var contest in contests) {
+            if (!result.TryGetValue(contest.Timestamp, out var value)) {
+                value = new List<string>();
+                result.Add(contest.Timestamp, value);
+            }
+
+            var crop = FormatUtils.GetFormattedCropName(contest.Crop);
+
+            value.Add(crop);
+        }
+
+        return Ok(result);
     }
 
     // GET api/<ContestsController>/200/12/5
-    [HttpGet("{year:int}/{month:int}/{day:int}")]
+    [HttpGet("at/{year:int}/{month:int}/{day:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<IEnumerable<JacobContestWithParticipationsDto>> GetContestsAt(int year, int month, int day)
     {
@@ -44,7 +60,7 @@ public class ContestsController : ControllerBase
     }
 
     // GET api/<ContestsController>/200/12
-    [HttpGet("{year:int}/{month:int}")]
+    [HttpGet("at/{year:int}/{month:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<Dictionary<int, List<JacobContestDto>>> GetAllContestsInOneMonth(int year, int month)
     {

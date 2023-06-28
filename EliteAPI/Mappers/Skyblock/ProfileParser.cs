@@ -178,11 +178,11 @@ public class ProfileParser
             IsSelected = selected,
             WasRemoved = false
         };
-
-        await UpdateProfileMember(profile, member, memberData);
-
+        
         _context.ProfileMembers.Add(member);
         profile.Members.Add(member);
+        
+        await UpdateProfileMember(profile, member, memberData);
 
         try
         {
@@ -214,10 +214,9 @@ public class ProfileParser
 
         member.ParseFarmingWeight(profile.CraftedMinions);
 
-        _context.ProfileMembers.Update(member);
         _context.FarmingWeights.Update(member.FarmingWeight);
+        _context.ProfileMembers.Update(member);
         _context.JacobData.Update(member.JacobData);
-
         _context.Profiles.Update(profile);
 
         await _context.SaveChangesAsync();

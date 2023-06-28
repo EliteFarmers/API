@@ -8,6 +8,8 @@ public static class JacobDataParser
     public static void ParseJacob(this ProfileMember member, RawJacobData? incomingJacob)
     {
         member.JacobData = ParseJacobData(member.JacobData, incomingJacob);
+        member.JacobData.ProfileMember = member;
+        member.JacobData.ProfileMemberId = member.Id;
     }
 
     public static JacobData ParseJacobData(JacobData jacob, RawJacobData? incomingJacob)
