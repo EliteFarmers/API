@@ -1,5 +1,4 @@
 ﻿using EliteAPI.Parsers.Profiles;
-using FluentAssertions;
 
 namespace EliteAPI.Tests.ParserTests;
 

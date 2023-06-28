@@ -15,15 +15,21 @@ public static class FormatUtils
         if (monthDay.Length != 2) return 0;
 
         var month = monthDay[0] - 1;
-        var day = monthDay[1];
+        var day = monthDay[1] - 1;
 
         return GetTimeFromSkyblockDate(year, month, day);
     }
 
+    /// <summary>
+    /// Zero indexed year, month, and day
+    /// </summary>
+    /// <param name="skyblockYear"></param>
+    /// <param name="skyblockMonth"></param>
+    /// <param name="skyblockDay"></param>
+    /// <returns></returns>
     public static long GetTimeFromSkyblockDate(int skyblockYear, int skyblockMonth, int skyblockDay)
     {
         var days = skyblockYear * 372 + skyblockMonth * 31 + skyblockDay;
-
         var seconds = days * 1200; // 1200 (60 * 20) seconds per day
 
         return SkyblockDate.SkyblockEpochSeconds + seconds;
@@ -118,12 +124,19 @@ public static class FormatUtils
 
 public class SkyblockDate
 {
-    public static readonly int SkyblockEpochSeconds = 1560275700;
+    public const int SkyblockEpochSeconds = 1560275700;
     public int Year { get; set; }
     public int Month { get; set; }
     public int Day { get; set; }
-    public long UnixSeconds { get; set; }
+    public long UnixSeconds { get; private set; }
+    public long ElapsedSeconds => UnixSeconds - SkyblockEpochSeconds;
 
+    /// <summary>
+    ///     Creates a new SkyblockDate object from a Skyblock date, with numbers being 0 indexed.
+    /// </summary>
+    /// <param name="year"></param>
+    /// <param name="month"></param>
+    /// <param name="day"></param>
     public SkyblockDate(int year, int month, int day)
     {
         Year = year;
@@ -135,22 +148,23 @@ public class SkyblockDate
 
     public SkyblockDate(long unixSeconds)
     {
-        UnixSeconds = SkyblockEpochSeconds - unixSeconds;
-        var days = UnixSeconds / 1200;
+        UnixSeconds = unixSeconds;
+        var timeElapsed = unixSeconds - SkyblockEpochSeconds;
+        var days = timeElapsed / 1200;
 
         var month = (int) Math.Floor(days % 372f / 31f);
         var day = (int) Math.Floor(days % 372f % 31f);
 
         Year = (int) Math.Floor(days / 372f);
-        Month = day == 0 ? month - 1 : month;
-        Day = day == 0 ? 31 : day;
+        Month = month;
+        Day = day;
     }
 
     public SkyblockDate(DateTime dateTime) : this(new DateTimeOffset(dateTime).ToUnixTimeSeconds()) { }
 
-    public string MonthName() => FormatUtils.GetSkyblockMonthName(Month);
+    public string MonthName() => FormatUtils.GetSkyblockMonthName(Month + 1);
     public override string ToString()
     {
-        return $"{MonthName()} {FormatUtils.AppendOrdinalSuffix(Day)}, Year {Year + 1}";
+        return $"{MonthName()} {FormatUtils.AppendOrdinalSuffix(Day + 1)}, Year {Year + 1}";
     }
 }
