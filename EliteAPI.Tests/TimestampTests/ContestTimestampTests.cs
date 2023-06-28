@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Utilities;
 
-namespace EliteAPI.Tests.ContestTests; 
+namespace EliteAPI.Tests.TimestampTests; 
 
 public class ContestTimestampTests {
     

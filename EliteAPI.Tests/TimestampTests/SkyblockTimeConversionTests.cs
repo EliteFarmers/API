@@ -31,7 +31,6 @@ public class SkyblockTimeConversionTests {
     [InlineData(1560275700 + 60 * 20 * 5, 0, 0, 5)]
     [InlineData(1560275700 + 60 * 20 * 30, 0, 0, 30)]
     [InlineData(1560275700 + 60 * 20 * 31, 0, 1, 0)]
-    [InlineData(1560275700 + 60 * 20 * 31, 0, 1, 0)]
     public void UnixSecondsToSkyblockDateTest(long unixSeconds, int year, int month, int day) {
         var date = new SkyblockDate(unixSeconds);
         
