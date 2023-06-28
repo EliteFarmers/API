@@ -41,5 +41,5 @@ public class ProfileMemberDto
 
     public bool IsSelected { get; set; } = false;
     public bool WasRemoved { get; set; } = false;
-    public DateTime LastUpdated { get; set; } = DateTime.MinValue;
+    public long LastUpdated { get; set; } = 0;
 }
