@@ -10,7 +10,7 @@ using EliteAPI.Parsers.Profiles;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 using EliteAPI.Utilities;
 
-namespace EliteAPI.Mappers.Skyblock;
+namespace EliteAPI.Parsers.Skyblock;
 
 public class ProfileParser
 {

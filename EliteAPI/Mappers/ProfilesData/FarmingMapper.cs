@@ -3,7 +3,7 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 using Profile = AutoMapper.Profile;
 
-namespace EliteAPI.Mappers.ProfilesData;
+namespace EliteAPI.Parsers.ProfilesData;
 
 public class JacobDataMapper : Profile
 {

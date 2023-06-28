@@ -2,7 +2,7 @@
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
 
-namespace EliteAPI.Mappers.ProfilesData;
+namespace EliteAPI.Parsers.ProfilesData;
 
 public class ProfileMapper : Profile
 {

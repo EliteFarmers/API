@@ -2,7 +2,7 @@
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities;
 
-namespace EliteAPI.Mappers.ProfilesData;
+namespace EliteAPI.Parsers.ProfilesData;
 
 public class AccountMapper : Profile
 {

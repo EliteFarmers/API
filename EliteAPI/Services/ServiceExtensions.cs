@@ -1,7 +1,7 @@
 ﻿using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
-using EliteAPI.Mappers.Skyblock;
+using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
-using EliteAPI.Mappers.Skyblock;
+using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.HypixelService;
