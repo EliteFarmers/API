@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,10 +59,10 @@ namespace EliteAPI.Data.Migrations
                     ProfileId = table.Column<string>(type: "text", nullable: false),
                     ProfileName = table.Column<string>(type: "text", nullable: false),
                     GameMode = table.Column<string>(type: "text", nullable: true),
-                    LastSave = table.Column<long>(type: "bigint", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    Banking = table.Column<ProfileBanking>(type: "jsonb", nullable: false),
-                    CraftedMinions = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false)
+                    BankBalance = table.Column<double>(type: "double precision", nullable: false),
+                    CraftedMinions = table.Column<Dictionary<string, int>>(type: "jsonb", nullable: false),
+                    LastUpdated = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,14 +77,15 @@ namespace EliteAPI.Data.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Properties = table.Column<List<MinecraftAccountProperty>>(type: "jsonb", nullable: false),
                     PreviousNames = table.Column<Dictionary<string, long>>(type: "jsonb", nullable: false),
-                    AccountId = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
+                    LastUpdated = table.Column<long>(type: "bigint", nullable: false),
+                    AccountEntitiesId = table.Column<decimal>(type: "numeric(20,0)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MinecraftAccounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MinecraftAccounts_Accounts_AccountId",
-                        column: x => x.AccountId,
+                        name: "FK_MinecraftAccounts_Accounts_AccountEntitiesId",
+                        column: x => x.AccountEntitiesId,
                         principalTable: "Accounts",
                         principalColumn: "Id");
                 });
@@ -161,6 +162,28 @@ namespace EliteAPI.Data.Migrations
                         column: x => x.ProfileId,
                         principalTable: "Profiles",
                         principalColumn: "ProfileId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FarmingWeights",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TotalWeight = table.Column<double>(type: "double precision", nullable: false),
+                    CropWeight = table.Column<Dictionary<string, double>>(type: "jsonb", nullable: false),
+                    BonusWeight = table.Column<Dictionary<string, double>>(type: "jsonb", nullable: false),
+                    ProfileMemberId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FarmingWeights", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FarmingWeights_ProfileMembers_ProfileMemberId",
+                        column: x => x.ProfileMemberId,
+                        principalTable: "ProfileMembers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -274,6 +297,12 @@ namespace EliteAPI.Data.Migrations
                 column: "ProfileMemberId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FarmingWeights_ProfileMemberId",
+                table: "FarmingWeights",
+                column: "ProfileMemberId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_JacobContests_Timestamp",
                 table: "JacobContests",
                 column: "Timestamp");
@@ -285,9 +314,9 @@ namespace EliteAPI.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MinecraftAccounts_AccountId",
+                name: "IX_MinecraftAccounts_AccountEntitiesId",
                 table: "MinecraftAccounts",
-                column: "AccountId");
+                column: "AccountEntitiesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PlayerData_Uuid",
@@ -317,6 +346,9 @@ namespace EliteAPI.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ContestParticipations");
+
+            migrationBuilder.DropTable(
+                name: "FarmingWeights");
 
             migrationBuilder.DropTable(
                 name: "PlayerData");
