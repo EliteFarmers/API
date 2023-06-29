@@ -6,6 +6,7 @@ using EliteAPI.Services.AccountService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.HypixelService;
+using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.Extensions.Configuration.Json;
@@ -47,6 +48,7 @@ public static class ServiceExtensions
         services.AddScoped<IAccountService, AccountService.AccountService>();
         services.AddScoped<IProfileService, ProfileService.ProfileService>();
         services.AddScoped<IDiscordService, DiscordService.DiscordService>();
+        services.AddScoped<ILeaderboardService, LeaderboardService.LeaderboardService>();
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();
@@ -76,8 +78,13 @@ public static class ServiceExtensions
         {
             Path = "Config\\Cooldown.json",
         });
-
+        builder.Configuration.Sources.Add(new JsonConfigurationSource()
+        {
+            Path = "Config\\Leaderboards.json",
+        });
+        
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
+        builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
     }
 }

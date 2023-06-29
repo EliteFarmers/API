@@ -1,7 +1,11 @@
-﻿using EliteAPI.Data;
+﻿using EliteAPI.Config.Settings;
+using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Services.LeaderboardService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,17 +16,43 @@ namespace EliteAPI.Controllers;
 public class LeaderboardController : ControllerBase
 {
     private readonly DataContext _context;
+    private readonly ILeaderboardService _leaderboardService;
+    private readonly ConfigLeaderboardSettings _settings;
 
-    public LeaderboardController(DataContext dataContext)
+    public LeaderboardController(DataContext dataContext, ILeaderboardService leaderboardService, IOptions<ConfigLeaderboardSettings> lbSettings)
     {
         _context = dataContext;
+        _leaderboardService = leaderboardService;
+        _settings = lbSettings.Value;
     }
 
     // GET: api/<LeaderboardController>
     [HttpGet]
-    public IEnumerable<string> Get()
+    public async Task<ActionResult<LeaderboardDto<double>>> Get()
     {
-        return new string[] { "value1", "value2" };
+        var lb = _settings.Leaderboards.FirstOrDefault(x => x.Id == "FarmingWeight");
+        
+        if (lb is null)
+        {
+            return BadRequest("Leaderboard not found");
+        }
+        
+        var data = await _leaderboardService.GetLeaderboardSlice(lb.Id, 0, 100);
+        
+        if (data.Count == 0)
+        {
+            return BadRequest("Failed to fetch leaderboard data");
+        }
+
+        var leaderboard = new LeaderboardDto<double> {
+            Id = lb.Id,
+            Title = lb.Title,
+            Limit = 100,
+            Offset = 0,
+            Entries = data
+        };
+        
+        return Ok(leaderboard);
     }
 
     // GET api/<LeaderboardController>/skill/farming

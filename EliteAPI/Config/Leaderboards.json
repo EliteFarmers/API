@@ -1,0 +1,16 @@
+﻿{
+  "LeaderboardSettings": {
+    "CompleteRefreshInterval": 1200,
+    "Leaderboards": [
+      {
+        "Id": "FarmingWeight",
+        "Title": "Farming Weight",
+        "Limit": 10000,
+        "Order": "Descending",
+        "ScoreFormat": 1,
+        "Path": "weight/farming",
+        "OrderBy": "FarmingWeight.TotalWeight"
+      }
+    ]
+  }
+}
