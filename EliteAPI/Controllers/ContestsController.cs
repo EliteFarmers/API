@@ -75,9 +75,8 @@ public class ContestsController : ControllerBase
 
         var data = new Dictionary<int, List<JacobContestDto>>();
 
-        foreach (var contest in mappedContests)
-        {
-            var skyblockDate = FormatUtils.GetSkyblockDate(new DateTime().AddSeconds(contest.Timestamp));
+        foreach (var contest in mappedContests) {
+            var skyblockDate = new SkyblockDate(contest.Timestamp);
             var day = skyblockDate.Day;
 
             if (data.TryGetValue(day, out var value))
