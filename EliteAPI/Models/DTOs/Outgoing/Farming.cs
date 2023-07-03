@@ -8,7 +8,7 @@ public class JacobDataDto
     public MedalInventoryDto EarnedMedals { get; set; } = new();
     public JacobPerksDto Perks { get; set; } = new();
     public int Participations { get; set; } = 0;
-    //public List<ContestParticipationDto> Contests { get; set; } = new();
+    public List<ContestParticipationDto> Contests { get; set; } = new();
 }
 
 public class MedalInventoryDto

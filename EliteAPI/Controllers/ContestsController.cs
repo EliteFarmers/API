@@ -24,7 +24,7 @@ public class ContestsController : ControllerBase
     // GET api/<ContestsController>/285
     [HttpGet("at/{year:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
-    public async Task<ActionResult<Dictionary<long, List<string>>>> GetAllContestsInOneYear(int year)
+    public async Task<ActionResult<YearlyContestsDto>> GetAllContestsInOneYear(int year)
     {
         var startTime = FormatUtils.GetTimeFromSkyblockDate(year, 0, 0);
         var endTime = FormatUtils.GetTimeFromSkyblockDate(year + 1, 0, 0);
@@ -34,7 +34,6 @@ public class ContestsController : ControllerBase
             .ToListAsync();
 
         var result = new Dictionary<long, List<string>>();
-
         foreach (var contest in contests) {
             if (!result.TryGetValue(contest.Timestamp, out var value)) {
                 value = new List<string>();
@@ -46,7 +45,14 @@ public class ContestsController : ControllerBase
             value.Add(crop);
         }
 
-        return Ok(result);
+        var dto = new YearlyContestsDto {
+            Year = year,
+            Count = contests.Count,
+            Complete = contests.Count == 360,
+            Contests = result
+        };
+
+        return Ok(dto);
     }
 
     // GET api/<ContestsController>/200/12/5

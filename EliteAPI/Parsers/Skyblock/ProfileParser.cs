@@ -126,10 +126,10 @@ public class ProfileParser
         foreach (var (key, memberData) in members)
         {
             // Hyphens shouldn't be included anyways, but just in case Hypixel pulls another fast one
-            var memberId = key.Replace("-", "");
+            var playerId = key.Replace("-", "");
 
-            var selected = playerUuid?.Equals(memberId) == true && profile.Selected;
-            await TransformMemberResponse(memberId, memberData, profileObj, selected);
+            var selected = playerUuid?.Equals(playerId) == true && profile.Selected;
+            await TransformMemberResponse(playerId, memberData, profileObj, selected);
         }
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
@@ -146,12 +146,9 @@ public class ProfileParser
         return profileObj;
     }
 
-    public async Task TransformMemberResponse(string memberId, RawMemberData memberData, Profile profile, bool selected)
+    public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected)
     {
-        var minecraftAccount = await _mojangService.GetMinecraftAccountByUuid(memberId);
-        if (minecraftAccount == null) return;
-
-        var existing = await _fetchProfileMemberData(_context, memberId, profile.ProfileId);
+        var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
 
         if (existing is not null)
         {
@@ -164,11 +161,14 @@ public class ProfileParser
 
             return;
         }
+        
+        var minecraftAccount = await _mojangService.GetMinecraftAccountByUuid(playerId);
+        if (minecraftAccount is null) return;
 
         var member = new ProfileMember
         {
             Id = Guid.NewGuid(),
-            PlayerUuid = memberId,
+            PlayerUuid = playerId,
             
             Profile = profile,
             ProfileId = profile.ProfileId,

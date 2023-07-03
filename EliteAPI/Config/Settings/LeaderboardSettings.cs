@@ -10,10 +10,8 @@ public class Leaderboard
 {
     public required string Id { get; set; }
     public required string Title { get; set; }
-    public int Limit { get; set; }
-    public required string Order { get; set; }
-    public int ScoreFormat { get; set; }
-    public required string Path { get; set; }
-    public required string OrderBy { get; set; }
+    public int Limit { get; set; } = 5000;
+    public required string Order { get; set; } = "desc";
+    public int ScoreFormat { get; set; } = 1;
 }
 

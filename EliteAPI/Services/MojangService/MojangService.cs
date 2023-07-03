@@ -114,7 +114,20 @@ public class MojangService : IMojangService
             data.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             _cache.SetUsernameUuidCombo(data.Name, data.Id);
+            
+            var existing = await _context.MinecraftAccounts
+                .Where(mc => mc.Id.Equals(data.Id))
+                .FirstOrDefaultAsync();
 
+            if (existing is not null) {
+                existing.Name = data.Name;
+                existing.Properties = data.Properties;
+                existing.LastUpdated = data.LastUpdated;
+                
+                await _context.SaveChangesAsync();
+                return existing;
+            }
+            
             await _context.MinecraftAccounts.AddAsync(data);
             await _context.SaveChangesAsync();
 
