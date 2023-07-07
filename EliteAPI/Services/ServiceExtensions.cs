@@ -1,4 +1,5 @@
-﻿using EliteAPI.Authentication;
+﻿using System.Threading.RateLimiting;
+using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Parsers.Skyblock;
@@ -9,6 +10,7 @@ using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration.Json;
 using Prometheus;
 using StackExchange.Redis;
@@ -17,7 +19,6 @@ namespace EliteAPI.Services;
 
 public static class ServiceExtensions
 {
-
     public static void AddEliteServices(this IServiceCollection services) {
         // Add AutoMapper
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -86,5 +87,15 @@ public static class ServiceExtensions
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
         builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
+    }
+    
+    public static void AddEliteRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(_ => _.AddFixedWindowLimiter(policyName: "Default", options => {
+            options.PermitLimit = 1;
+            options.Window = TimeSpan.FromSeconds(10);
+            options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            options.QueueLimit = 0;
+        }));
     }
 }

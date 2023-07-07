@@ -13,6 +13,7 @@ builder.Services.AddEliteServices();
 builder.Services.AddEliteControllers();
 builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
+builder.Services.AddEliteRateLimiting();
 
 builder.RegisterEliteConfigFiles();
 
@@ -21,6 +22,7 @@ var app = builder.Build();
 app.UseMetricServer(9102);
 app.UseRouting();
 app.UseHttpMetrics();
+app.UseRateLimiter();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
