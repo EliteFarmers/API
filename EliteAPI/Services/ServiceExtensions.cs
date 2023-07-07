@@ -1,8 +1,11 @@
-﻿using System.Threading.RateLimiting;
+﻿using System.Globalization;
+using System.Net;
+using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Parsers.Skyblock;
+using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
@@ -10,7 +13,6 @@ using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration.Json;
 using Prometheus;
 using StackExchange.Redis;
@@ -87,15 +89,53 @@ public static class ServiceExtensions
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
         builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
+
+        builder.Services.Configure<ConfigApiRateLimitSettings>(
+            builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));
+
+        builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
+            .Bind(ConfigGlobalRateLimitSettings.Settings);
     }
-    
-    public static void AddEliteRateLimiting(this IServiceCollection services)
-    {
-        services.AddRateLimiter(_ => _.AddFixedWindowLimiter(policyName: "Default", options => {
-            options.PermitLimit = 1;
-            options.Window = TimeSpan.FromSeconds(10);
-            options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            options.QueueLimit = 0;
-        }));
+
+    public static void AddEliteRateLimiting(this IServiceCollection services) {
+        var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
+            
+        services.AddRateLimiter(limiterOptions => {
+            limiterOptions.OnRejected = (context, cancellationToken) => {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)) {
+                    context.HttpContext.Response.Headers.RetryAfter =
+                        ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
+                }
+                
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                // Log the rate limit rejection
+                // context.HttpContext.RequestServices.GetService<MetricsService>();
+                
+                return new ValueTask();
+            };
+
+            limiterOptions.AddPolicy<string, ApiRateLimiterPolicy>(ConfigApiRateLimitSettings.RateLimitName);
+            
+            limiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context => {
+                var remoteIpAddress = context.Connection.RemoteIpAddress;
+
+                // If the IP address is local, return no limiter
+                if (remoteIpAddress is null || IPAddress.IsLoopback(remoteIpAddress))
+                {
+                    return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
+                }
+                
+                return RateLimitPartition.GetTokenBucketLimiter(remoteIpAddress, _ =>
+                    new TokenBucketRateLimiterOptions
+                    {
+                        TokenLimit = globalRateLimitSettings.TokenLimit,
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = globalRateLimitSettings.QueueLimit,
+                        ReplenishmentPeriod = TimeSpan.FromSeconds(globalRateLimitSettings.ReplenishmentPeriod),
+                        TokensPerPeriod = globalRateLimitSettings.TokensPerPeriod,
+                        AutoReplenishment = globalRateLimitSettings.AutoReplenishment
+                    });
+            });
+        });
     }
 }
