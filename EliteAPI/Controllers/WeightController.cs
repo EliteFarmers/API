@@ -5,6 +5,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.ProfileService;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -123,6 +124,7 @@ public class WeightController : ControllerBase
     [Route("/api/[controller]s")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
+    [DisableRateLimiting]
     public ActionResult<Dictionary<string, double>> GetCropWeights() {
         var rawWeights = _weightSettings.CropsPerOneWeight;
         

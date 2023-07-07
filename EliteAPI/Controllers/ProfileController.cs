@@ -14,8 +14,7 @@ public partial class ProfileController : ControllerBase
 {
     private readonly IProfileService _profileService;
     private readonly IMapper _mapper;
-    [GeneratedRegex("[a-zA-Z0-9]{32}")] private static partial Regex IsAlphaNumeric();
-
+    
     public ProfileController(IProfileService profileService, IMapper mapper)
     {
         _profileService = profileService;
