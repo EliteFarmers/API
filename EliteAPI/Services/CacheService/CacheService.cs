@@ -38,4 +38,15 @@ public class CacheService : ICacheService
         db.StringSet($"username:{uuid}", username, expiry);
         db.StringSet($"uuid:{username}", uuid, expiry);
     }
+
+    public async Task<bool> IsContestUpdateRequired(long contestId) {
+        var db = _redis.GetDatabase();
+        var found = await db.StringGetAsync($"c:{contestId}");
+
+        return !found.HasValue || found.ToString() == "0";
+    }
+
+    public void SetContest(long contestId, bool claimed = false) {
+        _redis.GetDatabase().StringSet($"c:{contestId}", claimed ? "1" : "0");
+    }
 }

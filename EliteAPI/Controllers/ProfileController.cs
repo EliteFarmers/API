@@ -24,6 +24,7 @@ public partial class ProfileController : ControllerBase
 
     // GET api/<ProfileController>/[uuid]/Selected
     [HttpGet("{uuid}/Selected")]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileMemberDto>> GetSelectedByPlayerUuid(string uuid)
     {
         if (uuid is not { Length: 32 })
@@ -38,8 +39,6 @@ public partial class ProfileController : ControllerBase
             return NotFound("No selected profile member found for this UUID.");
         }
 
-        Console.WriteLine(member.JacobData?.Perks?.DoubleDrops);
-        
         var mapped = _mapper.Map<ProfileMemberDto>(member);
 
         return Ok(mapped);
@@ -47,6 +46,7 @@ public partial class ProfileController : ControllerBase
 
     // POST api/<ProfileController>
     [HttpGet("{profileUuid}")]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileDto>> Get(string profileUuid)
     {
         var profile = await _profileService.GetProfile(profileUuid);
@@ -62,6 +62,7 @@ public partial class ProfileController : ControllerBase
     // POST api/<ProfileController>s
     [Route("/api/[controller]s/{playerUuid}")]
     [HttpGet]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<List<ProfileDto>>> GetProfiles(string playerUuid)
     {
         var profiles = await _profileService.GetPlayersProfiles(playerUuid);

@@ -53,6 +53,7 @@ public static class FormatUtils
         "CARROT_ITEM" => Crop.Carrot,
         "INK_SACK" => Crop.CocoaBeans,
         "INK_SACK:3" => Crop.CocoaBeans,
+        "INK_SACK_3" => Crop.CocoaBeans,
         "MELON" => Crop.Melon,
         "MUSHROOM_COLLECTION" => Crop.Mushroom,
         "NETHER_STALK" => Crop.NetherWart,

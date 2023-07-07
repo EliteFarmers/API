@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Services.CacheService;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ public static class JacobContestParser
                 .FirstOrDefault(j => j.Id == key)
         );
 
-    public static async Task ParseJacobContests(this ProfileMember member, RawJacobData? incomingJacob, DataContext context)
+    public static async Task ParseJacobContests(this ProfileMember member, RawJacobData? incomingJacob, DataContext context, ICacheService cache)
     {
         var jacob = member.JacobData;
 
@@ -28,7 +29,7 @@ public static class JacobContestParser
         var newParticipations = new List<ContestParticipation>();
         foreach (var (key, contest) in contests)
         {
-            var contestParticipation = await ParseContestParticipation(contest, key, existingContests, jacob, context, member);
+            var contestParticipation = await ParseContestParticipation(contest, key, existingContests, jacob, context, cache, member);
 
             if (contestParticipation is null) continue;
             
@@ -44,7 +45,7 @@ public static class JacobContestParser
     }
 
     private static async Task<ContestParticipation?> ParseContestParticipation(this RawJacobContest contest,
-        string contestKey, Dictionary<long, ContestParticipation> existingContests, JacobData jacob, DataContext context, ProfileMember member)
+        string contestKey, Dictionary<long, ContestParticipation> existingContests, JacobData jacob, DataContext context, ICacheService cache, ProfileMember member)
     {
         if (contest.Collected < 100) return null;
 
@@ -89,26 +90,28 @@ public static class JacobContestParser
         }
 
         var key = timestamp + (int) crop;
-        var jacobContest = await FetchJacobContest(context, key);
 
-        if (jacobContest is null)
-        {
-            jacobContest = new JacobContest
-            {
-                Id = key,
-                Timestamp = timestamp,
-                Crop = (Crop) crop,
-                Participants = contest.Participants ?? -1,
-            };
-            context.JacobContests.Add(jacobContest);
-        }
-        else
-        {
+        if (await cache.IsContestUpdateRequired(key)) {
+            var jacobContest = await FetchJacobContest(context, key);
             var participants = contest.Participants ?? -1;
-            if (contest.Participants > jacobContest.Participants)
+            
+            if (jacobContest is null)
+            {
+                jacobContest = new JacobContest
+                {
+                    Id = key,
+                    Timestamp = timestamp,
+                    Crop = (Crop) crop,
+                    Participants = participants
+                };
+                context.JacobContests.Add(jacobContest);
+            }
+            else if (participants > jacobContest.Participants) 
             {
                 jacobContest.Participants = participants;
             }
+            
+            cache.SetContest(key, participants != -1);
         }
 
         var participation = new ContestParticipation
@@ -119,8 +122,7 @@ public static class JacobContestParser
 
             ProfileMemberId = member.Id,
             ProfileMember = member,
-            JacobContestId = jacobContest.Id,
-            JacobContest = jacobContest,
+            JacobContestId = key
         };
 
         return participation;

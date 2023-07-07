@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.FarmingWeight;
 using EliteAPI.Parsers.Profiles;
+using EliteAPI.Services.CacheService;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
-using EliteAPI.Utilities;
 
 namespace EliteAPI.Parsers.Skyblock;
 
@@ -17,6 +17,7 @@ public class ProfileParser
     private readonly DataContext _context;
     private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
+    private readonly ICacheService _cache;
 
     private readonly Func<DataContext, long, Task<JacobContest?>> _fetchJacobContest = 
         EF.CompileAsyncQuery((DataContext context, long key) =>            
@@ -36,12 +37,13 @@ public class ProfileParser
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
-
-    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper)
+    
+    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService)
     {
         _context = context;
         _mojangService = mojangService;
         _mapper = mapper;
+        _cache = cacheService;
     }
 
     public async Task<List<ProfileMember>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
@@ -205,7 +207,7 @@ public class ProfileParser
         member.ParseJacob(incomingData.Jacob);
         await _context.SaveChangesAsync();
         
-        await member.ParseJacobContests(incomingData.Jacob, _context);
+        await member.ParseJacobContests(incomingData.Jacob, _context, _cache);
 
         member.ParseSkills(incomingData);
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
