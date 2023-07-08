@@ -1,16 +1,100 @@
 ﻿{
   "LeaderboardSettings": {
     "CompleteRefreshInterval": 1200,
+    "CollectionLeaderboards": {
+      "cactus": {
+        "Id": "CACTUS",
+        "Title": "Cactus"
+      },
+      "carrot": {
+          "Id": "CARROT_ITEM",
+          "Title": "Carrot"
+      },
+      "cocoa": {
+          "Id": "INK_SACK:3",
+          "Title": "Cocoa Bean"
+      },
+      "melon": {
+          "Id": "MELON",
+          "Title": "Melon"
+      },
+      "mushroom": {
+          "Id": "MUSHROOM_COLLECTION",
+          "Title": "Mushroom"
+      },
+      "netherwart": {
+          "Id": "NETHER_STALK",
+          "Title": "Nether Wart"
+      },
+      "potato": {
+          "Id": "POTATO_ITEM",
+          "Title": "Potato"
+      },
+      "pumpkin": {
+          "Id": "PUMPKIN",
+          "Title": "Pumpkin"
+      },
+      "sugarcane": {
+          "Id": "SUGAR_CANE",
+          "Title": "Sugar Cane"
+      },
+      "wheat": {
+          "Id": "WHEAT",
+          "Title": "Wheat"
+      }
+    },
     "Leaderboards": [
       {
-        "Id": "FarmingWeight",
+        "Id": "farmingweight",
         "Title": "Farming Weight",
-        "Limit": 10000,
-        "Order": "Descending",
-        "ScoreFormat": 1,
-        "Path": "weight/farming",
-        "OrderBy": "FarmingWeight.TotalWeight"
+        "Limit": 10000
       }
-    ]
+    ],
+    "SkillLeaderboards": {
+      "combat": {
+        "Id": "Combat",
+        "Title": "Combat"
+      },
+      "mining": {
+        "Id": "Mining",
+        "Title": "Mining"
+      },
+      "farming": {
+        "Id": "Farming",
+        "Title": "Farming"
+      },
+      "foraging": {
+        "Id": "Foraging",
+        "Title": "Foraging"
+      },
+      "fishing": {
+        "Id": "Fishing",
+        "Title": "Fishing"
+      },
+      "enchanting": {
+        "Id": "Enchanting",
+        "Title": "Enchanting"
+      },
+      "alchemy": {
+        "Id": "Alchemy",
+        "Title": "Alchemy"
+      },
+      "taming": {
+        "Id": "Taming",
+        "Title": "Taming"
+      },
+      "social": {
+        "Id": "Social",
+        "Title": "Social"
+      },
+      "runecrafting": {
+        "Id": "Runecrafting",
+        "Title": "Runecrafting"
+      },
+      "carpentry": {
+        "Id": "Carpentry",
+        "Title": "Carpentry"
+      }
+    }
   }
 }
