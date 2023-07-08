@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using Profile = AutoMapper.Profile;
 using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Parsers.ProfilesData;
+namespace EliteAPI.Mappers.ProfilesData;
 
 public class PetMapper : Profile
 {
