@@ -26,8 +26,9 @@ public class LeaderboardController : ControllerBase
         _settings = lbSettings.Value;
     }
 
-    // GET: api/<LeaderboardController>/farmingweight
+    // GET: api/<LeaderboardController>/id
     [HttpGet("{id}")]
+    [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardDto>> Get(string id, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
@@ -54,6 +55,7 @@ public class LeaderboardController : ControllerBase
 
     // GET api/<LeaderboardController>/skill/farming
     [HttpGet("skill/{skillName}")]
+    [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardDto>> GetSkillLb(string skillName, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
@@ -92,6 +94,7 @@ public class LeaderboardController : ControllerBase
     
     // GET api/<LeaderboardController>/collection/wheat
     [HttpGet("collection/{collection}/")]
+    [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardDto>> GetCollectionLb(string collection, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
