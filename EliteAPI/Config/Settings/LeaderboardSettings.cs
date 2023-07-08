@@ -3,7 +3,7 @@
 public class ConfigLeaderboardSettings {
     public int CompleteRefreshInterval { get; set; }
     // ReSharper disable once CollectionNeverUpdated.Global
-    public List<Leaderboard> Leaderboards { get; set; } = new();
+    public Dictionary<string, Leaderboard> Leaderboards { get; set; } = new();
     public Dictionary<string, CollectionLeaderboard> CollectionLeaderboards { get; set; } = new();
     public Dictionary<string, SkillLeaderboard> SkillLeaderboards { get; set; } = new();
 }

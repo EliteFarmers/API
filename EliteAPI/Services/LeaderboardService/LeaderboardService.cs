@@ -76,54 +76,16 @@ public class LeaderboardService : ILeaderboardService {
     }
 
     private async Task FetchLeaderboard(string leaderboardId) {
-        var lb = _settings.Leaderboards.FirstOrDefault(x => x.Id == leaderboardId);
-        
-        if (lb is null) {
+        if (!_settings.Leaderboards.ContainsKey(leaderboardId)) {
             throw new Exception($"Leaderboard {leaderboardId} not found");
         }
         
-        var db = _redis.GetDatabase();
-        var lbKey = $"lb:{leaderboardId}";
-        
-        var query = from profileMember in _context.ProfileMembers
-            join farmingWeight in _context.FarmingWeights on profileMember.Id equals farmingWeight.ProfileMemberId
-            join profile in _context.Profiles on profileMember.ProfileId equals profile.ProfileId
-            join minecraftAccount in _context.MinecraftAccounts on profileMember.PlayerUuid equals minecraftAccount.Id
-            where farmingWeight.TotalWeight > 0
-            orderby farmingWeight.TotalWeight descending
-            select new LeaderboardEntry {
-                MemberId = profileMember.Id.ToString(),
-                Profile = profileMember.Profile.ProfileName,
-                Ign = profileMember.MinecraftAccount.Name,
-                Amount = farmingWeight.TotalWeight
-            };
-
-        var scores = await query.Take(lb.Limit).ToListAsync();
+        var query = GetSpecialLeaderboardQuery(leaderboardId);
+        var scores = await query.ToListAsync();
 
         if (scores.Count == 0) return;
 
-        var expiry = DateTime.UtcNow.AddSeconds(_settings.CompleteRefreshInterval);
-
-        foreach (var score in scores) {
-            db.HashSet(score.MemberId, new[] {
-                new HashEntry("profile", score.Profile),
-                new HashEntry("ign", score.Ign),
-            }, CommandFlags.FireAndForget);
-        }
-        
-        var entries = scores.Select(x => 
-            new SortedSetEntry(x.MemberId, x.Amount)).ToArray();
-        
-        var transaction = db.CreateTransaction();
-        
-        // Intentionally not awaiting for use in the transaction
-        #pragma warning disable CS4014 
-        transaction.KeyDeleteAsync(lbKey);
-        transaction.SortedSetAddAsync(lbKey, entries);
-        transaction.KeyExpireAsync(lbKey, expiry);
-        #pragma warning restore CS4014        
-        
-        await transaction.ExecuteAsync();
+        await StoreLeaderboardEntries(scores, leaderboardId);
     }
 
     private async Task FetchSkillLeaderboard(string leaderboardId) {
@@ -212,7 +174,63 @@ public class LeaderboardService : ILeaderboardService {
         await transaction.ExecuteAsync();
     }
 
+    private IQueryable<LeaderboardEntry> GetSpecialLeaderboardQuery(string leaderboardId) {
+        if (!_settings.Leaderboards.TryGetValue(leaderboardId, out var lb)) {
+            throw new Exception($"Leaderboard {leaderboardId} not found");
+        }
+
+        var query = _context.ProfileMembers
+            .Include(p => p.Profile)
+            .Include(p => p.MinecraftAccount);
+        
+        switch (leaderboardId)
+        {
+            case "farmingweight":
+                return (from member in query
+                    join farmingWeight in _context.FarmingWeights on member.Id equals farmingWeight.ProfileMemberId
+                    where farmingWeight.TotalWeight > 0
+                    orderby farmingWeight.TotalWeight descending
+                    select new LeaderboardEntry {
+                        Ign = member.MinecraftAccount.Name,
+                        Profile = member.Profile.ProfileName,
+                        Amount = farmingWeight.TotalWeight,
+                        MemberId = member.Id.ToString()
+                    }).Take(lb.Limit);
+
+            case "goldmedals" or "silvermedals" or "bronzemedals": 
+                var medal = leaderboardId.Replace("medals", "");
+                // Capitalize first letter
+                medal = medal.First().ToString().ToUpper() + medal[1..];
+
+                return (from member in query
+                    join jacobData in _context.JacobData on member.Id equals jacobData.ProfileMemberId
+                    where EF.Property<int>(jacobData.Medals, medal) > 0
+                    orderby EF.Property<int>(jacobData.Medals, medal) descending
+                    select new LeaderboardEntry {
+                        Ign = member.MinecraftAccount.Name,
+                        Profile = member.Profile.ProfileName,
+                        MemberId = member.Id.ToString(),
+                        Amount = EF.Property<int>(jacobData.Medals, medal)
+                    }).Take(lb.Limit);
+            
+            case "participations":
+                return (from member in query
+                    join jacobData in _context.JacobData on member.Id equals jacobData.ProfileMemberId
+                    where jacobData.Participations > 0
+                    orderby jacobData.Participations descending
+                    select new LeaderboardEntry {
+                        Ign = member.MinecraftAccount.Name,
+                        Profile = member.Profile.ProfileName,
+                        MemberId = member.Id.ToString(),
+                        Amount = jacobData.Participations
+                    }).Take(lb.Limit);
+
+            default:
+                throw new Exception($"Leaderboard {leaderboardId} not found");
+        }
+    }
 }
+
 public class LeaderboardEntry {
     public required string MemberId { get; init; }
     public string? Ign { get; init; }

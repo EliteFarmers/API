@@ -43,13 +43,28 @@
           "Title": "Wheat"
       }
     },
-    "Leaderboards": [
-      {
-        "Id": "farmingweight",
+    "Leaderboards": {
+      "farmingweight": {
         "Title": "Farming Weight",
         "Limit": 10000
+      },
+      "goldmedals": {
+        "Title": "Earned Gold Medals",
+        "Limit": 1000
+      },
+      "silvermedals": {
+        "Title": "Earned Silver Medals",
+        "Limit": 1000
+      },
+      "bronzemedals": {
+        "Title": "Earned Bronze Medals",
+        "Limit": 1000
+      },
+      "participations": {
+        "Title": "Jacob Contest Participations",
+        "Limit": 1000
       }
-    ],
+    },
     "SkillLeaderboards": {
       "combat": {
         "Id": "Combat",

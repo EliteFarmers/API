@@ -32,18 +32,15 @@ public class LeaderboardController : ControllerBase
     public async Task<ActionResult<LeaderboardDto>> Get(string id, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
-        
-        var lb = _settings.Leaderboards.FirstOrDefault(x => x.Id == id);
-        
-        if (lb is null)
-        {
+
+        if (!_settings.Leaderboards.TryGetValue(id, out var lb)) {
             return BadRequest("Leaderboard not found");
         }
-        
-        var entries = await _leaderboardService.GetLeaderboardSlice(lb.Id, offset, limit);
+
+        var entries = await _leaderboardService.GetLeaderboardSlice(id, offset, limit);
 
         var leaderboard = new LeaderboardDto {
-            Id = lb.Id,
+            Id = id,
             Title = lb.Title,
             Limit = limit,
             Offset = offset,
