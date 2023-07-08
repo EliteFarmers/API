@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Text.Json;
 using EliteAPI.Config.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
@@ -19,8 +20,8 @@ public static class FarmingWeightParser
                                            + member.FarmingWeight.BonusWeight.Sum(x => x.Value);
     }
 
-    public static Dictionary<string, double> ParseCropWeight(Dictionary<string, long> collections)
-    {
+    public static Dictionary<string, double> ParseCropWeight(JsonDocument jsonCollections) {
+        var collections = jsonCollections.Deserialize<Dictionary<string, long>>() ?? new Dictionary<string, long>();
         var crops = new Dictionary<string, double>();
 
         var collectionPerWeight = FarmingWeightConfig.Settings.CropsPerOneWeight;

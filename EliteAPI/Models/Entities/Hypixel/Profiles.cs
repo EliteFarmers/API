@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
@@ -21,7 +22,7 @@ public class Profile
     public long LastUpdated { get; set; }
 }
 
-public class ProfileMember
+public class ProfileMember : IDisposable
 {
     [Key] public required Guid Id { get; set; }
 
@@ -38,8 +39,8 @@ public class ProfileMember
     public bool WasRemoved { get; set; } = false;
     public long LastUpdated { get; set; } = 0;
 
-    [Column(TypeName = "jsonb")]
-    public Dictionary<string, long> Collections { get; set; } = new();
+    public JsonDocument Collections { get; set; } = JsonDocument.Parse("{}");
+    
     [Column(TypeName = "jsonb")]
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
     [Column(TypeName = "jsonb")]
@@ -56,4 +57,6 @@ public class ProfileMember
     [ForeignKey("Profile")]
     public required string ProfileId { get; set; }
     public required Profile Profile { get; set; }
+    
+    public void Dispose() => Collections?.Dispose();
 }

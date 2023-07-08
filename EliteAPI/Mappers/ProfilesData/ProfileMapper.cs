@@ -1,3 +1,4 @@
+﻿using System.Text.Json;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
@@ -18,7 +19,8 @@ public class ProfileMemberMapper : Profile
     public ProfileMemberMapper()
     {
         CreateMap<ProfileMember, ProfileMemberDto>()
-            .ForMember(x => x.Collections, opt => opt.MapFrom(x => x.Collections))
+            .ForMember(x => x.Collections, opt => 
+                opt.MapFrom(x => x.Collections.Deserialize<Dictionary<string, long>>(new JsonSerializerOptions())))
             .ForMember(x => x.CollectionTiers, opt => opt.MapFrom(x => x.CollectionTiers))
             .ForMember(x => x.CraftedMinions, opt => opt.MapFrom(x => x.Profile.CraftedMinions))
             .ForMember(x => x.Jacob, opt => opt.MapFrom(x => x.JacobData))

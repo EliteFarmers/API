@@ -26,30 +26,27 @@ public class LeaderboardController : ControllerBase
         _settings = lbSettings.Value;
     }
 
-    // GET: api/<LeaderboardController>
-    [HttpGet]
-    public async Task<ActionResult<LeaderboardDto<double>>> Get()
+    // GET: api/<LeaderboardController>/farmingweight
+    [HttpGet("{id}")]
+    public async Task<ActionResult<LeaderboardDto>> Get(string id, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
-        var lb = _settings.Leaderboards.FirstOrDefault(x => x.Id == "FarmingWeight");
+        if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
+        
+        var lb = _settings.Leaderboards.FirstOrDefault(x => x.Id == id);
         
         if (lb is null)
         {
             return BadRequest("Leaderboard not found");
         }
         
-        var data = await _leaderboardService.GetLeaderboardSlice(lb.Id, 0, 100);
-        
-        if (data.Count == 0)
-        {
-            return BadRequest("Failed to fetch leaderboard data");
-        }
+        var entries = await _leaderboardService.GetLeaderboardSlice(lb.Id, offset, limit);
 
-        var leaderboard = new LeaderboardDto<double> {
+        var leaderboard = new LeaderboardDto {
             Id = lb.Id,
             Title = lb.Title,
-            Limit = 100,
-            Offset = 0,
-            Entries = data
+            Limit = limit,
+            Offset = offset,
+            Entries = entries
         };
         
         return Ok(leaderboard);
@@ -57,8 +54,10 @@ public class LeaderboardController : ControllerBase
 
     // GET api/<LeaderboardController>/skill/farming
     [HttpGet("skill/{skillName}")]
-    public async Task<object> Get(string skillName)
+    public async Task<ActionResult<LeaderboardDto>> GetSkillLb(string skillName, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
+        if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
+        
         var skill = skillName.ToLower() switch
         {
             "farming" => SkillName.Farming,
@@ -69,25 +68,47 @@ public class LeaderboardController : ControllerBase
             "enchanting" => SkillName.Enchanting,
             "alchemy" => SkillName.Alchemy,
             "carpentry" => SkillName.Carpentry,
-            "runecrafting" => SkillName.RuneCrafting,
+            "runecrafting" => SkillName.Runecrafting,
             "taming" => SkillName.Taming,
+            "social" => SkillName.Social,
             _ => null
         };
 
-        if (skill is null)
+        if (skill is null || !_settings.SkillLeaderboards.TryGetValue(skill, out var lb))
         {
-            return "Invalid skill name";
+            return BadRequest("Invalid skill.");
         }
+        
+        var entries = await _leaderboardService.GetSkillLeaderboardSlice(skill, offset, limit);
 
-        // SQL query to get the top 100 players for a skill, from the Skills table, with the column name being the skill name
-        var data = await _context.Skills
-            .Select(s => s.Farming)
-            .Where(s => s > 0)
-            .OrderByDescending(s => s)
-            .Take(100)
-            //.Include(s => s.ProfileMember)
-            .ToListAsync();
+        return Ok(new LeaderboardDto {
+            Id = lb.Id,
+            Title = lb.Title,
+            Offset = offset,
+            Limit = limit,
+            Entries = entries
+        });
+    }
+    
+    // GET api/<LeaderboardController>/collection/wheat
+    [HttpGet("collection/{collection}/")]
+    public async Task<ActionResult<LeaderboardDto>> GetCollectionLb(string collection, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
+    {
+        if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
+        
+        if (!_settings.CollectionLeaderboards.TryGetValue(collection, out var lb))
+        {
+            return BadRequest("Invalid collection.");
+        }
+        
+        var entries = await _leaderboardService.GetCollectionLeaderboardSlice(collection, offset, limit);
 
-        return data;
+        return Ok(new LeaderboardDto {
+            Id = lb.Id,
+            Title = lb.Title,
+            Offset = offset,
+            Limit = limit,
+            Entries = entries
+        });
     }
 }

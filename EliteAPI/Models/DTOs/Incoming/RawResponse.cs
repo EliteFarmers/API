@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Pet = EliteAPI.Models.Entities.Hypixel.Pet;
 
@@ -182,7 +183,7 @@ public class RawMemberData
     [JsonPropertyName("essence_ice")]
     public long? EssenceIce { get; set; }
 
-    public Dictionary<string, long>? Collection { get; set; }
+    public JsonDocument? Collection { get; set; }
 
     [JsonPropertyName("talisman_bag")]
     public JsonObject? TalismanBag { get; set; }
