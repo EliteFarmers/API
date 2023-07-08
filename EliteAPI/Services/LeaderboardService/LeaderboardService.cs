@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Config.Settings;
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -23,8 +24,18 @@ public class LeaderboardService : ILeaderboardService {
         var db = _redis.GetDatabase();
         
         var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
-        if (!exists) await FetchLeaderboard(leaderboardId);
-
+        if (exists) return await GetSlice(leaderboardId, offset, limit);
+        
+        if (_settings.Leaderboards.ContainsKey(leaderboardId)) {
+            await FetchLeaderboard(leaderboardId);
+        } else if (_settings.CollectionLeaderboards.ContainsKey(leaderboardId)) {
+            await FetchCollectionLeaderboard(leaderboardId);
+        } else if (_settings.SkillLeaderboards.ContainsKey(leaderboardId)) {
+            await FetchSkillLeaderboard(leaderboardId);
+        } else {
+            return new List<LeaderboardEntry>();
+        }
+        
         return await GetSlice(leaderboardId, offset, limit);
     }
 
@@ -44,6 +55,42 @@ public class LeaderboardService : ILeaderboardService {
         if (!exists) await FetchCollectionLeaderboard(leaderboardId);
 
         return await GetSlice(leaderboardId, offset, limit);
+    }
+
+    public async Task<LeaderboardPositionsDto> GetLeaderboardPositions(string memberId) {
+        var result = new LeaderboardPositionsDto();
+        
+        var db = _redis.GetDatabase();
+
+        // Can't use parallel foreach because of database connection
+        foreach (var lbId in _settings.Leaderboards.Keys) {
+            if (true || !await db.KeyExistsAsync($"lb:{lbId}")) await FetchLeaderboard(lbId);
+            var rank = await db.SortedSetRankAsync($"lb:{lbId}", memberId, Order.Descending);
+            result.misc.Add(lbId, rank.HasValue ? (int) rank.Value + 1 : -1);
+        }
+
+        foreach (var skillName in _settings.SkillLeaderboards.Keys) {
+            if (!await db.KeyExistsAsync($"lb:{skillName}")) await FetchSkillLeaderboard(skillName);
+            var rank = await db.SortedSetRankAsync($"lb:{skillName}", memberId, Order.Descending);
+            result.skills.Add(skillName, rank.HasValue ? (int) rank.Value + 1 : -1);
+        }
+        
+        foreach (var lbId in _settings.CollectionLeaderboards.Keys) {
+            if (!await db.KeyExistsAsync($"lb:{lbId}")) await FetchCollectionLeaderboard(lbId);
+            var rank = await db.SortedSetRankAsync($"lb:{lbId}", memberId, Order.Descending);
+            result.collections.Add(lbId, rank.HasValue ? (int) rank.Value + 1 : -1);
+        }
+        
+        return result;
+    }
+
+    public async Task<int> GetLeaderboardPosition(string leaderboardId, string memberId) {
+        if (!LeaderboardExists(leaderboardId)) return -1;
+        
+        var db = _redis.GetDatabase();
+        var rank = await db.SortedSetRankAsync($"lb:{leaderboardId}", memberId, Order.Descending);
+        
+        return rank.HasValue ? (int) rank.Value + 1 : -1;
     }
 
     private async Task<List<LeaderboardEntry>> GetSlice(string leaderboardId, int offset = 0, int limit = 20) {
@@ -132,7 +179,7 @@ public class LeaderboardService : ILeaderboardService {
                 EF.Functions.JsonExists(p.Collections, lbSettings.Id) 
                 && p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64() > 0)
             .OrderByDescending(p => p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64())
-            .Take(1000)
+            .Take(lbSettings.Limit)
             .Select(p => new LeaderboardEntry {
                 MemberId = p.Id.ToString(),
                 Amount = p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64(),
@@ -204,13 +251,13 @@ public class LeaderboardService : ILeaderboardService {
 
                 return (from member in query
                     join jacobData in _context.JacobData on member.Id equals jacobData.ProfileMemberId
-                    where EF.Property<int>(jacobData.Medals, medal) > 0
-                    orderby EF.Property<int>(jacobData.Medals, medal) descending
+                    where EF.Property<int>(jacobData.EarnedMedals, medal) > 0
+                    orderby EF.Property<int>(jacobData.EarnedMedals, medal) descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
-                        Amount = EF.Property<int>(jacobData.Medals, medal)
+                        Amount = EF.Property<int>(jacobData.EarnedMedals, medal)
                     }).Take(lb.Limit);
             
             case "participations":
@@ -228,6 +275,18 @@ public class LeaderboardService : ILeaderboardService {
             default:
                 throw new Exception($"Leaderboard {leaderboardId} not found");
         }
+    }
+
+    private bool LeaderboardExists(string leaderboardId) {
+        return _settings.CollectionLeaderboards.ContainsKey(leaderboardId)
+               || _settings.SkillLeaderboards.ContainsKey(leaderboardId)
+               || _settings.Leaderboards.ContainsKey(leaderboardId);
+    }
+
+    public bool TryGetLeaderboardSettings(string leaderboardId, out Leaderboard? lb) {
+        return _settings.CollectionLeaderboards.TryGetValue(leaderboardId, out lb)
+               || _settings.SkillLeaderboards.TryGetValue(leaderboardId, out lb) 
+               || _settings.Leaderboards.TryGetValue(leaderboardId, out lb);
     }
 }
 

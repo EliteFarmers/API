@@ -111,4 +111,53 @@ public class LeaderboardController : ControllerBase
             Entries = entries
         });
     }
+    
+    // GET api/<LeaderboardController>/ranks/[player]/[profile]
+    [HttpGet("ranks/{playerUuid}/{profileUuid}")]
+    [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<LeaderboardPositionsDto>> GetLeaderboardRanks(string playerUuid, string profileUuid) {
+        var memberId = await _context.ProfileMembers
+            .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync();
+        
+        if (memberId == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
+        
+        var positions = await _leaderboardService.GetLeaderboardPositions(memberId.ToString());
+        
+        return Ok(positions);
+    }
+    
+    // GET api/<LeaderboardController>/rank/[lbId]/[player]/[profile]
+    [HttpGet("rank/{leaderboardId}/{playerUuid}/{profileUuid}")]
+    [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<LeaderboardPositionDto>> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileUuid, [FromQuery] bool includeUpcoming = false) {
+        if (!_leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
+            return BadRequest("Invalid leaderboard ID.");
+        }
+
+        var memberId = await _context.ProfileMembers
+            .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync();
+        
+        if (memberId == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
+        
+        var position = await _leaderboardService.GetLeaderboardPosition(leaderboardId, memberId.ToString());
+        List<LeaderboardEntry>? upcomingPlayers = null;
+
+        if (includeUpcoming && position == -1) {
+            upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
+        } else if (includeUpcoming && position > 1) {
+            upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(position - 6, 0),
+                Math.Min(position - 1, 5));
+        }
+        
+        var result = new LeaderboardPositionDto {
+            Rank = position,
+            UpcomingPlayers = upcomingPlayers
+        };
+        
+        return Ok(result);
+    }
 }
