@@ -5,7 +5,7 @@ public class ProfileDto
     public required string ProfileId { get; set; }
     public required string ProfileName { get; set; }
     public string GameMode { get; set; } = "classic";
-    public long LastSave { get; set; }
+    public bool Selected { get; set; }
     public bool IsDeleted { get; set; } = false;
 
     public double BankBalance { get; set; }

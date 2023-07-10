@@ -97,6 +97,9 @@ public class RawMemberData
     public JsonObject? AccessoryBag { get; set; }
 
     public RawLeveling? Leveling { get; set; }
+    
+    [JsonPropertyName("deletion_notice")]
+    public JsonObject? DeletionNotice { get; set; }
 
     [JsonPropertyName("crafted_generators")]
     public string[]? CraftedGenerators { get; set; }

@@ -51,8 +51,7 @@ public class ProfileParser
     {
         var profiles = new List<ProfileMember>();
         if (!data.Success || data.Profiles is not { Length: > 0 }) return profiles;
-
-        var existingProfileIds = new List<string>();
+        
         
         foreach (var profile in data.Profiles)
         {
@@ -64,25 +63,8 @@ public class ProfileParser
                 .Where(member => member.PlayerUuid.Equals(playerUuid));
 
             profiles.AddRange(owned);
-            existingProfileIds.Add(transformed.ProfileId);
         }
-
-        var missingProfileIds = await _context.ProfileMembers               
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && !p.WasRemoved && !existingProfileIds.Contains(p.ProfileId))
-            .Select(p => p.Id)
-            .ToListAsync();
-
-        if (missingProfileIds.Count == 0) return profiles;
-
-        // Mark all members that were not returned as deleted
-        foreach (var memberId in missingProfileIds)
-        {
-            var member = await _context.ProfileMembers.FindAsync(memberId);
-            if (member is null) continue;
-
-            member.WasRemoved = true;
-        }
-
+        
         await _context.SaveChangesAsync();
 
         return profiles;
@@ -153,12 +135,14 @@ public class ProfileParser
     {
         var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
 
+        if (existing?.WasRemoved == true) return;
+        
         if (existing is not null)
         {
-            //if (existing.WasRemoved) return;
-
             existing.IsSelected = selected;
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            
+            existing.WasRemoved = memberData.DeletionNotice is not null;
 
             await UpdateProfileMember(profile, existing, memberData);
 
@@ -179,7 +163,7 @@ public class ProfileParser
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,
-            WasRemoved = false
+            WasRemoved = memberData.DeletionNotice is not null
         };
         
         _context.ProfileMembers.Add(member);

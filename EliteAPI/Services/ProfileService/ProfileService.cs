@@ -84,6 +84,7 @@ public class ProfileService : IProfileService
                    .Include(p => p.FarmingWeight)
                    .Include(p => p.JacobData)
                    .ThenInclude(j => j.Contests)
+                   .ThenInclude(c => c.JacobContest)
                    .AsSplitQuery()
                    .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );

@@ -24,8 +24,18 @@ public static class JacobContestParser
 
         // Dictionary of existing contests for faster lookup
         var existingContests = jacob.Contests
-            .ToDictionary(contest => contest.JacobContest.Timestamp + (int)contest.JacobContest.Crop);
-
+            .DistinctBy(c => c.JacobContest.Timestamp + (int) c.JacobContest.Crop) // Hopefully should not be needed
+            .ToDictionary(c => c.JacobContest.Timestamp + (int) c.JacobContest.Crop);
+        
+        /* Remove contests that aren't distinct (should not happen)
+        var removedContests = jacob.Contests
+            .Where(c => !existingContests.ContainsValue(c))
+            .ToList();
+        
+        context.ContestParticipations.RemoveRange(removedContests);
+        jacob.Contests.RemoveAll(c => !existingContests.ContainsKey(c.JacobContest.Timestamp + (int) c.JacobContest.Crop));
+        */
+        
         var newParticipations = new List<ContestParticipation>();
         foreach (var (key, contest) in contests)
         {
@@ -78,8 +88,10 @@ public static class JacobContestParser
         // or if the contest has not been claimed (in case it got claimed after the last update)
         var existing = existingContests.GetValueOrDefault(timestamp + (int) crop);
 
+        // Skip if contest is claimed and processed because the time is before last update
         if (existing is not null && timestamp < jacob.ContestsLastUpdated && existing.Position >= 0) return null;
 
+        // Update existing contest if it exists
         if (existing is not null)
         {
             existing.Collected = contest.Collected;
@@ -90,13 +102,15 @@ public static class JacobContestParser
         }
 
         var key = timestamp + (int) crop;
-
+        // If contest participation doesn't exist yet, check to see if the contest itself exists
         if (await cache.IsContestUpdateRequired(key)) {
+            // Contest doesn't exist or doesn't have participants yet, so fetch it
             var jacobContest = await FetchJacobContest(context, key);
             var participants = contest.Participants ?? -1;
             
             if (jacobContest is null)
             {
+                // Contest doesn't exist, so create it
                 jacobContest = new JacobContest
                 {
                     Id = key,
@@ -108,12 +122,15 @@ public static class JacobContestParser
             }
             else if (participants > jacobContest.Participants) 
             {
+                // Contest exists, but doesn't have participants yet, so update it
                 jacobContest.Participants = participants;
             }
             
-            cache.SetContest(key, participants != -1);
+            // Mark contest as processed
+            if (participants != -1) cache.SetContest(key);
         }
 
+        // Create new contest participation
         var participation = new ContestParticipation
         {
             Collected = contest.Collected,

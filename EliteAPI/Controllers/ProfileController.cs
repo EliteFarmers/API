@@ -2,7 +2,9 @@
 using System.Text.RegularExpressions;
 using EliteAPI.Services.ProfileService;
 using AutoMapper;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,15 +12,17 @@ namespace EliteAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public partial class ProfileController : ControllerBase
+public class ProfileController : ControllerBase
 {
     private readonly IProfileService _profileService;
     private readonly IMapper _mapper;
-    
-    public ProfileController(IProfileService profileService, IMapper mapper)
+    private readonly DataContext _context;
+
+    public ProfileController(IProfileService profileService, IMapper mapper, DataContext dataContext)
     {
         _profileService = profileService;
         _mapper = mapper;
+        _context = dataContext;
     }
 
     // GET api/<ProfileController>/[uuid]/Selected
@@ -43,7 +47,22 @@ public partial class ProfileController : ControllerBase
         return Ok(mapped);
     }
 
-    // POST api/<ProfileController>
+    // GET api/<ProfileController>
+    [HttpGet("{playerUuid}/{profileUuid}")]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<ProfileMemberDto>> GetSpecificProfile(string playerUuid, string profileUuid)
+    {
+        var profile = await _profileService.GetProfileMember(profileUuid, playerUuid);
+        if (profile is null)
+        {
+            return NotFound("No profile matching this UUID was found for this player");
+        }
+
+        var mapped = _mapper.Map<ProfileMemberDto>(profile);
+        return Ok(mapped);
+    }
+    
+    // GET api/<ProfileController>
     [HttpGet("{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileDto>> Get(string profileUuid)
@@ -58,7 +77,7 @@ public partial class ProfileController : ControllerBase
         return Ok(mapped);
     }
 
-    // POST api/<ProfileController>s
+    // GET api/<ProfileController>s
     [Route("/api/[controller]s/{playerUuid}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -70,7 +89,16 @@ public partial class ProfileController : ControllerBase
         {
             return NotFound("No profiles matching this UUID were found");
         }
+        
+        var mapped = _mapper.Map<List<ProfileDto>>(profiles);
 
-        return Ok(_mapper.Map<List<ProfileDto>>(profiles));
+        var selected = await _context.ProfileMembers
+            .Where(s => s.PlayerUuid == playerUuid && s.IsSelected)
+            .Select(s => s.ProfileId)
+            .FirstOrDefaultAsync();
+        
+        mapped.ForEach(p => p.Selected = p.ProfileId == selected);
+        
+        return Ok(mapped);
     }
 }

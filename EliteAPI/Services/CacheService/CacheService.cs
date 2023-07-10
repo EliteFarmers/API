@@ -43,7 +43,7 @@ public class CacheService : ICacheService
         var db = _redis.GetDatabase();
         var found = await db.StringGetAsync($"c:{contestId}");
 
-        return !found.HasValue || found.ToString() == "0";
+        return found.IsNullOrEmpty || found.ToString() == "0";
     }
 
     public void SetContest(long contestId, bool claimed = false) {
