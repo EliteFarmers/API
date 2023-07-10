@@ -78,6 +78,21 @@ public static class FormatUtils
         Crop.Wheat => "Wheat",
         _ => "Invalid Crop"
     };
+    
+    public static Crop? FormattedCropNameToCrop(string cropName) => cropName switch
+    {
+        "Cactus" => Crop.Cactus,
+        "Carrot" => Crop.Carrot,
+        "Cocoa Beans" => Crop.CocoaBeans,
+        "Melon" => Crop.Melon,
+        "Mushroom" => Crop.Mushroom,
+        "Nether Wart" => Crop.NetherWart,
+        "Potato" => Crop.Potato,
+        "Pumpkin" => Crop.Pumpkin,
+        "Sugar Cane" => Crop.SugarCane,
+        "Wheat" => Crop.Wheat,
+        _ => null
+    };
 
     public static string? GetFormattedCropName(string itemId)
     {
@@ -120,52 +135,5 @@ public static class FormatUtils
         if (j == 3 && k != 13) return $"{number}rd";
 
         return $"{number}th";
-    }
-}
-
-public class SkyblockDate
-{
-    public const int SkyblockEpochSeconds = 1560275700;
-    public int Year { get; set; }
-    public int Month { get; set; }
-    public int Day { get; set; }
-    public long UnixSeconds { get; private set; }
-    public long ElapsedSeconds => UnixSeconds - SkyblockEpochSeconds;
-
-    /// <summary>
-    ///     Creates a new SkyblockDate object from a Skyblock date, with numbers being 0 indexed.
-    /// </summary>
-    /// <param name="year"></param>
-    /// <param name="month"></param>
-    /// <param name="day"></param>
-    public SkyblockDate(int year, int month, int day)
-    {
-        Year = year;
-        Month = month;
-        Day = day;
-
-        UnixSeconds = FormatUtils.GetTimeFromSkyblockDate(year, month, day);
-    }
-
-    public SkyblockDate(long unixSeconds)
-    {
-        UnixSeconds = unixSeconds;
-        var timeElapsed = unixSeconds - SkyblockEpochSeconds;
-        var days = timeElapsed / 1200;
-
-        var month = (int) Math.Floor(days % 372f / 31f);
-        var day = (int) Math.Floor(days % 372f % 31f);
-
-        Year = (int) Math.Floor(days / 372f);
-        Month = month;
-        Day = day;
-    }
-
-    public SkyblockDate(DateTime dateTime) : this(new DateTimeOffset(dateTime).ToUnixTimeSeconds()) { }
-
-    public string MonthName() => FormatUtils.GetSkyblockMonthName(Month + 1);
-    public override string ToString()
-    {
-        return $"{MonthName()} {FormatUtils.AppendOrdinalSuffix(Day + 1)}, Year {Year + 1}";
     }
 }

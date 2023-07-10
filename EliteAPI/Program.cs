@@ -1,6 +1,7 @@
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services;
+using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Prometheus;
@@ -17,8 +18,14 @@ builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
 var app = builder.Build();
 
+app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
 
@@ -46,6 +53,15 @@ using (var scope = app.Services.CreateScope())
     try
     {
         db.Database.Migrate();
+        Console.WriteLine(FormatUtils.GetSkyblockDate(DateTime.UtcNow));
+        Console.WriteLine(new SkyblockDate(1605359700));
+        Console.WriteLine(new SkyblockDate(1688840100));
+        Console.WriteLine(new SkyblockDate(1688843700));
+        Console.WriteLine(new SkyblockDate(1689279300));
+        Console.WriteLine(new SkyblockDate(1689282900));
+        Console.WriteLine(new SkyblockDate(1649110500));
+        Console.WriteLine(new SkyblockDate(1605809700));
+
     }
     catch (Exception e)
     {

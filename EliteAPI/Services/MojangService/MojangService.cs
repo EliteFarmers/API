@@ -152,7 +152,7 @@ public class MojangService : IMojangService
     }
 }
 
-public abstract class MojangProfilesResponse
+public class MojangProfilesResponse
 {
     public required string Id { get; set; }
     public required string Name { get; set; }

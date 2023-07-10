@@ -1,9 +1,14 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace EliteAPI.Controllers;
 
@@ -11,14 +16,17 @@ namespace EliteAPI.Controllers;
 [ApiController]
 public class ContestsController : ControllerBase
 {
-
     private readonly DataContext _context;
     private readonly IMapper _mapper;
+    private readonly IConnectionMultiplexer _cache;
+    private readonly ILogger<ContestsController> _logger;
 
-    public ContestsController(DataContext dataContext, IMapper mapper)
+    public ContestsController(DataContext dataContext, IMapper mapper, IConnectionMultiplexer cache, ILogger<ContestsController> logger)
     {
         _context = dataContext;
         _mapper = mapper;
+        _cache = cache;
+        _logger = logger;
     }
 
     // GET api/<ContestsController>/285
@@ -26,11 +34,32 @@ public class ContestsController : ControllerBase
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<YearlyContestsDto>> GetAllContestsInOneYear(int year)
     {
-        var startTime = FormatUtils.GetTimeFromSkyblockDate(year, 0, 0);
-        var endTime = FormatUtils.GetTimeFromSkyblockDate(year + 1, 0, 0);
+        var currentDate = SkyblockDate.Now;
+        if (currentDate.Year == year - 1) {
+            var db = _cache.GetDatabase();
+
+            var data = await db.StringGetAsync($"contests:{currentDate.Year}");
+            if (data.HasValue)
+                try {
+                    var sourcedContests = JsonSerializer.Deserialize<Dictionary<long, List<string>>>(data!);
+
+                    return Ok(new YearlyContestsDto {
+                        Year = currentDate.Year + 1,
+                        Count = (sourcedContests?.Count ?? 0) * 3,
+                        Complete = sourcedContests?.Count == 124,
+                        Contests = sourcedContests ?? new Dictionary<long, List<string>>()
+                    });
+                }
+                catch (Exception e) {
+                    _logger.LogError(e, "Failed to deserialize cached contests data");
+                }
+        }
+        
+        var startTime = FormatUtils.GetTimeFromSkyblockDate(year - 1, 0, 0);
+        var endTime = FormatUtils.GetTimeFromSkyblockDate(year, 0, 0);
         
         var contests = await _context.JacobContests
-            .Where(j => j.Timestamp >= startTime && j.Timestamp < endTime)
+            .Where(j => j.Timestamp > startTime && j.Timestamp < endTime)
             .ToListAsync();
 
         var result = new Dictionary<long, List<string>>();
@@ -48,19 +77,27 @@ public class ContestsController : ControllerBase
         var dto = new YearlyContestsDto {
             Year = year,
             Count = contests.Count,
-            Complete = contests.Count == 360,
+            Complete = contests.Count == 372,
             Contests = result
         };
 
         return Ok(dto);
     }
-
+    
+    // GET api/<ContestsController>/at/now
+    [HttpGet("at/now")]
+    [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<YearlyContestsDto>> GetThisYearsContests() {
+        return await GetAllContestsInOneYear(SkyblockDate.Now.Year + 1);
+    }
+    
     // GET api/<ContestsController>/200/12/5
     [HttpGet("at/{year:int}/{month:int}/{day:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
-    public async Task<IEnumerable<JacobContestWithParticipationsDto>> GetContestsAt(int year, int month, int day)
-    {
-        var timestamp = FormatUtils.GetTimeFromSkyblockDate(year, month, day);
+    public async Task<ActionResult<IEnumerable<JacobContestWithParticipationsDto>>> GetContestsAt(int year, int month, int day) {
+        if (year < 1 || month is > 12 or < 1 || day is > 31 or < 1) return BadRequest("Invalid date.");
+        
+        var timestamp = FormatUtils.GetTimeFromSkyblockDate(year - 1, month - 1, day - 1);
 
         return await GetContestsAt(timestamp);
     }
@@ -68,10 +105,12 @@ public class ContestsController : ControllerBase
     // GET api/<ContestsController>/200/12
     [HttpGet("at/{year:int}/{month:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
-    public async Task<Dictionary<int, List<JacobContestDto>>> GetAllContestsInOneMonth(int year, int month)
+    public async Task<ActionResult<Dictionary<int, List<JacobContestDto>>>> GetAllContestsInOneMonth(int year, int month)
     {
-        var startTime = FormatUtils.GetTimeFromSkyblockDate(year, month, 0);
-        var endTime = FormatUtils.GetTimeFromSkyblockDate(year, month + 1, 0);
+        if (year < 1 || month is > 12 or < 1) return BadRequest("Invalid date.");
+        
+        var startTime = FormatUtils.GetTimeFromSkyblockDate(year - 1, month - 1, 0);
+        var endTime = FormatUtils.GetTimeFromSkyblockDate(year - 1, month, 0);
 
         var contests = await _context.JacobContests
             .Where(j => j.Timestamp >= startTime && j.Timestamp < endTime)
@@ -83,7 +122,7 @@ public class ContestsController : ControllerBase
 
         foreach (var contest in mappedContests) {
             var skyblockDate = new SkyblockDate(contest.Timestamp);
-            var day = skyblockDate.Day;
+            var day = skyblockDate.Day + 1;
 
             if (data.TryGetValue(day, out var value))
             {
@@ -95,14 +134,17 @@ public class ContestsController : ControllerBase
             }
         }
 
-        return data;
+        return Ok(data);
     }
 
     // GET api/<ContestsController>/1604957700
     [HttpGet("{timestamp:long}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
-    public async Task<IEnumerable<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp)
+    public async Task<ActionResult<IEnumerable<JacobContestWithParticipationsDto>>> GetContestsAt(long timestamp)
     {
+        var skyblockDate = new SkyblockDate(timestamp);
+        if (skyblockDate.Year < 1) return BadRequest("Invalid skyblock date.");
+        
         var contests = await _context.JacobContests
             .Where(j => j.Timestamp == timestamp)
             .ToListAsync();
@@ -125,13 +167,44 @@ public class ContestsController : ControllerBase
             data.First(d => d.Crop.Equals(crop)).Participations = stripped;
         }
 
-        return data;
+        return Ok(data);
+    }
+    
+    // GET api/contest/285:2_11:CACTUS
+    [Route("/api/contest/{contestKey}")]
+    [HttpGet]
+    [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<JacobContestWithParticipationsDto>> GetContestFromKey(string contestKey) {
+        var timestamp = FormatUtils.GetTimeFromContestKey(contestKey);
+        var cropId = FormatUtils.GetCropFromContestKey(contestKey);
+
+        if (timestamp == 0 || cropId is null) {
+            return BadRequest("Invalid contest key");
+        }
+        
+        var contest = await _context.JacobContests
+            .Where(j => j.Timestamp == timestamp && j.Crop == cropId)
+            .FirstOrDefaultAsync();
+        
+        if (contest is null) return NotFound("Contest not found");
+        
+        var data = _mapper.Map<JacobContestWithParticipationsDto>(contest);
+        
+        var participations = await _context.ContestParticipations
+            .Where(p => p.JacobContestId == contest.Id)
+            .Include(p => p.ProfileMember.MinecraftAccount)
+            .ToListAsync();
+        
+        var stripped = _mapper.Map<List<StrippedContestParticipationDto>>(participations);
+        
+        data.Participations = stripped;
+        return Ok(data);
     }
 
     // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
-    public async Task<IEnumerable<ContestParticipationDto>> GetAllOfOnePlayersContests(string playerUuid)
+    public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllOfOnePlayersContests(string playerUuid)
     {
         var profileMembers = await _context.ProfileMembers
             .Where(p => p.PlayerUuid.Equals(playerUuid))
@@ -141,7 +214,7 @@ public class ContestsController : ControllerBase
             .AsSplitQuery()
             .ToListAsync();
 
-        if (profileMembers.Count == 0) return new List<ContestParticipationDto>();
+        if (profileMembers.Count == 0) return NotFound("Player not found.");
 
         var data = new List<ContestParticipationDto>();
 
@@ -150,12 +223,12 @@ public class ContestsController : ControllerBase
             data.AddRange(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
         }
 
-        return data;
+        return Ok(data);
     }
 
     // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
-    public async Task<IEnumerable<ContestParticipationDto>> GetAllContestsOfOneProfileMember(string playerUuid, string profileUuid)
+    public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfOneProfileMember(string playerUuid, string profileUuid)
     {
         var profileMember = await _context.ProfileMembers
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.ProfileId.Equals(profileUuid))
@@ -165,14 +238,14 @@ public class ContestsController : ControllerBase
             .AsSplitQuery()
             .FirstOrDefaultAsync();
 
-        if (profileMember is null) return new List<ContestParticipationDto>();
+        if (profileMember is null) return NotFound("Player not found.");
 
-        return _mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests);
+        return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
     }
 
     // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
-    public async Task<IEnumerable<ContestParticipationDto>> GetAllContestsOfSelectedProfileMember(string playerUuid)
+    public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfSelectedProfileMember(string playerUuid)
     {
         var profileMember = await _context.ProfileMembers
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
@@ -182,8 +255,84 @@ public class ContestsController : ControllerBase
             .AsSplitQuery()
             .FirstOrDefaultAsync();
 
-        if (profileMember is null) return new List<ContestParticipationDto>();
+        if (profileMember is null) return NotFound("Player not found.");
 
-        return _mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests);
+        return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
+    }
+    
+        // POST api/<ContestsController>/at/now
+    [HttpPost("at/now")]
+    [RequestSizeLimit(16000)] // Leaves some room for error
+    public async Task<ActionResult> SendThisYearsContests([FromBody] Dictionary<long, List<string>> body) {
+        var currentDate = new SkyblockDate(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        var currentYear = currentDate.Year;
+        
+        var db = _cache.GetDatabase();
+        if (await db.KeyExistsAsync($"contests:{currentDate.Year}")) {
+            //return Ok();
+        }
+        
+        if (currentDate.Month > 8) {
+            return BadRequest("Contests cannot be submitted this late in the year!");
+        }
+        
+        if (body.Keys.Count != 124) {
+            return BadRequest("Invalid number of contests! Expected 123, got " + body.Count);
+        }
+        
+        // Check if any of the timestamps are invalid
+        if (body.Keys.ToList().Exists(timestamp => new SkyblockDate(timestamp).Year != currentYear)) {
+            return BadRequest("Invalid year! All contests must be from the current year (" + (currentYear + 1) + ")");
+        }
+        
+        // Check if any of the crops are invalid
+        if (body.Values.ToList().Exists(crops => // Check that all crops are valid and that there are no duplicates
+                crops.Distinct().Count() != 3 ||
+                crops.Exists(crop => FormatUtils.FormattedCropNameToCrop(crop) is null))) 
+        {
+            return BadRequest("Invalid contest(s)! All crops must be valid without duplicates in the same contest!");
+        }
+
+        var httpContext = HttpContext.Request.HttpContext;
+        var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+        if (string.IsNullOrEmpty(ipAddress))
+        {
+            return BadRequest("Invalid request");
+        }
+
+        var addressKey = IPAddress.IsLoopback(httpContext.Connection.RemoteIpAddress!) 
+            ? $"contestsSubmission:{Guid.NewGuid()}" // Use a GUID for localhost so that it can be tested
+            : $"contestsSubmission:{ipAddress}";
+
+        var existingData = await db.StringGetAsync(addressKey);
+        
+        // Check if IP has already submitted a response
+        if (!string.IsNullOrEmpty(existingData))
+        {
+            return BadRequest("Already submitted a response");
+        }
+        
+        // Store that the IP has submitted a response
+        await db.StringSetAsync(addressKey, "1", TimeSpan.FromHours(5));
+        
+        // Serialize the body to a JSON string
+        var serializedData = JsonSerializer.Serialize(body);
+        var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(serializedData)));
+
+        // Increment the number of this particular response
+        var hashKey = $"contestsHash:{hash}";
+        await db.StringIncrementAsync(hashKey);
+        await db.StringGetSetExpiryAsync(hashKey, TimeSpan.FromHours(5));
+        
+        //Get the current number of this particular response
+        var identicalResponses = await db.StringGetAsync(hashKey);
+
+        if (!identicalResponses.TryParse(out long val) || val < 5) return Ok($"Response saved, {val} identical responses");
+        
+        var secondsUntilNextYear = FormatUtils.GetTimeFromSkyblockDate(currentYear + 1, 0, 0) - DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        // Save the request data
+        await db.StringSetAsync($"contests:{currentYear}", serializedData, TimeSpan.FromSeconds(secondsUntilNextYear));
+
+        return Ok();
     }
 }

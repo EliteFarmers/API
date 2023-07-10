@@ -38,4 +38,14 @@ public class SkyblockTimeConversionTests {
         date.Month.Should().Be(month);
         date.Year.Should().Be(year);
     }
+    
+    [Theory]
+    [InlineData(1687904100, "Winter 28th, Year 286")]
+    [InlineData(1605809700, "Early Spring 2nd, Year 103")]
+    [InlineData(1606252500, "Late Winter 30th, Year 103")]
+    public void UnixSecondsToReadableSkyblockDateTest(long timestamp, string formattedDate) {
+        var actual = new SkyblockDate(timestamp).ToString();
+        
+        actual.Should().Be(formattedDate);
+    }
 }

@@ -21,10 +21,10 @@ public class PlayerController : ControllerBase
     }
 
     // POST api/<ProfileController>
-    [HttpGet("{playerUuid}")]
-    public async Task<ActionResult<PlayerDataDto>> Get(string playerUuid)
+    [HttpGet("{playerUuidOrIgn}")]
+    public async Task<ActionResult<PlayerDataDto>> Get(string playerUuidOrIgn)
     {
-        var playerData = await _profileService.GetPlayerData(playerUuid);
+        var playerData = await _profileService.GetPlayerDataByUuidOrIgn(playerUuidOrIgn);
         if (playerData is null)
         {
             return NotFound("No player matching this UUID was found");

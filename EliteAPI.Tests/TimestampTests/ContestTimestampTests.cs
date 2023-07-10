@@ -11,12 +11,4 @@ public class ContestTimestampTests {
         
         actual.Should().Be(expectedTimestamp);
     }
-    
-    [Theory]
-    [InlineData(1687904100, "Late Winter 28th, Year 286")]
-    public void ContestKeyFromTimestampTest(long timestamp, string formattedDate) {
-        var actual = new SkyblockDate(timestamp).ToString();
-        
-        actual.Should().Be(formattedDate);
-    }
 }
