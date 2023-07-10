@@ -80,6 +80,8 @@ public class MinecraftAccount
     [Key]
     public required string Id { get; set; }
     public required string Name { get; set; }
+    
+    public bool Selected { get; set; } = false;
 
     public List<ProfileMember> Profiles { get; set; } = new();
     public PlayerData? PlayerData { get; set; }

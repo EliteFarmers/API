@@ -92,6 +92,14 @@ public class AccountController : ControllerBase
             }
             // Success
             account.MinecraftAccounts.Add(playerData.MinecraftAccount);
+            
+            // Select the account if it's the only one
+            if (account.MinecraftAccounts.Count == 1)
+            {
+                playerData.MinecraftAccount.Selected = true;
+                _context.MinecraftAccounts.Update(playerData.MinecraftAccount);
+            }
+            
             await _context.SaveChangesAsync();
 
             return Ok(account);
@@ -105,6 +113,14 @@ public class AccountController : ControllerBase
 
         // Success
         account.MinecraftAccounts.Add(playerData.MinecraftAccount);
+        
+        // Select the account if it's the only one
+        if (account.MinecraftAccounts.Count == 1)
+        {
+            playerData.MinecraftAccount.Selected = true;
+            _context.MinecraftAccounts.Update(playerData.MinecraftAccount);
+        }
+        
         await _context.SaveChangesAsync();
         
         return Accepted();

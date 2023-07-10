@@ -12,7 +12,7 @@ public class AccountService : IAccountService
     {
         _context = context;
     }
-
+    
     public async Task<AccountEntities?> AddAccount(AccountEntities account)
     {
         _context.Accounts.Add(account);

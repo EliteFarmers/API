@@ -23,6 +23,7 @@ public class MinecraftAccountDto
 {
     public required string Id { get; set; }
     public required string Name { get; set; }
+    public bool Selected { get; set; }
 
     // public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
     // public List<ProfileMemberDto> Profiles { get; set; } = new();
@@ -60,6 +61,11 @@ public class RedemptionDto
     public required string ItemId { get; set; }
     public required string Cost { get; set; }
     public DateTime Timestamp { get; set; }
+}
+
+public class LinkedAccountsDto {
+    public string? SelectedUuid { get; set; }
+    public List<PlayerDataDto> Players { get; set; } = new();
 }
 
 public enum PurchaseType
