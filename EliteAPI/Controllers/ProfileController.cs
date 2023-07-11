@@ -65,7 +65,7 @@ public class ProfileController : ControllerBase
     // GET api/<ProfileController>
     [HttpGet("{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
-    public async Task<ActionResult<ProfileDto>> Get(string profileUuid)
+    public async Task<ActionResult<ProfileDetailsDto>> Get(string profileUuid)
     {
         var profile = await _profileService.GetProfile(profileUuid);
         if (profile is null)
@@ -73,7 +73,7 @@ public class ProfileController : ControllerBase
             return NotFound("No profile matching this UUID was found");
         }
 
-        var mapped = _mapper.Map<ProfileDto>(profile);
+        var mapped = _mapper.Map<ProfileDetailsDto>(profile);
         return Ok(mapped);
     }
 
@@ -81,7 +81,7 @@ public class ProfileController : ControllerBase
     [Route("/api/[controller]s/{playerUuid}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
-    public async Task<ActionResult<List<ProfileDto>>> GetProfiles(string playerUuid)
+    public async Task<ActionResult<List<ProfileDetailsDto>>> GetProfiles(string playerUuid)
     {
         var profiles = await _profileService.GetPlayersProfiles(playerUuid);
 
@@ -90,7 +90,7 @@ public class ProfileController : ControllerBase
             return NotFound("No profiles matching this UUID were found");
         }
         
-        var mapped = _mapper.Map<List<ProfileDto>>(profiles);
+        var mapped = _mapper.Map<List<ProfileDetailsDto>>(profiles);
 
         var selected = await _context.ProfileMembers
             .Where(s => s.PlayerUuid == playerUuid && s.IsSelected)

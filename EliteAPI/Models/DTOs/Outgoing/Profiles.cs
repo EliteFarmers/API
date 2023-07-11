@@ -1,13 +1,11 @@
 ﻿namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class ProfileDto
+public class ProfileDetailsDto
 {
     public required string ProfileId { get; set; }
     public required string ProfileName { get; set; }
     public string GameMode { get; set; } = "classic";
     public bool Selected { get; set; }
-    public bool IsDeleted { get; set; } = false;
-
     public double BankBalance { get; set; }
     public List<MemberDetailsDto> Members { get; set; } = new();
 }

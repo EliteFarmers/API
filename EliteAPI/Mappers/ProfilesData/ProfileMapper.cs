@@ -9,7 +9,7 @@ public class ProfileMapper : Profile
 {
     public ProfileMapper()
     {
-        CreateMap<Models.Entities.Hypixel.Profile, ProfileDto>()
+        CreateMap<Models.Entities.Hypixel.Profile, ProfileDetailsDto>()
             .ForMember(x => x.Members, opt => opt.MapFrom(x => x.Members));
     }
 }
@@ -32,6 +32,6 @@ public class ProfileMemberMapper : Profile
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
             .ForMember(x => x.Username, opt => opt.MapFrom(x => x.MinecraftAccount.Name))
-            .ForMember(x => x.Active, opt => opt.MapFrom(x => x.MinecraftAccount.Profiles.Exists(p => p.ProfileId.Equals(x.ProfileId) && !p.WasRemoved)));
+            .ForMember(x => x.Active, opt => opt.MapFrom(x => !x.WasRemoved));
     }
 }

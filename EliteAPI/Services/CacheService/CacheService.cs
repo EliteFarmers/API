@@ -19,14 +19,22 @@ public class CacheService : ICacheService
 
     public async Task<string?> GetUsernameFromUuid(string uuid)
     {
-        var found = await _redis.GetDatabase().StringGetAsync($"username:{uuid}");
-        return found.HasValue ? found.ToString() : null;
+        var db = _redis.GetDatabase();
+        if (await db.KeyExistsAsync($"username:{uuid}")) {
+            return await db.StringGetAsync($"username:{uuid}");
+        }
+
+        return null;
     }
 
     public async Task<string?> GetUuidFromUsername(string username)
     {
-        var found = await _redis.GetDatabase().StringGetAsync($"uuid:{username}");
-        return found.HasValue ? found.ToString() : null;
+        var db = _redis.GetDatabase();
+        if (await db.KeyExistsAsync($"uuid:{username}")) {
+            return await db.StringGetAsync($"uuid:{username}");
+        }
+
+        return null;
     }
 
     public void SetUsernameUuidCombo(string username, string uuid, TimeSpan? expiry = null)

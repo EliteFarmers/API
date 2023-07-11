@@ -12,7 +12,11 @@ public class AccountService : IAccountService
     {
         _context = context;
     }
-    
+
+    public Task<AccountEntities?> GetAccountByIgnOrUuid(string ignOrUuid) {
+        return ignOrUuid.Length == 32 ? GetAccountByMinecraftUuid(ignOrUuid) : GetAccountByIgn(ignOrUuid);
+    }
+
     public async Task<AccountEntities?> AddAccount(AccountEntities account)
     {
         _context.Accounts.Add(account);
@@ -32,38 +36,29 @@ public class AccountService : IAccountService
         return account ?? null;
     }
 
-    public async Task<AccountEntities?> GetAccount(ulong accountId)
-    {
-        return await _context.Accounts.FindAsync(accountId);
+    public async Task<AccountEntities?> GetAccount(ulong accountId) {
+        return await _context.Accounts
+            .Include(a => a.MinecraftAccounts)
+            .FirstOrDefaultAsync(a => a.Id == accountId);
     }
 
     public async Task<AccountEntities?> GetAccountByIgn(string ign)
     {
-        return await _context.Accounts
-           .Where(account => account.MinecraftAccounts.Exists(mc => mc.Name.Equals(ign)))
-           .FirstOrDefaultAsync();
+        var minecraftAccount = await _context.MinecraftAccounts
+            .FirstOrDefaultAsync(mc => mc.Name.Equals(ign));
+        
+        if (minecraftAccount?.AccountId is null) return null;
+
+        return await GetAccount(minecraftAccount.AccountId ?? 0);
     }
 
     public async Task<AccountEntities?> GetAccountByMinecraftUuid(string uuid)
     {
-        return await _context.Accounts
-           .Where(account => account.MinecraftAccounts.Exists(mc => mc.Id.Equals(uuid)))
-           .FirstOrDefaultAsync();
-    }
+        var minecraftAccount = await _context.MinecraftAccounts
+            .FirstOrDefaultAsync(mc => mc.Id.Equals(uuid));
+        
+        if (minecraftAccount?.AccountId is null) return null;
 
-    public async Task<AccountEntities?> UpdateAccount(int id, AccountEntities request)
-    {
-        //if (request == null) return null;
-
-        var account = await _context.Accounts.FindAsync(id);
-        if (account == null) return null;
-
-        // Update account
-        // account.MinecraftAccounts = request.MinecraftAccounts;
-        // account.DiscordAccount = request.DiscordAccount;
-        // account.PremiumUser = request.PremiumUser;
-
-        await _context.SaveChangesAsync();
-        return account;
+        return await GetAccount(minecraftAccount.AccountId ?? 0);
     }
 }

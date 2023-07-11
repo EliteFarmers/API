@@ -3,7 +3,6 @@ using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Services.CacheService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;
@@ -65,9 +64,15 @@ public class ProfileService : IProfileService
             .Where(m => m.PlayerUuid.Equals(playerUuid))
             .Select(m => m.ProfileId)
             .ToListAsync();
+        
+        if (profileIds.Count == 0)
+        {
+            var members = await RefreshProfileMembers(playerUuid);
+
+            return profileIds.Count == 0 ? new List<Profile>() : members.Select(m => m.Profile).ToList();
+        }
 
         var profiles = await _context.Profiles
-            //.Include(p => p.Banking)
             .Include(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
             .Where(p => profileIds.Contains(p.ProfileId))
@@ -135,6 +140,13 @@ public class ProfileService : IProfileService
         }
 
         return await _fetchProfileMemberData(_context, member.ProfileId, playerUuid);
+    }
+
+    public async Task<string?> GetSelectedProfileUuid(string playerUuid) {
+        return await _context.ProfileMembers
+            .Where(s => s.PlayerUuid == playerUuid && s.IsSelected)
+            .Select(s => s.ProfileId)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<PlayerData?> GetPlayerData(string playerUuid, bool skipCooldown = false)

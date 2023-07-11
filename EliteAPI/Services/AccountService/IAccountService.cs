@@ -12,7 +12,7 @@ public interface IAccountService
     Task<AccountEntities?> GetAccount(ulong accountId);
     Task<AccountEntities?> GetAccountByIgn(string ign);
     Task<AccountEntities?> GetAccountByMinecraftUuid(string uuid);
+    Task<AccountEntities?> GetAccountByIgnOrUuid(string ignOrUuid);
     Task<AccountEntities?> AddAccount(AccountEntities account);
-    Task<AccountEntities?> UpdateAccount(int id, AccountEntities request);
     Task<AccountEntities?> DeleteAccount(int id);
 }

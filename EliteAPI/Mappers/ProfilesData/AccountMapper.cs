@@ -8,7 +8,7 @@ public class AccountMapper : Profile
 {
     public AccountMapper()
     {
-        CreateMap<AccountEntities, AccountDto>()
+        CreateMap<AccountEntities, AuthorizedAccountDto>()
             .ForMember(a => a.Inventory, opt => opt.MapFrom(a => a.Inventory))
             .ForMember(a => a.Redemptions, opt => opt.MapFrom(a => a.Redemptions))
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.Settings))
@@ -18,9 +18,13 @@ public class AccountMapper : Profile
 
 public class MinecraftAccountMapper : Profile
 {
-    public MinecraftAccountMapper()
-    {
-        CreateMap<MinecraftAccount, MinecraftAccountDto>();
+    public MinecraftAccountMapper() {
+        CreateMap<MinecraftAccount, MinecraftAccountDto>()
+            .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected))
+            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties));
+
+        CreateMap<MinecraftAccount, MinecraftAccountDetailsDto>()
+            .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected));
     }
 }
 

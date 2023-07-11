@@ -80,17 +80,15 @@ public class MinecraftAccount
     [Key]
     public required string Id { get; set; }
     public required string Name { get; set; }
+    public ulong? AccountId { get; set; }
     
-    public bool Selected { get; set; } = false;
-
-    public List<ProfileMember> Profiles { get; set; } = new();
+    public bool Selected { get; set; }
+    
     public PlayerData? PlayerData { get; set; }
 
     [Column(TypeName = "jsonb")]
     public List<MinecraftAccountProperty> Properties { get; set; } = new();
-    [Column(TypeName = "jsonb")]
-    public Dictionary<string, long> PreviousNames { get; set; } = new();
-
+    
     public long LastUpdated { get; set; }
 }
 
