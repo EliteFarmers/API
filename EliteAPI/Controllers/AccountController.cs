@@ -97,8 +97,9 @@ public class AccountController : ControllerBase
             return NotFound("Minecraft account not found.");
         }
         
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
         var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
+        // This needs to be fetched because "selected" lives on the ProfileMembers
+        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
         
         var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
 

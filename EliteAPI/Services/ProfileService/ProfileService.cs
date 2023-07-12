@@ -67,9 +67,14 @@ public class ProfileService : IProfileService
         
         if (profileIds.Count == 0)
         {
-            var members = await RefreshProfileMembers(playerUuid);
+            await RefreshProfileMembers(playerUuid);
 
-            return profileIds.Count == 0 ? new List<Profile>() : members.Select(m => m.Profile).ToList();
+            profileIds = await _context.ProfileMembers
+                .Where(m => m.PlayerUuid.Equals(playerUuid))
+                .Select(m => m.ProfileId)
+                .ToListAsync();
+            
+            if (profileIds.Count == 0) return new List<Profile>();
         }
 
         var profiles = await _context.Profiles
