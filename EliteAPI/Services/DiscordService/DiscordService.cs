@@ -63,7 +63,7 @@ public class DiscordService : IDiscordService
         };
     }
 
-    private async Task<AccountEntities?> FetchDiscordUser(string accessToken)
+    private async Task<AccountEntity?> FetchDiscordUser(string accessToken)
     {
         var client = _httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -80,7 +80,7 @@ public class DiscordService : IDiscordService
 
             var existing = await _context.Accounts.FindAsync(user.Id);
                 
-            var account = existing ?? new AccountEntities()
+            var account = existing ?? new AccountEntity()
             {
                 Id = user.Id,
                 Username = user.Username,
@@ -168,6 +168,10 @@ public class DiscordService : IDiscordService
         }
     }
 
+    public async Task<AccountEntity?> GetDiscordUser(string accessToken) {
+        return await FetchDiscordUser(accessToken);
+    }
+
     private DiscordUpdateResponse? ProcessResponse(RefreshTokenResponse? tokenResponse)
     {
         if (tokenResponse?.AccessToken is null || tokenResponse?.RefreshToken is null || tokenResponse.Error is not null) return null;
@@ -192,5 +196,5 @@ public class DiscordUpdateResponse
     public DateTimeOffset? AccessTokenExpires { get; set; }
     public required string RefreshToken { get; set; }
     public DateTimeOffset? RefreshTokenExpires { get; set; }
-    public AccountEntities? Account { get; set; }
+    public AccountEntity? Account { get; set; }
 }

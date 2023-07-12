@@ -13,11 +13,11 @@ public class AccountService : IAccountService
         _context = context;
     }
 
-    public Task<AccountEntities?> GetAccountByIgnOrUuid(string ignOrUuid) {
+    public Task<AccountEntity?> GetAccountByIgnOrUuid(string ignOrUuid) {
         return ignOrUuid.Length == 32 ? GetAccountByMinecraftUuid(ignOrUuid) : GetAccountByIgn(ignOrUuid);
     }
 
-    public async Task<AccountEntities?> AddAccount(AccountEntities account)
+    public async Task<AccountEntity?> AddAccount(AccountEntity account)
     {
         _context.Accounts.Add(account);
         await _context.SaveChangesAsync();
@@ -25,7 +25,7 @@ public class AccountService : IAccountService
         return account;
     }
 
-    public async Task<AccountEntities?> DeleteAccount(int id)
+    public async Task<AccountEntity?> DeleteAccount(int id)
     {
         var account = await _context.Accounts.FindAsync(id);
         if (account == null) return null;
@@ -36,13 +36,13 @@ public class AccountService : IAccountService
         return account ?? null;
     }
 
-    public async Task<AccountEntities?> GetAccount(ulong accountId) {
+    public async Task<AccountEntity?> GetAccount(ulong accountId) {
         return await _context.Accounts
             .Include(a => a.MinecraftAccounts)
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
 
-    public async Task<AccountEntities?> GetAccountByIgn(string ign)
+    public async Task<AccountEntity?> GetAccountByIgn(string ign)
     {
         var minecraftAccount = await _context.MinecraftAccounts
             .FirstOrDefaultAsync(mc => mc.Name.Equals(ign));
@@ -52,7 +52,7 @@ public class AccountService : IAccountService
         return await GetAccount(minecraftAccount.AccountId ?? 0);
     }
 
-    public async Task<AccountEntities?> GetAccountByMinecraftUuid(string uuid)
+    public async Task<AccountEntity?> GetAccountByMinecraftUuid(string uuid)
     {
         var minecraftAccount = await _context.MinecraftAccounts
             .FirstOrDefaultAsync(mc => mc.Id.Equals(uuid));

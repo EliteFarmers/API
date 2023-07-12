@@ -9,10 +9,10 @@ public interface IAccountService
     /// </summary>
     /// <param name="accountId">Linked Discord account Id</param>
     /// <returns></returns>
-    Task<AccountEntities?> GetAccount(ulong accountId);
-    Task<AccountEntities?> GetAccountByIgn(string ign);
-    Task<AccountEntities?> GetAccountByMinecraftUuid(string uuid);
-    Task<AccountEntities?> GetAccountByIgnOrUuid(string ignOrUuid);
-    Task<AccountEntities?> AddAccount(AccountEntities account);
-    Task<AccountEntities?> DeleteAccount(int id);
+    Task<AccountEntity?> GetAccount(ulong accountId);
+    Task<AccountEntity?> GetAccountByIgn(string ign);
+    Task<AccountEntity?> GetAccountByMinecraftUuid(string uuid);
+    Task<AccountEntity?> GetAccountByIgnOrUuid(string ignOrUuid);
+    Task<AccountEntity?> AddAccount(AccountEntity account);
+    Task<AccountEntity?> DeleteAccount(int id);
 }

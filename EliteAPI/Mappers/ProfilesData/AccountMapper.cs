@@ -6,13 +6,13 @@ namespace EliteAPI.Mappers.ProfilesData;
 
 public class AccountMapper : Profile
 {
-    public AccountMapper()
-    {
-        CreateMap<AccountEntities, AuthorizedAccountDto>()
+    public AccountMapper() {
+        CreateMap<AccountEntity, AuthorizedAccountDto>()
             .ForMember(a => a.Inventory, opt => opt.MapFrom(a => a.Inventory))
             .ForMember(a => a.Redemptions, opt => opt.MapFrom(a => a.Redemptions))
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.Settings))
-            .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts));
+            .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
+            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
     }
 }
 
@@ -21,10 +21,12 @@ public class MinecraftAccountMapper : Profile
     public MinecraftAccountMapper() {
         CreateMap<MinecraftAccount, MinecraftAccountDto>()
             .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected))
-            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties));
+            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties))
+            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
 
         CreateMap<MinecraftAccount, MinecraftAccountDetailsDto>()
-            .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected));
+            .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected))
+            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties));
     }
 }
 

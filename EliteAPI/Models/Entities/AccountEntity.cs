@@ -1,13 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Security.Cryptography.X509Certificates;
 using EliteAPI.Models.Entities.Hypixel;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace EliteAPI.Models.Entities;
 
-public class AccountEntities
+public class AccountEntity
 {
     [Key]
     public required ulong Id { get; set; }

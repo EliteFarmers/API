@@ -28,7 +28,7 @@ public class DataContext : DbContext
         }
     }
 
-    public DbSet<AccountEntities> Accounts { get; set; } = null!;
+    public DbSet<AccountEntity> Accounts { get; set; } = null!;
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;

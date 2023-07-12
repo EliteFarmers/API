@@ -14,6 +14,8 @@ using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Prometheus;
 using StackExchange.Redis;
 
@@ -41,7 +43,35 @@ public static class ServiceExtensions
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer(); 
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(opt => {
+            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+            {
+                In = ParameterLocation.Header,
+                Description = "Enter Discord Bearer Token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+            
+            opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference 
+                        {
+                            Id = "Bearer",
+                            Type = ReferenceType.SecurityScheme
+                        }
+                    },
+                    new string[] {}
+                }
+            });
+            
+            opt.SupportNonNullableReferenceTypes();
+            opt.EnableAnnotations();
+        });
     }
 
     public static void AddEliteScopedServices(this IServiceCollection services) {

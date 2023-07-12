@@ -1,16 +1,19 @@
 ﻿using EliteAPI.Models.Entities;
 using System.Text.Json;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
+[SwaggerSchema(Required = new [] { "Id", "DisplayName", "Username", "Redemptions", "Inventory", "Settings", "MinecraftAccounts" })]
 public class AuthorizedAccountDto
 {
-    public ulong Id { get; set; }
+    public required string Id { get; set; }
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
     public string? Discriminator { get; set; }
     public string? Email { get; set; }
     public string? Locale { get; set; }
+    public string? Avatar { get; set; }
 
     public List<RedemptionDto> Redemptions { get; set; } = new();
     public EliteInventoryDto Inventory { get; set; } = new();
@@ -19,6 +22,7 @@ public class AuthorizedAccountDto
     public List<MinecraftAccountDetailsDto> MinecraftAccounts { get; set; } = new();
 }
 
+[SwaggerSchema(Required = new [] { "Id", "Name", "Properties", "PrimaryAccount" })]
 public class MinecraftAccountDetailsDto
 {
     public required string Id { get; set; }
@@ -28,27 +32,30 @@ public class MinecraftAccountDetailsDto
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
 }
 
-
+[SwaggerSchema(Required = new [] { "Id", "Name", "Properties", "Profiles", "PrimaryAccount" })]
 public class MinecraftAccountDto
 {
     public required string Id { get; set; }
     public required string Name { get; set; }
     public bool PrimaryAccount { get; set; } = true;
     
-    public ulong? DiscordId { get; set; }
+    public string? DiscordId { get; set; }
     public string? DiscordUsername { get; set; }
+    public string? DiscordAvatar { get; set; }
 
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
     public List<ProfileDetailsDto> Profiles { get; set; } = new();
     public PlayerDataDto? PlayerData { get; set; }
 }
 
+[SwaggerSchema(Required = new [] { "Name", "Value" })]
 public class MinecraftAccountPropertyDto
 {
     public required string Name { get; set; }
     public required string Value { get; set; }
 }
 
+[SwaggerSchema(Required = new [] { "TotalEarnedMedals", "SpentMedals", "EventTokens", "EventTokensSpent", "LeaderboardTokens", "LeaderboardTokensSpent", "UnlockedCosmetics" })]
 public class EliteInventoryDto
 {
     public MedalInventoryDto TotalEarnedMedals { get; set; } = new();

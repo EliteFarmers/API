@@ -6,4 +6,5 @@ public interface IDiscordService
 {
     Task<DiscordUpdateResponse?> GetDiscordUser(string? accessToken, string? refreshToken);
     Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken);
+    Task<AccountEntity?> GetDiscordUser(string accessToken);
 }

@@ -6,6 +6,8 @@ using EliteAPI.Models.Entities;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -35,9 +37,9 @@ public class AccountController : ControllerBase
     // GET api/<ValuesController>
     [HttpGet]
     [ServiceFilter(typeof(DiscordAuthFilter))]
-    public async Task<ActionResult<AccountEntities>> Get()
+    public async Task<ActionResult<AuthorizedAccountDto>> Get()
     {
-        if (HttpContext.Items["Account"] is not AccountEntities result)
+        if (HttpContext.Items["Account"] is not AccountEntity result)
         {
             return Unauthorized("Account not found.");
         }
@@ -61,12 +63,10 @@ public class AccountController : ControllerBase
         var minecraftAccount = account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
         if (minecraftAccount is null) return NotFound("User doesn't have any linked Minecraft accounts.");
         
+        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
         var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
-        if (profiles.Count == 0) return NotFound("No profiles matching this UUID were found");
 
         var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
-
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
         if (selected is not null) mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
 
         var playerData = await _profileService.GetPlayerData(minecraftAccount.Id);
@@ -74,8 +74,9 @@ public class AccountController : ControllerBase
         var mappedPlayerData = _mapper.Map<PlayerDataDto>(playerData);
         var result = _mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
-        result.DiscordId = account.Id;
+        result.DiscordId = account.Id.ToString();
         result.DiscordUsername = account.Username;
+        result.DiscordAvatar = account.Avatar;
         result.PlayerData = mappedPlayerData;
         result.Profiles = mappedProfiles;
         
@@ -89,18 +90,18 @@ public class AccountController : ControllerBase
         
         var minecraftAccount = account is null
             ? await _mojangService.GetMinecraftAccountByUuidOrIgn(playerUuidOrIgn)
-            : account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
+            : account.MinecraftAccounts.Find(m => m.Id.Equals(playerUuidOrIgn) || m.Name.Equals(playerUuidOrIgn)) 
+              ?? account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
 
         if (minecraftAccount is null) {
             return NotFound("Minecraft account not found.");
         }
         
+        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
         var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
-        if (profiles.Count == 0) return NotFound("No profiles matching this UUID were found");
-
+        
         var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
 
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
         if (selected is not null) mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
 
         var playerData = await _profileService.GetPlayerData(minecraftAccount.Id);
@@ -108,8 +109,9 @@ public class AccountController : ControllerBase
         var mappedPlayerData = _mapper.Map<PlayerDataDto>(playerData);
         var result = _mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
-        result.DiscordId = account?.Id;
+        result.DiscordId = account?.Id.ToString();
         result.DiscordUsername = account?.Username;
+        result.DiscordAvatar = account?.Avatar;
         result.PlayerData = mappedPlayerData;
         result.Profiles = mappedProfiles;
         
@@ -118,9 +120,9 @@ public class AccountController : ControllerBase
 
     [HttpPost("{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
-    public async Task<ActionResult<AccountEntities>> LinkAccount(string playerUuidOrIgn)
+    public async Task<ActionResult> LinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not AccountEntities loggedInAccount)
+        if (HttpContext.Items["Account"] is not AccountEntity loggedInAccount)
         {
             return Unauthorized("Account not found.");
         }
@@ -189,9 +191,9 @@ public class AccountController : ControllerBase
 
     [HttpDelete("{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
-    public async Task<ActionResult<AccountEntities>> UnlinkAccount(string playerUuidOrIgn)
+    public async Task<ActionResult> UnlinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not AccountEntities linkedAccount)
+        if (HttpContext.Items["Account"] is not AccountEntity linkedAccount)
         {
             return Unauthorized("Account not found.");
         }
@@ -220,5 +222,44 @@ public class AccountController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+    
+    [HttpPost("primary/{playerUuidOrIgn}")]
+    [ServiceFilter(typeof(DiscordAuthFilter))]
+    public async Task<ActionResult> MakePrimaryAccount(string playerUuidOrIgn)
+    {
+        if (HttpContext.Items["Account"] is not AccountEntity loggedInAccount)
+        {
+            return Unauthorized("Account not found.");
+        }
+
+        var account = await _accountService.GetAccountByIgnOrUuid(playerUuidOrIgn);
+
+        if (account is null)
+        {
+            return Unauthorized("Account not found.");
+        }
+
+        var mcAccounts = account.MinecraftAccounts;
+        var selectedAccount = mcAccounts.FirstOrDefault(mc => mc.Selected);
+        var newSelectedAccount = mcAccounts.FirstOrDefault(mc => mc.Id.Equals(playerUuidOrIgn) || mc.Name.Equals(playerUuidOrIgn));
+        
+        if (newSelectedAccount is null)
+        {
+            return BadRequest("Minecraft account not found for this player.");
+        }
+        
+        if (selectedAccount is not null)
+        {
+            selectedAccount.Selected = false;
+            _context.MinecraftAccounts.Update(selectedAccount);
+        }
+        
+        newSelectedAccount.Selected = true;
+        _context.MinecraftAccounts.Update(newSelectedAccount);
+        
+        await _context.SaveChangesAsync();
+        
+        return Accepted();
     }
 }
