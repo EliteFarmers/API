@@ -271,6 +271,17 @@ public class LeaderboardService : ILeaderboardService {
                         MemberId = member.Id.ToString(),
                         Amount = jacobData.Participations
                     }).Take(lb.Limit);
+            
+            case "skyblockxp":
+                return (from member in query
+                    where member.SkyblockXp > 0
+                    orderby member.SkyblockXp descending
+                    select new LeaderboardEntry {
+                        Ign = member.MinecraftAccount.Name,
+                        Profile = member.Profile.ProfileName,
+                        MemberId = member.Id.ToString(),
+                        Amount = member.SkyblockXp
+                    }).Take(lb.Limit);
 
             default:
                 throw new Exception($"Leaderboard {leaderboardId} not found");

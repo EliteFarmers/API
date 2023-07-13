@@ -63,6 +63,10 @@
       "participations": {
         "Title": "Jacob Contest Participations",
         "Limit": 1000
+      },
+      "skyblockxp": {
+        "Title": "Skyblock XP",
+        "Limit": 5000
       }
     },
     "SkillLeaderboards": {
