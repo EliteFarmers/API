@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Timescale;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NuGet.Protocol;
@@ -38,5 +39,8 @@ public class DataContext : DbContext
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
     public DbSet<FarmingWeight> FarmingWeights { get; set; } = null!;
-    // public DbSet<FarmingInventory> FarmingInventories { get; set; } = null!;
+    
+    // Timescale HyperTables
+    public DbSet<SkillExperience> SkillExperiences { get; set; } = null!;
+    public DbSet<CropCollection> CropCollections { get; set; } = null!;
 }

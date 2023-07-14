@@ -8,23 +8,11 @@ services:
       target: "base"
     command: []
     entrypoint:
-    - "/riderDebugger/linux-x64/dotnet/dotnet"
-    - "/riderDebugger/JetBrains.Debugger.Worker.exe"
-    - "--mode=server"
-    - "--frontend-port=57100"
-    - "--backend-port=57300"
-    environment:
-      RIDER_DEBUGGER_LOG_DIR: "/riderLogs"
-      RESHARPER_LOG_CONF: "/riderLogsConf/backend-log.xml"
+    - "dotnet"
+    - "/app/bin/Debug/net7.0/EliteAPI.dll"
+    environment: {}
     image: "eliteapi:dev"
-    ports:
-    - "57001:57100"
-    - "57201:57300"
+    ports: []
     volumes:
     - "G:\\Programming\\Elite\\EliteAPI:/app:rw"
-    - "C:\\Users\\edmie\\AppData\\Local\\JetBrains\\RiderRemoteDebugger\\2023.1.3\\\
-      Linux64:/riderDebugger"
-    - "C:\\Program Files\\JetBrains\\JetBrains Rider 2023.1.1/bin:/riderLogsConf"
-    - "C:\\Users\\edmie\\AppData\\Local\\JetBrains\\Rider2023.1\\log\\DebuggerWorker\\\
-      JetBrains.Debugger.Worker.2023_7_06_22_03_12:/riderLogs:rw"
     working_dir: "/app"

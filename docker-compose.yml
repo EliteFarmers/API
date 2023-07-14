@@ -20,7 +20,7 @@ services:
     networks: 
         - eliteapi-network
   database:
-    image: postgres:15.2
+    image: timescale/timescaledb:latest-pg15
     restart: always
     environment:
         - POSTGRES_USER=user
@@ -32,7 +32,7 @@ services:
         - '5436'
     volumes:
         - db-data:/var/lib/postgresql/data
-        - ./EliteAPI/Data/init.sql:/docker-entrypoint-initdb.d/init.sql
+        - ./EliteAPI/Data/setup.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
         - eliteapi-network
   cache:

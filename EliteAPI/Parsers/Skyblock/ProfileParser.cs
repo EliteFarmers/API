@@ -6,6 +6,7 @@ using AutoMapper;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.FarmingWeight;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.CacheService;
@@ -185,6 +186,26 @@ public class ProfileParser
     private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
     {
         member.Collections = incomingData.Collection ?? member.Collections;
+        var cropCollection = new CropCollection {
+            Time = DateTimeOffset.UtcNow,
+            
+            Cactus = member.Collections.RootElement.TryGetProperty("CACTUS", out var cactus) ? cactus.GetInt64() : 0,
+            Carrot = member.Collections.RootElement.TryGetProperty("CARROT_ITEM", out var carrot) ? carrot.GetInt64() : 0,
+            CocoaBeans = member.Collections.RootElement.TryGetProperty("INK_SACK:3", out var cocoa) ? cocoa.GetInt64() : 0,
+            Melon = member.Collections.RootElement.TryGetProperty("MELON", out var melon) ? melon.GetInt64() : 0,
+            Mushroom = member.Collections.RootElement.TryGetProperty("MUSHROOM_COLLECTION", out var mushroom) ? mushroom.GetInt64() : 0,
+            NetherWart = member.Collections.RootElement.TryGetProperty("NETHER_STALK", out var netherWart) ? netherWart.GetInt64() : 0,
+            Potato = member.Collections.RootElement.TryGetProperty("POTATO_ITEM", out var potato) ? potato.GetInt64() : 0,
+            Pumpkin = member.Collections.RootElement.TryGetProperty("PUMPKIN", out var pumpkin) ? pumpkin.GetInt64() : 0,
+            SugarCane = member.Collections.RootElement.TryGetProperty("SUGAR_CANE", out var sugarCane) ? sugarCane.GetInt64() : 0,
+            Wheat = member.Collections.RootElement.TryGetProperty("WHEAT", out var wheat) ? wheat.GetInt64() : 0,
+            Seeds = member.Collections.RootElement.TryGetProperty("SEEDS", out var seeds) ? seeds.GetInt64() : 0,
+            
+            ProfileMemberId = member.Id,
+            ProfileMember = member,
+        };
+        await _context.CropCollections.SingleInsertAsync(cropCollection);
+        
         member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
         member.Purse = incomingData.CoinPurse ?? 0;
         member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
@@ -195,6 +216,25 @@ public class ProfileParser
         await member.ParseJacobContests(incomingData.Jacob, _context, _cache);
 
         member.ParseSkills(incomingData);
+        var skillExp = new SkillExperience {
+            Time = DateTimeOffset.UtcNow,
+            
+            Alchemy = member.Skills.Alchemy,
+            Carpentry = member.Skills.Carpentry,
+            Combat = member.Skills.Combat,
+            Enchanting = member.Skills.Enchanting,
+            Farming = member.Skills.Farming,
+            Fishing = member.Skills.Fishing,
+            Foraging = member.Skills.Foraging,
+            Mining = member.Skills.Mining,
+            Runecrafting = member.Skills.Runecrafting,
+            Taming = member.Skills.Taming,
+            
+            ProfileMemberId = member.Id,
+            ProfileMember = member,
+        };
+        await _context.SkillExperiences.SingleInsertAsync(skillExp);
+
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
 
         profile.CombineMinions(incomingData.CraftedGenerators);
