@@ -14,5 +14,6 @@ services:
     image: "eliteapi:dev"
     ports: []
     volumes:
+    - "C:\\Users\\edmie\\AppData\\Roaming\\ASP.NET\\Https:/root/.aspnet/https"
     - "G:\\Programming\\Elite\\EliteAPI:/app:rw"
     working_dir: "/app"

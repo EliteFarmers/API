@@ -4,11 +4,9 @@ services:
   eliteapi:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80;http://+:9102
+      - ASPNETCORE_URLS=http://+:7008;http://+:9102
     ports:
-      - "80"
-      - "443"
+      - "7008"
       - "9102" 
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro

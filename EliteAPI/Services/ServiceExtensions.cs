@@ -122,15 +122,15 @@ public static class ServiceExtensions
     {
         builder.Configuration.Sources.Add(new JsonConfigurationSource()
         {
-            Path = "Config\\Weight.json",
+            Path = "Config/Weight.json",
         });
         builder.Configuration.Sources.Add(new JsonConfigurationSource()
         {
-            Path = "Config\\Cooldown.json",
+            Path = "Config/Cooldown.json",
         });
         builder.Configuration.Sources.Add(new JsonConfigurationSource()
         {
-            Path = "Config\\Leaderboards.json",
+            Path = "Config/Leaderboards.json",
         });
         
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));

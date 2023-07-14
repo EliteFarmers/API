@@ -3,12 +3,12 @@
     "CropItemIds": [ "CACTUS", "CARROT_ITEM", "INK_SACK:3", "MELON", "MUSHROOM_COLLECTION", "NETHER_STALK", "POTATO_ITEM", "PUMPKIN", "SUGAR_CANE", "WHEAT" ],
     "CropsPerOneWeight": {
       "WHEAT": "100000",
-      "CARROT_ITEM": "300000",
+      "CARROT_ITEM": "302061.86",
       "POTATO_ITEM": "300000",
       "SUGAR_CANE": "200000",
       "NETHER_STALK": "250000",
-      "PUMPKIN": "90066.27",
-      "MELON": "450324.6",
+      "PUMPKIN": "98284.71",
+      "MELON": "485308.47",
       "MUSHROOM_COLLECTION": "90178.06",
       "INK_SACK_3": "267174.04",
       "CACTUS": "177254.45"

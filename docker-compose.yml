@@ -16,7 +16,8 @@ services:
       - logging
       - prometheus
     ports:
-        - "9102:9102"
+      - "7008:7008"
+      - "9102:9102"
     networks: 
         - eliteapi-network
   database:
