@@ -4,46 +4,110 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Z.EntityFramework.Plus;
 
 namespace EliteAPI.Parsers.Profiles;
 
 public static class JacobContestParser
 {
-    private static readonly Func<DataContext, long, Task<JacobContest?>> FetchJacobContest = 
-        EF.CompileAsyncQuery((DataContext context, long key) =>            
-            context.JacobContests
-                .FirstOrDefault(j => j.Id == key)
-        );
-
     public static async Task ParseJacobContests(this ProfileMember member, RawJacobData? incomingJacob, DataContext context, ICacheService cache)
     {
         var jacob = member.JacobData;
 
-        var contests = incomingJacob?.Contests;
-        if (contests is null) return;
+        var incomingContests = incomingJacob?.Contests;
+        if (incomingContests is null) return;
 
-        // Dictionary of existing contests for faster lookup
+        // Existing contests on the profile
         var existingContests = jacob.Contests
             .DistinctBy(c => c.JacobContest.Timestamp + (int) c.JacobContest.Crop) // Hopefully should not be needed
             .ToDictionary(c => c.JacobContest.Timestamp + (int) c.JacobContest.Crop);
         
-        /* Remove contests that aren't distinct (should not happen)
-        var removedContests = jacob.Contests
-            .Where(c => !existingContests.ContainsValue(c))
-            .ToList();
-        
-        context.ContestParticipations.RemoveRange(removedContests);
-        jacob.Contests.RemoveAll(c => !existingContests.ContainsKey(c.JacobContest.Timestamp + (int) c.JacobContest.Crop));
-        */
-        
-        var newParticipations = new List<ContestParticipation>();
-        foreach (var (key, contest) in contests)
-        {
-            var contestParticipation = await ParseContestParticipation(contest, key, existingContests, jacob, context, cache, member);
+        // List of keys to fetch
+        var contestsToFetch = incomingContests
+            .Where(c => {
+                var actualKey = FormatUtils.GetTimeFromContestKey(c.Key) 
+                                + (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0);
+                
+                // If the contest is new, add it to the list
+                if (!existingContests.TryGetValue(actualKey, out var existing)) return true;
 
-            if (contestParticipation is null) continue;
+                // Add if it hasn't been claimed
+                return existing.Position <= 0;
+            }).ToList();
+
+        var keys = contestsToFetch.Select(c =>
+            FormatUtils.GetTimeFromContestKey(c.Key) + (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0)
+        ).ToList();
+        
+        // Fetch contests from database
+        var fetchedContests = await context.JacobContests
+            .Where(j => keys.Contains(j.Id))
+            .ToDictionaryAsync(j => j.Id);
+
+        var newParticipations = new List<ContestParticipation>();
+        foreach (var (key, contest) in contestsToFetch)
+        {
+            if (contest.Collected < 100) continue; // Contests with less than 100 crops collected aren't counted in game
+            jacob.Participations++;
+
+            var medal = contest.ExtractMedal();
+            if (medal != ContestMedal.None) {
+                if (medal == ContestMedal.Gold) jacob.EarnedMedals.Gold++;
+                else if (medal == ContestMedal.Silver) jacob.EarnedMedals.Silver++;
+                else if (medal == ContestMedal.Bronze) jacob.EarnedMedals.Bronze++;
+            }
             
-            newParticipations.Add(contestParticipation);
+            var crop = FormatUtils.GetCropFromContestKey(key);
+            if (crop is null) continue;
+            
+            var actualKey = FormatUtils.GetTimeFromContestKey(key) + (int) crop;
+
+            if (!fetchedContests.TryGetValue(actualKey, out var fetched)) {
+                var newContest = new JacobContest {
+                    Id = actualKey,
+                    Crop = crop.GetValueOrDefault(),
+                    Timestamp = FormatUtils.GetTimeFromContestKey(key),
+                    Participants = contest.Participants ?? -1
+                };
+
+                try {
+                    context.JacobContests.Add(newContest);
+                    // Unfortunate, but we need to save here to alleviate concurrency issues
+                    // This operation should only run once ever per contest anyway though
+                    await context.SaveChangesAsync();
+                } catch (Exception e) {
+                    Console.WriteLine(e);
+                }
+                
+                fetchedContests.Add(actualKey, newContest);
+                fetched = newContest;
+            }
+
+            // Update the number of participants if it's not set
+            // Should happen infrequently
+            if (fetched.Participants == -1 && contest.Participants > 0) {
+                await context.JacobContests
+                    .Where(j => j.Id == actualKey)
+                    .UpdateAsync(j => new JacobContest { Participants = contest.Participants ?? -1 });
+            }
+
+            if (!existingContests.TryGetValue(actualKey, out var existing)) {
+                var newParticipation = new ContestParticipation {
+                    Collected = contest.Collected,
+                    Position = contest.Position ?? -1,
+                    MedalEarned = medal,
+
+                    ProfileMemberId = member.Id,
+                    ProfileMember = member,
+                    JacobContestId = actualKey
+                };
+                
+                newParticipations.Add(newParticipation);
+            } else {
+                existing.Collected = contest.Collected;
+                existing.Position = contest.Position ?? -1;
+                existing.MedalEarned = medal;
+            }
         }
 
         context.ContestParticipations.AddRange(newParticipations);
@@ -53,99 +117,8 @@ public static class JacobContestParser
 
         await context.SaveChangesAsync();
     }
-
-    private static async Task<ContestParticipation?> ParseContestParticipation(this RawJacobContest contest,
-        string contestKey, Dictionary<long, ContestParticipation> existingContests, JacobData jacob, DataContext context, ICacheService cache, ProfileMember member)
-    {
-        if (contest.Collected < 100) return null;
-
-        var crop = FormatUtils.GetCropFromContestKey(contestKey);
-        if (crop == null) return null;
-
-        jacob.Participations++;
-
-        var medal = contest.ExtractMedal();
-
-        if (medal != ContestMedal.None)
-        {
-            switch (medal)
-            {
-                case ContestMedal.Bronze:
-                    jacob.EarnedMedals.Bronze++;
-                    break;
-                case ContestMedal.Silver:
-                    jacob.EarnedMedals.Silver++;
-                    break;
-                case ContestMedal.Gold:
-                    jacob.EarnedMedals.Gold++;
-                    break;
-            }
-        }
-
-        var timestamp = FormatUtils.GetTimeFromContestKey(contestKey);
-        
-        // Only process if the contest is newer than the last updated time
-        // or if the contest has not been claimed (in case it got claimed after the last update)
-        var existing = existingContests.GetValueOrDefault(timestamp + (int) crop);
-
-        // Skip if contest is claimed and processed because the time is before last update
-        if (existing is not null && timestamp < jacob.ContestsLastUpdated && existing.Position >= 0) return null;
-
-        // Update existing contest if it exists
-        if (existing is not null)
-        {
-            existing.Collected = contest.Collected;
-            existing.MedalEarned = medal;
-            existing.Position = contest.Position ?? -1;
-
-            return null;
-        }
-
-        var key = timestamp + (int) crop;
-        // If contest participation doesn't exist yet, check to see if the contest itself exists
-        if (await cache.IsContestUpdateRequired(key)) {
-            // Contest doesn't exist or doesn't have participants yet, so fetch it
-            var jacobContest = await FetchJacobContest(context, key);
-            var participants = contest.Participants ?? -1;
-            
-            if (jacobContest is null)
-            {
-                // Contest doesn't exist, so create it
-                jacobContest = new JacobContest
-                {
-                    Id = key,
-                    Timestamp = timestamp,
-                    Crop = (Crop) crop,
-                    Participants = participants
-                };
-                context.JacobContests.Add(jacobContest);
-            }
-            else if (participants > jacobContest.Participants) 
-            {
-                // Contest exists, but doesn't have participants yet, so update it
-                jacobContest.Participants = participants;
-            }
-            
-            // Mark contest as processed
-            if (participants != -1) cache.SetContest(key);
-        }
-
-        // Create new contest participation
-        var participation = new ContestParticipation
-        {
-            Collected = contest.Collected,
-            MedalEarned = medal,
-            Position = contest.Position ?? -1,
-
-            ProfileMemberId = member.Id,
-            ProfileMember = member,
-            JacobContestId = key
-        };
-
-        return participation;
-    }
-
-    public static ContestMedal ExtractMedal(this RawJacobContest contest)
+    
+    private static ContestMedal ExtractMedal(this RawJacobContest contest)
     {
         // Respect given medal if it exists
         if (contest.Medal is not null)
