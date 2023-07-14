@@ -12,7 +12,7 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class ContestsController : ControllerBase
 {
@@ -29,7 +29,7 @@ public class ContestsController : ControllerBase
         _logger = logger;
     }
 
-    // GET api/<ContestsController>/285
+    // GET <ContestsController>/285
     [HttpGet("at/{year:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<YearlyContestsDto>> GetAllContestsInOneYear(int year)
@@ -84,14 +84,14 @@ public class ContestsController : ControllerBase
         return Ok(dto);
     }
     
-    // GET api/<ContestsController>/at/now
+    // GET <ContestsController>/at/now
     [HttpGet("at/now")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<YearlyContestsDto>> GetThisYearsContests() {
         return await GetAllContestsInOneYear(SkyblockDate.Now.Year + 1);
     }
     
-    // GET api/<ContestsController>/200/12/5
+    // GET <ContestsController>/200/12/5
     [HttpGet("at/{year:int}/{month:int}/{day:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<IEnumerable<JacobContestWithParticipationsDto>>> GetContestsAt(int year, int month, int day) {
@@ -102,7 +102,7 @@ public class ContestsController : ControllerBase
         return await GetContestsAt(timestamp);
     }
 
-    // GET api/<ContestsController>/200/12
+    // GET <ContestsController>/200/12
     [HttpGet("at/{year:int}/{month:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<Dictionary<int, List<JacobContestDto>>>> GetAllContestsInOneMonth(int year, int month)
@@ -137,7 +137,7 @@ public class ContestsController : ControllerBase
         return Ok(data);
     }
 
-    // GET api/<ContestsController>/1604957700
+    // GET <ContestsController>/1604957700
     [HttpGet("{timestamp:long}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<IEnumerable<JacobContestWithParticipationsDto>>> GetContestsAt(long timestamp)
@@ -170,8 +170,8 @@ public class ContestsController : ControllerBase
         return Ok(data);
     }
     
-    // GET api/contest/285:2_11:CACTUS
-    [Route("/api/contest/{contestKey}")]
+    // GET /contest/285:2_11:CACTUS
+    [Route("/contest/{contestKey}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<JacobContestWithParticipationsDto>> GetContestFromKey(string contestKey) {
@@ -201,7 +201,7 @@ public class ContestsController : ControllerBase
         return Ok(data);
     }
 
-    // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/
+    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllOfOnePlayersContests(string playerUuid)
@@ -226,7 +226,7 @@ public class ContestsController : ControllerBase
         return Ok(data);
     }
 
-    // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
+    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfOneProfileMember(string playerUuid, string profileUuid)
     {
@@ -243,7 +243,7 @@ public class ContestsController : ControllerBase
         return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
     }
 
-    // GET api/<ContestsController>/7da0c47581dc42b4962118f8049147b7/Selected
+    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfSelectedProfileMember(string playerUuid)
     {
@@ -260,7 +260,7 @@ public class ContestsController : ControllerBase
         return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
     }
     
-        // POST api/<ContestsController>/at/now
+    // POST <ContestsController>/at/now
     [HttpPost("at/now")]
     [RequestSizeLimit(16000)] // Leaves some room for error
     public async Task<ActionResult> SendThisYearsContests([FromBody] Dictionary<long, List<string>> body) {

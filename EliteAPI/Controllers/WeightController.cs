@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class WeightController : ControllerBase
 {
@@ -33,7 +33,7 @@ public class WeightController : ControllerBase
         _weightSettings = weightSettings.Value;
     }
 
-    // GET api/<WeightController>/7da0c47581dc42b4962118f8049147b7/
+    // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<List<FarmingWeightWithProfileDto>>> GetPlayersProfilesWeight(string playerUuid)
@@ -74,7 +74,7 @@ public class WeightController : ControllerBase
         return Ok(_mapper.Map<List<FarmingWeightWithProfileDto>>(farmingWeights));
     }
 
-    // GET api/<WeightController>/7da0c47581dc42b4962118f8049147b7/Selected
+    // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<FarmingWeightDto>> GetSelectedProfileWeight(string playerUuid)
@@ -100,7 +100,7 @@ public class WeightController : ControllerBase
         return Ok(_mapper.Map<FarmingWeightDto>(member.FarmingWeight));
     }
 
-    // GET api/<WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
+    // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<FarmingWeightDto>> GetSpecificProfileWeight(string playerUuid, string profileUuid)
@@ -121,7 +121,7 @@ public class WeightController : ControllerBase
         return Ok(_mapper.Map<FarmingWeightDto>(member.FarmingWeight));
     }
     
-    [Route("/api/[controller]s")]
+    [Route("/[controller]s")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [DisableRateLimiting]

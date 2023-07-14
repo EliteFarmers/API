@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class ProfileController : ControllerBase
 {
@@ -25,7 +25,7 @@ public class ProfileController : ControllerBase
         _context = dataContext;
     }
 
-    // GET api/<ProfileController>/[uuid]/Selected
+    // GET <ProfileController>/[uuid]/Selected
     [HttpGet("{uuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileMemberDto>> GetSelectedByPlayerUuid(string uuid)
@@ -47,7 +47,7 @@ public class ProfileController : ControllerBase
         return Ok(mapped);
     }
 
-    // GET api/<ProfileController>
+    // GET <ProfileController>
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileMemberDto>> GetSpecificProfile(string playerUuid, string profileUuid)
@@ -62,7 +62,7 @@ public class ProfileController : ControllerBase
         return Ok(mapped);
     }
     
-    // GET api/<ProfileController>
+    // GET <ProfileController>
     [HttpGet("{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileDetailsDto>> Get(string profileUuid)
@@ -77,8 +77,8 @@ public class ProfileController : ControllerBase
         return Ok(mapped);
     }
 
-    // GET api/<ProfileController>s
-    [Route("/api/[controller]s/{playerUuid}")]
+    // GET <ProfileController>s
+    [Route("/[controller]s/{playerUuid}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<List<ProfileDetailsDto>>> GetProfiles(string playerUuid)

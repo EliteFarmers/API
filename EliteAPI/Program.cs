@@ -32,12 +32,12 @@ app.UseRateLimiter();
 app.UseMetricServer(9102);
 app.UseHttpMetrics();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger(opt => {
+    opt.RouteTemplate = "{documentName}/swagger.json";
+});
+app.UseSwaggerUI(opt => {
+    opt.RoutePrefix = "";
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class LoginController : ControllerBase
 {
@@ -16,7 +16,7 @@ public class LoginController : ControllerBase
         _discordService = discordService;
     }
 
-    // GET: api/<LoginController>
+    // GET: <LoginController>
     [HttpGet("callback")]
     public async Task<ActionResult<object>> Get([FromQuery] string code, [FromQuery] string state, [FromQuery] string? error)
     {

@@ -6,8 +6,6 @@ using EliteAPI.Models.Entities;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class AccountController : ControllerBase
 {
@@ -34,7 +32,7 @@ public class AccountController : ControllerBase
         _mapper = mapper;
     }
 
-    // GET api/<ValuesController>
+    // GET <ValuesController>
     [HttpGet]
     [ServiceFilter(typeof(DiscordAuthFilter))]
     public async Task<ActionResult<AuthorizedAccountDto>> Get()
@@ -51,7 +49,7 @@ public class AccountController : ControllerBase
         return Ok(_mapper.Map<AuthorizedAccountDto>(account));
     }
     
-    // GET api/<ValuesController>/12793764936498429
+    // GET <ValuesController>/12793764936498429
     [HttpGet("{discordId:long}")]
     public async Task<ActionResult<MinecraftAccountDto>> GetByDiscordId(long discordId)
     {
@@ -83,7 +81,7 @@ public class AccountController : ControllerBase
         return Ok(result);
     }
     
-    // GET api/<ValuesController>/12793764936498429
+    // GET <ValuesController>/12793764936498429
     [HttpGet("{playerUuidOrIgn}")]
     public async Task<ActionResult<MinecraftAccountDto>> GetByPlayerUuidOrIgn(string playerUuidOrIgn) {
         var account = await _accountService.GetAccountByIgnOrUuid(playerUuidOrIgn);

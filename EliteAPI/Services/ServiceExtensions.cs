@@ -69,6 +69,23 @@ public static class ServiceExtensions
                 }
             });
             
+            opt.SwaggerDoc("v1", new OpenApiInfo {
+                Version = "v1",
+                Title = "EliteAPI",
+                Description = "A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. Use of this API requires following the TOS linked below. This API is not affiliated with Hypixel or Mojang.",
+                Contact = new OpenApiContact
+                {
+                    Name = "GitHub",
+                    Url = new Uri("https://github.com/EliteFarmers/API")
+                },
+                License = new OpenApiLicense
+                {
+                    Name = "GPL-3.0",
+                    Url = new Uri("https://github.com/EliteFarmers/API/blob/master/LICENSE.txt")
+                },
+                TermsOfService = new Uri("https://elitebot.dev/apiterms")
+            });
+
             opt.SupportNonNullableReferenceTypes();
             opt.EnableAnnotations();
         });

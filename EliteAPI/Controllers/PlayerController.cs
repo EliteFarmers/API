@@ -10,24 +10,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class PlayerController : ControllerBase
 {
     private readonly DataContext _context;
     private readonly IProfileService _profileService;
-    private readonly IAccountService _accountService;
     private readonly IMapper _mapper;
 
-    public PlayerController(DataContext context, IProfileService profileService, IAccountService accountService, IMapper mapper)
+    public PlayerController(DataContext context, IProfileService profileService, IMapper mapper)
     {
         _context = context;
         _profileService = profileService;
-        _accountService = accountService;
         _mapper = mapper;
     }
 
-    // GET api/<ProfileController>
+    // GET <ProfileController>
     [HttpGet("{playerUuidOrIgn}")]
     public async Task<ActionResult<PlayerDataDto>> Get(string playerUuidOrIgn)
     {
@@ -41,7 +39,7 @@ public class PlayerController : ControllerBase
         return Ok(mapped);
     }
     
-    // POST api/<ProfileController>
+    // POST <ProfileController>
     [HttpGet("{discordId:long}")]
     public async Task<ActionResult<LinkedAccountsDto>> GetLinkedAccounts(long discordId)
     {

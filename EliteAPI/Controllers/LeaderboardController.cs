@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Controllers;
 
-[Route("api/[controller]")]
+[Route("[controller]")]
 [ApiController]
 public class LeaderboardController : ControllerBase
 {
@@ -26,7 +26,7 @@ public class LeaderboardController : ControllerBase
         _settings = lbSettings.Value;
     }
 
-    // GET: api/<LeaderboardController>/id
+    // GET: <LeaderboardController>/id
     [HttpGet("{id}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardDto>> Get(string id, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
@@ -50,7 +50,7 @@ public class LeaderboardController : ControllerBase
         return Ok(leaderboard);
     }
 
-    // GET api/<LeaderboardController>/skill/farming
+    // GET <LeaderboardController>/skill/farming
     [HttpGet("skill/{skillName}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardDto>> GetSkillLb(string skillName, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
@@ -89,7 +89,7 @@ public class LeaderboardController : ControllerBase
         });
     }
     
-    // GET api/<LeaderboardController>/collection/wheat
+    // GET <LeaderboardController>/collection/wheat
     [HttpGet("collection/{collection}/")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardDto>> GetCollectionLb(string collection, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
@@ -112,7 +112,7 @@ public class LeaderboardController : ControllerBase
         });
     }
     
-    // GET api/<LeaderboardController>/ranks/[player]/[profile]
+    // GET <LeaderboardController>/ranks/[player]/[profile]
     [HttpGet("ranks/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardPositionsDto>> GetLeaderboardRanks(string playerUuid, string profileUuid) {
@@ -128,7 +128,7 @@ public class LeaderboardController : ControllerBase
         return Ok(positions);
     }
     
-    // GET api/<LeaderboardController>/rank/[lbId]/[player]/[profile]
+    // GET <LeaderboardController>/rank/[lbId]/[player]/[profile]
     [HttpGet("rank/{leaderboardId}/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<LeaderboardPositionDto>> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileUuid, [FromQuery] bool includeUpcoming = false) {
