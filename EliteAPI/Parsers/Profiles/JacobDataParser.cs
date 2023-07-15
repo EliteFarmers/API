@@ -14,12 +14,6 @@ public static class JacobDataParser
 
     public static JacobData ParseJacobData(JacobData jacob, RawJacobData? incomingJacob)
     {
-        jacob.EarnedMedals.Gold = 0;
-        jacob.EarnedMedals.Silver = 0;
-        jacob.EarnedMedals.Bronze = 0;
-
-        jacob.Participations = 0;
-
         if (incomingJacob is null) return jacob;
 
         if (incomingJacob.MedalsInventory is not null)

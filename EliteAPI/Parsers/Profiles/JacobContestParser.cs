@@ -51,11 +51,6 @@ public static class JacobContestParser
             jacob.Participations++;
 
             var medal = contest.ExtractMedal();
-            if (medal != ContestMedal.None) {
-                if (medal == ContestMedal.Gold) jacob.EarnedMedals.Gold++;
-                else if (medal == ContestMedal.Silver) jacob.EarnedMedals.Silver++;
-                else if (medal == ContestMedal.Bronze) jacob.EarnedMedals.Bronze++;
-            }
             
             var crop = FormatUtils.GetCropFromContestKey(key);
             if (crop is null) continue;
@@ -92,6 +87,7 @@ public static class JacobContestParser
             }
 
             if (!existingContests.TryGetValue(actualKey, out var existing)) {
+                // Register new participation
                 var newParticipation = new ContestParticipation {
                     Collected = contest.Collected,
                     Position = contest.Position ?? -1,
@@ -112,6 +108,11 @@ public static class JacobContestParser
 
         context.ContestParticipations.AddRange(newParticipations);
         member.JacobData.Contests.AddRange(newParticipations);
+
+        jacob.Participations = jacob.Contests.Count;
+        jacob.EarnedMedals.Gold = jacob.Contests.Count(c => c.MedalEarned == ContestMedal.Gold);
+        jacob.EarnedMedals.Silver = jacob.Contests.Count(c => c.MedalEarned == ContestMedal.Silver);
+        jacob.EarnedMedals.Bronze = jacob.Contests.Count(c => c.MedalEarned == ContestMedal.Bronze);
 
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
