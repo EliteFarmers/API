@@ -64,6 +64,10 @@
         "Title": "Jacob Contest Participations",
         "Limit": 1000
       },
+      "firstplace": {
+        "Title": "Jacob Contest First Places",
+        "Limit": 1000
+      },
       "skyblockxp": {
         "Title": "Skyblock XP",
         "Limit": 5000

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using EliteAPI.Models.Entities.Hypixel;
+using Z.EntityFramework.Plus;
 
 namespace EliteAPI.Services.LeaderboardService; 
 
@@ -282,6 +283,19 @@ public class LeaderboardService : ILeaderboardService {
                         MemberId = member.Id.ToString(),
                         Amount = member.SkyblockXp
                     }).Take(lb.Limit);
+            
+            case "firstplace":
+                return _context.ProfileMembers
+                    .IncludeOptimized(p => p.Profile)
+                    .IncludeOptimized(p => p.MinecraftAccount)
+                    .IncludeOptimized(p => p.JacobData)
+                    .IncludeOptimized(p => p.JacobData.Contests)
+                    .Select(p => new LeaderboardEntry {
+                        Ign = p.MinecraftAccount.Name,
+                        Profile = p.Profile.ProfileName,
+                        MemberId = p.Id.ToString(),
+                        Amount = p.JacobData.Contests.Count(c => c.Position == 0)
+                    }).OrderByDescending(p => p.Amount).Take(lb.Limit);
 
             default:
                 throw new Exception($"Leaderboard {leaderboardId} not found");
