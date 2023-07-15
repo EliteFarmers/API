@@ -186,6 +186,29 @@ public class ProfileParser
     private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
     {
         member.Collections = incomingData.Collection ?? member.Collections;
+        member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
+        member.Purse = incomingData.CoinPurse ?? 0;
+        member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
+
+        member.ParseJacob(incomingData.Jacob);
+        await _context.SaveChangesAsync();
+        
+        await member.ParseJacobContests(incomingData.Jacob, _context, _cache);
+
+        member.ParseSkills(incomingData);
+        member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
+
+        profile.CombineMinions(incomingData.CraftedGenerators);
+
+        member.ParseFarmingWeight(profile.CraftedMinions);
+
+        _context.FarmingWeights.Update(member.FarmingWeight);
+        _context.ProfileMembers.Update(member);
+        _context.JacobData.Update(member.JacobData);
+        _context.Profiles.Update(profile);
+
+        await _context.SaveChangesAsync();
+        
         var cropCollection = new CropCollection {
             Time = DateTimeOffset.UtcNow,
             
@@ -206,16 +229,6 @@ public class ProfileParser
         };
         await _context.CropCollections.SingleInsertAsync(cropCollection);
         
-        member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
-        member.Purse = incomingData.CoinPurse ?? 0;
-        member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
-
-        member.ParseJacob(incomingData.Jacob);
-        await _context.SaveChangesAsync();
-        
-        await member.ParseJacobContests(incomingData.Jacob, _context, _cache);
-
-        member.ParseSkills(incomingData);
         var skillExp = new SkillExperience {
             Time = DateTimeOffset.UtcNow,
             
@@ -234,18 +247,7 @@ public class ProfileParser
             ProfileMember = member,
         };
         await _context.SkillExperiences.SingleInsertAsync(skillExp);
-
-        member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
-
-        profile.CombineMinions(incomingData.CraftedGenerators);
-
-        member.ParseFarmingWeight(profile.CraftedMinions);
-
-        _context.FarmingWeights.Update(member.FarmingWeight);
-        _context.ProfileMembers.Update(member);
-        _context.JacobData.Update(member.JacobData);
-        _context.Profiles.Update(profile);
-
+        
         await _context.SaveChangesAsync();
     }
 }
