@@ -155,8 +155,9 @@ public static class ServiceExtensions
                 }
                 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                // Log the rate limit rejection
-                // context.HttpContext.RequestServices.GetService<MetricsService>();
+                //Log the rate limit rejection
+                var logger = context.HttpContext.RequestServices.GetService<ILogger<ApiRateLimiterPolicy>>();
+                logger?.LogWarning("Rate limit exceeded for {Ip}", context.HttpContext.Connection.RemoteIpAddress);
                 
                 return new ValueTask();
             };
@@ -166,8 +167,12 @@ public static class ServiceExtensions
             limiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context => {
                 var remoteIpAddress = context.Connection.RemoteIpAddress;
 
-                // If the IP address is local, return no limiter
-                if (remoteIpAddress is null || IPAddress.IsLoopback(remoteIpAddress))
+                // Check if IP address is from docker network
+                if (remoteIpAddress is null 
+                    || remoteIpAddress.Equals(IPAddress.Loopback) 
+                    || remoteIpAddress.Equals(IPAddress.IPv6Loopback)
+                    || remoteIpAddress.Equals(context.Connection.LocalIpAddress)
+                    )
                 {
                     return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
                 }
