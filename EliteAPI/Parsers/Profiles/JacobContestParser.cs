@@ -12,6 +12,7 @@ public static class JacobContestParser
 {
     public static async Task ParseJacobContests(this ProfileMember member, RawJacobData? incomingJacob, DataContext context, ICacheService cache)
     {
+        await using var transaction = await context.Database.BeginTransactionAsync();
         var jacob = member.JacobData;
 
         var incomingContests = incomingJacob?.Contests;
@@ -67,9 +68,6 @@ public static class JacobContestParser
 
                 try {
                     context.JacobContests.Add(newContest);
-                    // Unfortunate, but we need to save here to alleviate concurrency issues
-                    // This operation should only run once ever per contest anyway though
-                    await context.SaveChangesAsync();
                 } catch (Exception e) {
                     Console.WriteLine(e);
                 }
@@ -117,6 +115,7 @@ public static class JacobContestParser
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         await context.SaveChangesAsync();
+        await transaction.CommitAsync();
     }
     
     private static ContestMedal ExtractMedal(this RawJacobContest contest)
