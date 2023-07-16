@@ -7,7 +7,14 @@ public class LeaderboardDto {
     public required string Title { get; set; }
     public int Limit { get; set; }
     public int Offset { get; set; }
-    public List<LeaderboardEntry> Entries { get; set; } = new();
+    public int MaxEntries { get; set; }
+    public List<LeaderboardEntryDto> Entries { get; set; } = new();
+}
+
+public class LeaderboardEntryDto {
+    public string? Ign { get; init; }
+    public string? Profile { get; init; }
+    public double Amount { get; init; }
 }
 
 public class LeaderboardPositionsDto {

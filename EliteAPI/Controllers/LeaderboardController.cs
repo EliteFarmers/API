@@ -1,4 +1,5 @@
-﻿using EliteAPI.Config.Settings;
+﻿using AutoMapper;
+using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
@@ -18,12 +19,14 @@ public class LeaderboardController : ControllerBase
     private readonly DataContext _context;
     private readonly ILeaderboardService _leaderboardService;
     private readonly ConfigLeaderboardSettings _settings;
+    private readonly IMapper _mapper;
 
-    public LeaderboardController(DataContext dataContext, ILeaderboardService leaderboardService, IOptions<ConfigLeaderboardSettings> lbSettings)
+    public LeaderboardController(DataContext dataContext, ILeaderboardService leaderboardService, IOptions<ConfigLeaderboardSettings> lbSettings, IMapper mapper)
     {
         _context = dataContext;
         _leaderboardService = leaderboardService;
         _settings = lbSettings.Value;
+        _mapper = mapper;
     }
 
     // GET: <LeaderboardController>/id
@@ -44,7 +47,8 @@ public class LeaderboardController : ControllerBase
             Title = lb.Title,
             Limit = limit,
             Offset = offset,
-            Entries = entries
+            MaxEntries = lb.Limit,
+            Entries = _mapper.Map<List<LeaderboardEntryDto>>(entries)
         };
         
         return Ok(leaderboard);
@@ -85,7 +89,8 @@ public class LeaderboardController : ControllerBase
             Title = lb.Title,
             Offset = offset,
             Limit = limit,
-            Entries = entries
+            MaxEntries = lb.Limit,
+            Entries = _mapper.Map<List<LeaderboardEntryDto>>(entries)
         });
     }
     
@@ -108,7 +113,8 @@ public class LeaderboardController : ControllerBase
             Title = lb.Title,
             Offset = offset,
             Limit = limit,
-            Entries = entries
+            MaxEntries = lb.Limit,
+            Entries = _mapper.Map<List<LeaderboardEntryDto>>(entries)
         });
     }
     
