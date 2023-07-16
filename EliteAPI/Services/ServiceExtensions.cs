@@ -168,23 +168,10 @@ public static class ServiceExtensions
             limiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context => {
                 var remoteIpAddress = context.Connection.RemoteIpAddress;
 
-                var logger = context.RequestServices.GetService<ILogger<ApiRateLimiterPolicy>>();
-                var contextAccessor = context.RequestServices.GetService<IHttpContextAccessor>();
-                
-                if (contextAccessor != null) {
-                    var forwardedFor = contextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-                    var local = contextAccessor.HttpContext?.Connection.LocalIpAddress?.ToString();
-
-                    logger?.LogWarning("Forwarded for: {ForwardedFor}\nLocal: {Local}", forwardedFor ?? "null",
-                        local ?? "null");
-                }
-                
                 // Check if IP address is from docker network
                 if (remoteIpAddress is null 
-                    || remoteIpAddress.Equals(IPAddress.Loopback) 
-                    || remoteIpAddress.Equals(IPAddress.IPv6Loopback)
-                    || remoteIpAddress.Equals(context.Connection.LocalIpAddress)
-                    )
+                    || IPAddress.IsLoopback(remoteIpAddress) 
+                    || IsFromDockerNetwork(remoteIpAddress))
                 {
                     return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
                 }
@@ -201,5 +188,11 @@ public static class ServiceExtensions
                     });
             });
         });
+    }
+
+    private static bool IsFromDockerNetwork(IPAddress remoteIpAddress)
+    {
+        // Check if the IP address is from the Docker network.
+        return remoteIpAddress.ToString().StartsWith("172.19.") || remoteIpAddress.MapToIPv4().ToString().StartsWith("172.19.");
     }
 }
