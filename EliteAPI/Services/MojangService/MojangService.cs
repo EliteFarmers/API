@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Text.RegularExpressions;
 using EliteAPI.Config.Settings;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Utilities;
@@ -11,24 +12,32 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Services.MojangService;
 
-public class MojangService : IMojangService
+public partial class MojangService : IMojangService
 {
     private const string ClientName = "EliteAPI";
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly DataContext _context;
     private readonly ConfigCooldownSettings _coolDowns;
     private readonly ICacheService _cache;
+    private readonly ILogger<MojangService> _logger;
 
-    public MojangService(IHttpClientFactory httpClientFactory, DataContext context, IOptions<ConfigCooldownSettings> coolDowns, ICacheService cacheService)
+    public MojangService(IHttpClientFactory httpClientFactory, DataContext context, IOptions<ConfigCooldownSettings> coolDowns, ICacheService cacheService, ILogger<MojangService> logger)
     {
         _httpClientFactory = httpClientFactory;
         _context = context;
         _coolDowns = coolDowns.Value;
         _cache = cacheService;
+        _logger = logger;
     }
 
     public async Task<MinecraftAccount?> GetMinecraftAccountByIgn(string ign)
     {
+        // Validate that the username is a-z, A-Z, 0-9, _ with a length of 24 or less
+        if (!IgnRegex().IsMatch(ign))
+        {
+            return null;
+        }
+    
         var account = await _context.MinecraftAccounts
             .Where(mc => mc.Name.Equals(ign))
             .FirstOrDefaultAsync();
@@ -73,6 +82,8 @@ public class MojangService : IMojangService
 
     private async Task<MinecraftAccount?> FetchMinecraftAccountByIgn(string ign)
     {
+        if (!IgnRegex().IsMatch(ign)) return null;
+        
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.mojang.com/users/profiles/minecraft/{ign}");
         var client = _httpClientFactory.CreateClient(ClientName);
 
@@ -90,14 +101,15 @@ public class MojangService : IMojangService
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine(e);
+            _logger.LogError(e, "Failed to fetch Minecraft account \"{Ign}\" by IGN", ign);
         }
 
         return null;
     }
 
-    private async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid)
-    {
+    private async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid) {
+        if (!UuidRegex().IsMatch(uuid)) return null;
+
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");
         var client = _httpClientFactory.CreateClient(ClientName);
 
@@ -135,7 +147,7 @@ public class MojangService : IMojangService
         }
         catch (Exception e)
         {
-            Console.Error.WriteLine(e);
+            _logger.LogError(e, "Failed to fetch Minecraft account \"{Uuid}\" by UUID", uuid);
         }
 
         return null;
@@ -150,6 +162,12 @@ public class MojangService : IMojangService
 
         return await GetMinecraftAccountByUuid(uuidOrIgn);
     }
+
+    [GeneratedRegex("^[a-zA-Z0-9_]{1,24}$")]
+    private static partial Regex IgnRegex();
+    
+    [GeneratedRegex("^[a-zA-Z0-9_]{32,36}$")]
+    private static partial Regex UuidRegex();
 }
 
 public class MojangProfilesResponse
