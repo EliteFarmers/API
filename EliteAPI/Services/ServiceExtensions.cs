@@ -29,6 +29,7 @@ public static class ServiceExtensions
 
         // Add services to the container.
         services.AddSingleton<MetricsService>();
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         services.AddHttpClient(HypixelService.HypixelService.HttpClientName, client =>
         {
@@ -153,7 +154,7 @@ public static class ServiceExtensions
                     context.HttpContext.Response.Headers.RetryAfter =
                         ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
                 }
-                
+
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
                 //Log the rate limit rejection
                 var logger = context.HttpContext.RequestServices.GetService<ILogger<ApiRateLimiterPolicy>>();
@@ -167,6 +168,17 @@ public static class ServiceExtensions
             limiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context => {
                 var remoteIpAddress = context.Connection.RemoteIpAddress;
 
+                var logger = context.RequestServices.GetService<ILogger<ApiRateLimiterPolicy>>();
+                var contextAccessor = context.RequestServices.GetService<IHttpContextAccessor>();
+                
+                if (contextAccessor != null) {
+                    var forwardedFor = contextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+                    var local = contextAccessor.HttpContext?.Connection.LocalIpAddress?.ToString();
+
+                    logger?.LogWarning("Forwarded for: {ForwardedFor}\nLocal: {Local}", forwardedFor ?? "null",
+                        local ?? "null");
+                }
+                
                 // Check if IP address is from docker network
                 if (remoteIpAddress is null 
                     || remoteIpAddress.Equals(IPAddress.Loopback) 
