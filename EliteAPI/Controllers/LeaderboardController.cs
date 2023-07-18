@@ -158,10 +158,14 @@ public class LeaderboardController : ControllerBase
             upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(position - 6, 0),
                 Math.Min(position - 1, 5));
         }
-        
+
+        // Reverse the list so that upcoming players are in ascending order
+        upcomingPlayers?.Reverse();
+        var upcoming = _mapper.Map<List<LeaderboardEntryDto>>(upcomingPlayers);
+
         var result = new LeaderboardPositionDto {
             Rank = position,
-            UpcomingPlayers = upcomingPlayers
+            UpcomingPlayers = upcoming
         };
         
         return Ok(result);

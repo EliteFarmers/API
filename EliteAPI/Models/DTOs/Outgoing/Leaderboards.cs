@@ -25,5 +25,5 @@ public class LeaderboardPositionsDto {
 
 public class LeaderboardPositionDto {
     public int Rank { get; set; }
-    public List<LeaderboardEntry>? UpcomingPlayers { get; set; }
+    public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
 }
