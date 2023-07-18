@@ -10,6 +10,11 @@ public class FarmingWeightDto
     public Dictionary<string, double> BonusWeight { get; set; } = new();
 }
 
+public class FarmingWeightAllProfilesDto {
+    public string? SelectedProfileId { get; set; }
+    public List<FarmingWeightWithProfileDto> Profiles { get; set; } = new();
+}
+
 public class FarmingWeightWithProfileDto
 {
     public required string ProfileId { get; set; }

@@ -36,7 +36,7 @@ public class WeightController : ControllerBase
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
-    public async Task<ActionResult<List<FarmingWeightWithProfileDto>>> GetPlayersProfilesWeight(string playerUuid)
+    public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
 
@@ -71,7 +71,13 @@ public class WeightController : ControllerBase
             return NotFound("No profiles for the player matching this UUID was found");
         }
 
-        return Ok(_mapper.Map<List<FarmingWeightWithProfileDto>>(farmingWeights));
+        var dto = new FarmingWeightAllProfilesDto {
+            SelectedProfileId = farmingWeights
+                .FirstOrDefault(w => w.ProfileMember?.IsSelected ?? false)?.ProfileMember?.ProfileId,
+            Profiles = _mapper.Map<List<FarmingWeightWithProfileDto>>(farmingWeights)
+        };
+
+        return Ok(dto);
     }
 
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/Selected
@@ -86,7 +92,7 @@ public class WeightController : ControllerBase
             .Include(x => x.FarmingWeight)
             .FirstOrDefaultAsync();
 
-        if (member?.FarmingWeight is null)
+        if (member?.FarmingWeight is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
         {
             var newMember = await _profileService.GetSelectedProfileMember(playerUuid);
             
@@ -113,9 +119,15 @@ public class WeightController : ControllerBase
             .Include(x => x.FarmingWeight)
             .FirstOrDefaultAsync();
 
-        if (member?.FarmingWeight is null)
+        if (member?.FarmingWeight is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
         {
-            return NotFound("No farming weight for the player matching this UUID was found");
+            var newMember = await _profileService.GetSelectedProfileMember(playerUuid);
+            
+            if (newMember is null) {
+                return NotFound("No farming weight for the player matching this UUID was found");
+            }
+            
+            return Ok(_mapper.Map<FarmingWeightDto>(newMember.FarmingWeight));
         }
 
         return Ok(_mapper.Map<FarmingWeightDto>(member.FarmingWeight));
