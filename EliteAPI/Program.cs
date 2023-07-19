@@ -23,8 +23,13 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(opt => {
+    opt.ForwardedForHeaderName = "CF-Connecting-IP";
+});
+
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
