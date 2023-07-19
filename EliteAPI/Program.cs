@@ -1,7 +1,8 @@
+using System.Net;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services;
-using EliteAPI.Utilities;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Prometheus;
@@ -23,8 +24,13 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
 });
 
+// Use Cloudflare IP address as the client remote IP address
 builder.Services.Configure<ForwardedHeadersOptions>(opt => {
     opt.ForwardedForHeaderName = "CF-Connecting-IP";
+    opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+    // Safe because we only allow Cloudflare to connect to the API through the firewall
+    opt.KnownNetworks.Add(new IPNetwork(IPAddress.Any, 0));
+    opt.KnownNetworks.Add(new IPNetwork(IPAddress.IPv6Any, 0));
 });
 
 var app = builder.Build();
