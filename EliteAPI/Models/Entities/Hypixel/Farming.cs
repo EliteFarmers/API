@@ -55,14 +55,16 @@ public class ContestParticipation
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    public int Collected { get; set; } = 0;
+    public int Collected { get; set; }
     public int Position { get; set; } = -1;
     public ContestMedal MedalEarned { get; set; } = ContestMedal.None;
 
-    [ForeignKey("ProfileMember")] public Guid ProfileMemberId { get; set; }
+    [ForeignKey("ProfileMember")] 
+    public Guid ProfileMemberId { get; set; }
     public ProfileMember ProfileMember { get; set; } = null!;
 
-    [ForeignKey("JacobContest")] public long JacobContestId { get; set; }
+    [ForeignKey("JacobContest")] 
+    public long JacobContestId { get; set; }
     public JacobContest JacobContest { get; set; } = null!;
 }
 
