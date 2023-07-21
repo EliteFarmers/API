@@ -22,6 +22,8 @@ public class LeaderboardService : ILeaderboardService {
     }
     
     public async Task<List<LeaderboardEntry>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
+        if (!LeaderboardExists(leaderboardId)) return new List<LeaderboardEntry>();
+        
         var db = _redis.GetDatabase();
         
         var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
@@ -38,6 +40,45 @@ public class LeaderboardService : ILeaderboardService {
         }
         
         return await GetSlice(leaderboardId, offset, limit);
+    }
+
+    public async Task<List<LeaderboardEntryWithRank>> GetLeaderboardSliceAtScore(string leaderboardId, double score, int limit = 5, string? excludeMemberId = null) {
+        if (!LeaderboardExists(leaderboardId)) return new List<LeaderboardEntryWithRank>();
+        
+        var memberRank = excludeMemberId is null ? -1 : await GetLeaderboardPosition(leaderboardId, excludeMemberId);
+        
+        var db = _redis.GetDatabase();
+        var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
+        if (!exists) await GetLeaderboardSlice(leaderboardId); // Will populate the leaderboard if it doesn't exist
+        
+        var slice = await db.SortedSetRangeByScoreWithScoresAsync(
+            $"lb:{leaderboardId}", 
+            order: Order.Descending, 
+            start: score,
+            skip: 0, 
+            take: limit
+        );
+        
+        if (slice.Length == 0) {
+            return new List<LeaderboardEntryWithRank>();
+        }
+        
+        var firstRank = await db.SortedSetRankAsync($"lb:{leaderboardId}", slice.First().Element, Order.Descending) ?? 1;
+        
+        // Get the hashset for each member
+        var tasks = slice.Select(async (entry, i) => {
+            var memberId = entry.Element.ToString();
+            var member = await db.HashGetAllAsync(memberId);
+            return new LeaderboardEntryWithRank {
+                MemberId = memberId,
+                Profile = member.FirstOrDefault(x => x.Name == "profile").Value,
+                Ign = member.FirstOrDefault(x => x.Name == "ign").Value,
+                Amount = entry.Score,
+                Rank = (int) firstRank + i
+            };
+        });
+        
+        return (await Task.WhenAll(tasks)).ToList();
     }
 
     public async Task<List<LeaderboardEntry>> GetSkillLeaderboardSlice(string skillName, int offset = 0, int limit = 20) {
@@ -92,6 +133,21 @@ public class LeaderboardService : ILeaderboardService {
         var rank = await db.SortedSetRankAsync($"lb:{leaderboardId}", memberId, Order.Descending);
         
         return rank.HasValue ? (int) rank.Value + 1 : -1;
+    }
+
+    public async Task<LeaderboardEntryWithRank?> GetLeaderboardEntry(string leaderboardId, string memberId) {
+        var rank = await GetLeaderboardPosition(leaderboardId, memberId);
+        if (rank == -1) return null;
+        
+        var entry = (await GetSlice(leaderboardId, rank - 1, 1)).FirstOrDefault();
+        
+        return entry is null ? null : new LeaderboardEntryWithRank {
+            MemberId = entry.MemberId,
+            Profile = entry.Profile,
+            Ign = entry.Ign,
+            Amount = entry.Amount,
+            Rank = rank
+        };
     }
 
     private async Task<List<LeaderboardEntry>> GetSlice(string leaderboardId, int offset = 0, int limit = 20) {
@@ -313,6 +369,15 @@ public class LeaderboardService : ILeaderboardService {
                || _settings.SkillLeaderboards.TryGetValue(leaderboardId, out lb) 
                || _settings.Leaderboards.TryGetValue(leaderboardId, out lb);
     }
+
+    public void UpdateLeaderboardScore(string leaderboardId, string memberId, double score) {
+        if (!LeaderboardExists(leaderboardId)) return;
+        
+        var db = _redis.GetDatabase();
+        var lbKey = $"lb:{leaderboardId}";
+
+        db.SortedSetAddAsync(lbKey, memberId, score, CommandFlags.FireAndForget);
+    }
 }
 
 public class LeaderboardEntry {
@@ -320,4 +385,12 @@ public class LeaderboardEntry {
     public string? Ign { get; init; }
     public string? Profile { get; init; }
     public double Amount { get; init; }
+}
+
+public class LeaderboardEntryWithRank {
+    public required string MemberId { get; init; }
+    public string? Ign { get; init; }
+    public string? Profile { get; init; }
+    public double Amount { get; init; }
+    public int Rank { get; init; }
 }

@@ -17,6 +17,13 @@ public class LeaderboardEntryDto {
     public double Amount { get; init; }
 }
 
+public class LeaderboardEntryWithRankDto {
+    public string? Ign { get; init; }
+    public string? Profile { get; init; }
+    public double Amount { get; init; }
+    public int Rank { get; init; }
+}
+
 public class LeaderboardPositionsDto {
     public Dictionary<string, int> misc { get; set; } = new();
     public Dictionary<string, int> skills { get; set; } = new();
@@ -26,4 +33,12 @@ public class LeaderboardPositionsDto {
 public class LeaderboardPositionDto {
     public int Rank { get; set; }
     public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
+}
+
+public class LeaderboardPositionWithUpcomingDto {
+    public int Rank { get; set; }
+    public double Amount { get; set; }
+    public int UpcomingRank { get; set; }
+    public long LastUpdated { get; set; }
+    public List<LeaderboardEntryWithRankDto>? UpcomingPlayers { get; set; }
 }

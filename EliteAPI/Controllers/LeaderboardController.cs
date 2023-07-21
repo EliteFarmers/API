@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.LeaderboardService;
+using EliteAPI.Services.ProfileService;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -20,12 +22,16 @@ public class LeaderboardController : ControllerBase
     private readonly ILeaderboardService _leaderboardService;
     private readonly ConfigLeaderboardSettings _settings;
     private readonly IMapper _mapper;
+    private readonly ConfigCooldownSettings _coolDowns;
+    private readonly IProfileService _profileService;
 
-    public LeaderboardController(DataContext dataContext, ILeaderboardService leaderboardService, IOptions<ConfigLeaderboardSettings> lbSettings, IMapper mapper)
+    public LeaderboardController(DataContext dataContext, ILeaderboardService leaderboardService, IOptions<ConfigLeaderboardSettings> lbSettings, IMapper mapper, IOptions<ConfigCooldownSettings> coolDowns, IProfileService profileService)
     {
         _context = dataContext;
         _leaderboardService = leaderboardService;
+        _profileService = profileService;
         _settings = lbSettings.Value;
+        _coolDowns = coolDowns.Value;
         _mapper = mapper;
     }
 
@@ -142,14 +148,19 @@ public class LeaderboardController : ControllerBase
             return BadRequest("Invalid leaderboard ID.");
         }
 
-        var memberId = await _context.ProfileMembers
+        var member = await _context.ProfileMembers
             .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
-            .Select(p => p.Id)
+            .Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
             .FirstOrDefaultAsync();
+
+        if (member is null || member.Id == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
+
+        // Update the profile if it's older than the cooldown
+        if (member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
+            await _profileService.GetSelectedProfileMember(member.PlayerUuid);
+        }
         
-        if (memberId == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
-        
-        var position = await _leaderboardService.GetLeaderboardPosition(leaderboardId, memberId.ToString());
+        var position = await _leaderboardService.GetLeaderboardPosition(leaderboardId, member.Id.ToString());
         List<LeaderboardEntry>? upcomingPlayers = null;
 
         if (includeUpcoming && position == -1) {

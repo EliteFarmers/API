@@ -10,6 +10,7 @@ using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.FarmingWeight;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.CacheService;
+using EliteAPI.Services.LeaderboardService;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Parsers.Skyblock;
@@ -20,7 +21,8 @@ public class ProfileParser
     private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
     private readonly ICacheService _cache;
-
+    private readonly ILeaderboardService _leaderboardService;
+    
     private readonly Func<DataContext, long, Task<JacobContest?>> _fetchJacobContest = 
         EF.CompileAsyncQuery((DataContext context, long key) =>            
             context.JacobContests
@@ -40,12 +42,13 @@ public class ProfileParser
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
     
-    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService)
+    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService, ILeaderboardService leaderboardService)
     {
         _context = context;
         _mojangService = mojangService;
         _mapper = mapper;
         _cache = cacheService;
+        _leaderboardService = leaderboardService;
     }
 
     public async Task<List<ProfileMember>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
@@ -207,8 +210,21 @@ public class ProfileParser
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
 
+        await AddTimeScaleRecords(member);
+        UpdateLeaderboards(member);
+
         await _context.SaveChangesAsync();
-        
+    }
+    
+    private void UpdateLeaderboards(ProfileMember member) {
+        // TODO: Update all leaderboards, not just farming weight
+        // (I'm avoiding this right now because idk a clever solution that's not a ton of if statements)
+
+        var farmingWeight = member.FarmingWeight.TotalWeight;
+        _leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
+    }
+
+    private async Task AddTimeScaleRecords(ProfileMember member) {
         var cropCollection = new CropCollection {
             Time = DateTimeOffset.UtcNow,
             
@@ -247,7 +263,5 @@ public class ProfileParser
             ProfileMember = member,
         };
         await _context.SkillExperiences.SingleInsertAsync(skillExp);
-        
-        await _context.SaveChangesAsync();
     }
 }
