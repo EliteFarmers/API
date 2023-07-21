@@ -376,7 +376,7 @@ public class LeaderboardService : ILeaderboardService {
         var db = _redis.GetDatabase();
         var lbKey = $"lb:{leaderboardId}";
 
-        db.SortedSetAddAsync(lbKey, memberId, score, CommandFlags.FireAndForget);
+        db.SortedSetAddAsync(lbKey, memberId, score, When.Exists, CommandFlags.FireAndForget);
     }
 }
 
