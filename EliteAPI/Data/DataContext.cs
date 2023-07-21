@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,14 @@ public class DataContext : DbContext
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
     public DbSet<FarmingWeight> FarmingWeights { get; set; } = null!;
-    
+
+    // Discord
+    public DbSet<Guild> Guilds { get; set; } = null!;
+
+    // Events
+    public DbSet<Event> Events { get; set; } = null!;
+    public DbSet<EventMember> EventMembers { get; set; } = null!;
+
     // Timescale HyperTables
     public DbSet<SkillExperience> SkillExperiences { get; set; } = null!;
     public DbSet<CropCollection> CropCollections { get; set; } = null!;

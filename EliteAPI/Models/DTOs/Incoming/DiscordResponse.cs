@@ -27,3 +27,16 @@ public class RefreshTokenResponse
 
     public string? Error { get; set; }
 }
+
+public class DiscordGuild {
+    public ulong Id { get; set; }
+    public required string Name { get; set; }
+    
+    public string? Icon { get; set; }
+    public bool Owner { get; set; }
+    public uint Permissions { get; set; }
+    
+    [JsonPropertyName("permissions_new")]
+    public required string PermissionsNew { get; set; }
+    public List<string> Features { get; set; } = new();
+}
