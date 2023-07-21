@@ -103,6 +103,7 @@ public static class ServiceExtensions
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();
+        services.AddScoped<DiscordBotOnlyFilter>();
     }
 
     public static void AddEliteRedisCache(this IServiceCollection services)
@@ -171,7 +172,7 @@ public static class ServiceExtensions
                 // Check if IP address is from docker network
                 if (remoteIpAddress is null 
                     || IPAddress.IsLoopback(remoteIpAddress) 
-                    || IsFromDockerNetwork(remoteIpAddress))
+                    || remoteIpAddress.IsFromDockerNetwork())
                 {
                     return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
                 }
@@ -190,9 +191,9 @@ public static class ServiceExtensions
         });
     }
 
-    private static bool IsFromDockerNetwork(IPAddress remoteIpAddress)
+    public static bool IsFromDockerNetwork(this IPAddress ip)
     {
-        // Check if the IP address is from the Docker network.
-        return remoteIpAddress.ToString().StartsWith("172.19.") || remoteIpAddress.MapToIPv4().ToString().StartsWith("172.19.");
+        // Check if the IP address is from the Docker network or local.
+        return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.19.") || ip.MapToIPv4().ToString().StartsWith("172.19.");
     }
 }
