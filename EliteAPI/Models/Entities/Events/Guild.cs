@@ -54,7 +54,7 @@ public class GuildJacobLeaderboard {
     public required string MessageId { get; set; }
 
     public long StartCutoff { get; set; }
-    public long EndCutoff { get; set; }
+    public long EndCutoff { get; set; } = -1;
     
     public string? Title { get; set; }
     public bool Active { get; set; } = true;
@@ -73,9 +73,9 @@ public class GuildJacobLeaderboard {
     public List<GuildJacobLeaderboardEntry> Melon { get; set; } = new();
     public List<GuildJacobLeaderboardEntry> Pumpkin { get; set; } = new();
     public List<GuildJacobLeaderboardEntry> Mushroom { get; set; } = new();
-    public List<GuildJacobLeaderboardEntry> Cocoa { get; set; } = new();
-    public List<GuildJacobLeaderboardEntry> Cane { get; set; } = new();
-    public List<GuildJacobLeaderboardEntry> Wart { get; set; } = new();
+    public List<GuildJacobLeaderboardEntry> CocoaBeans { get; set; } = new();
+    public List<GuildJacobLeaderboardEntry> SugarCane { get; set; } = new();
+    public List<GuildJacobLeaderboardEntry> NetherWart { get; set; } = new();
 }
 
 public class GuildJacobLeaderboardEntry {

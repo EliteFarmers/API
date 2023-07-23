@@ -14,7 +14,8 @@ public class DiscordBotOnlyFilter : IAsyncAuthorizationFilter {
         
         var auth = context.HttpContext.Request.Headers.Authorization.ToString();
         
-        if (context.HttpContext.Connection.RemoteIpAddress?.IsFromDockerNetwork() != true || !auth.StartsWith("Bearer EliteDiscordBot ")) {
+        // Only allow local requests once bot has moved to share the same network as the API
+        if (!auth.StartsWith("Bearer EliteDiscordBot ") /* || context.HttpContext.Connection.RemoteIpAddress?.IsFromDockerNetwork() != true*/ ) {
             context.Result = new UnauthorizedObjectResult("Only the bot can access this endpoint.");
             return Task.CompletedTask;
         }

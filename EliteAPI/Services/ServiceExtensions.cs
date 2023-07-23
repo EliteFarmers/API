@@ -14,7 +14,6 @@ using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using StackExchange.Redis;
@@ -150,7 +149,7 @@ public static class ServiceExtensions
         var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
             
         services.AddRateLimiter(limiterOptions => {
-            limiterOptions.OnRejected = (context, cancellationToken) => {
+            limiterOptions.OnRejected = (context, _) => {
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)) {
                     context.HttpContext.Response.Headers.RetryAfter =
                         ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
