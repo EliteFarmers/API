@@ -163,7 +163,7 @@ public class LeaderboardController : ControllerBase
         var position = await _leaderboardService.GetLeaderboardPosition(leaderboardId, member.Id.ToString());
         List<LeaderboardEntry>? upcomingPlayers = null;
         
-        var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit);
+        var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);
         rank = position != -1 ? Math.Min(position, rank) : rank;
 
         if (includeUpcoming && rank == -1) {
