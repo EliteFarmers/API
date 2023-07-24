@@ -143,7 +143,7 @@ public class LeaderboardController : ControllerBase
     // GET <LeaderboardController>/rank/[lbId]/[player]/[profile]
     [HttpGet("rank/{leaderboardId}/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
-    public async Task<ActionResult<LeaderboardPositionDto>> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileUuid, [FromQuery] bool includeUpcoming = false) {
+    public async Task<ActionResult<LeaderboardPositionDto>> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileUuid, [FromQuery] bool includeUpcoming = false, [FromQuery] int atRank = -1) {
         if (!_leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
             return BadRequest("Invalid leaderboard ID.");
         }
@@ -162,12 +162,15 @@ public class LeaderboardController : ControllerBase
         
         var position = await _leaderboardService.GetLeaderboardPosition(leaderboardId, member.Id.ToString());
         List<LeaderboardEntry>? upcomingPlayers = null;
+        
+        var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit);
+        rank = Math.Min(position, rank);
 
-        if (includeUpcoming && position == -1) {
+        if (includeUpcoming && rank == -1) {
             upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
-        } else if (includeUpcoming && position > 1) {
-            upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(position - 6, 0),
-                Math.Min(position - 1, 5));
+        } else if (includeUpcoming && rank > 1) {
+            upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
+                Math.Min(rank - 1, 5));
         }
 
         // Reverse the list so that upcoming players are in ascending order
@@ -176,6 +179,7 @@ public class LeaderboardController : ControllerBase
 
         var result = new LeaderboardPositionDto {
             Rank = position,
+            UpcomingRank = rank - 1,
             UpcomingPlayers = upcoming
         };
         
