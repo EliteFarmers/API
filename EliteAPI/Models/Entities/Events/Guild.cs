@@ -21,8 +21,8 @@ public class Guild {
     public ulong AdminRole { get; set; }
     
     public string? Icon { get; set; }
-    public uint BotPermissions { get; set; }
-    public required string BotPermissionsNew { get; set; }
+    public ulong BotPermissions { get; set; }
+    public string? BotPermissionsNew { get; set; }
 
     [Column(TypeName = "jsonb")]
     public List<string> DiscordFeatures { get; set; } = new();

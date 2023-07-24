@@ -24,8 +24,9 @@ public class DiscordAuthFilter : IAsyncAuthorizationFilter
         
         using var scopes = context.HttpContext.RequestServices.CreateScope();
         var discordServices = scopes.ServiceProvider.GetRequiredService<IDiscordService>();
-
-        var account = await discordServices.GetDiscordUser(auth.Replace("Bearer ", ""));
+        var token = auth.Replace("Bearer ", "");
+        
+        var account = await discordServices.GetDiscordUser(token);
         
         if (account is null)
         {
@@ -34,5 +35,6 @@ public class DiscordAuthFilter : IAsyncAuthorizationFilter
         }
         
         context.HttpContext.Items.Add("Account", account);
+        context.HttpContext.Items.Add("DiscordToken", token);
     }
 }

@@ -5,6 +5,6 @@
     "SkyblockProfileCooldown": 600,
     "MinecraftAccountCooldown": 43200,
     "DiscordGuildsCooldown": 36000,
-    "SpecificGuildCooldown": 60
+    "UserGuildsCooldown": 600
   }
 }

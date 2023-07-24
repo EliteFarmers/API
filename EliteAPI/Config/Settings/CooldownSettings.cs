@@ -7,5 +7,5 @@ public class ConfigCooldownSettings
     public int SkyblockProfileCooldown { get; set; }
     public int MinecraftAccountCooldown { get; set; }
     public int DiscordGuildsCooldown { get; set; }
-    public int SpecificGuildCooldown { get; set; }
+    public int UserGuildsCooldown { get; set; }
 }
