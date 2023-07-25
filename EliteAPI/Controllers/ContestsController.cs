@@ -276,13 +276,14 @@ public class ContestsController : ControllerBase
             return BadRequest("Contests cannot be submitted this late in the year!");
         }
         
-        if (body.Keys.Count != 124) {
-            return BadRequest("Invalid number of contests! Expected 123, got " + body.Count);
+        if (body.Keys.Count != 124 || body.Keys.Distinct().Count() != 124) {
+            return BadRequest("Invalid number of contests! Expected 124, got " + body.Count);
         }
         
         // Check if any of the timestamps are invalid
-        if (body.Keys.ToList().Exists(timestamp => new SkyblockDate(timestamp).Year != currentYear)) {
-            return BadRequest("Invalid year! All contests must be from the current year (" + (currentYear + 1) + ")");
+        if (body.Keys.ToList().Exists(timestamp => new SkyblockDate(timestamp).Year != currentYear || DateTimeOffset.FromUnixTimeSeconds(timestamp).Minute != 15)) {
+            return BadRequest("Invalid timestamp! All contests must be from the current SkyBlock year (" +
+                              (currentYear + 1) + ") and begin on the 15 minute mark!");
         }
         
         // Check if any of the crops are invalid
