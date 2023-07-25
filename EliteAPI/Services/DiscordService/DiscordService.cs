@@ -298,6 +298,14 @@ public class DiscordService : IDiscordService
                 existingGuild.DiscordFeatures = guild.Features;
                 existingGuild.InviteCode = guild.VanityUrlCode;
                 existingGuild.Banner = guild.Splash;
+                
+                if (existingGuild.Features.JacobLeaderboardEnabled) {
+                    existingGuild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
+                }
+                
+                if (existingGuild.Features.VerifiedRoleEnabled) {
+                    existingGuild.Features.VerifiedRole ??= new VerifiedRoleFeature();
+                }
             }
             
             await _context.SaveChangesAsync();

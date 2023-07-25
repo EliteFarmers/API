@@ -50,8 +50,8 @@ public class GuildJacobLeaderboardFeature {
 }
 
 public class GuildJacobLeaderboard {
-    public required string ChannelId { get; set; }
-    public required string MessageId { get; set; }
+    public required string Id { get; set; }
+    public string? ChannelId { get; set; }
 
     public long StartCutoff { get; set; }
     public long EndCutoff { get; set; } = -1;
