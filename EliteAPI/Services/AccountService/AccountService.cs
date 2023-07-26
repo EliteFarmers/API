@@ -56,7 +56,7 @@ public class AccountService : IAccountService
         // Check if the player has already linked this account
         if (account.MinecraftAccounts.Any(mc => mc.Id.Equals(id) || mc.Name.Equals(id)))
         {
-            return new BadRequestObjectResult("You has already linked this account.");
+            return new BadRequestObjectResult("You have already linked this account.");
         }
 
         var playerData = await _context.PlayerData
@@ -72,7 +72,7 @@ public class AccountService : IAccountService
         var linkedDiscord = playerData.SocialMedia.Discord;
         if (linkedDiscord is null)
         {
-            return new BadRequestObjectResult("You have not linked a Discord account in Hypixel.");
+            return new BadRequestObjectResult("You have not linked a Discord account in the Hypixel social menu.");
         }
 
         // Handle old Discord accounts with the discriminator (rip) 

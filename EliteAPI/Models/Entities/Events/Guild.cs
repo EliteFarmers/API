@@ -53,9 +53,10 @@ public class GuildJacobLeaderboard {
     public required string Id { get; set; }
     public string? ChannelId { get; set; }
 
-    public long StartCutoff { get; set; }
+    public long StartCutoff { get; set; } = -1;
     public long EndCutoff { get; set; } = -1;
     
+    [MaxLength(64)]
     public string? Title { get; set; }
     public bool Active { get; set; } = true;
     
