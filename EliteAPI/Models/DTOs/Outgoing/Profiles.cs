@@ -15,6 +15,7 @@ public class MemberDetailsDto
     public required string Uuid { get; set; }
     public required string Username { get; set; }
     public bool Active { get; set; } = true;
+    public double FarmingWeight { get; set; } = 0;
 }
 
 public class ProfileMemberDto

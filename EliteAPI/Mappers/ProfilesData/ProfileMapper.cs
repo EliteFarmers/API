@@ -32,6 +32,7 @@ public class ProfileMemberMapper : Profile
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
             .ForMember(x => x.Username, opt => opt.MapFrom(x => x.MinecraftAccount.Name))
+            .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.FarmingWeight.TotalWeight))
             .ForMember(x => x.Active, opt => opt.MapFrom(x => !x.WasRemoved));
     }
 }

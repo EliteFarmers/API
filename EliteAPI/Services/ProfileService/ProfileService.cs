@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.HypixelService;
@@ -40,6 +41,8 @@ public class ProfileService : IProfileService
         return await _context.Profiles
             .Include(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
+            .Include(p => p.Members)
+            .ThenInclude(m => m.FarmingWeight)
             .FirstOrDefaultAsync(p => p.ProfileId.Equals(profileId));
     }
 
@@ -84,6 +87,38 @@ public class ProfileService : IProfileService
             .ToListAsync();
 
         return profiles;
+    }
+
+    public async Task<List<ProfileDetailsDto>> GetProfilesDetails(string playerUuid) {
+        var existing = await _context.ProfileMembers
+            .Where(m => m.PlayerUuid.Equals(playerUuid))
+            .Select(m => new { m.ProfileId, m.LastUpdated })
+            .ToListAsync();
+    
+        if (existing.Count == 0 || existing.Any(e => e.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)))
+        {
+            await RefreshProfileMembers(playerUuid);
+        }
+        
+        var profileIds = existing.Select(e => e.ProfileId).ToList();
+
+        var profiles = await _context.Profiles
+            .Include(p => p.Members)
+            .ThenInclude(m => m.MinecraftAccount)
+            .Include(p => p.Members)
+            .ThenInclude(m => m.FarmingWeight)
+            .Where(p => profileIds.Contains(p.ProfileId))
+            .ToListAsync();
+        
+        var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
+
+        // This needs to be fetched because "selected" lives on the ProfileMembers
+        var selected = await GetSelectedProfileUuid(playerUuid);
+        if (selected is not null) {
+            mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
+        }
+        
+        return mappedProfiles;
     }
 
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 

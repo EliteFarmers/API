@@ -60,23 +60,17 @@ public class AccountController : ControllerBase
         
         var minecraftAccount = account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
         if (minecraftAccount is null) return NotFound("User doesn't have any linked Minecraft accounts.");
+
+        var profileDetails = await _profileService.GetProfilesDetails(minecraftAccount.Id);
         
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
-        var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
-
-        var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
-        if (selected is not null) mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
-
         var playerData = await _profileService.GetPlayerData(minecraftAccount.Id);
-        
-        var mappedPlayerData = _mapper.Map<PlayerDataDto>(playerData);
         var result = _mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
         result.DiscordId = account.Id.ToString();
         result.DiscordUsername = account.Username;
         result.DiscordAvatar = account.Avatar;
-        result.PlayerData = mappedPlayerData;
-        result.Profiles = mappedProfiles;
+        result.PlayerData = _mapper.Map<PlayerDataDto>(playerData);
+        result.Profiles = profileDetails;
         
         return Ok(result);
     }
@@ -95,14 +89,7 @@ public class AccountController : ControllerBase
             return NotFound("Minecraft account not found.");
         }
         
-        var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
-        // This needs to be fetched because "selected" lives on the ProfileMembers
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
-        
-        var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
-
-        if (selected is not null) mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
-
+        var profilesDetails = await _profileService.GetProfilesDetails(minecraftAccount.Id);
         var playerData = await _profileService.GetPlayerData(minecraftAccount.Id);
         
         var mappedPlayerData = _mapper.Map<PlayerDataDto>(playerData);
@@ -112,7 +99,7 @@ public class AccountController : ControllerBase
         result.DiscordUsername = account?.Username;
         result.DiscordAvatar = account?.Avatar;
         result.PlayerData = mappedPlayerData;
-        result.Profiles = mappedProfiles;
+        result.Profiles = profilesDetails;
         
         return Ok(result);
     }
