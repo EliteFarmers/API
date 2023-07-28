@@ -5,6 +5,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.GuildService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Controllers.Discord; 
@@ -17,11 +18,13 @@ public class UserController : ControllerBase {
     private readonly IDiscordService _discordService;
     private readonly DataContext _context;
     private readonly IMapper _mapper;
+    private readonly IGuildService _guildService;
 
-    public UserController(DataContext context, IMapper mapper, IDiscordService discordService) {
+    public UserController(DataContext context, IMapper mapper, IDiscordService discordService, IGuildService guildService) {
         _context = context;
         _mapper = mapper;
         _discordService = discordService;
+        _guildService = guildService;
     }
     
     // GET <GuildController>/Guilds
@@ -272,5 +275,45 @@ public class UserController : ControllerBase {
         await _context.SaveChangesAsync();
         
         return Ok();
+    }
+    
+    [HttpPost("Guild/{guildId}/Jacob/{lbId}/Send")]
+    public async Task<ActionResult> SendGuildLeaderboard(ulong guildId, string lbId) 
+    {
+        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+
+        if (userGuild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        var fullGuild = await _discordService.GetGuild(guildId);
+        var guild = await _context.Guilds.FindAsync(guildId);
+
+        if (fullGuild is null || guild is null) {
+            return NotFound("Guild not found.");
+        }
+
+        if (!guild.Features.JacobLeaderboardEnabled || guild.Features.JacobLeaderboard is null) {
+            return Unauthorized("Jacob Leaderboard feature is not enabled for this guild.");
+        }
+        
+        var feature = guild.Features.JacobLeaderboard;
+        var existing = feature.Leaderboards.FirstOrDefault(lb => lb.Id.Equals(lbId));
+        
+        if (existing is null) {
+            return NotFound("Leaderboard not found.");
+        }
+
+        var channelId = existing.ChannelId;
+        if (channelId is null) {
+            return BadRequest("Leaderboard channel not set.");
+        }
+
+        return await _guildService.SendLeaderboardPanel(guildId, channelId, lbId);
     }
 }

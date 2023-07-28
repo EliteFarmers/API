@@ -9,6 +9,7 @@ using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.GuildService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
@@ -99,6 +100,7 @@ public static class ServiceExtensions
         services.AddScoped<IProfileService, ProfileService.ProfileService>();
         services.AddScoped<IDiscordService, DiscordService.DiscordService>();
         services.AddScoped<ILeaderboardService, LeaderboardService.LeaderboardService>();
+        services.AddScoped<IGuildService, GuildService.GuildService>();
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();

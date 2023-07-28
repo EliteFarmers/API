@@ -55,18 +55,21 @@ public class GuildJacobLeaderboard {
 
     public long StartCutoff { get; set; } = -1;
     public long EndCutoff { get; set; } = -1;
-    
-    [MaxLength(64)]
-    public string? Title { get; set; }
+
+    [MaxLength(64)] public string? Title { get; set; }
     public bool Active { get; set; } = true;
-    
+
     public string? RequiredRole { get; set; }
     public string? BlockedRole { get; set; }
-    
+
     public string? UpdateChannelId { get; set; }
     public string? UpdateRoleId { get; set; }
     public bool PingForSmallImprovements { get; set; }
-    
+
+    public CropRecords Crops { get; set; } = new();
+}
+
+public class CropRecords {
     public List<GuildJacobLeaderboardEntry> Cactus { get; set; } = new();
     public List<GuildJacobLeaderboardEntry> Carrot { get; set; } = new();
     public List<GuildJacobLeaderboardEntry> Potato { get; set; } = new();
