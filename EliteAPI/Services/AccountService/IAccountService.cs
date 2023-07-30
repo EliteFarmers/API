@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.AccountService;
 
@@ -13,6 +14,7 @@ public interface IAccountService
     Task<AccountEntity?> GetAccountByIgn(string ign);
     Task<AccountEntity?> GetAccountByMinecraftUuid(string uuid);
     Task<AccountEntity?> GetAccountByIgnOrUuid(string ignOrUuid);
-    Task<AccountEntity?> AddAccount(AccountEntity account);
-    Task<AccountEntity?> DeleteAccount(int id);
+    Task<ActionResult> LinkAccount(ulong discordId, string playerUuidOrIgn);
+    Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn);
+    Task<ActionResult> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn);
 }

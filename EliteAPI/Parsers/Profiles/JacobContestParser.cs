@@ -12,12 +12,13 @@ public static class JacobContestParser
 {
     public static async Task ParseJacobContests(this ProfileMember member, RawJacobData? incomingJacob, DataContext context, ICacheService cache)
     {
-        await using var transaction = await context.Database.BeginTransactionAsync();
         var jacob = member.JacobData;
 
         var incomingContests = incomingJacob?.Contests;
-        if (incomingContests is null) return;
-
+        if (incomingContests is null || incomingContests.Count == 0) return;
+        
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        
         // Existing contests on the profile
         var existingContests = jacob.Contests
             .DistinctBy(c => c.JacobContest.Timestamp + (int) c.JacobContest.Crop) // Hopefully should not be needed

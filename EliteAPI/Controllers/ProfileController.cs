@@ -83,22 +83,13 @@ public class ProfileController : ControllerBase
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<List<ProfileDetailsDto>>> GetProfiles(string playerUuid)
     {
-        var profiles = await _profileService.GetPlayersProfiles(playerUuid);
+        var profiles = await _profileService.GetProfilesDetails(playerUuid);
 
         if (profiles.Count == 0)
         {
             return NotFound("No profiles matching this UUID were found");
         }
         
-        var mapped = _mapper.Map<List<ProfileDetailsDto>>(profiles);
-
-        var selected = await _context.ProfileMembers
-            .Where(s => s.PlayerUuid == playerUuid && s.IsSelected)
-            .Select(s => s.ProfileId)
-            .FirstOrDefaultAsync();
-        
-        mapped.ForEach(p => p.Selected = p.ProfileId == selected);
-        
-        return Ok(mapped);
+        return Ok(profiles);
     }
 }

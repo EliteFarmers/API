@@ -9,12 +9,12 @@ using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.GuildService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using StackExchange.Redis;
@@ -100,9 +100,11 @@ public static class ServiceExtensions
         services.AddScoped<IProfileService, ProfileService.ProfileService>();
         services.AddScoped<IDiscordService, DiscordService.DiscordService>();
         services.AddScoped<ILeaderboardService, LeaderboardService.LeaderboardService>();
+        services.AddScoped<IGuildService, GuildService.GuildService>();
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();
+        services.AddScoped<DiscordBotOnlyFilter>();
     }
 
     public static void AddEliteRedisCache(this IServiceCollection services)
@@ -149,7 +151,7 @@ public static class ServiceExtensions
         var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
             
         services.AddRateLimiter(limiterOptions => {
-            limiterOptions.OnRejected = (context, cancellationToken) => {
+            limiterOptions.OnRejected = (context, _) => {
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)) {
                     context.HttpContext.Response.Headers.RetryAfter =
                         ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
@@ -171,7 +173,7 @@ public static class ServiceExtensions
                 // Check if IP address is from docker network
                 if (remoteIpAddress is null 
                     || IPAddress.IsLoopback(remoteIpAddress) 
-                    || IsFromDockerNetwork(remoteIpAddress))
+                    || remoteIpAddress.IsFromDockerNetwork())
                 {
                     return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
                 }
@@ -190,9 +192,9 @@ public static class ServiceExtensions
         });
     }
 
-    private static bool IsFromDockerNetwork(IPAddress remoteIpAddress)
+    public static bool IsFromDockerNetwork(this IPAddress ip)
     {
-        // Check if the IP address is from the Docker network.
-        return remoteIpAddress.ToString().StartsWith("172.19.") || remoteIpAddress.MapToIPv4().ToString().StartsWith("172.19.");
+        // Check if the IP address is from the Docker network or local.
+        return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.19.") || ip.MapToIPv4().ToString().StartsWith("172.19.");
     }
 }

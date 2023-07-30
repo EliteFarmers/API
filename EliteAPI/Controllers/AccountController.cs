@@ -60,23 +60,17 @@ public class AccountController : ControllerBase
         
         var minecraftAccount = account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
         if (minecraftAccount is null) return NotFound("User doesn't have any linked Minecraft accounts.");
+
+        var profileDetails = await _profileService.GetProfilesDetails(minecraftAccount.Id);
         
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
-        var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
-
-        var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
-        if (selected is not null) mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
-
         var playerData = await _profileService.GetPlayerData(minecraftAccount.Id);
-        
-        var mappedPlayerData = _mapper.Map<PlayerDataDto>(playerData);
         var result = _mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
         result.DiscordId = account.Id.ToString();
         result.DiscordUsername = account.Username;
         result.DiscordAvatar = account.Avatar;
-        result.PlayerData = mappedPlayerData;
-        result.Profiles = mappedProfiles;
+        result.PlayerData = _mapper.Map<PlayerDataDto>(playerData);
+        result.Profiles = profileDetails;
         
         return Ok(result);
     }
@@ -95,14 +89,7 @@ public class AccountController : ControllerBase
             return NotFound("Minecraft account not found.");
         }
         
-        var profiles = await _profileService.GetPlayersProfiles(minecraftAccount.Id);
-        // This needs to be fetched because "selected" lives on the ProfileMembers
-        var selected = await _profileService.GetSelectedProfileUuid(minecraftAccount.Id);
-        
-        var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
-
-        if (selected is not null) mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
-
+        var profilesDetails = await _profileService.GetProfilesDetails(minecraftAccount.Id);
         var playerData = await _profileService.GetPlayerData(minecraftAccount.Id);
         
         var mappedPlayerData = _mapper.Map<PlayerDataDto>(playerData);
@@ -112,7 +99,7 @@ public class AccountController : ControllerBase
         result.DiscordUsername = account?.Username;
         result.DiscordAvatar = account?.Avatar;
         result.PlayerData = mappedPlayerData;
-        result.Profiles = mappedProfiles;
+        result.Profiles = profilesDetails;
         
         return Ok(result);
     }
@@ -126,66 +113,7 @@ public class AccountController : ControllerBase
             return Unauthorized("Account not found.");
         }
 
-        var account = await _context.Accounts
-            .Include(a => a.MinecraftAccounts)
-            .FirstOrDefaultAsync(a => a.Id.Equals(loggedInAccount.Id));
-
-        if (account is null)
-        {
-            return Unauthorized("Account not found.");
-        }
-
-        // Remove dashes from id
-        var id = playerUuidOrIgn.Replace("-", "");
-
-        // Check if the player has already linked their account
-        if (account.MinecraftAccounts.Any(mc => mc.Id.Equals(id) || mc.Name.Equals(id)))
-        {
-            return BadRequest("Player has already linked this account.");
-        }
-
-        var playerData = await _profileService.GetPlayerDataByUuidOrIgn(id, true);
-
-        if (playerData?.MinecraftAccount is null)
-        {
-            return BadRequest("No Minecraft account found for this player.");
-        }
-
-        var linkedDiscord = playerData.SocialMedia?.Discord;
-        if (linkedDiscord is null)
-        {
-            return BadRequest("Player has not linked their discord.");
-        }
-
-        // Handle old Discord accounts with the discriminator (rip) 
-        if (account.Discriminator is not null && !account.Discriminator.Equals("0"))
-        {
-            if (!linkedDiscord.Equals($"{account.Username}#{account.Discriminator}"))
-            {
-                return BadRequest("Player has a different account linked.");
-            }
-        } 
-        else if (!account.Username.Equals(linkedDiscord)) // Handle new Discord accounts without the discriminator
-        {
-            return BadRequest("Player has a different account linked.");
-        }
-
-        // Success
-        account.MinecraftAccounts.Add(playerData.MinecraftAccount);
-        
-        // Select the account if it's the only one
-        if (account.MinecraftAccounts.Count == 1)
-        {
-            playerData.MinecraftAccount.Selected = true;
-        }
-        
-        // Set the account id
-        playerData.MinecraftAccount.AccountId = account.Id;
-        _context.MinecraftAccounts.Update(playerData.MinecraftAccount);
-        
-        await _context.SaveChangesAsync();
-        
-        return Accepted();
+        return await _accountService.LinkAccount(loggedInAccount.Id, playerUuidOrIgn);
     }
 
     [HttpDelete("{playerUuidOrIgn}")]
@@ -197,30 +125,7 @@ public class AccountController : ControllerBase
             return Unauthorized("Account not found.");
         }
 
-        var account = await _context.Accounts
-            .Include(a => a.MinecraftAccounts)
-            .FirstOrDefaultAsync(a => a.Id.Equals(linkedAccount.Id));
-
-        if (account is null) return Unauthorized("Account not found.");
-        
-        // Remove dashes from id
-        var id = playerUuidOrIgn.Replace("-", "");
-        var minecraftAccount = account.MinecraftAccounts.FirstOrDefault(mc => mc.Id.Equals(id) || mc.Name.Equals(id));
-
-        // Check if the player has already linked their account
-        if (minecraftAccount is null)
-        {
-            return BadRequest("Player has not linked this account.");
-        }
-        
-        // Reset the account id
-        minecraftAccount.AccountId = null;
-        minecraftAccount.Selected = false;
-        account.MinecraftAccounts.Remove(minecraftAccount);
-        
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        return await _accountService.UnlinkAccount(linkedAccount.Id, playerUuidOrIgn);
     }
     
     [HttpPost("primary/{playerUuidOrIgn}")]
@@ -232,33 +137,6 @@ public class AccountController : ControllerBase
             return Unauthorized("Account not found.");
         }
 
-        var account = await _accountService.GetAccountByIgnOrUuid(playerUuidOrIgn);
-
-        if (account is null)
-        {
-            return Unauthorized("Account not found.");
-        }
-
-        var mcAccounts = account.MinecraftAccounts;
-        var selectedAccount = mcAccounts.FirstOrDefault(mc => mc.Selected);
-        var newSelectedAccount = mcAccounts.FirstOrDefault(mc => mc.Id.Equals(playerUuidOrIgn) || mc.Name.Equals(playerUuidOrIgn));
-        
-        if (newSelectedAccount is null)
-        {
-            return BadRequest("Minecraft account not found for this player.");
-        }
-        
-        if (selectedAccount is not null)
-        {
-            selectedAccount.Selected = false;
-            _context.MinecraftAccounts.Update(selectedAccount);
-        }
-        
-        newSelectedAccount.Selected = true;
-        _context.MinecraftAccounts.Update(newSelectedAccount);
-        
-        await _context.SaveChangesAsync();
-        
-        return Accepted();
+        return await _accountService.MakePrimaryAccount(loggedInAccount.Id, playerUuidOrIgn);
     }
 }

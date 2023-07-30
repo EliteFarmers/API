@@ -3,6 +3,8 @@
     "HypixelPlayerDataCooldown": 43200,
     "HypixelPlayerDataLinkingCooldown": 60,
     "SkyblockProfileCooldown": 600,
-    "MinecraftAccountCooldown": 43200
+    "MinecraftAccountCooldown": 43200,
+    "DiscordGuildsCooldown": 2400,
+    "UserGuildsCooldown": 600
   }
 }

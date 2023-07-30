@@ -8,6 +8,7 @@ using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -16,9 +17,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230721003619_Events")]
+    partial class Events
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,10 +206,11 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("Banner")
                         .HasColumnType("text");
 
-                    b.Property<decimal>("BotPermissions")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<long>("BotPermissions")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("BotPermissionsNew")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Description")
@@ -226,9 +230,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<string>("InviteCode")
                         .HasColumnType("text");
-
-                    b.Property<int>("MemberCount")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -369,8 +370,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("FirstLogin")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("Karma")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Karma")
+                        .HasColumnType("integer");
 
                     b.Property<long>("LastLogin")
                         .HasColumnType("bigint");
