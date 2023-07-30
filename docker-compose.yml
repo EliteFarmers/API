@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.8'
 
 services:
   eliteapi:
@@ -79,6 +79,7 @@ services:
         
 networks:
     eliteapi-network:
+        name: elite-network
         driver: bridge
 
 volumes:
