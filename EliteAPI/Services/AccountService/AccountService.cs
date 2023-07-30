@@ -55,7 +55,7 @@ public class AccountService : IAccountService
         var id = playerUuidOrIgn.Replace("-", "");
 
         // Check if the player has already linked this account
-        if (account.MinecraftAccounts.Any(mc => mc.Id.Equals(id) || mc.Name.Equals(id)))
+        if (account.MinecraftAccounts.Any(mc => mc.Id.Equals(id) || mc.Name.ToLower().Equals(id.ToLower())))
         {
             return new BadRequestObjectResult("You have already linked this account.");
         }
@@ -63,7 +63,7 @@ public class AccountService : IAccountService
         var playerData = await _context.PlayerData
             .Include(pd => pd.MinecraftAccount)
             .Include(pd => pd.SocialMedia)
-            .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name.Equals(id))
+            .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
             .FirstOrDefaultAsync();
 
         if (playerData?.MinecraftAccount is null)
@@ -71,7 +71,8 @@ public class AccountService : IAccountService
             return new BadRequestObjectResult("No Minecraft account found. Please ensure you entered the correct player name or try looking up their stats first.");
         }
 
-        var linkedDiscord = playerData.SocialMedia.Discord;
+        // Remove "#0000" because some other (bad) applications require the discriminator in Hypixel to be zeros
+        var linkedDiscord = playerData.SocialMedia.Discord?.Replace("#0000", "");
         if (linkedDiscord is null)
         {
             return new BadRequestObjectResult("You have not linked a Discord account in the Hypixel social menu. Do that first and try again.");
@@ -85,7 +86,7 @@ public class AccountService : IAccountService
                 return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{tag}` within Hypixel or ensure you entered the correct player name.");
             }
         } 
-        else if (!account.Username.Equals(linkedDiscord)) // Handle new Discord accounts without the discriminator
+        else if (!account.Username.ToLower().Equals(linkedDiscord.ToLower())) // Handle new Discord accounts without the discriminator
         {
             return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{account.Username}` within Hypixel or ensure you entered the correct player name.");
         }
@@ -115,7 +116,7 @@ public class AccountService : IAccountService
         
         // Remove dashes from id
         var id = playerUuidOrIgn.Replace("-", "");
-        var minecraftAccount = account.MinecraftAccounts.FirstOrDefault(mc => mc.Id.Equals(id) || mc.Name.Equals(id));
+        var minecraftAccount = account.MinecraftAccounts.FirstOrDefault(mc => mc.Id.Equals(id) || mc.Name.ToLower().Equals(id.ToLower()));
 
         // Check if the player has already linked their account
         if (minecraftAccount is null)
@@ -143,7 +144,7 @@ public class AccountService : IAccountService
 
         var mcAccounts = account.MinecraftAccounts;
         var selectedAccount = mcAccounts.FirstOrDefault(mc => mc.Selected);
-        var newSelectedAccount = mcAccounts.FirstOrDefault(mc => mc.Id.Equals(playerUuidOrIgn) || mc.Name.Equals(playerUuidOrIgn));
+        var newSelectedAccount = mcAccounts.FirstOrDefault(mc => mc.Id.Equals(playerUuidOrIgn) || mc.Name.ToLower().Equals(playerUuidOrIgn.ToLower()));
         
         if (newSelectedAccount is null)
         {
