@@ -267,7 +267,7 @@ public class DiscordService : IDiscordService
         var client = _httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
         
-        var response = await client.GetAsync(DiscordBaseUrl + $"/guilds/{guildId}");
+        var response = await client.GetAsync(DiscordBaseUrl + $"/guilds/{guildId}?with_counts=true");
         
         if (!response.IsSuccessStatusCode) {
             _logger.LogWarning("Failed to fetch guild from Discord");
@@ -298,6 +298,7 @@ public class DiscordService : IDiscordService
                 existingGuild.DiscordFeatures = guild.Features;
                 existingGuild.InviteCode = guild.VanityUrlCode ?? existingGuild.InviteCode;
                 existingGuild.Banner = guild.Splash;
+                existingGuild.MemberCount = guild.MemberCount;
                 
                 if (existingGuild.Features.JacobLeaderboardEnabled) {
                     existingGuild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
@@ -342,7 +343,8 @@ public class DiscordService : IDiscordService
                     Icon = guild.Icon,
                     BotPermissions = guild.Permissions,
                     BotPermissionsNew = guild.PermissionsNew,
-                    DiscordFeatures = guild.Features
+                    DiscordFeatures = guild.Features,
+                    MemberCount = guild.MemberCount
                 });
             } else {
                 existingGuild.Name = guild.Name;
@@ -350,6 +352,7 @@ public class DiscordService : IDiscordService
                 existingGuild.BotPermissions = guild.Permissions;
                 existingGuild.BotPermissionsNew = guild.PermissionsNew;
                 existingGuild.DiscordFeatures = guild.Features;
+                existingGuild.MemberCount = guild.MemberCount;
             }
             
             await db.StringSetAsync($"bot:guild:{guild.Id}", guild.Permissions, TimeSpan.FromSeconds(_coolDowns.DiscordGuildsCooldown), When.Always);
@@ -359,10 +362,10 @@ public class DiscordService : IDiscordService
     }
 
     private async Task<List<DiscordGuild>> FetchBotGuildsRecursive(string? guildId, List<DiscordGuild>? guilds = null) {
-        var url = DiscordBaseUrl + "/users/@me/guilds";
+        var url = DiscordBaseUrl + "/users/@me/guilds?with_counts=true";
         
         if (guildId is not null) {
-            url += "?after=" + guildId;
+            url += "&after=" + guildId;
         }
         guilds ??= new List<DiscordGuild>();
         

@@ -26,6 +26,8 @@ public class Guild {
 
     [Column(TypeName = "jsonb")]
     public List<string> DiscordFeatures { get; set; } = new();
+    
+    public int MemberCount { get; set; }
 }
 
 public class GuildFeatures {

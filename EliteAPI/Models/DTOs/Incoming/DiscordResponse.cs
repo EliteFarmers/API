@@ -39,6 +39,9 @@ public class DiscordGuild {
     [JsonPropertyName("permissions_new")]
     public string? PermissionsNew { get; set; }
     public List<string> Features { get; set; } = new();
+    
+    [JsonPropertyName("approximate_member_count")]
+    public int MemberCount { get; set; }
 }
 
 public class FullDiscordGuild 
@@ -78,6 +81,9 @@ public class FullDiscordGuild
 
     [JsonPropertyName("preferred_locale")]
     public string? PreferredLocale { get; set; }
+    
+    [JsonPropertyName("approximate_member_count")]
+    public int MemberCount { get; set; }
 }
 
 public class DiscordRoleData

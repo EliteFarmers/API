@@ -3,6 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Discord; 
@@ -20,10 +21,32 @@ public class GuildController : Controller {
         _discordService = discordService;
     }
     
+    // GET <GuildController>s
+    [Route("/[controller]s")]
+    [HttpGet]
+    [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<List<GuildDetailsDto>>> GetGuilds() {
+        var guilds = await _context.Guilds
+            .Where(g => g.InviteCode != null && g.Features.JacobLeaderboardEnabled)
+            .Select(g => new GuildDetailsDto {
+                Id = g.Id.ToString(), 
+                Name = g.Name, 
+                InviteCode = g.InviteCode, 
+                Banner = g.Banner, 
+                Icon = g.Icon,
+                MemberCount = g.MemberCount
+            })
+            .ToListAsync();
+
+        return Ok(guilds);
+    }
+    
     // GET <GuildController>/[guildId]
     [HttpGet("{guildId:long}")]
     public async Task<ActionResult<PublicGuildDto>> GetGuildById(long guildId) {
         if (guildId <= 0) return BadRequest("Invalid guild ID.");
+
+        await _discordService.RefreshBotGuilds();
         
         var guild = await _context.Guilds.FindAsync((ulong) guildId);
         if (guild is null) return NotFound("Guild not found.");

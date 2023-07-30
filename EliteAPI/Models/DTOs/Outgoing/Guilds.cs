@@ -16,11 +16,13 @@ public class GuildDto {
     public string? Description { get; set; }
 
     public string? AdminRole { get; set; }
-    
+
     public string? BotPermissions { get; set; }
     public required string BotPermissionsNew { get; set; }
     
     public List<string> DiscordFeatures { get; set; } = new();
+    
+    public int MemberCount { get; set; }
 }
 
 public class PublicGuildDto {
@@ -32,7 +34,8 @@ public class PublicGuildDto {
     public string? InviteCode { get; set; }
     
     public string? Description { get; set; }
-    
+    public int MemberCount { get; set; }
+
     public PublicGuildFeaturesDto Features { get; set; } = new();
 }
 
@@ -70,6 +73,17 @@ public class PublicJacobLeaderboardDto {
     public bool PingForSmallImprovements { get; set; }
     
     public CropRecords Crops { get; set; } = new();
+}
+
+public class GuildDetailsDto {
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    
+    public string? Icon { get; set; }
+    public string? Banner { get; set; }
+    public string? InviteCode { get; set; }
+    
+    public int MemberCount { get; set; }
 }
 
 public class UserGuildDto {
