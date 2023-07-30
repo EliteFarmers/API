@@ -72,7 +72,7 @@ public class AccountService : IAccountService
         var linkedDiscord = playerData.SocialMedia.Discord;
         if (linkedDiscord is null)
         {
-            return new BadRequestObjectResult("You have not linked a Discord account in the Hypixel social menu.");
+            return new BadRequestObjectResult("You have not linked a Discord account in the Hypixel social menu. Do that first and try again.");
         }
 
         // Handle old Discord accounts with the discriminator (rip) 
@@ -80,12 +80,12 @@ public class AccountService : IAccountService
             var tag = $"{account.Username}#{account.Discriminator}";
             if (!linkedDiscord.Equals($"{account.Username}#{account.Discriminator}"))
             {
-                return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{tag}` instead or ensure you entered the correct player name.");
+                return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{tag}` within Hypixel or ensure you entered the correct player name.");
             }
         } 
         else if (!account.Username.Equals(linkedDiscord)) // Handle new Discord accounts without the discriminator
         {
-            return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{account.Username}` instead or ensure you entered the correct player name.");
+            return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{account.Username}` within Hypixel or ensure you entered the correct player name.");
         }
 
         // Success
