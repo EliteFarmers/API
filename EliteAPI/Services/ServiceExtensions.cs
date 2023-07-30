@@ -195,6 +195,6 @@ public static class ServiceExtensions
     public static bool IsFromDockerNetwork(this IPAddress ip)
     {
         // Check if the IP address is from the Docker network or local.
-        return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.19.") || ip.MapToIPv4().ToString().StartsWith("172.19.");
+        return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.") || ip.MapToIPv4().ToString().StartsWith("172.");
     }
 }
