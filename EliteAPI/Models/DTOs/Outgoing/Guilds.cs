@@ -69,7 +69,7 @@ public class PublicJacobLeaderboardDto {
     public string? UpdateRoleId { get; set; }
     public bool PingForSmallImprovements { get; set; }
     
-    public CropRecords CropRecords { get; set; } = new();
+    public CropRecords Crops { get; set; } = new();
 }
 
 public class UserGuildDto {

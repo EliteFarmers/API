@@ -80,6 +80,40 @@ public class UserController : ControllerBase {
         });
     }
     
+    [HttpPut("Guild/{guildId}/Invite")]
+    [RequestSizeLimit(512)]
+    public async Task<ActionResult> PutGuildInvite(ulong guildId, [FromBody] string inviteCode) {
+        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+
+        if (userGuild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        var fullGuild = await _discordService.GetGuild(guildId);
+        var guild = await _context.Guilds.FindAsync(guildId);
+
+        if (fullGuild is null || guild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        // Check that the invite code is valid a-Z0-9
+        if (!inviteCode.All(char.IsLetterOrDigit) || inviteCode.Length > 16) {
+            return BadRequest("Invalid invite code.");
+        }
+        
+        guild.InviteCode = inviteCode;
+        
+        _context.Guilds.Update(guild);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
+    
     [HttpPatch("Guild/{guildId}/Jacob")]
     public async Task<ActionResult> UpdateGuildJacobFeature(ulong guildId, [FromBody] GuildJacobLeaderboardFeature settings) {
         if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {

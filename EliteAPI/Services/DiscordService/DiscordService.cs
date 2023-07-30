@@ -296,7 +296,7 @@ public class DiscordService : IDiscordService
                 existingGuild.Name = guild.Name;
                 existingGuild.Icon = guild.Icon;
                 existingGuild.DiscordFeatures = guild.Features;
-                existingGuild.InviteCode = guild.VanityUrlCode;
+                existingGuild.InviteCode = guild.VanityUrlCode ?? existingGuild.InviteCode;
                 existingGuild.Banner = guild.Splash;
                 
                 if (existingGuild.Features.JacobLeaderboardEnabled) {
