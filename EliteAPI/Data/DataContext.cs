@@ -3,8 +3,6 @@ using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using NuGet.Protocol;
 
 namespace EliteAPI.Data;
 public class DataContext : DbContext
@@ -28,6 +26,13 @@ public class DataContext : DbContext
             Console.WriteLine("No connection string found. Quitting...");
             //Environment.Exit(1);
         }
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        modelBuilder.HasCollation("case_insensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
+        
+        modelBuilder.Entity<MinecraftAccount>().Property(c => c.Name)
+            .UseCollation("case_insensitive");
     }
 
     public DbSet<AccountEntity> Accounts { get; set; } = null!;

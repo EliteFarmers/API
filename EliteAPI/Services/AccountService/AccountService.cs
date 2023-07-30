@@ -26,7 +26,8 @@ public class AccountService : IAccountService
     public async Task<AccountEntity?> GetAccountByIgn(string ign)
     {
         var minecraftAccount = await _context.MinecraftAccounts
-            .FirstOrDefaultAsync(mc => mc.Name.Equals(ign));
+            .Where(mc => mc.Name == ign)
+            .FirstOrDefaultAsync();
         
         if (minecraftAccount?.AccountId is null) return null;
 
@@ -62,7 +63,8 @@ public class AccountService : IAccountService
         var playerData = await _context.PlayerData
             .Include(pd => pd.MinecraftAccount)
             .Include(pd => pd.SocialMedia)
-            .FirstOrDefaultAsync(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name.Equals(id));
+            .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name.Equals(id))
+            .FirstOrDefaultAsync();
 
         if (playerData?.MinecraftAccount is null)
         {
