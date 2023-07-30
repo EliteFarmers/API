@@ -28,6 +28,7 @@ public class GuildController : Controller {
     public async Task<ActionResult<List<GuildDetailsDto>>> GetGuilds() {
         var guilds = await _context.Guilds
             .Where(g => g.InviteCode != null && g.Features.JacobLeaderboardEnabled)
+            .OrderByDescending(g => g.MemberCount)
             .Select(g => new GuildDetailsDto {
                 Id = g.Id.ToString(), 
                 Name = g.Name, 
