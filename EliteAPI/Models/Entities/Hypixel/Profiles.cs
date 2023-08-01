@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using EliteAPI.Models.DTOs.Incoming;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
@@ -25,7 +28,9 @@ public class Profile
 public class ProfileMember : IDisposable
 {
     [Key] public required Guid Id { get; set; }
-
+    
+    public ApiAccess Api { get; set; } = new();
+    
     public int SkyblockXp { get; set; } = 0;
     public double Purse { get; set; } = 0;
 
@@ -34,19 +39,24 @@ public class ProfileMember : IDisposable
 
     // public FarmingInventory FarmingInventory { get; set; } = new();
     public FarmingWeight FarmingWeight { get; set; } = new();
+    public Inventories Inventories { get; set; } = new();
 
     public bool IsSelected { get; set; } = false;
     public bool WasRemoved { get; set; } = false;
     public long LastUpdated { get; set; } = 0;
 
+    [Column(TypeName = "jsonb")]
     public JsonDocument Collections { get; set; } = JsonDocument.Parse("{}");
-    
+
+    [Column(TypeName = "jsonb")] 
+    public UnparsedApiData Unparsed { get; set; } = new();
+
     [Column(TypeName = "jsonb")]
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
-    [Column(TypeName = "jsonb")]
-    public Dictionary<string, double> Stats { get; set; } = new();
+
     [Column(TypeName = "jsonb")]
     public Dictionary<string, int> Essence { get; set; } = new();
+    
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();
 
@@ -56,7 +66,18 @@ public class ProfileMember : IDisposable
 
     [ForeignKey("Profile")]
     public required string ProfileId { get; set; }
+
     public required Profile Profile { get; set; }
-    
+
     public void Dispose() => Collections?.Dispose();
+}
+
+[Owned]
+public class ApiAccess
+{
+    public bool Inventories { get; set; } = false;
+    public bool Collections { get; set; } = false;
+    public bool Skills { get; set; } = false;
+    public bool Vault { get; set; } = false;
+    public bool Museum { get; set; } = false;
 }

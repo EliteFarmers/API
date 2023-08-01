@@ -9,6 +9,9 @@ public static class SkillParser
     {
         var skills = member.Skills;
 
+        member.Api.Skills =
+            memberData.ExperienceSkillCombat is not null && memberData.ExperienceSkillMining is not null;
+
         skills.Combat = memberData.ExperienceSkillCombat ?? skills.Combat;
         skills.Mining = memberData.ExperienceSkillMining ?? skills.Mining;
         skills.Foraging = memberData.ExperienceSkillForaging ?? skills.Foraging;

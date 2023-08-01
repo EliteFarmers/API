@@ -126,6 +126,7 @@ public class ProfileService : IProfileService
             context.ProfileMembers
                    .Include(p => p.Profile)
                    .Include(p => p.Skills)
+                   .Include(p => p.Inventories)
                    .Include(p => p.FarmingWeight)
                    .Include(p => p.JacobData)
                    .ThenInclude(j => j.Contests)

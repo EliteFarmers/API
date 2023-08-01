@@ -22,7 +22,9 @@ public class ProfileMemberDto
 {
     public required string ProfileId { get; set; }
     public required string PlayerUuid { get; set; }
-
+    
+    public ApiAccessDto Api { get; set; } = new();
+    
     public int SkyblockXp { get; set; } = 0;
     public double Purse { get; set; } = 0;
     public double BankBalance { get; set; } = 0;
@@ -30,9 +32,10 @@ public class ProfileMemberDto
     public Dictionary<string, long> Collections { get; set; } = new();
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
-    // public Dictionary<string, double> Stats { get; set; } = new(); // Currently unused
-    // public Dictionary<string, int> Essence { get; set; } = new();
     public List<PetDto> Pets { get; set; } = new();
+    
+    public InventoriesDto Inventories { get; set; } = new();
+    public UnparsedApiDataDto Unparsed { get; set; } = new();
 
     public required JacobDataDto Jacob { get; set; }
     public required FarmingWeightDto FarmingWeight { get; set; }

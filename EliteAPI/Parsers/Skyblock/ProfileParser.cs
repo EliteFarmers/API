@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using EliteAPI.Data;
 using EliteAPI.Services;
 using EliteAPI.Services.MojangService;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.FarmingWeight;
+using EliteAPI.Parsers.Inventories;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
@@ -22,7 +24,8 @@ public class ProfileParser
     private readonly IMapper _mapper;
     private readonly ICacheService _cache;
     private readonly ILeaderboardService _leaderboardService;
-    
+    private readonly ILogger<ProfileParser> _logger;
+
     private readonly Func<DataContext, long, Task<JacobContest?>> _fetchJacobContest = 
         EF.CompileAsyncQuery((DataContext context, long key) =>            
             context.JacobContests
@@ -34,6 +37,7 @@ public class ProfileParser
             context.ProfileMembers
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
+                .Include(p => p.Inventories)
                 .Include(p => p.FarmingWeight)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
@@ -42,13 +46,14 @@ public class ProfileParser
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
     
-    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService, ILeaderboardService leaderboardService)
+    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService, ILeaderboardService leaderboardService, ILogger<ProfileParser> logger)
     {
         _context = context;
         _mojangService = mojangService;
         _mapper = mapper;
         _cache = cacheService;
         _leaderboardService = leaderboardService;
+        _logger = logger;
     }
 
     public async Task<List<ProfileMember>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
@@ -147,7 +152,7 @@ public class ProfileParser
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             
             existing.WasRemoved = memberData.DeletionNotice is not null;
-
+            
             await UpdateProfileMember(profile, existing, memberData);
 
             return;
@@ -189,9 +194,18 @@ public class ProfileParser
     private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
     {
         member.Collections = incomingData.Collection ?? member.Collections;
+        member.Api.Collections = incomingData.Collection is not null;
+        
         member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
         member.Purse = incomingData.CoinPurse ?? 0;
         member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
+        
+        member.Unparsed = new UnparsedApiData
+        {
+            Perks = incomingData.Perks,
+            TempStatBuffs = incomingData.TempStatBuffs,
+            AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
+        };
 
         member.ParseJacob(incomingData.Jacob);
         await _context.SaveChangesAsync();
@@ -204,11 +218,19 @@ public class ProfileParser
         profile.CombineMinions(incomingData.CraftedGenerators);
 
         member.ParseFarmingWeight(profile.CraftedMinions);
+        member.ParseInventory(incomingData);
 
         _context.FarmingWeights.Update(member.FarmingWeight);
         _context.ProfileMembers.Update(member);
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
+        
+        if (!_context.Entry(member.Inventories).IsKeySet) {
+            _context.Inventories.Add(member.Inventories);
+            await _context.SaveChangesAsync();
+        }
+        
+        _context.Inventories.Update(member.Inventories);
 
         await AddTimeScaleRecords(member);
         UpdateLeaderboards(member);
