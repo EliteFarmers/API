@@ -17,7 +17,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230801211736_Inventories")]
+    [Migration("20230802184848_Inventories")]
     partial class Inventories
     {
         /// <inheritdoc />
@@ -332,6 +332,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<string>("Inventory")
                         .HasColumnType("text");
+
+                    b.Property<long>("LastUpdated")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PersonalVault")
                         .HasColumnType("text");

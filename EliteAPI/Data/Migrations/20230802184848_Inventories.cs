@@ -59,6 +59,7 @@ namespace EliteAPI.Data.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    LastUpdated = table.Column<long>(type: "bigint", nullable: false),
                     Inventory = table.Column<string>(type: "text", nullable: true),
                     EnderChest = table.Column<string>(type: "text", nullable: true),
                     Armor = table.Column<string>(type: "text", nullable: true),

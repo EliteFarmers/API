@@ -6,6 +6,7 @@ namespace EliteAPI.Models.Entities.Hypixel;
 public class Inventories {
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+    public long LastUpdated { get; set; } = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     
     public string? Inventory { get; set; }
     public string? EnderChest { get; set; }

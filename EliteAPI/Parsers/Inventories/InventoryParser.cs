@@ -12,6 +12,7 @@ public static class InventoryParser {
         member.Api.Vault = memberData.PersonalVaultContents is not null;
         
         member.Inventories.ProfileMemberId = member.Id;
+        member.Inventories.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         if (memberData.InventoryContents is null) return;
         

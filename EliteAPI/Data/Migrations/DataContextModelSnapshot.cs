@@ -330,6 +330,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("Inventory")
                         .HasColumnType("text");
 
+                    b.Property<long>("LastUpdated")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("PersonalVault")
                         .HasColumnType("text");
 
