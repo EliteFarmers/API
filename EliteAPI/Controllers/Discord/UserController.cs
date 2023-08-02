@@ -46,9 +46,13 @@ public class UserController : ControllerBase {
 
         var guilds = await _discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
-
+        
         if (userGuild is null) {
             return NotFound("Guild not found.");
+        }
+        
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
         }
         
         var fullGuild = await _discordService.GetGuild(guildId);
@@ -94,6 +98,10 @@ public class UserController : ControllerBase {
             return NotFound("Guild not found.");
         }
         
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
+        }
+        
         var fullGuild = await _discordService.GetGuild(guildId);
         var guild = await _context.Guilds.FindAsync(guildId);
 
@@ -125,6 +133,10 @@ public class UserController : ControllerBase {
 
         if (userGuild is null) {
             return NotFound("Guild not found.");
+        }
+        
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
         }
         
         var fullGuild = await _discordService.GetGuild(guildId);
@@ -166,6 +178,10 @@ public class UserController : ControllerBase {
             return NotFound("Guild not found.");
         }
         
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
+        }
+        
         var fullGuild = await _discordService.GetGuild(guildId);
         var guild = await _context.Guilds.FindAsync(guildId);
 
@@ -199,6 +215,10 @@ public class UserController : ControllerBase {
 
         if (userGuild is null) {
             return NotFound("Guild not found.");
+        }
+        
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
         }
         
         var fullGuild = await _discordService.GetGuild(guildId);
@@ -244,6 +264,10 @@ public class UserController : ControllerBase {
             return NotFound("Guild not found.");
         }
         
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
+        }
+        
         var fullGuild = await _discordService.GetGuild(guildId);
         var guild = await _context.Guilds.FindAsync(guildId);
 
@@ -285,6 +309,10 @@ public class UserController : ControllerBase {
             return NotFound("Guild not found.");
         }
         
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
+        }
+        
         var fullGuild = await _discordService.GetGuild(guildId);
         var guild = await _context.Guilds.FindAsync(guildId);
 
@@ -323,6 +351,10 @@ public class UserController : ControllerBase {
 
         if (userGuild is null) {
             return NotFound("Guild not found.");
+        }
+        
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
         }
         
         var fullGuild = await _discordService.GetGuild(guildId);

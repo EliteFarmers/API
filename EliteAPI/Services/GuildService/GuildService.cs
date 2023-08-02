@@ -3,6 +3,7 @@ using System.Text;
 using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -88,5 +89,19 @@ public class GuildService : IGuildService {
             _logger.LogError("Failed to send discord message to {Guild}, {Channel}: {Reason}", guildId, channelId, e.StackTrace);
             return new UnauthorizedObjectResult("Failed to send message in Discord, check permissions.");
         }
+    }
+
+    public bool HasGuildAdminPermissions(UserGuildDto guild) {
+        var permissions = guild.Permissions;
+        
+        if (!ulong.TryParse(permissions, out var bits)) {
+            return false;
+        }
+        
+        const ulong admin = 0x8;
+        const ulong manageGuild = 0x20;
+
+        // Check if the user has the manage guild or admin permission
+        return (bits & admin) == admin || (bits & manageGuild) == manageGuild;
     }
 }
