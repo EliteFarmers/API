@@ -13,6 +13,10 @@ namespace EliteAPI.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "Essence",
+                table: "ProfileMembers");
+
             migrationBuilder.RenameColumn(
                 name: "Stats",
                 table: "ProfileMembers",
@@ -52,6 +56,20 @@ namespace EliteAPI.Data.Migrations
                 type: "boolean",
                 nullable: false,
                 defaultValue: false);
+
+            migrationBuilder.AddColumn<long>(
+                name: "PlayerDataLastUpdated",
+                table: "MinecraftAccounts",
+                type: "bigint",
+                nullable: false,
+                defaultValue: 0L);
+
+            migrationBuilder.AddColumn<long>(
+                name: "ProfilesLastUpdated",
+                table: "MinecraftAccounts",
+                type: "bigint",
+                nullable: false,
+                defaultValue: 0L);
 
             migrationBuilder.CreateTable(
                 name: "Inventories",
@@ -114,10 +132,24 @@ namespace EliteAPI.Data.Migrations
                 name: "Api_Vault",
                 table: "ProfileMembers");
 
+            migrationBuilder.DropColumn(
+                name: "PlayerDataLastUpdated",
+                table: "MinecraftAccounts");
+
+            migrationBuilder.DropColumn(
+                name: "ProfilesLastUpdated",
+                table: "MinecraftAccounts");
+
             migrationBuilder.RenameColumn(
                 name: "Unparsed",
                 table: "ProfileMembers",
                 newName: "Stats");
+
+            migrationBuilder.AddColumn<Dictionary<string, int>>(
+                name: "Essence",
+                table: "ProfileMembers",
+                type: "jsonb",
+                nullable: false);
         }
     }
 }

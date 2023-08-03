@@ -204,6 +204,7 @@ public class LeaderboardService : ILeaderboardService {
         }
 
         var scores = await _context.Skills
+            .AsNoTracking()
             .Include(s => s.ProfileMember)
             .ThenInclude(pm => pm!.Profile)
             .Include(p => p.ProfileMember)
@@ -230,6 +231,7 @@ public class LeaderboardService : ILeaderboardService {
         }
         
         var scores = await _context.ProfileMembers
+            .AsNoTracking()
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
             .Where(p => 
@@ -284,6 +286,7 @@ public class LeaderboardService : ILeaderboardService {
         }
 
         var query = _context.ProfileMembers
+            .AsNoTracking()
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount);
         
@@ -342,6 +345,7 @@ public class LeaderboardService : ILeaderboardService {
             
             case "firstplace":
                 return _context.ProfileMembers
+                    .AsNoTracking()
                     .IncludeOptimized(p => p.Profile)
                     .IncludeOptimized(p => p.MinecraftAccount)
                     .IncludeOptimized(p => p.JacobData)

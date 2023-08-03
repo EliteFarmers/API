@@ -53,9 +53,6 @@ public class ProfileMember : IDisposable
 
     [Column(TypeName = "jsonb")]
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
-
-    [Column(TypeName = "jsonb")]
-    public Dictionary<string, int> Essence { get; set; } = new();
     
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();

@@ -520,10 +520,6 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<Dictionary<string, int>>("Essence")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
                     b.Property<bool>("IsSelected")
                         .HasColumnType("boolean");
 
@@ -634,6 +630,12 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .UseCollation("case_insensitive");
+
+                    b.Property<long>("PlayerDataLastUpdated")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProfilesLastUpdated")
+                        .HasColumnType("bigint");
 
                     b.Property<List<MinecraftAccountProperty>>("Properties")
                         .IsRequired()

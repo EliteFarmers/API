@@ -35,6 +35,7 @@ public class ProfileParser
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
             context.ProfileMembers
+                .Include(p => p.MinecraftAccount)
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
                 .Include(p => p.Inventories)
@@ -56,33 +57,22 @@ public class ProfileParser
         _logger = logger;
     }
 
-    public async Task<List<ProfileMember>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
+    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
     {
-        var profiles = new List<ProfileMember>();
-        if (!data.Success || data.Profiles is not { Length: > 0 }) return profiles;
-        
+        if (!data.Success || data.Profiles is not { Length: > 0 }) return;
         
         foreach (var profile in data.Profiles)
         {
-            var transformed = await TransformSingleProfile(profile, playerUuid);
-
-            if (transformed == null) continue;
-
-            var owned = transformed.Members
-                .Where(member => member.PlayerUuid.Equals(playerUuid));
-
-            profiles.AddRange(owned);
+            await TransformSingleProfile(profile, playerUuid);
         }
         
         await _context.SaveChangesAsync();
-
-        return profiles;
     }
 
-    public async Task<Profile?> TransformSingleProfile(RawProfileData profile, string? playerUuid)
+    public async Task TransformSingleProfile(RawProfileData profile, string? playerUuid)
     {
         var members = profile.Members;
-        if (members.Count == 0) return null;
+        if (members.Count == 0) return;
 
         var profileId = profile.ProfileId.Replace("-", "");
         var existing = await _context.Profiles.FindAsync(profileId);
@@ -93,7 +83,7 @@ public class ProfileParser
             ProfileName = profile.CuteName,
             GameMode = profile.GameMode,
             Members = new List<ProfileMember>(),
-            IsDeleted = false,
+            IsDeleted = false
         };
 
         profileObj.BankBalance = profile.Banking?.Balance ?? 0.0;
@@ -136,8 +126,6 @@ public class ProfileParser
         {
             Console.WriteLine(e);
         }
-
-        return profileObj;
     }
 
     public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected)
@@ -153,8 +141,11 @@ public class ProfileParser
             
             existing.WasRemoved = memberData.DeletionNotice is not null;
             
+            existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            _context.MinecraftAccounts.Update(existing.MinecraftAccount);
+            
             await UpdateProfileMember(profile, existing, memberData);
-
+            
             return;
         }
         
@@ -177,6 +168,9 @@ public class ProfileParser
         
         _context.ProfileMembers.Add(member);
         profile.Members.Add(member);
+        
+        minecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        _context.MinecraftAccounts.Update(minecraftAccount);
         
         await UpdateProfileMember(profile, member, memberData);
 

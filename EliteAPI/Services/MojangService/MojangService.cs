@@ -65,6 +65,7 @@ public partial class MojangService : IMojangService
     public async Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid)
     {
         var account = await _context.MinecraftAccounts
+            .AsNoTracking()
             .Where(mc => mc.Id.Equals(uuid))
             .FirstOrDefaultAsync();
 
@@ -107,7 +108,7 @@ public partial class MojangService : IMojangService
         return null;
     }
 
-    private async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid) {
+    public async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid) {
         if (!UuidRegex().IsMatch(uuid)) return null;
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");

@@ -10,3 +10,14 @@ public class InventoriesDto {
     public string? TalismanBag { get; set; }
     public List<string>? Backpacks { get; set; } 
 }
+
+public class DecodedInventoriesDto {
+    public object? Inventory { get; set; }
+    public object? EnderChest { get; set; }
+    public object? Armor { get; set; }
+    public object? Wardrobe { get; set; }
+    public object? Equipment { get; set; }
+    public object? PersonalVault { get; set; }
+    public object? TalismanBag { get; set; }
+    public List<object>? Backpacks { get; set; } 
+}

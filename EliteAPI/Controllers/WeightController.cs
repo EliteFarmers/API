@@ -2,6 +2,7 @@
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Services.MemberService;
 using EliteAPI.Services.ProfileService;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -22,12 +23,15 @@ public class WeightController : ControllerBase
     private readonly ConfigCooldownSettings _coolDowns;
     private readonly IProfileService _profileService;
     private readonly ConfigFarmingWeightSettings _weightSettings;
+    private readonly IMemberService _memberService;
 
     public WeightController(DataContext context, IMapper mapper, IProfileService profileService, 
-        IOptions<ConfigCooldownSettings> coolDowns, IOptions<ConfigFarmingWeightSettings> weightSettings)
+        IOptions<ConfigCooldownSettings> coolDowns, IOptions<ConfigFarmingWeightSettings> weightSettings,
+        IMemberService memberService)
     {
         _context = context;
         _mapper = mapper;
+        _memberService = memberService;
         _profileService = profileService;
         _coolDowns = coolDowns.Value;
         _weightSettings = weightSettings.Value;
@@ -39,28 +43,17 @@ public class WeightController : ControllerBase
     public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
+        await _memberService.UpdatePlayerIfNeeded(uuid);
 
-        var members = await _context.ProfileMembers
+        var farmingWeightIds = await _context.ProfileMembers
+            .AsNoTracking()
             .Where(x => x.PlayerUuid.Equals(uuid))
             .Include(x => x.FarmingWeight)
+            .Select(x => x.FarmingWeight.Id)
             .ToListAsync();
 
-        var farmingWeightIds = new List<int>();
-        
-        // Check if any of the profiles are old
-        if (members.Count == 0 || members.Exists(member => member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))) {
-            await _profileService.GetSelectedProfileMember(playerUuid);
-            
-            farmingWeightIds = await _context.ProfileMembers
-                .Where(x => x.PlayerUuid.Equals(uuid))
-                .Include(x => x.FarmingWeight)
-                .Select(x => x.FarmingWeight.Id)
-                .ToListAsync();
-        } else {
-            farmingWeightIds = members.Select(x => x.FarmingWeight.Id).ToList();
-        }
-
         var farmingWeights = await _context.FarmingWeights
+            .AsNoTracking()
             .Where(x => farmingWeightIds.Contains(x.Id))
             .Include(x => x.ProfileMember)
             .ThenInclude(m => m!.Profile)
@@ -86,24 +79,19 @@ public class WeightController : ControllerBase
     public async Task<ActionResult<FarmingWeightDto>> GetSelectedProfileWeight(string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
+        
+        var query = await _memberService.ProfileMemberQuery(uuid);
+        if (query is null) return NotFound("No profiles for the player matching this UUID was found");
 
-        var member = await _context.ProfileMembers
-            .Where(x => x.PlayerUuid.Equals(uuid) && x.IsSelected)
+        var weight = await query
+            .Where(x => x.IsSelected)
             .Include(x => x.FarmingWeight)
+            .Select(x => x.FarmingWeight)
             .FirstOrDefaultAsync();
-
-        if (member?.FarmingWeight is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
-        {
-            var newMember = await _profileService.GetSelectedProfileMember(playerUuid);
-            
-            if (newMember is null) {
-                return NotFound("No farming weight for the player matching this UUID was found");
-            }
-            
-            return Ok(_mapper.Map<FarmingWeightDto>(newMember.FarmingWeight));
-        }
-
-        return Ok(_mapper.Map<FarmingWeightDto>(member.FarmingWeight));
+        
+        if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
+        
+        return Ok(_mapper.Map<FarmingWeightDto>(weight));
     }
 
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
@@ -114,23 +102,18 @@ public class WeightController : ControllerBase
         var uuid = playerUuid.Replace("-", "");
         var profile = profileUuid.Replace("-", "");
 
-        var member = await _context.ProfileMembers
-            .Where(x => x.PlayerUuid.Equals(uuid) && x.ProfileId.Equals(profile))
+        var query = await _memberService.ProfileMemberQuery(uuid);
+        if (query is null) return NotFound("No profiles for the player matching this UUID was found");
+
+        var weight = await query
+            .Where(x => x.IsSelected && x.ProfileId.Equals(profile))
             .Include(x => x.FarmingWeight)
+            .Select(x => x.FarmingWeight)
             .FirstOrDefaultAsync();
-
-        if (member?.FarmingWeight is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
-        {
-            var newMember = await _profileService.GetSelectedProfileMember(playerUuid);
-            
-            if (newMember is null) {
-                return NotFound("No farming weight for the player matching this UUID was found");
-            }
-            
-            return Ok(_mapper.Map<FarmingWeightDto>(newMember.FarmingWeight));
-        }
-
-        return Ok(_mapper.Map<FarmingWeightDto>(member.FarmingWeight));
+        
+        if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
+        
+        return Ok(_mapper.Map<FarmingWeightDto>(weight));
     }
     
     [Route("/[controller]s")]

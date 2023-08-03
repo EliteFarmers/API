@@ -87,6 +87,8 @@ public class MinecraftAccount
     public List<MinecraftAccountProperty> Properties { get; set; } = new();
     
     public long LastUpdated { get; set; }
+    public long ProfilesLastUpdated { get; set; }
+    public long PlayerDataLastUpdated { get; set; }
 }
 
 public class MinecraftAccountProperty
