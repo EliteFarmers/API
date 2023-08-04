@@ -137,7 +137,11 @@ public class MemberService : IMemberService {
         }
         
         minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        _context.MinecraftAccounts.Update(minecraftAccount);
+        
+        // Check if minecraft account is already tracked by entity framework
+        if (_context.Entry(minecraftAccount).State == EntityState.Detached) {
+            _context.MinecraftAccounts.Update(minecraftAccount);
+        }
 
         await _context.SaveChangesAsync();
     }
