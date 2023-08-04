@@ -4,6 +4,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.AspNetCore.Mvc;
@@ -18,14 +19,16 @@ namespace EliteAPI.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly DataContext _context;
+    private readonly IMemberService _memberService;
     private readonly IProfileService _profileService;
     private readonly IAccountService _accountService;
     private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
 
-    public AccountController(DataContext context, IProfileService profileService, IAccountService accountService, IMojangService mojangService, IMapper mapper)
+    public AccountController(DataContext context, IProfileService profileService, IMemberService memberService, IAccountService accountService, IMojangService mojangService, IMapper mapper)
     {
         _context = context;
+        _memberService = memberService;
         _profileService = profileService;
         _accountService = accountService;
         _mojangService = mojangService;
@@ -78,6 +81,8 @@ public class AccountController : ControllerBase
     // GET <ValuesController>/12793764936498429
     [HttpGet("{playerUuidOrIgn}")]
     public async Task<ActionResult<MinecraftAccountDto>> GetByPlayerUuidOrIgn(string playerUuidOrIgn) {
+        await _memberService.UpdatePlayerIfNeeded(playerUuidOrIgn);
+        
         var account = await _accountService.GetAccountByIgnOrUuid(playerUuidOrIgn);
         
         var minecraftAccount = account is null

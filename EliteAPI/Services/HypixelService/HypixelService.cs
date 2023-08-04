@@ -23,6 +23,7 @@ public class HypixelService : IHypixelService
     public async Task<ActionResult<RawProfilesResponse>> FetchProfiles(string uuid) 
     {
         await _limiter.AcquireAsync(1);
+        _logger.LogWarning("Fetching profiles for {Uuid}", uuid);
 
         var client = _httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
@@ -68,8 +69,8 @@ public class HypixelService : IHypixelService
     public async Task<ActionResult<RawPlayerResponse>> FetchPlayer(string uuid)
     {
         await _limiter.AcquireAsync(1);
+        _logger.LogWarning("Fetching player data for {Uuid}", uuid);
 
-        
         var client = _httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
 

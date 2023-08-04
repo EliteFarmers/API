@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
+﻿using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Services.MemberService; 
 
@@ -9,6 +10,6 @@ public interface IMemberService {
     Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid);
     Task<IQueryable<ProfileMember>?> ProfileMemberIgnQuery(string playerName);
 
-    Task RefreshPlayerData(string playerUuid);
+    Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null);
     Task RefreshProfiles(string playerUuid);
 }

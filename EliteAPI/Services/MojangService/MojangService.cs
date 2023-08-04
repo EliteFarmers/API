@@ -77,6 +77,8 @@ public partial class MojangService : IMojangService
         // Get the expiry time for the cache with the last updated time in mind
         var expiry = TimeSpan.FromSeconds(_coolDowns.MinecraftAccountCooldown - (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - account.LastUpdated));
         _cache.SetUsernameUuidCombo(account.Name, account.Id, expiry);
+        
+        _context.Entry(account).State = EntityState.Detached;
 
         return account;
     }
@@ -138,6 +140,8 @@ public partial class MojangService : IMojangService
                 existing.LastUpdated = data.LastUpdated;
                 
                 await _context.SaveChangesAsync();
+                _context.Entry(existing).State = EntityState.Detached;
+                
                 return existing;
             }
             
