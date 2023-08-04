@@ -1,6 +1,6 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
+﻿using System.Net;
+using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.RateLimiting;
 
 namespace EliteAPI.Services.HypixelService;
 
@@ -26,10 +26,30 @@ public class HypixelService : IHypixelService
 
         var client = _httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
-        
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/skyblock/profiles?uuid={uuid}");
+        var response = await client.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == HttpStatusCode.TooManyRequests) {
+                response.Headers.TryGetValues("ratelimit-limit", out var limit);
+                
+                if (limit is not null) {
+                    _logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
+                }
+                else _logger.LogWarning("Hypixel API rate limit exceeded!");
+            }
+            else {
+                _logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
+            }
+            
+            return new BadRequestResult();
+        }
+
         try
         {
-            var data = await client.GetFromJsonAsync<RawProfilesResponse>($"https://api.hypixel.net/skyblock/profiles?uuid={uuid}");
+            var data = await response.Content.ReadFromJsonAsync<RawProfilesResponse>();
             
             if (data is not { Success: true })
             {
@@ -49,12 +69,33 @@ public class HypixelService : IHypixelService
     {
         await _limiter.AcquireAsync(1);
 
+        
         var client = _httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
-        
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/player?uuid={uuid}");
+        var response = await client.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == HttpStatusCode.TooManyRequests) {
+                response.Headers.TryGetValues("ratelimit-limit", out var limit);
+
+                if (limit is not null) {
+                    _logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
+                }
+                else _logger.LogWarning("Hypixel API rate limit exceeded!");
+            }
+            else {
+                _logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
+            }
+            
+            return new BadRequestResult();
+        }
+
         try
         {
-            var data = await client.GetFromJsonAsync<RawPlayerResponse>($"https://api.hypixel.net/player?uuid={uuid}");
+            var data = await response.Content.ReadFromJsonAsync<RawPlayerResponse>();
 
             if (data is not { Success: true })
             {

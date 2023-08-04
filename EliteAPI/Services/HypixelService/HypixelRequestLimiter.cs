@@ -32,6 +32,7 @@ public class HypixelRequestLimiter {
         try
         {
             _requestsPerMinute = _configuration.GetValue<int>("HypixelRequestLimit");
+            _logger.LogWarning("HypixelRequestLimit set to {Requests}", _requestsPerMinute);
         }
         catch (Exception)
         {
