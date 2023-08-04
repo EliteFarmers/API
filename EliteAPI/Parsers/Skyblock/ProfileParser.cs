@@ -209,8 +209,8 @@ public class ProfileParser
 
         profile.CombineMinions(incomingData.CraftedGenerators);
 
-        member.ParseFarmingWeight(profile.CraftedMinions);
         member.ParseInventory(incomingData);
+        await member.ParseFarmingWeight(profile.CraftedMinions);
 
         _context.Farming.Update(member.Farming);
         _context.ProfileMembers.Update(member);

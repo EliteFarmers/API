@@ -45,7 +45,7 @@ public static class InventoryParser {
             Vault = await NbtParser.NbtToItems(inventories.PersonalVault),
             Talismans = await NbtParser.NbtToItems(inventories.TalismanBag),
             Wardrobe = await NbtParser.NbtToItems(inventories.Wardrobe),
-            Backpacks = (object?) backpacks?.Select(b => b.Result).ToList()
+            Backpacks = backpacks?.Select(b => b.Result).ToList()
         };
     }
 }

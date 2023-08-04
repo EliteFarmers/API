@@ -49,7 +49,7 @@ public static class NbtParser {
             Id = tag["id"]?.IntValue ?? 0,
             Count = tag["Count"]?.ByteValue ?? 0,
             SkyblockId = tag["tag"]?["ExtraAttributes"]?["id"]?.StringValue,
-            Uuid = tag["tag"]?["uuid"]?.StringValue,
+            Uuid = tag["tag"]?["ExtraAttributes"]?["uuid"]?.StringValue,
             Name = tag["tag"]?["display"]?["Name"]?.StringValue,
             Lore = ((NbtList?) tag["tag"]?["display"]?["Lore"])?
                 .Select(l => l.StringValue)

@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Models.Entities.Hypixel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Farming;
@@ -40,25 +41,11 @@ public class FarmingFortune {
 public class FarmingInventory
 {
     [Column(TypeName = "jsonb")]
-    public List<object> Armor { get; set; } = new();
+    public List<ItemDto> Armor { get; set; } = new();
     
     [Column(TypeName = "jsonb")]
-    public List<object> Tools { get; set; } = new();
+    public List<ItemDto> Tools { get; set; } = new();
     
     [Column(TypeName = "jsonb")]
-    public List<object> Equipment { get; set; } = new();
+    public List<ItemDto> Equipment { get; set; } = new();
 }
-
-public class FarmingTool {
-    public string? Name { get; set; }
-    public Crop Crop { get; set; }
-    
-    public string? Id { get; set; }
-    public string? Uuid { get; set; }
-    
-    public long Cultivating { get; set; }
-    public long Counter { get; set; }
-    
-    public Dictionary<string, int> Enchantments { get; set; } = new();
-}
-
