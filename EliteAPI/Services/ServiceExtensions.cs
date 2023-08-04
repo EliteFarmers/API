@@ -30,6 +30,7 @@ public static class ServiceExtensions
 
         // Add services to the container.
         services.AddSingleton<MetricsService>();
+        services.AddSingleton<HypixelRequestLimiter>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         services.AddHttpClient(HypixelService.HypixelService.HttpClientName, client =>

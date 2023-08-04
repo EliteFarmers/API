@@ -20,5 +20,5 @@ public class Inventories {
     
     [ForeignKey("ProfileMember")]
     public Guid ProfileMemberId { get; set; }
-    public ProfileMember ProfileMember { get; set; }
+    public ProfileMember ProfileMember { get; set; } = null!;
 }

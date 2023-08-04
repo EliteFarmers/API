@@ -105,7 +105,7 @@ public class ProfileParser
             var playerId = key.Replace("-", "");
 
             var selected = playerUuid?.Equals(playerId) == true && profile.Selected;
-            await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid);
+            await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid ?? "Unknown");
         }
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
