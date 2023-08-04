@@ -8,7 +8,7 @@ public class AccountEntity
 {
     [Key]
     public required ulong Id { get; set; }
-    public int Permissions { get; set; } = 0;
+    public PermissionFlags Permissions { get; set; } = PermissionFlags.None;
     
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
@@ -28,6 +28,13 @@ public class AccountEntity
     public EliteSettings Settings { get; set; } = new();
     
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = new();
+}
+
+public enum PermissionFlags : ushort {
+    None = 0,
+    Helper = 16,
+    Moderator = 32,
+    Admin = 64
 }
 
 public class Purchase
@@ -86,11 +93,32 @@ public class MinecraftAccount
     [Column(TypeName = "jsonb")]
     public List<MinecraftAccountProperty> Properties { get; set; } = new();
     
+    public AccountFlag Flags { get; set; } = AccountFlag.None;
+    public bool IsBanned => Flags.HasFlag(AccountFlag.Banned);
+    
+    [Column(TypeName = "jsonb")]
+    public List<FlagReason>? FlagReasons { get; set; }
+
     public long LastUpdated { get; set; }
+    public long ProfilesLastUpdated { get; set; }
+    public long PlayerDataLastUpdated { get; set; }
 }
 
 public class MinecraftAccountProperty
 {
     public required string Name { get; set; }
     public required string Value { get; set; }
+}
+
+public enum AccountFlag : ushort {
+    None = 0,
+    AutoFlag = 1,
+    Banned = 2,
+}
+
+public class FlagReason {
+    public AccountFlag Flag { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public string Proof { get; set; } = string.Empty;
+    public long Timestamp { get; set; }
 }

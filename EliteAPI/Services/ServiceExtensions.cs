@@ -12,6 +12,7 @@ using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.GuildService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
+using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using Microsoft.Extensions.Configuration.Json;
@@ -95,7 +96,8 @@ public static class ServiceExtensions
     public static void AddEliteScopedServices(this IServiceCollection services) {
         services.AddScoped<ICacheService, CacheService.CacheService>();
         services.AddScoped<IHypixelService, HypixelService.HypixelService>();
-        services.AddScoped<IMojangService, MojangService.MojangService>(); 
+        services.AddScoped<IMojangService, MojangService.MojangService>();
+        services.AddScoped<IMemberService, MemberService.MemberService>();
         services.AddScoped<IAccountService, AccountService.AccountService>();
         services.AddScoped<IProfileService, ProfileService.ProfileService>();
         services.AddScoped<IDiscordService, DiscordService.DiscordService>();
@@ -110,7 +112,7 @@ public static class ServiceExtensions
     public static void AddEliteRedisCache(this IServiceCollection services)
     {
         var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6379";
-        var multiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions()
+        var multiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
         {
             EndPoints = { redisConnection },
             Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD"),
@@ -135,10 +137,15 @@ public static class ServiceExtensions
         {
             Path = "Config/Leaderboards.json",
         });
+        builder.Configuration.Sources.Add(new JsonConfigurationSource()
+        {
+            Path = "Config/FarmingItems.json",
+        });
         
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
         builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
+        builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("FarmingItems"));
 
         builder.Services.Configure<ConfigApiRateLimitSettings>(
             builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));

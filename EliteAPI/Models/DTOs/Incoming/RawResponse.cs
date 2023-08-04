@@ -89,13 +89,7 @@ public class RawMemberData
     public double? CoinPurse { get; set; }
 
     public JsonObject? Autopet { get; set; }
-
-    [JsonPropertyName("inv_armor")]
-    public JsonObject? Armor { get; set; }
-
-    [JsonPropertyName("accessory_bag_storage")]
-    public JsonObject? AccessoryBag { get; set; }
-
+    
     public RawLeveling? Leveling { get; set; }
     
     [JsonPropertyName("deletion_notice")]
@@ -154,17 +148,14 @@ public class RawMemberData
     public double? ExperienceSkillForaging { get; set; }
     [JsonPropertyName("experience_skill_carpentry")]
     public double? ExperienceSkillCarpentry { get; set; }
-
-    [JsonPropertyName("equippment_contents")]
-    public JsonObject? EquipmentContents { get; set; }
-
+    
     [JsonPropertyName("unlocked_coll_tiers")]
     public string[]? UnlockedCollTiers { get; set; }
-
-    [JsonPropertyName("backpack_contents")]
-    public JsonObject? BackpackContents { get; set; }
-
+    
     public JsonObject? Quiver { get; set; }
+    
+    [JsonPropertyName("temp_stat_buffs")]
+    public List<TempStatBuff> TempStatBuffs { get; set; } = new();
 
     [JsonPropertyName("sacks_counts")]
     public Dictionary<string, long> SackContents { get; set; } = new();
@@ -185,35 +176,56 @@ public class RawMemberData
     public long? EssenceWither { get; set; }
     [JsonPropertyName("essence_ice")]
     public long? EssenceIce { get; set; }
+    
+    [JsonPropertyName("accessory_bag_storage")]
+    public JsonObject? AccessoryBagSettings { get; set; }
 
     public JsonDocument? Collection { get; set; }
 
+    [JsonPropertyName("inv_armor")]
+    public RawInventoryData? Armor { get; set; }
+    
     [JsonPropertyName("talisman_bag")]
-    public JsonObject? TalismanBag { get; set; }
+    public RawInventoryData? TalismanBag { get; set; }
 
     [JsonPropertyName("backpack_icons")]
-    public JsonObject? BackpackIcons { get; set; }
+    public RawInventoryData? BackpackIcons { get; set; }
 
     [JsonPropertyName("fishing_bag")]
-    public JsonObject? FishingBag { get; set; }
+    public RawInventoryData? FishingBag { get; set; }
 
     [JsonPropertyName("wardrobe_equipped_slot")]
     public int? WardrobeEquippedSlot { get; set; }
+    
+    [JsonPropertyName("equippment_contents")]
+    public RawInventoryData? EquipmentContents { get; set; }
 
     [JsonPropertyName("ender_chest_contents")]
-    public JsonObject? EnderChestContents { get; set; }
+    public RawInventoryData? EnderChestContents { get; set; }
 
     [JsonPropertyName("wardrobe_contents")]
-    public JsonObject? WardrobeContents { get; set; }
-
+    public RawInventoryData? WardrobeContents { get; set; }
+    
     [JsonPropertyName("potion_bag")]
-    public JsonObject? PotionBag { get; set; }
+    public RawInventoryData? PotionBag { get; set; }
 
     [JsonPropertyName("inv_contents")]
-    public JsonObject? InventoryContents { get; set; }
+    public RawInventoryData? InventoryContents { get; set; }
 
     [JsonPropertyName("candy_inventory_contents")]
-    public JsonObject? CandyInventoryContents { get; set; }
+    public RawInventoryData? CandyInventoryContents { get; set; }
+    
+    [JsonPropertyName("personal_vault_contents")]
+    public RawInventoryData? PersonalVaultContents { get; set; }
+    
+    [JsonPropertyName("backpack_contents")]
+    public Dictionary<int, RawInventoryData>? BackpackContents { get; set; }
+}
+
+public class RawInventoryData
+{
+    public int Type { get; set; }
+    public string Data { get; set; } = string.Empty;
 }
 
 public class RawLeveling
@@ -390,4 +402,12 @@ public class RawTransaction
 
     [JsonPropertyName("initiator_name")]
     public required string Initiator { get; set; }
+}
+
+public class TempStatBuff {
+    public int Stat { get; set; }
+    public string? Key { get; set; }
+    public int Amount { get; set; }
+    [JsonPropertyName("expire_at")]
+    public long ExpireAt { get; set; }
 }

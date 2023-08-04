@@ -52,7 +52,7 @@ public class ProfileController : ControllerBase
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     public async Task<ActionResult<ProfileMemberDto>> GetSpecificProfile(string playerUuid, string profileUuid)
     {
-        var profile = await _profileService.GetProfileMember(profileUuid, playerUuid);
+        var profile = await _profileService.GetProfileMember(playerUuid, profileUuid);
         if (profile is null)
         {
             return NotFound("No profile matching this UUID was found for this player");

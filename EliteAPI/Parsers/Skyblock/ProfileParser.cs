@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿using System.Text.Json.Nodes;
 using EliteAPI.Data;
 using EliteAPI.Services;
 using EliteAPI.Services.MojangService;
@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.FarmingWeight;
+using EliteAPI.Parsers.Inventories;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
@@ -22,19 +23,15 @@ public class ProfileParser
     private readonly IMapper _mapper;
     private readonly ICacheService _cache;
     private readonly ILeaderboardService _leaderboardService;
-    
-    private readonly Func<DataContext, long, Task<JacobContest?>> _fetchJacobContest = 
-        EF.CompileAsyncQuery((DataContext context, long key) =>            
-            context.JacobContests
-                .FirstOrDefault(j => j.Id == key)
-        );
+    private readonly ILogger<ProfileParser> _logger;
 
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
             context.ProfileMembers
+                .Include(p => p.MinecraftAccount)
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
-                .Include(p => p.FarmingWeight)
+                .Include(p => p.Farming)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(c => c.JacobContest)
@@ -42,42 +39,32 @@ public class ProfileParser
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
     
-    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService, ILeaderboardService leaderboardService)
+    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService, ILeaderboardService leaderboardService, ILogger<ProfileParser> logger)
     {
         _context = context;
         _mojangService = mojangService;
         _mapper = mapper;
         _cache = cacheService;
         _leaderboardService = leaderboardService;
+        _logger = logger;
     }
 
-    public async Task<List<ProfileMember>> TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
+    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
     {
-        var profiles = new List<ProfileMember>();
-        if (!data.Success || data.Profiles is not { Length: > 0 }) return profiles;
-        
+        if (!data.Success || data.Profiles is not { Length: > 0 }) return;
         
         foreach (var profile in data.Profiles)
         {
-            var transformed = await TransformSingleProfile(profile, playerUuid);
-
-            if (transformed == null) continue;
-
-            var owned = transformed.Members
-                .Where(member => member.PlayerUuid.Equals(playerUuid));
-
-            profiles.AddRange(owned);
+            await TransformSingleProfile(profile, playerUuid);
         }
         
         await _context.SaveChangesAsync();
-
-        return profiles;
     }
 
-    public async Task<Profile?> TransformSingleProfile(RawProfileData profile, string? playerUuid)
+    public async Task TransformSingleProfile(RawProfileData profile, string? playerUuid)
     {
         var members = profile.Members;
-        if (members.Count == 0) return null;
+        if (members.Count == 0) return;
 
         var profileId = profile.ProfileId.Replace("-", "");
         var existing = await _context.Profiles.FindAsync(profileId);
@@ -88,7 +75,7 @@ public class ProfileParser
             ProfileName = profile.CuteName,
             GameMode = profile.GameMode,
             Members = new List<ProfileMember>(),
-            IsDeleted = false,
+            IsDeleted = false
         };
 
         profileObj.BankBalance = profile.Banking?.Balance ?? 0.0;
@@ -118,7 +105,7 @@ public class ProfileParser
             var playerId = key.Replace("-", "");
 
             var selected = playerUuid?.Equals(playerId) == true && profile.Selected;
-            await TransformMemberResponse(playerId, memberData, profileObj, selected);
+            await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid);
         }
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
@@ -131,11 +118,9 @@ public class ProfileParser
         {
             Console.WriteLine(e);
         }
-
-        return profileObj;
     }
 
-    public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected)
+    public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
     {
         var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
 
@@ -147,9 +132,12 @@ public class ProfileParser
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             
             existing.WasRemoved = memberData.DeletionNotice is not null;
-
+            
+            existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            _context.MinecraftAccounts.Update(existing.MinecraftAccount);
+            
             await UpdateProfileMember(profile, existing, memberData);
-
+            
             return;
         }
         
@@ -163,7 +151,6 @@ public class ProfileParser
             
             Profile = profile,
             ProfileId = profile.ProfileId,
-            MinecraftAccount = minecraftAccount,
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,
@@ -172,7 +159,10 @@ public class ProfileParser
         
         _context.ProfileMembers.Add(member);
         profile.Members.Add(member);
-        
+
+        minecraftAccount.ProfilesLastUpdated = playerId == requesterUuid 
+            ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : 0;
+
         await UpdateProfileMember(profile, member, memberData);
 
         try
@@ -189,9 +179,18 @@ public class ProfileParser
     private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
     {
         member.Collections = incomingData.Collection ?? member.Collections;
+        member.Api.Collections = incomingData.Collection is not null;
+        
         member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
         member.Purse = incomingData.CoinPurse ?? 0;
         member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
+        
+        member.Unparsed = new UnparsedApiData
+        {
+            Perks = incomingData.Perks,
+            TempStatBuffs = incomingData.TempStatBuffs,
+            AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
+        };
 
         member.ParseJacob(incomingData.Jacob);
         await _context.SaveChangesAsync();
@@ -202,14 +201,14 @@ public class ProfileParser
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
 
         profile.CombineMinions(incomingData.CraftedGenerators);
+        
+        await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
 
-        member.ParseFarmingWeight(profile.CraftedMinions);
-
-        _context.FarmingWeights.Update(member.FarmingWeight);
+        _context.Farming.Update(member.Farming);
         _context.ProfileMembers.Update(member);
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
-
+        
         await AddTimeScaleRecords(member);
         UpdateLeaderboards(member);
 
@@ -220,7 +219,7 @@ public class ProfileParser
         // TODO: Update all leaderboards, not just farming weight
         // (I'm avoiding this right now because idk a clever solution that's not a ton of if statements)
 
-        var farmingWeight = member.FarmingWeight.TotalWeight;
+        var farmingWeight = member.Farming.TotalWeight;
         _leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
     }
 

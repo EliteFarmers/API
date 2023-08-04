@@ -66,6 +66,7 @@ public partial class MojangService : IMojangService
     {
         var account = await _context.MinecraftAccounts
             .Where(mc => mc.Id.Equals(uuid))
+            .AsNoTracking()
             .FirstOrDefaultAsync();
 
         if (account is null || account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown))
@@ -107,7 +108,7 @@ public partial class MojangService : IMojangService
         return null;
     }
 
-    private async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid) {
+    public async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid) {
         if (!UuidRegex().IsMatch(uuid)) return null;
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");

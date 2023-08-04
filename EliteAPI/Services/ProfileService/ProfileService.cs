@@ -2,9 +2,8 @@
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Services.HypixelService;
+using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -16,22 +15,20 @@ namespace EliteAPI.Services.ProfileService;
 public class ProfileService : IProfileService
 {
     private readonly DataContext _context;
-    private readonly ProfileParser _profileParser;
     private readonly ConfigCooldownSettings _coolDowns;
-
-    private readonly IHypixelService _hypixelService;
-    private readonly IMojangService _mojangService;
     private readonly IMapper _mapper;
+    
+    private readonly IMojangService _mojangService;
+    private readonly IMemberService _memberService;
 
     public ProfileService(DataContext context, 
-        IHypixelService hypixelService, IMojangService mojangService, 
-        ProfileParser profileParser, IMapper mapper,
-        IOptions<ConfigCooldownSettings> coolDowns)
+        IMojangService mojangService, IMapper mapper,
+        IOptions<ConfigCooldownSettings> coolDowns, 
+        IMemberService memberService)
     {
         _context = context;
-        _hypixelService = hypixelService;
         _mojangService = mojangService;
-        _profileParser = profileParser;
+        _memberService = memberService;
         _mapper = mapper;
         _coolDowns = coolDowns.Value;
     }
@@ -39,19 +36,23 @@ public class ProfileService : IProfileService
     public async Task<Profile?> GetProfile(string profileId)
     {
         return await _context.Profiles
+            .AsNoTracking()
             .Include(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
             .Include(p => p.Members)
-            .ThenInclude(m => m.FarmingWeight)
+            .ThenInclude(m => m.Farming)
             .FirstOrDefaultAsync(p => p.ProfileId.Equals(profileId));
     }
 
     public async Task<Profile?> GetPlayersProfileByName(string playerUuid, string profileName)
     {
-        var member = await _context.ProfileMembers
+        var query = await _memberService.ProfileMemberQuery(playerUuid);
+        if (query is null) return null;
+        
+        var member = await query
             .Include(p => p.Profile)
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.Profile.ProfileName.Equals(profileName))
-            .FirstOrDefaultAsync();
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Profile.ProfileName == profileName);
 
         return member?.Profile;
     }
@@ -63,156 +64,102 @@ public class ProfileService : IProfileService
 
     public async Task<List<Profile>> GetPlayersProfiles(string playerUuid)
     {
-        var profileIds = await _context.ProfileMembers
-            .Where(m => m.PlayerUuid.Equals(playerUuid))
-            .Select(m => m.ProfileId)
-            .ToListAsync();
-        
-        if (profileIds.Count == 0)
-        {
-            await RefreshProfileMembers(playerUuid);
+        await _memberService.UpdatePlayerIfNeeded(playerUuid);
 
-            profileIds = await _context.ProfileMembers
-                .Where(m => m.PlayerUuid.Equals(playerUuid))
-                .Select(m => m.ProfileId)
-                .ToListAsync();
-            
-            if (profileIds.Count == 0) return new List<Profile>();
-        }
-
-        var profiles = await _context.Profiles
-            .Include(p => p.Members)
-            .ThenInclude(m => m.MinecraftAccount)
-            .Where(p => profileIds.Contains(p.ProfileId))
+        var profiles = await _context.ProfileMembers
+            .Include(p => p.Profile)
+            .Include(p => p.MinecraftAccount)
+            .Select(p => p.Profile)
             .ToListAsync();
 
         return profiles;
     }
 
     public async Task<List<ProfileDetailsDto>> GetProfilesDetails(string playerUuid) {
+        await _memberService.UpdatePlayerIfNeeded(playerUuid);
+        
         var existing = await _context.ProfileMembers
+            .AsNoTracking()
             .Where(m => m.PlayerUuid.Equals(playerUuid))
-            .Select(m => new { m.ProfileId, m.LastUpdated })
+            .Select(m => new { m.ProfileId, m.IsSelected })
             .ToListAsync();
-    
-        if (existing.Count == 0 || existing.Any(e => e.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)))
-        {
-            await RefreshProfileMembers(playerUuid);
-        }
         
         var profileIds = existing.Select(e => e.ProfileId).ToList();
 
         var profiles = await _context.Profiles
+            .AsNoTracking()
             .Include(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
             .Include(p => p.Members)
-            .ThenInclude(m => m.FarmingWeight)
+            .ThenInclude(m => m.Farming)
             .Where(p => profileIds.Contains(p.ProfileId))
             .ToListAsync();
         
         var mappedProfiles = _mapper.Map<List<ProfileDetailsDto>>(profiles);
 
         // This needs to be fetched because "selected" lives on the ProfileMembers
-        var selected = await GetSelectedProfileUuid(playerUuid);
+        var selected = existing.FirstOrDefault(e => e.IsSelected)?.ProfileId;
         if (selected is not null) {
             mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
         }
         
         return mappedProfiles;
     }
+    
+    public async Task<ProfileMember?> GetProfileMember(string playerUuid, string profileUuid) {
+        var query = await _memberService.ProfileMemberCompleteQuery(playerUuid);
+        if (query is null) return null;
 
-    private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
-        EF.CompileAsyncQuery((DataContext context, string profileUuid, string playerUuid) =>            
-            context.ProfileMembers
-                   .Include(p => p.Profile)
-                   .Include(p => p.Skills)
-                   .Include(p => p.FarmingWeight)
-                   .Include(p => p.JacobData)
-                   .ThenInclude(j => j.Contests)
-                   .ThenInclude(c => c.JacobContest)
-                   .AsSplitQuery()
-                   .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
-        );
-
-    public async Task<ProfileMember?> GetProfileMember(string profileUuid, string playerUuid)
-    {
-        var lastUpdated = await _context.ProfileMembers
-            .Include(p => p.Profile)
-            .Where(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
-            .Select(p => p.LastUpdated)
-            .FirstOrDefaultAsync();
-
-        // Fetch new data if it doesn't exists or is old
-        if (lastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
-        {
-            await RefreshProfileMembers(playerUuid);
-        }
-
-        return await _fetchProfileMemberData(_context, profileUuid, playerUuid);
+        return await query.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Profile.ProfileId.Equals(profileUuid));
     }
 
     public async Task<ProfileMember?> GetSelectedProfileMember(string playerUuid)
     {
-        var member = await _context.ProfileMembers
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
-            .FirstOrDefaultAsync();
+        var query = await _memberService.ProfileMemberCompleteQuery(playerUuid);
+        if (query is null) return null;
 
-        if (member is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
-        {
-            var members = await RefreshProfileMembers(playerUuid);
-            return members.FirstOrDefault(m => m.IsSelected);
-        }
-
-        return await _fetchProfileMemberData(_context, member.ProfileId, playerUuid);
+        return await query.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.IsSelected);
     }
 
     public async Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName)
     {
-        var member = await _context.ProfileMembers
-            .Include(p => p.Profile)
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.Profile.ProfileName.Equals(profileName))
-            .FirstOrDefaultAsync();
+        var query = await _memberService.ProfileMemberCompleteQuery(playerUuid);
+        if (query is null) return null;
 
-        if (member is null || member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown))
-        {
-            var members = await RefreshProfileMembers(playerUuid);
-            return members.FirstOrDefault(m => m.Profile.ProfileName.Equals(profileName));
-        }
-
-        return await _fetchProfileMemberData(_context, member.ProfileId, playerUuid);
+        return await query.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Profile.ProfileName == profileName);
     }
 
     public async Task<string?> GetSelectedProfileUuid(string playerUuid) {
-        return await _context.ProfileMembers
-            .Where(s => s.PlayerUuid == playerUuid && s.IsSelected)
-            .Select(s => s.ProfileId)
+        var query = await _memberService.ProfileMemberQuery(playerUuid);
+        if (query is null) return null;
+        
+        return await query.AsNoTracking()
+            .Where(p => p.IsSelected)
+            .Select(p => p.ProfileId)
             .FirstOrDefaultAsync();
     }
 
     public async Task<PlayerData?> GetPlayerData(string playerUuid, bool skipCooldown = false)
     {
+        await _memberService.UpdatePlayerIfNeeded(playerUuid);
+        
         var data = await _context.PlayerData
+            .AsNoTracking()
             .Include(p => p.MinecraftAccount)
             .FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
         
         if (data is not null && !data.LastUpdated.OlderThanSeconds(skipCooldown ? _coolDowns.HypixelPlayerDataCooldown : _coolDowns.HypixelPlayerDataLinkingCooldown))
                 return data;
 
-        var rawData = await _hypixelService.FetchPlayer(playerUuid);
-        var player = rawData.Value;
-
-        if (player?.Player is null) return null;
-
-        var minecraftAccount = await _mojangService.GetMinecraftAccountByUuid(playerUuid);
-        if (minecraftAccount is null) return null;
-
-        var playerData = _mapper.Map<PlayerData>(player.Player);
-        playerData.MinecraftAccount = minecraftAccount;
-
-        _context.PlayerData.Add(playerData);
-        await _context.SaveChangesAsync();
-
-        return playerData;
+        await _memberService.RefreshPlayerData(playerUuid);
+        
+        return await _context.PlayerData
+            .AsNoTracking()
+            .Include(p => p.MinecraftAccount)
+            .FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
     }
 
     public async Task<PlayerData?> GetPlayerDataByIgn(string playerName, bool skipCooldown = false)
@@ -227,15 +174,5 @@ public class ProfileService : IProfileService
     {
         if (uuidOrIgn.Length == 32) return await GetPlayerData(uuidOrIgn);
         return await GetPlayerDataByIgn(uuidOrIgn, skipCooldown);
-    }
-
-    private async Task<List<ProfileMember>> RefreshProfileMembers(string playerUuid)
-    {
-        var rawData = await _hypixelService.FetchProfiles(playerUuid);
-        var profiles = rawData.Value;
-
-        if (profiles == null) return new List<ProfileMember>();
-
-        return await _profileParser.TransformProfilesResponse(profiles, playerUuid);
     }
 }

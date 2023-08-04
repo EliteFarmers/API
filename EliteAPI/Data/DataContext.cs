@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.EntityFrameworkCore;
@@ -39,12 +40,13 @@ public class DataContext : DbContext
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
+    public DbSet<Inventories> Inventories { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
-    public DbSet<FarmingWeight> FarmingWeights { get; set; } = null!;
+    public DbSet<Farming> Farming { get; set; } = null!;
 
     // Discord
     public DbSet<Guild> Guilds { get; set; } = null!;

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Farming;
 
 namespace EliteAPI.Parsers.FarmingWeight;
 
@@ -7,12 +8,13 @@ public class FarmingWeightMapper : Profile
 {
     public FarmingWeightMapper()
     {
-        CreateMap<Models.Entities.FarmingWeight, FarmingWeightDto>()
+        CreateMap<Farming, FarmingWeightDto>()
             .ForMember(x => x.TotalWeight, opt => opt.MapFrom(x => x.TotalWeight))
             .ForMember(x => x.CropWeight, opt => opt.MapFrom(x => x.CropWeight))
-            .ForMember(x => x.BonusWeight, opt => opt.MapFrom(x => x.BonusWeight));
+            .ForMember(x => x.BonusWeight, opt => opt.MapFrom(x => x.BonusWeight))
+            .ForMember(x => x.Inventory, opt => opt.MapFrom(x => x.Inventory));
 
-        CreateMap<Models.Entities.FarmingWeight, FarmingWeightWithProfileDto>()
+        CreateMap<Farming, FarmingWeightWithProfileDto>()
             .ForMember(x => x.TotalWeight, opt => opt.MapFrom(x => x.TotalWeight))
             .ForMember(x => x.CropWeight, opt => opt.MapFrom(x => x.CropWeight))
             .ForMember(x => x.BonusWeight, opt => opt.MapFrom(x => x.BonusWeight))
@@ -20,12 +22,11 @@ public class FarmingWeightMapper : Profile
             .ForMember(x => x.ProfileName, opt => opt.MapFrom(x => x.ProfileMember != null ? x.ProfileMember.Profile.ProfileName : "null"));
     }
 }
-/*
-public class FarmingInventory : Profile
+
+public class FarmingInventoryMapper : Profile
 {
-    public FarmingInventory()
+    public FarmingInventoryMapper()
     {
-        CreateMap<Models.Entities.FarmingInventory, FarmingInventoryDto>();
+        CreateMap<FarmingInventory, FarmingInventoryDto>();
     }
 }
-*/

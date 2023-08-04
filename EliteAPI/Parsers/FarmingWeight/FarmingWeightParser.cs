@@ -1,23 +1,28 @@
 ﻿using System.Configuration;
 using System.Text.Json;
 using EliteAPI.Config.Settings;
+using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Inventories;
 using EliteAPI.Utilities;
 
 namespace EliteAPI.Parsers.FarmingWeight;
 
 public static class FarmingWeightParser
 {
-    public static void ParseFarmingWeight(this ProfileMember member, Dictionary<string, int> craftedMinions)
+    public static async Task ParseFarmingWeight(this ProfileMember member, Dictionary<string, int> craftedMinions, RawMemberData memberData)
     {
-        member.FarmingWeight.ProfileMemberId = member.Id;
-        member.FarmingWeight.ProfileMember = member;
+        member.Farming.ProfileMemberId = member.Id;
+        member.Farming.ProfileMember = member;
 
-        member.FarmingWeight.CropWeight = ParseCropWeight(member.Collections);
-        member.FarmingWeight.BonusWeight = ParseBonusWeight(member, craftedMinions);
+        member.Farming.CropWeight = ParseCropWeight(member.Collections);
+        member.Farming.BonusWeight = ParseBonusWeight(member, craftedMinions);
 
-        member.FarmingWeight.TotalWeight = member.FarmingWeight.CropWeight.Sum(x => x.Value) 
-                                           + member.FarmingWeight.BonusWeight.Sum(x => x.Value);
+        member.Farming.TotalWeight = member.Farming.CropWeight.Sum(x => x.Value) 
+                                           + member.Farming.BonusWeight.Sum(x => x.Value);
+
+        member.Farming.Inventory = await memberData.ExtractFarmingItems(member);
     }
 
     public static Dictionary<string, double> ParseCropWeight(JsonDocument jsonCollections) {

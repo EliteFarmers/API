@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-
-namespace EliteAPI.Models.Entities.Hypixel;
+﻿namespace EliteAPI.Models.Entities.Hypixel;
 
 public class Pet
 {

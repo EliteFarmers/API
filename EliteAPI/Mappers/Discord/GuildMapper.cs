@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 
-namespace EliteAPI.Mappers.Discord; 
+namespace EliteAPI.Parsers.Discord; 
 
 public class GuildMapper : Profile {
     public GuildMapper() {

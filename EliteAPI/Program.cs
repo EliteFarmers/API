@@ -59,6 +59,7 @@ app.MapMetrics();
 using (var scope = app.Services.CreateScope())
 {
     FarmingWeightConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
+    FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
 
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try
