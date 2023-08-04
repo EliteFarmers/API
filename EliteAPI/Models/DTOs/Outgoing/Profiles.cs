@@ -15,7 +15,7 @@ public class MemberDetailsDto
     public required string Uuid { get; set; }
     public required string Username { get; set; }
     public bool Active { get; set; } = true;
-    public double FarmingWeight { get; set; } = 0;
+    public double FarmingWeight { get; set; }
 }
 
 public class ProfileMemberDto
@@ -25,23 +25,23 @@ public class ProfileMemberDto
     
     public ApiAccessDto Api { get; set; } = new();
     
-    public int SkyblockXp { get; set; } = 0;
-    public double Purse { get; set; } = 0;
-    public double BankBalance { get; set; } = 0;
+    public int SkyblockXp { get; set; }
+    public double Purse { get; set; }
+    public double BankBalance { get; set; }
 
     public Dictionary<string, long> Collections { get; set; } = new();
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
     public List<PetDto> Pets { get; set; } = new();
     
-    public InventoriesDto Inventories { get; set; } = new();
+    // public InventoriesDto Inventories { get; set; } = new();
     public UnparsedApiDataDto Unparsed { get; set; } = new();
 
     public required JacobDataDto Jacob { get; set; }
     public required FarmingWeightDto FarmingWeight { get; set; }
     public SkillsDto Skills { get; set; } = new();
 
-    public bool IsSelected { get; set; } = false;
-    public bool WasRemoved { get; set; } = false;
-    public long LastUpdated { get; set; } = 0;
+    public bool IsSelected { get; set; }
+    public bool WasRemoved { get; set; }
+    public long LastUpdated { get; set; }
 }

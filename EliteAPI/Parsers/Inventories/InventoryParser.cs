@@ -6,29 +6,23 @@ namespace EliteAPI.Parsers.Inventories;
 
 public static class InventoryParser {
     
-    public static void ParseInventory(this ProfileMember member, RawMemberData memberData) {
-        member.Api.Inventories = memberData.InventoryContents is not null;
-        member.Api.Vault = memberData.PersonalVaultContents is not null;
-        
-        member.Inventories.ProfileMemberId = member.Id;
-        member.Inventories.ProfileMember = member;
-        
-        member.Inventories.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    public static void ParseInventory(this Models.Entities.Hypixel.Inventories inventories, RawMemberData memberData) {
+        inventories.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         if (memberData.InventoryContents is null) return;
         
-        member.Inventories.Armor = memberData.Armor?.Data;
-        member.Inventories.EnderChest = memberData.EnderChestContents?.Data;
-        member.Inventories.Equipment = memberData.EquipmentContents?.Data;
-        member.Inventories.Inventory = memberData.InventoryContents?.Data;
-        member.Inventories.TalismanBag = memberData.TalismanBag?.Data;
-        member.Inventories.Wardrobe = memberData.WardrobeContents?.Data;
+        inventories.Armor = memberData.Armor?.Data;
+        inventories.EnderChest = memberData.EnderChestContents?.Data;
+        inventories.Equipment = memberData.EquipmentContents?.Data;
+        inventories.Inventory = memberData.InventoryContents?.Data;
+        inventories.TalismanBag = memberData.TalismanBag?.Data;
+        inventories.Wardrobe = memberData.WardrobeContents?.Data;
 
         if (memberData.PersonalVaultContents is not null) {
-            member.Inventories.PersonalVault = memberData.PersonalVaultContents.Data;
+            inventories.PersonalVault = memberData.PersonalVaultContents.Data;
         }
 
-        member.Inventories.Backpacks = memberData.BackpackContents?.Values.Select(x => x.Data).ToList();
+        inventories.Backpacks = memberData.BackpackContents?.Values.Select(x => x.Data).ToList();
     }
 
     public static async Task<DecodedInventoriesDto> DecodeToNbt(this Models.Entities.Hypixel.Inventories inventories) {

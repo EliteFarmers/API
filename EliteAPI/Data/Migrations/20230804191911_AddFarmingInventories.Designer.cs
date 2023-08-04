@@ -18,8 +18,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230804025017_FarmingInventories")]
-    partial class FarmingInventories
+    [Migration("20230804191911_AddFarmingInventories")]
+    partial class AddFarmingInventories
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -261,11 +261,9 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("jsonb");
 
                     b.Property<FarmingFortune>("Fortune")
-                        .IsRequired()
                         .HasColumnType("jsonb");
 
                     b.Property<FarmingInventory>("Inventory")
-                        .IsRequired()
                         .HasColumnType("jsonb");
 
                     b.Property<Guid>("ProfileMemberId")
@@ -359,8 +357,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProfileMemberId")
-                        .IsUnique();
+                    b.HasIndex("ProfileMemberId");
 
                     b.ToTable("Inventories");
                 });
@@ -844,8 +841,8 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Inventories", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
-                        .WithOne("Inventories")
-                        .HasForeignKey("EliteAPI.Models.Entities.Hypixel.Inventories", "ProfileMemberId")
+                        .WithMany()
+                        .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1084,9 +1081,6 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
                     b.Navigation("Farming")
-                        .IsRequired();
-
-                    b.Navigation("Inventories")
                         .IsRequired();
 
                     b.Navigation("JacobData")

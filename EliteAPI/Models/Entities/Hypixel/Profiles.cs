@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using EliteAPI.Models.Entities.Farming;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Hypixel;
@@ -35,10 +34,8 @@ public class ProfileMember : IDisposable
 
     public JacobData JacobData { get; set; } = new();
     public Skills Skills { get; set; } = new();
-
-    // public FarmingInventory FarmingInventory { get; set; } = new();
     public Farming.Farming Farming { get; set; } = new();
-    public Inventories Inventories { get; set; } = new();
+    // public Inventories Inventories { get; set; } = new(); // Likely to be added in the future
 
     public bool IsSelected { get; set; } = false;
     public bool WasRemoved { get; set; } = false;

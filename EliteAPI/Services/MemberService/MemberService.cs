@@ -44,7 +44,6 @@ public class MemberService : IMemberService {
             .Include(p => p.MinecraftAccount).AsNoTracking()
             .Include(p => p.Profile).AsNoTracking()
             .Include(p => p.Skills).AsNoTracking()
-            .Include(p => p.Inventories).AsNoTracking()
             .Include(p => p.Farming).AsNoTracking()
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)

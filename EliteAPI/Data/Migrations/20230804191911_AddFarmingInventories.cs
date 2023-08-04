@@ -8,11 +8,15 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EliteAPI.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class FarmingInventories : Migration
+    public partial class AddFarmingInventories : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_Inventories_ProfileMemberId",
+                table: "Inventories");
+
             migrationBuilder.AddColumn<List<FlagReason>>(
                 name: "FlagReasons",
                 table: "MinecraftAccounts",
@@ -37,11 +41,20 @@ namespace EliteAPI.Data.Migrations
                 table: "FarmingWeights",
                 type: "jsonb",
                 nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_ProfileMemberId",
+                table: "Inventories",
+                column: "ProfileMemberId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_Inventories_ProfileMemberId",
+                table: "Inventories");
+
             migrationBuilder.DropColumn(
                 name: "FlagReasons",
                 table: "MinecraftAccounts");
@@ -57,6 +70,12 @@ namespace EliteAPI.Data.Migrations
             migrationBuilder.DropColumn(
                 name: "Inventory",
                 table: "FarmingWeights");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_ProfileMemberId",
+                table: "Inventories",
+                column: "ProfileMemberId",
+                unique: true);
         }
     }
 }

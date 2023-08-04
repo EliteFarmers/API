@@ -25,19 +25,12 @@ public class ProfileParser
     private readonly ILeaderboardService _leaderboardService;
     private readonly ILogger<ProfileParser> _logger;
 
-    private readonly Func<DataContext, long, Task<JacobContest?>> _fetchJacobContest = 
-        EF.CompileAsyncQuery((DataContext context, long key) =>            
-            context.JacobContests
-                .FirstOrDefault(j => j.Id == key)
-        );
-
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
             context.ProfileMembers
                 .Include(p => p.MinecraftAccount)
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
-                .Include(p => p.Inventories)
                 .Include(p => p.Farming)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
@@ -208,22 +201,14 @@ public class ProfileParser
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
 
         profile.CombineMinions(incomingData.CraftedGenerators);
-
-        member.ParseInventory(incomingData);
-        await member.ParseFarmingWeight(profile.CraftedMinions);
+        
+        await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
 
         _context.Farming.Update(member.Farming);
         _context.ProfileMembers.Update(member);
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
         
-        if (!_context.Entry(member.Inventories).IsKeySet) {
-            _context.Inventories.Add(member.Inventories);
-            await _context.SaveChangesAsync();
-        }
-        
-        _context.Inventories.Update(member.Inventories);
-
         await AddTimeScaleRecords(member);
         UpdateLeaderboards(member);
 

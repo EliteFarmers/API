@@ -27,7 +27,6 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills))
             .ForMember(x => x.BankBalance, opt => opt.MapFrom(x => x.Profile.BankBalance))
             .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming))
-            .ForMember(x => x.Inventories, opt => opt.MapFrom(x => x.Inventories))
             .ForMember(x => x.Unparsed, opt => opt.MapFrom(x => x.Unparsed))
             .ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api));
 

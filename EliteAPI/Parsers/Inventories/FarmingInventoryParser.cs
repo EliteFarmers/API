@@ -1,18 +1,26 @@
 ﻿using EliteAPI.Config.Settings;
+using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Farming;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Inventories; 
 
 public static class FarmingInventoryParser {
-    public static async Task<FarmingInventory> ExtractFarmingItems(this Models.Entities.Hypixel.Inventories inventories) {
+    public static async Task<FarmingInventory> ExtractFarmingItems(this RawMemberData memberData, ProfileMember member) {
         var farming = new FarmingInventory();
-
-        await farming.PopulateFrom(inventories.Inventory);
-        await farming.PopulateFrom(inventories.EnderChest);
-        await farming.PopulateFrom(inventories.PersonalVault);
-        await Task.WhenAll(inventories.Backpacks?.Select(i => farming.PopulateFrom(i)) ?? new List<Task>());
-        await farming.PopulateFrom(inventories.Armor);
-        await farming.PopulateFrom(inventories.Equipment);
+        
+        member.Api.Inventories = memberData.InventoryContents is not null;
+        member.Api.Vault = memberData.PersonalVaultContents is not null;
+        
+        if (memberData.InventoryContents is null) return farming;
+        
+        await farming.PopulateFrom(memberData.InventoryContents?.Data);
+        await farming.PopulateFrom(memberData.EnderChestContents?.Data);
+        await farming.PopulateFrom(memberData.PersonalVaultContents?.Data);
+        await Task.WhenAll(memberData.BackpackContents?.Values.Select(i => farming.PopulateFrom(i.Data)) ?? new List<Task>());
+        await farming.PopulateFrom(memberData.Armor?.Data);
+        await farming.PopulateFrom(memberData.WardrobeContents?.Data);
+        await farming.PopulateFrom(memberData.EquipmentContents?.Data);
 
         return farming;
     }
