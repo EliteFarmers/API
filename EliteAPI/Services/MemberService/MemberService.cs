@@ -2,7 +2,7 @@
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Parsers.Skyblock;
+using EliteAPI.Mappers.Skyblock;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;
@@ -39,16 +39,18 @@ public class MemberService : IMemberService {
         await UpdatePlayerIfNeeded(playerUuid);
 
         return _context.ProfileMembers
+            .AsNoTracking()
             .Where(p => p.PlayerUuid == playerUuid)
-            .Include(p => p.MinecraftAccount)
-            .Include(p => p.Profile)
-            .Include(p => p.Skills)
-            .Include(p => p.Inventories)
-            .Include(p => p.FarmingWeight)
+            .Include(p => p.MinecraftAccount).AsNoTracking()
+            .Include(p => p.Profile).AsNoTracking()
+            .Include(p => p.Skills).AsNoTracking()
+            .Include(p => p.Inventories).AsNoTracking()
+            .Include(p => p.Farming).AsNoTracking()
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)
             .ThenInclude(c => c.JacobContest)
-            .AsSplitQuery().AsNoTracking();
+            .AsNoTracking()
+            .AsSplitQuery();
     }
 
     public async Task<IQueryable<ProfileMember>?> ProfileMemberIgnQuery(string playerName) {
@@ -60,27 +62,15 @@ public class MemberService : IMemberService {
     }
 
     public async Task UpdatePlayerIfNeeded(string playerUuid) {
-        var lastUpdated = await _context.MinecraftAccounts
-            .AsNoTracking()
-            .Where(a => a.Id == playerUuid)
-            .Select(a => new LastUpdatedDto {
-                Profiles = a.ProfilesLastUpdated,
-                PlayerData = a.PlayerDataLastUpdated,
-                Account = a.LastUpdated,
-                PlayerUuid = a.Id
-            })
-            .FirstOrDefaultAsync();
-
-        if (lastUpdated?.PlayerUuid is null) {
-            var account = await _mojangService.GetMinecraftAccountByUuid(playerUuid);
-            
-            if (account is null) return;
-            
-            lastUpdated = new LastUpdatedDto {
-                PlayerUuid = playerUuid
-            };
-        }
+        var account = await _mojangService.GetMinecraftAccountByUuid(playerUuid);
+        if (account is null) return;
         
+        var lastUpdated = new LastUpdatedDto {
+            PlayerUuid = playerUuid,
+            PlayerData = account.PlayerDataLastUpdated,
+            Profiles = account.ProfilesLastUpdated
+        };
+
         await RefreshNeededData(lastUpdated);
     }  
     
@@ -89,15 +79,18 @@ public class MemberService : IMemberService {
             .AsNoTracking()
             .Where(a => a.Id == memberId)
             .Include(a => a.MinecraftAccount)
+            .AsNoTracking()
             .Select(a => new LastUpdatedDto {
                 Profiles = a.MinecraftAccount.ProfilesLastUpdated,
                 PlayerData = a.MinecraftAccount.PlayerDataLastUpdated,
-                Account = a.MinecraftAccount.LastUpdated,
                 PlayerUuid = a.MinecraftAccount.Id
             })
             .FirstOrDefaultAsync();
-
+        
         if (lastUpdated?.PlayerUuid is null) return;
+        
+        var account = await _mojangService.GetMinecraftAccountByUuid(lastUpdated.PlayerUuid);
+        if (account is null) return;
         
         await RefreshNeededData(lastUpdated);
     }
@@ -111,10 +104,6 @@ public class MemberService : IMemberService {
         
         if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown)) {
             await RefreshPlayerData(playerUuid);
-        }
-        
-        if (lastUpdated.Account.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown)) {
-            await _mojangService.FetchMinecraftAccountByUuid(playerUuid);
         }
     }
 
@@ -141,7 +130,6 @@ public class MemberService : IMemberService {
         if (existing is null) {
             minecraftAccount.PlayerData = playerData;
             playerData.Uuid = minecraftAccount.Id;
-            playerData.MinecraftAccount = minecraftAccount;
             
             _context.PlayerData.Add(playerData);
         } else {
@@ -150,8 +138,7 @@ public class MemberService : IMemberService {
         }
         
         minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        _context.MinecraftAccounts.Update(minecraftAccount);
-        
+
         await _context.SaveChangesAsync();
     }
 }
@@ -159,6 +146,5 @@ public class MemberService : IMemberService {
 public class LastUpdatedDto {
     public long Profiles { get; set; }
     public long PlayerData { get; set; }
-    public long Account { get; set; }
     public required string PlayerUuid { get; set; }
 }

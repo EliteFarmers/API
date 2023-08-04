@@ -1,18 +1,18 @@
 ﻿using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
 
-namespace EliteAPI.Parsers.FarmingWeight;
+namespace EliteAPI.Mappers.FarmingWeight;
 
 public class FarmingWeightMapper : Profile
 {
     public FarmingWeightMapper()
     {
-        CreateMap<Models.Entities.FarmingWeight, FarmingWeightDto>()
+        CreateMap<Models.Entities.Farming.Farming, FarmingWeightDto>()
             .ForMember(x => x.TotalWeight, opt => opt.MapFrom(x => x.TotalWeight))
             .ForMember(x => x.CropWeight, opt => opt.MapFrom(x => x.CropWeight))
             .ForMember(x => x.BonusWeight, opt => opt.MapFrom(x => x.BonusWeight));
 
-        CreateMap<Models.Entities.FarmingWeight, FarmingWeightWithProfileDto>()
+        CreateMap<Models.Entities.Farming.Farming, FarmingWeightWithProfileDto>()
             .ForMember(x => x.TotalWeight, opt => opt.MapFrom(x => x.TotalWeight))
             .ForMember(x => x.CropWeight, opt => opt.MapFrom(x => x.CropWeight))
             .ForMember(x => x.BonusWeight, opt => opt.MapFrom(x => x.BonusWeight))

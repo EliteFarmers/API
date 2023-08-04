@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using EliteAPI.Data;
 using EliteAPI.Services;
 using EliteAPI.Services.MojangService;
@@ -8,14 +7,14 @@ using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
-using EliteAPI.Parsers.FarmingWeight;
-using EliteAPI.Parsers.Inventories;
-using EliteAPI.Parsers.Profiles;
+using EliteAPI.Mappers.FarmingWeight;
+using EliteAPI.Mappers.Inventories;
+using EliteAPI.Mappers.Profiles;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
-namespace EliteAPI.Parsers.Skyblock;
+namespace EliteAPI.Mappers.Skyblock;
 
 public class ProfileParser
 {
@@ -39,7 +38,7 @@ public class ProfileParser
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
                 .Include(p => p.Inventories)
-                .Include(p => p.FarmingWeight)
+                .Include(p => p.Farming)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(c => c.JacobContest)
@@ -113,7 +112,7 @@ public class ProfileParser
             var playerId = key.Replace("-", "");
 
             var selected = playerUuid?.Equals(playerId) == true && profile.Selected;
-            await TransformMemberResponse(playerId, memberData, profileObj, selected);
+            await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid);
         }
 
         MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
@@ -128,7 +127,7 @@ public class ProfileParser
         }
     }
 
-    public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected)
+    public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
     {
         var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
 
@@ -159,7 +158,6 @@ public class ProfileParser
             
             Profile = profile,
             ProfileId = profile.ProfileId,
-            MinecraftAccount = minecraftAccount,
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,
@@ -168,10 +166,10 @@ public class ProfileParser
         
         _context.ProfileMembers.Add(member);
         profile.Members.Add(member);
-        
-        minecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        _context.MinecraftAccounts.Update(minecraftAccount);
-        
+
+        minecraftAccount.ProfilesLastUpdated = playerId == requesterUuid 
+            ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : 0;
+
         await UpdateProfileMember(profile, member, memberData);
 
         try
@@ -214,7 +212,7 @@ public class ProfileParser
         member.ParseFarmingWeight(profile.CraftedMinions);
         member.ParseInventory(incomingData);
 
-        _context.FarmingWeights.Update(member.FarmingWeight);
+        _context.FarmingWeights.Update(member.Farming);
         _context.ProfileMembers.Update(member);
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
@@ -236,7 +234,7 @@ public class ProfileParser
         // TODO: Update all leaderboards, not just farming weight
         // (I'm avoiding this right now because idk a clever solution that's not a ton of if statements)
 
-        var farmingWeight = member.FarmingWeight.TotalWeight;
+        var farmingWeight = member.Farming.TotalWeight;
         _leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
     }
 

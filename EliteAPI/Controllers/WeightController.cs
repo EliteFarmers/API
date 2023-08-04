@@ -48,8 +48,8 @@ public class WeightController : ControllerBase
         var farmingWeightIds = await _context.ProfileMembers
             .AsNoTracking()
             .Where(x => x.PlayerUuid.Equals(uuid))
-            .Include(x => x.FarmingWeight)
-            .Select(x => x.FarmingWeight.Id)
+            .Include(x => x.Farming)
+            .Select(x => x.Farming.Id)
             .ToListAsync();
 
         var farmingWeights = await _context.FarmingWeights
@@ -85,8 +85,8 @@ public class WeightController : ControllerBase
 
         var weight = await query
             .Where(x => x.IsSelected)
-            .Include(x => x.FarmingWeight)
-            .Select(x => x.FarmingWeight)
+            .Include(x => x.Farming)
+            .Select(x => x.Farming)
             .FirstOrDefaultAsync();
         
         if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
@@ -107,8 +107,8 @@ public class WeightController : ControllerBase
 
         var weight = await query
             .Where(x => x.IsSelected && x.ProfileId.Equals(profile))
-            .Include(x => x.FarmingWeight)
-            .Select(x => x.FarmingWeight)
+            .Include(x => x.Farming)
+            .Select(x => x.Farming)
             .FirstOrDefaultAsync();
         
         if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");

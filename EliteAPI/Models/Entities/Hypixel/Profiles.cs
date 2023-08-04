@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.Entities.Farming;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Hypixel;
@@ -38,7 +37,7 @@ public class ProfileMember : IDisposable
     public Skills Skills { get; set; } = new();
 
     // public FarmingInventory FarmingInventory { get; set; } = new();
-    public FarmingWeight FarmingWeight { get; set; } = new();
+    public Farming.Farming Farming { get; set; } = new();
     public Inventories Inventories { get; set; } = new();
 
     public bool IsSelected { get; set; } = false;
@@ -59,7 +58,7 @@ public class ProfileMember : IDisposable
 
     [ForeignKey("MinecraftAccount")]
     public required string PlayerUuid { get; set; }
-    public required MinecraftAccount MinecraftAccount { get; set; }
+    public MinecraftAccount MinecraftAccount { get; set; } = null!;
 
     [ForeignKey("Profile")]
     public required string ProfileId { get; set; }

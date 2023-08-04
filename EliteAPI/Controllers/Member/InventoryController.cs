@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Parsers.Inventories;
+using EliteAPI.Mappers.Inventories;
 using EliteAPI.Services.MemberService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

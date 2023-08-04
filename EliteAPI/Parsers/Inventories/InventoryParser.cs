@@ -3,10 +3,10 @@ using System.Text.Json;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
+using McProtoNet.NBT;
 using Microsoft.IdentityModel.Tokens;
-using SharpNBT;
 
-namespace EliteAPI.Parsers.Inventories; 
+namespace EliteAPI.Mappers.Inventories; 
 
 public static class InventoryParser {
     
@@ -36,6 +36,9 @@ public static class InventoryParser {
     }
 
     public static async Task<DecodedInventoriesDto> DecodeToNbt(this Models.Entities.Hypixel.Inventories inventories) {
+        var backpacks = inventories.Backpacks?.Select(async b => await DecodeToNbt(b)).ToList() ?? new List<Task<object?>>();
+        await Task.WhenAll(backpacks);
+        
         return new DecodedInventoriesDto {
             Armor = await DecodeToNbt(inventories.Armor),
             EnderChest = await DecodeToNbt(inventories.EnderChest),
@@ -44,7 +47,7 @@ public static class InventoryParser {
             PersonalVault = await DecodeToNbt(inventories.PersonalVault),
             TalismanBag = await DecodeToNbt(inventories.TalismanBag),
             Wardrobe = await DecodeToNbt(inventories.Wardrobe),
-            Backpacks = inventories.Backpacks?.Select(async b => await DecodeToNbt(b)).ToList<object>()
+            Backpacks = backpacks.Select(b => b.Result ?? "").ToList()
         };
     }
 
@@ -55,13 +58,12 @@ public static class InventoryParser {
             var decodedInventory = Convert.FromBase64String(data);
 
             await using var compressedStream = new MemoryStream(decodedInventory);
+            await using var decompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress);
 
-            await using var reader = new TagReader(new GZipStream(compressedStream, CompressionMode.Decompress),
-                FormatOptions.Java);
+            var reader = new NbtReader(decompressedStream, true);
 
-            var tag = reader.ReadTag<CompoundTag>();
-            var stringTag = tag.ToJsonString();
-            return JsonSerializer.Deserialize<object>(stringTag);
+            var tag = reader.ReadAsTag();
+            return tag.ToJson();
         } catch (Exception e) {
             Console.WriteLine(e);
             return null;

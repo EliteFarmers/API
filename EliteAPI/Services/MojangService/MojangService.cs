@@ -65,8 +65,8 @@ public partial class MojangService : IMojangService
     public async Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid)
     {
         var account = await _context.MinecraftAccounts
-            .AsNoTracking()
             .Where(mc => mc.Id.Equals(uuid))
+            .AsNoTracking()
             .FirstOrDefaultAsync();
 
         if (account is null || account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown))

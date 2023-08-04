@@ -26,7 +26,7 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.Pets, opt => opt.MapFrom(x => x.Pets))
             .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills))
             .ForMember(x => x.BankBalance, opt => opt.MapFrom(x => x.Profile.BankBalance))
-            .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.FarmingWeight))
+            .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming))
             .ForMember(x => x.Inventories, opt => opt.MapFrom(x => x.Inventories))
             .ForMember(x => x.Unparsed, opt => opt.MapFrom(x => x.Unparsed))
             .ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api));
@@ -34,7 +34,7 @@ public class ProfileMemberMapper : Profile
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
             .ForMember(x => x.Username, opt => opt.MapFrom(x => x.MinecraftAccount.Name))
-            .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.FarmingWeight.TotalWeight))
+            .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming.TotalWeight))
             .ForMember(x => x.Active, opt => opt.MapFrom(x => !x.WasRemoved));
     }
 }
@@ -50,6 +50,6 @@ public class ApiDataMapper : Profile {
 
 public class InventoriesMapper : Profile {
     public InventoriesMapper() {
-        CreateMap<Inventories, InventoriesDto>();
+        CreateMap<Models.Entities.Hypixel.Inventories, InventoriesDto>();
     }
 }
