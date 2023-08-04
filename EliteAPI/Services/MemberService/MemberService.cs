@@ -137,6 +137,7 @@ public class MemberService : IMemberService {
         }
         
         minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        _context.MinecraftAccounts.Update(minecraftAccount);
 
         await _context.SaveChangesAsync();
     }
