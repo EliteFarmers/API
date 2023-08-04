@@ -137,10 +137,15 @@ public static class ServiceExtensions
         {
             Path = "Config/Leaderboards.json",
         });
+        builder.Configuration.Sources.Add(new JsonConfigurationSource()
+        {
+            Path = "Config/FarmingItems.json",
+        });
         
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
         builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
+        builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("FarmingItems"));
 
         builder.Services.Configure<ConfigApiRateLimitSettings>(
             builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));

@@ -50,6 +50,8 @@ public class ApiDataMapper : Profile {
 
 public class InventoriesMapper : Profile {
     public InventoriesMapper() {
-        CreateMap<Models.Entities.Hypixel.Inventories, InventoriesDto>();
+        CreateMap<Models.Entities.Hypixel.Inventories, InventoriesDto>()
+            .ForMember(x => x.Talismans, opt => opt.MapFrom(x => x.TalismanBag))
+            .ForMember(x => x.Vault, opt => opt.MapFrom(x => x.PersonalVault));
     }
 }

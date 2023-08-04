@@ -29,7 +29,14 @@ public class Farming
     public ProfileMember? ProfileMember { get; set; }
 }
 
-[Owned]
+public class FarmingFortune {
+    public int BaseCalculatedFortune { get; set; } = new();
+    
+    public Dictionary<Crop, int> CropCalculatedFortune { get; set; } = new();
+    public Dictionary<string, int> GlobalFortuneSources { get; set; } = new();
+    public Dictionary<string, int> SpecificFortuneSources { get; set; } = new();
+}
+
 public class FarmingInventory
 {
     [Column(TypeName = "jsonb")]
@@ -42,10 +49,16 @@ public class FarmingInventory
     public List<object> Equipment { get; set; } = new();
 }
 
-public class FarmingFortune {
-    public int BaseCalculatedFortune { get; set; } = new();
+public class FarmingTool {
+    public string? Name { get; set; }
+    public Crop Crop { get; set; }
     
-    public Dictionary<Crop, int> CropCalculatedFortune { get; set; } = new();
-    public Dictionary<string, int> GlobalFortuneSources { get; set; } = new();
-    public Dictionary<string, int> SpecificFortuneSources { get; set; } = new();
+    public string? Id { get; set; }
+    public string? Uuid { get; set; }
+    
+    public long Cultivating { get; set; }
+    public long Counter { get; set; }
+    
+    public Dictionary<string, int> Enchantments { get; set; } = new();
 }
+

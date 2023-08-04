@@ -6,18 +6,18 @@ public class InventoriesDto {
     public string? Armor { get; set; }
     public string? Wardrobe { get; set; }
     public string? Equipment { get; set; }
-    public string? PersonalVault { get; set; }
-    public string? TalismanBag { get; set; }
+    public string? Vault { get; set; }
+    public string? Talismans { get; set; }
     public List<string>? Backpacks { get; set; } 
 }
 
 public class DecodedInventoriesDto {
-    public object? Inventory { get; set; }
-    public object? EnderChest { get; set; }
-    public object? Armor { get; set; }
-    public object? Wardrobe { get; set; }
-    public object? Equipment { get; set; }
-    public object? PersonalVault { get; set; }
-    public object? TalismanBag { get; set; }
-    public List<object>? Backpacks { get; set; } 
+    public List<ItemDto?>? Inventory { get; set; }
+    public List<ItemDto?>? EnderChest { get; set; }
+    public List<ItemDto?>? Armor { get; set; }
+    public List<ItemDto?>? Wardrobe { get; set; }
+    public List<ItemDto?>? Equipment { get; set; }
+    public List<ItemDto?>? Vault { get; set; }
+    public List<ItemDto?>? Talismans { get; set; }
+    public object? Backpacks { get; set; } 
 }

@@ -212,7 +212,7 @@ public class ProfileParser
         member.ParseFarmingWeight(profile.CraftedMinions);
         member.ParseInventory(incomingData);
 
-        _context.FarmingWeights.Update(member.Farming);
+        _context.Farming.Update(member.Farming);
         _context.ProfileMembers.Update(member);
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
