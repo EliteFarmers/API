@@ -1,4 +1,4 @@
-﻿using EliteAPI.Mappers.Profiles;
+﻿using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Tests.ParserTests;
 

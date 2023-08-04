@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Mappers.Profiles;
+namespace EliteAPI.Parsers.Profiles;
 
 public static class CraftedMinionParser
 {

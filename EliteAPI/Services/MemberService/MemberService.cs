@@ -2,7 +2,7 @@
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Mappers.Skyblock;
+using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;

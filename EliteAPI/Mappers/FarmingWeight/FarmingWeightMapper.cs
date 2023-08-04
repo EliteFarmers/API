@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
 
-namespace EliteAPI.Mappers.FarmingWeight;
+namespace EliteAPI.Parsers.FarmingWeight;
 
 public class FarmingWeightMapper : Profile
 {

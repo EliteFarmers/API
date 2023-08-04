@@ -6,7 +6,7 @@ using EliteAPI.Models.Entities.Hypixel;
 using McProtoNet.NBT;
 using Microsoft.IdentityModel.Tokens;
 
-namespace EliteAPI.Mappers.Inventories; 
+namespace EliteAPI.Parsers.Inventories; 
 
 public static class InventoryParser {
     

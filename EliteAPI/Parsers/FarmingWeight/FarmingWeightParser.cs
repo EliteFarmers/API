@@ -4,7 +4,7 @@ using EliteAPI.Config.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 
-namespace EliteAPI.Mappers.FarmingWeight;
+namespace EliteAPI.Parsers.FarmingWeight;
 
 public static class FarmingWeightParser
 {
