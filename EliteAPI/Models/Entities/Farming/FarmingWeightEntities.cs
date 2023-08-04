@@ -5,16 +5,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Farming;
 
+[Table("FarmingWeights")] // Previous table name
 public class Farming
 {
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     
     [Column(TypeName = "jsonb")]
-    public FarmingInventory Inventory { get; set; } = new();
+    public FarmingInventory? Inventory { get; set; } = new();
     
     [Column(TypeName = "jsonb")]
-    public FarmingFortune Fortune { get; set; } = new();
+    public FarmingFortune? Fortune { get; set; } = new();
     
     public double TotalWeight { get; set; } = 0;
     

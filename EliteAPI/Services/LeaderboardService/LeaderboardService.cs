@@ -294,7 +294,7 @@ public class LeaderboardService : ILeaderboardService {
         {
             case "farmingweight":
                 return (from member in query
-                    join farmingWeight in _context.FarmingWeights on member.Id equals farmingWeight.ProfileMemberId
+                    join farmingWeight in _context.Farming on member.Id equals farmingWeight.ProfileMemberId
                     where farmingWeight.TotalWeight > 0
                     orderby farmingWeight.TotalWeight descending
                     select new LeaderboardEntry {

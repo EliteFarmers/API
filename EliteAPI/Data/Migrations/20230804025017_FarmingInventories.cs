@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EliteAPI.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class FarmingInventory : Migration
+    public partial class FarmingInventories : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,13 +30,13 @@ namespace EliteAPI.Data.Migrations
                 name: "Fortune",
                 table: "FarmingWeights",
                 type: "jsonb",
-                nullable: false);
+                nullable: true);
 
             migrationBuilder.AddColumn<FarmingInventory>(
                 name: "Inventory",
                 table: "FarmingWeights",
                 type: "jsonb",
-                nullable: false);
+                nullable: true);
         }
 
         /// <inheritdoc />

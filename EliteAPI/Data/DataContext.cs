@@ -46,7 +46,7 @@ public class DataContext : DbContext
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
-    public DbSet<Farming> FarmingWeights { get; set; } = null!;
+    public DbSet<Farming> Farming { get; set; } = null!;
 
     // Discord
     public DbSet<Guild> Guilds { get; set; } = null!;

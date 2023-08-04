@@ -52,7 +52,7 @@ public class WeightController : ControllerBase
             .Select(x => x.Farming.Id)
             .ToListAsync();
 
-        var farmingWeights = await _context.FarmingWeights
+        var farmingWeights = await _context.Farming
             .AsNoTracking()
             .Where(x => farmingWeightIds.Contains(x.Id))
             .Include(x => x.ProfileMember)
