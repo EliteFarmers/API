@@ -14,13 +14,18 @@ public static class FarmingInventoryParser {
         
         if (memberData.InventoryContents is null) return farming;
         
-        await farming.PopulateFrom(memberData.InventoryContents?.Data);
-        await farming.PopulateFrom(memberData.EnderChestContents?.Data);
-        await farming.PopulateFrom(memberData.PersonalVaultContents?.Data);
-        await Task.WhenAll(memberData.BackpackContents?.Values.Select(i => farming.PopulateFrom(i.Data)) ?? new List<Task>());
-        await farming.PopulateFrom(memberData.Armor?.Data);
-        await farming.PopulateFrom(memberData.WardrobeContents?.Data);
-        await farming.PopulateFrom(memberData.EquipmentContents?.Data);
+        var tasks = new List<Task> {
+            farming.PopulateFrom(memberData.InventoryContents?.Data),
+            farming.PopulateFrom(memberData.EnderChestContents?.Data),
+            farming.PopulateFrom(memberData.PersonalVaultContents?.Data),
+            farming.PopulateFrom(memberData.Armor?.Data),
+            farming.PopulateFrom(memberData.WardrobeContents?.Data),
+            farming.PopulateFrom(memberData.EquipmentContents?.Data)
+        };
+        tasks.AddRange(memberData.BackpackContents?.Values
+            .Select(i => farming.PopulateFrom(i.Data)) ?? new List<Task>());
+
+        await Task.WhenAll(tasks);
 
         return farming;
     }
