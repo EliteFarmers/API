@@ -1,6 +1,4 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
-
-namespace EliteAPI.Models.DTOs.Outgoing;
+﻿namespace EliteAPI.Models.DTOs.Outgoing;
 
 public class FarmingWeightDto
 {

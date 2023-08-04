@@ -12,11 +12,15 @@ public class HypixelService : IHypixelService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly RateLimiter _rateLimiter;
     private int _requestsPerMinute;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<HypixelService> _logger;
 
-    public HypixelService(IHttpClientFactory httpClientFactory)
+    public HypixelService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<HypixelService> logger)
     {
         GetRequestLimit();
         _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
+        _logger = logger;
 
         var tokensPerBucket = (int) Math.Floor(_requestsPerMinute / 6f);
         _rateLimiter = new TokenBucketRateLimiter(new TokenBucketRateLimiterOptions
@@ -37,7 +41,7 @@ public class HypixelService : IHypixelService
         try
         {
             var data = await client.GetFromJsonAsync<RawProfilesResponse>($"https://api.hypixel.net/skyblock/profiles?uuid={uuid}");
-
+            
             if (data is not { Success: true })
             {
                 return new NotFoundResult();
@@ -46,7 +50,7 @@ public class HypixelService : IHypixelService
             return data;
         } catch (Exception e)
         {
-            Console.Error.WriteLine(e);
+            _logger.LogError(e, "Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, e);
         }
 
         return new BadRequestResult();
@@ -71,7 +75,7 @@ public class HypixelService : IHypixelService
             return data;
         } catch (Exception e)
         {
-            Console.Error.WriteLine(e);
+            _logger.LogError(e, "Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, e);
         }
 
         return new BadRequestResult();
@@ -79,10 +83,9 @@ public class HypixelService : IHypixelService
 
     private void GetRequestLimit()
     {
-        var limit = Environment.GetEnvironmentVariable("HYPIXEL_REQUEST_LIMIT") ?? "60";
         try
         {
-            _requestsPerMinute = int.Parse(limit);
+            _requestsPerMinute = _configuration.GetValue<int>("HypixelRequestLimit");
         }
         catch (Exception)
         {
