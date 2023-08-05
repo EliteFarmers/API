@@ -1,4 +1,7 @@
-﻿namespace EliteAPI.Models.DTOs.Outgoing; 
+﻿using System.ComponentModel.DataAnnotations;
+using EliteAPI.Models.Entities.Events;
+
+namespace EliteAPI.Models.DTOs.Outgoing; 
 
 public class EventDetailsDto {
     public required string Id { get; set; }
@@ -18,4 +21,23 @@ public class EventDetailsDto {
     public bool Active { get; set; }
     
     public string? GuildId { get; set; }
+}
+
+public class EventMemberDto {
+    public string? PlayerUuid { get; set; }
+    public string? PlayerName { get; set; }
+    public required string EventId { get; set; }
+    
+    public bool Active { get; set; }
+    public string? AmountGained { get; set; }
+
+    public StartConditions StartConditions { get; set; } = new();
+
+    public DateTimeOffset LastUpdated { get; set; }
+    public DateTimeOffset StartTime { get; set; }
+    public DateTimeOffset EndTime { get; set; }
+    
+    public bool Disqualified { get; set; }
+    [MaxLength(128)]
+    public string? Reason { get; set; }
 }

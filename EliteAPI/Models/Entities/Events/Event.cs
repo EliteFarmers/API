@@ -46,8 +46,8 @@ public class EventMember {
     public int Id { get; set; }
     
     public bool Active { get; set; }
+    public double AmountGained { get; set; }
     
-    public long Collected { get; set; }
     [Column(TypeName = "jsonb")]
     public StartConditions StartConditions { get; set; } = new();
 
@@ -73,11 +73,6 @@ public class EventMember {
 }
 
 public class StartConditions {
-    public long Collected { get; set; }
-    public List<Tool> Tools { get; set; } = new();
-}
-
-public class Tool {
-    public required string Uuid { get; set; }
-    public long Collected { get; set; }
+    public Dictionary<Crop, long> Collection { get; set; } = new();
+    public Dictionary<string, long> Tools { get; set; } = new();
 }

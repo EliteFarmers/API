@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
+using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Events; 
 
-[Route("[controller]")]
+[Route("[controller]/{eventId}")]
 [ApiController]
 public class EventController : ControllerBase
 {
@@ -42,18 +45,143 @@ public class EventController : ControllerBase
     }
     
     // GET <EventController>/12793764936498429
-    [HttpGet("{eventId}")]
-    public async Task<ActionResult<EventDetailsDto>> Get(string eventId)
+    [HttpGet]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<EventDetailsDto>> GetEvent(ulong eventId)
     {
-        if (string.IsNullOrWhiteSpace(eventId)) return BadRequest("Invalid event ID.");
-        
         await _discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events
-            .FirstOrDefaultAsync(e => e.Id.Equals(eventId));
+        var eliteEvent = await _context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
 
         return Ok(eliteEvent);
+    }
+    
+    // GET <EventController>/12793764936498429
+    [HttpGet("members")]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<List<EventMemberDto>>> GetEventMembers(ulong eventId)
+    {
+        await _discordService.RefreshBotGuilds();
+        
+        var eliteEvent = await _context.Events.AsNoTracking()
+            .Include(e => e.Members)
+            .ThenInclude(e => e.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        eliteEvent.Members.Sort((a, b) => b.AmountGained > a.AmountGained ? 1 : -1);
+        
+        var members = _mapper.Map<List<EventMemberDto>>(eliteEvent.Members);
+
+        return Ok(members);
+    }
+    
+    // GET <EventController>/12793764936498429
+    [HttpGet("member/{playerUuid}")]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<List<EventMemberDto>>> GetEventMember(ulong eventId, string playerUuid)
+    {
+        var uuid = playerUuid.Replace("-", "");
+        if (uuid is not { Length: 32 }) return BadRequest("Invalid playerUuid");
+        
+        await _discordService.RefreshBotGuilds();
+        
+        var member = await _context.EventMembers.AsNoTracking()
+            .Include(e => e.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EventId == eventId && e.ProfileMember.PlayerUuid == uuid);
+        if (member is null) return NotFound("Event member not found.");
+        
+        var mapped = _mapper.Map<EventMemberDto>(member);
+
+        return Ok(mapped);
+    }
+    
+    // POST <EventController>/12793764936498429/join
+    [HttpPost("")]
+    [ServiceFilter(typeof(DiscordAuthFilter))]
+    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId)
+    {
+        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+        
+        await _discordService.RefreshBotGuilds();
+        
+        var eliteEvent = await _context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
+
+        if (userGuild is null) {
+            return NotFound("You need to be in the event's Discord server in order to join!");
+        }
+        
+        var selectedAccount = account.MinecraftAccounts.FirstOrDefault(a => a.Selected);
+        
+        if (selectedAccount is null) {
+            return NotFound("You need to have a linked Minecraft account in order to join!");
+        }
+        
+        var member = await _context.EventMembers.AsNoTracking()
+            .Include(e => e.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EventId == eventId && e.ProfileMember.PlayerUuid == selectedAccount.Id);
+        
+        if (member is not null) {
+            return BadRequest("You are already a member of this event!");
+        }
+        
+        var profileMember = await _context.ProfileMembers.AsNoTracking()
+            .Include(p => p.MinecraftAccount)
+            .Include(p => p.Farming)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.PlayerUuid == selectedAccount.Id);
+
+        if (profileMember?.Farming is null) {
+            return BadRequest("Profile member data not found, please try again later.");
+        }
+        
+        if (!profileMember.Api.Collections) {
+            return BadRequest("Collections API needs to be enabled in order to join this event.");
+        }
+
+        if (!profileMember.Api.Inventories) {
+            return BadRequest("Inventories API needs to be enabled in order to join this event.");
+        }
+        
+        if (profileMember.Farming.Inventory?.Tools is null || profileMember.Farming.Inventory.Tools.Count == 0) {
+            return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
+        }
+        
+        var newMember = new EventMember {
+            EventId = eliteEvent.Id,
+            ProfileMemberId = profileMember.Id,
+            AmountGained = profileMember.Farming.TotalWeight,
+            
+            Active = eliteEvent.Active,
+            
+            LastUpdated = DateTimeOffset.UtcNow,
+            StartTime = eliteEvent.StartTime,
+            EndTime = eliteEvent.EndTime,
+
+            Disqualified = false,
+            Reason = null
+        };
+        
+        eliteEvent.Members.Add(newMember);
+        _context.EventMembers.Add(newMember);
+        await _context.SaveChangesAsync();
+        
+        return Ok();
     }
 }
