@@ -36,6 +36,13 @@ public class GuildFeatures {
     
     public bool VerifiedRoleEnabled { get; set; }
     public VerifiedRoleFeature? VerifiedRole { get; set; }
+    
+    public bool EventsEnabled { get; set; }
+    public GuildEventSettings EventSettings { get; set; } = new();
+}
+
+public class GuildEventSettings {
+    public int MaxEvents { get; set; } = 1;
 }
 
 public class GuildJacobLeaderboardFeature {

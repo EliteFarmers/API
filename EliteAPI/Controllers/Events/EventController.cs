@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Events; 
 
-[Route("[controller]/{eventId}")]
+[Route("[controller]")]
 [ApiController]
 public class EventController : ControllerBase
 {
@@ -22,23 +22,38 @@ public class EventController : ControllerBase
         _discordService = discordService;
     }
     
-    // GET <EventController>/12793764936498429
+    // GET <EventController>s/
+    [Route("/[controller]s")]
     [HttpGet]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    public async Task<ActionResult<List<EventDetailsDto>>> GetUpcoming()
+    {
+        await _discordService.RefreshBotGuilds();
+        
+        var events = await _context.Events
+            .Where(e => e.EndTime > DateTimeOffset.UtcNow)
+            .OrderBy(e => e.StartTime)
+            .AsNoTracking()
+            .ToListAsync();
+        
+        var eventDetails = _mapper.Map<List<EventDetailsDto>>(events);
+        
+        return Ok(eventDetails);
+    }
+    
+    // GET <EventController>/12793764936498429
+    [HttpGet("{eventId}")]
     public async Task<ActionResult<EventDetailsDto>> Get(string eventId)
     {
         if (string.IsNullOrWhiteSpace(eventId)) return BadRequest("Invalid event ID.");
         
         await _discordService.RefreshBotGuilds();
         
-        var @event = await _context.Events
+        var eliteEvent = await _context.Events
             .FirstOrDefaultAsync(e => e.Id.Equals(eventId));
-        if (@event is null) return NotFound("Event not found.");
+        if (eliteEvent is null) return NotFound("Event not found.");
         
 
-        return Ok(@event);
+        return Ok(eliteEvent);
     }
-    
-    // GET <EventController>/12793764936498429/players
-    
-    
 }
