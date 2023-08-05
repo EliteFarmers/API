@@ -122,9 +122,6 @@ public class MemberService : IMemberService {
         var player = data.Value;
 
         if (player?.Player is null) return;
-        
-        _logger.LogInformation("Updating player data for {PlayerUuid}", playerUuid);
-        if (account is not null) _logger.LogInformation("Account state: {State}", _context.Entry(account).State);
 
         var minecraftAccount = account ?? await _mojangService.GetMinecraftAccountByUuid(playerUuid);
         if (minecraftAccount is null) return;
