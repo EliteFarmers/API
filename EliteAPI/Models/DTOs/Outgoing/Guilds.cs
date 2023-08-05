@@ -42,6 +42,9 @@ public class PublicGuildDto {
 public class PublicGuildFeaturesDto {
     public bool JacobLeaderboardEnabled { get; set; }
     public PublicJacobLeaderboardFeatureDto? JacobLeaderboard { get; set; }
+    
+    public bool EventsEnabled { get; set; }
+    // public List<EventDetailsDto>? Events { get; set; }
 }
 
 public class PublicJacobLeaderboardFeatureDto {
