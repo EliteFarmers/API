@@ -40,8 +40,8 @@ app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
 
-app.UseMetricServer(9102);
-app.UseHttpMetrics();
+//app.UseMetricServer(9102);
+//app.UseHttpMetrics();
 
 app.UseSwagger(opt => {
     opt.RouteTemplate = "{documentName}/swagger.json";
@@ -54,7 +54,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapMetrics();
+//app.MapMetrics();
 
 using (var scope = app.Services.CreateScope())
 {

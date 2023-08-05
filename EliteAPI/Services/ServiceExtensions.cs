@@ -29,7 +29,7 @@ public static class ServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         // Add services to the container.
-        services.AddSingleton<MetricsService>();
+        // services.AddSingleton<MetricsService>();
         services.AddSingleton<HypixelRequestLimiter>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
