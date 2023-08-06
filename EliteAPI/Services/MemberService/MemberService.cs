@@ -9,6 +9,7 @@ using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 namespace EliteAPI.Services.MemberService; 
 
@@ -18,12 +19,14 @@ public class MemberService : IMemberService {
     private readonly IMojangService _mojangService;
     private readonly ConfigCooldownSettings _coolDowns;
     private readonly IServiceScopeFactory _provider;
+    private readonly IConnectionMultiplexer _redis;
 
-    public MemberService(DataContext context, IServiceScopeFactory provider, IMojangService mojangService, IOptions<ConfigCooldownSettings> coolDowns) {
+    public MemberService(DataContext context, IServiceScopeFactory provider, IMojangService mojangService, IOptions<ConfigCooldownSettings> coolDowns, IConnectionMultiplexer redis) {
         _context = context;
         _provider = provider;
         _mojangService = mojangService;
         _coolDowns = coolDowns.Value;
+        _redis = redis;
     }
     
     public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {
@@ -93,15 +96,25 @@ public class MemberService : IMemberService {
     
     private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account) {
         var playerUuid = lastUpdated.PlayerUuid;
+        var db = _redis.GetDatabase();
         
         // Refresh tasks are done in separate scopes to prevent DataContext concurrency issues
         
         var tasks = new List<Task>();
-        if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
+
+        if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown) 
+            && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) 
+        {
+            db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(10));
+            
             tasks.Add(RefreshProfiles(playerUuid));
         }
         
-        if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown)) {
+        if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown) 
+            && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) 
+        {
+            db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(10));
+            
             tasks.Add(RefreshPlayerData(playerUuid, account));
         }
         

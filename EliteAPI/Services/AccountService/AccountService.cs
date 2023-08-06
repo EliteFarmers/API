@@ -1,5 +1,7 @@
 ﻿using EliteAPI.Data;
 using EliteAPI.Models.Entities;
+using EliteAPI.Services.MemberService;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +10,11 @@ namespace EliteAPI.Services.AccountService;
 public class AccountService : IAccountService
 {
     private readonly DataContext _context;
-    public AccountService(DataContext context)
+    private readonly IMemberService _memberService;
+    public AccountService(DataContext context, IMemberService memberService)
     {
         _context = context;
+        _memberService = memberService;
     }
 
     public Task<AccountEntity?> GetAccountByIgnOrUuid(string ignOrUuid) {
@@ -50,7 +54,7 @@ public class AccountService : IAccountService
         if (account is null) {
             return new UnauthorizedObjectResult("Account not found.");
         }
-
+        
         // Remove dashes from id
         var id = playerUuidOrIgn.Replace("-", "");
 
@@ -66,6 +70,16 @@ public class AccountService : IAccountService
             .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
             .FirstOrDefaultAsync();
 
+        if (playerData is not null && playerData.LastUpdated.OlderThanSeconds(120)) {
+            await _memberService.RefreshPlayerData(id);
+            
+            playerData = await _context.PlayerData
+                .Include(pd => pd.MinecraftAccount)
+                .Include(pd => pd.SocialMedia)
+                .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
+                .FirstOrDefaultAsync();
+        }
+        
         if (playerData?.MinecraftAccount is null)
         {
             return new BadRequestObjectResult("No Minecraft account found. Please ensure you entered the correct player name or try looking up their stats first.");
