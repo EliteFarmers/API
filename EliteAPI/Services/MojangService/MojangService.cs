@@ -1,9 +1,6 @@
 ﻿using EliteAPI.Data;
 using EliteAPI.Models.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Text.RegularExpressions;
 using EliteAPI.Config.Settings;
 using EliteAPI.Services.CacheService;

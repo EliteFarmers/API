@@ -42,10 +42,16 @@ public static class JacobContestParser
         ).ToList();
         
         // Fetch contests from database
-        var fetchedContests = await context.JacobContests
-            .Where(j => keys.Contains(j.Id))
-            .ToDictionaryAsync(j => j.Id);
-
+        var fetchedContests = new Dictionary<long, JacobContest>();
+            
+        try {
+            fetchedContests = await context.JacobContests
+                .Where(j => keys.Contains(j.Id))
+                .ToDictionaryAsync(j => j.Id);
+        } catch (Exception e) {
+            Console.Error.WriteLine(e);
+        }
+        
         var newParticipations = new List<ContestParticipation>();
         foreach (var (key, contest) in contestsToFetch)
         {

@@ -2,13 +2,11 @@
 using EliteAPI.Data;
 using EliteAPI.Services;
 using EliteAPI.Services.MojangService;
-using AutoMapper;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.FarmingWeight;
-using EliteAPI.Parsers.Inventories;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
@@ -20,10 +18,8 @@ public class ProfileParser
 {
     private readonly DataContext _context;
     private readonly IMojangService _mojangService;
-    private readonly IMapper _mapper;
-    private readonly ICacheService _cache;
     private readonly ILeaderboardService _leaderboardService;
-    private readonly ILogger<ProfileParser> _logger;
+    private readonly IServiceScopeFactory _provider;
 
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
@@ -38,15 +34,14 @@ public class ProfileParser
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
-    
-    public ProfileParser(DataContext context, IMojangService mojangService, IMapper mapper, ICacheService cacheService, ILeaderboardService leaderboardService, ILogger<ProfileParser> logger)
+
+
+    public ProfileParser(DataContext context, IMojangService mojangService, IServiceScopeFactory provider, ILeaderboardService leaderboardService)
     {
         _context = context;
         _mojangService = mojangService;
-        _mapper = mapper;
-        _cache = cacheService;
+        _provider = provider;
         _leaderboardService = leaderboardService;
-        _logger = logger;
     }
 
     public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
@@ -61,7 +56,7 @@ public class ProfileParser
         await _context.SaveChangesAsync();
     }
 
-    public async Task TransformSingleProfile(RawProfileData profile, string? playerUuid)
+    private async Task TransformSingleProfile(RawProfileData profile, string? playerUuid)
     {
         var members = profile.Members;
         if (members.Count == 0) return;
@@ -120,7 +115,7 @@ public class ProfileParser
         }
     }
 
-    public async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
+    private async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
     {
         var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
 
@@ -191,14 +186,18 @@ public class ProfileParser
             TempStatBuffs = incomingData.TempStatBuffs,
             AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
         };
-
+        
         member.ParseJacob(incomingData.Jacob);
         await _context.SaveChangesAsync();
         
-        await member.ParseJacobContests(incomingData.Jacob, _context, _cache);
-
         member.ParseSkills(incomingData);
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
+        
+        // Fire and forget
+        #pragma warning disable CS4014
+        Task.Run(() => AddTimeScaleRecords(member.Id));
+        Task.Run(() => ParseJacobContests(member.Id, incomingData));
+        #pragma warning restore CS4014
 
         profile.CombineMinions(incomingData.CraftedGenerators);
         
@@ -209,7 +208,6 @@ public class ProfileParser
         _context.JacobData.Update(member.JacobData);
         _context.Profiles.Update(profile);
         
-        await AddTimeScaleRecords(member);
         UpdateLeaderboards(member);
 
         await _context.SaveChangesAsync();
@@ -223,7 +221,31 @@ public class ProfileParser
         _leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
     }
 
-    private async Task AddTimeScaleRecords(ProfileMember member) {
+    private async Task ParseJacobContests(Guid memberId, RawMemberData incomingData) {
+        using var scope = _provider.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+        var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+        
+        var member = await context.ProfileMembers
+            .Include(p => p.JacobData)
+            .ThenInclude(j => j.Contests)
+            .ThenInclude(c => c.JacobContest)
+            .FirstOrDefaultAsync(p => p.Id == memberId);
+        if (member is null) return;
+
+        await member.ParseJacobContests(incomingData.Jacob, context, cache);
+    }
+
+    private async Task AddTimeScaleRecords(Guid memberId) {
+        using var scope = _provider.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+        
+        var member = await context.ProfileMembers
+            .Include(p => p.Collections)
+            .Include(p => p.Skills)
+            .FirstOrDefaultAsync(p => p.Id == memberId);
+        if (member is null) return;
+        
         var cropCollection = new CropCollection {
             Time = DateTimeOffset.UtcNow,
             
@@ -242,7 +264,7 @@ public class ProfileParser
             ProfileMemberId = member.Id,
             ProfileMember = member,
         };
-        await _context.CropCollections.SingleInsertAsync(cropCollection);
+        await context.CropCollections.SingleInsertAsync(cropCollection);
         
         var skillExp = new SkillExperience {
             Time = DateTimeOffset.UtcNow,
@@ -261,6 +283,8 @@ public class ProfileParser
             ProfileMemberId = member.Id,
             ProfileMember = member,
         };
-        await _context.SkillExperiences.SingleInsertAsync(skillExp);
+        await context.SkillExperiences.SingleInsertAsync(skillExp);
+
+        await context.SaveChangesAsync();
     }
 }

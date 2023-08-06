@@ -21,9 +21,11 @@ public class MemberService : IMemberService {
     private readonly ProfileParser _parser;
     private readonly IMapper _mapper;
     private readonly ILogger<MemberService> _logger;
+    private readonly IServiceScopeFactory _provider;
 
-    public MemberService(DataContext context, IMojangService mojangService, IHypixelService hypixelService, ProfileParser profileParser, IOptions<ConfigCooldownSettings> coolDowns, IMapper mapper, ILogger<MemberService> logger) {
+    public MemberService(DataContext context, IServiceScopeFactory provider, IMojangService mojangService, IHypixelService hypixelService, ProfileParser profileParser, IOptions<ConfigCooldownSettings> coolDowns, IMapper mapper, ILogger<MemberService> logger) {
         _context = context;
+        _provider = provider;
         _mojangService = mojangService;
         _hypixelService = hypixelService;
         _parser = profileParser;
@@ -100,34 +102,49 @@ public class MemberService : IMemberService {
     private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account) {
         var playerUuid = lastUpdated.PlayerUuid;
         
-        if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
-            await RefreshProfiles(playerUuid);
+        // Refresh tasks are done in separate scopes to prevent DataContext concurrency issues
+        
+        var tasks = new List<Task>();
+        if (true || lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
+            tasks.Add(RefreshProfiles(playerUuid));
         }
         
-        if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown)) {
-            await RefreshPlayerData(playerUuid, account);
+        if (true || lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown)) {
+            tasks.Add(RefreshPlayerData(playerUuid, account));
         }
+        
+        await Task.WhenAll(tasks);
     }
 
     public async Task RefreshProfiles(string playerUuid) {
-        var data = await _hypixelService.FetchProfiles(playerUuid);
+        using var scope = _provider.CreateScope();
+        var parser = scope.ServiceProvider.GetRequiredService<ProfileParser>();
+        var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
+        
+        var data = await hypixelService.FetchProfiles(playerUuid);
 
         if (data.Value is null) return;
         
-        await _parser.TransformProfilesResponse(data.Value, playerUuid);
+        await parser.TransformProfilesResponse(data.Value, playerUuid);
     }
     
     public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {
-        var data = await _hypixelService.FetchPlayer(playerUuid);
+        using var scope = _provider.CreateScope();
+        await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+        var mojangService = scope.ServiceProvider.GetRequiredService<IMojangService>();
+        var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
+        var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+        
+        var data = await hypixelService.FetchPlayer(playerUuid);
         var player = data.Value;
 
         if (player?.Player is null) return;
 
-        var minecraftAccount = account ?? await _mojangService.GetMinecraftAccountByUuid(playerUuid);
+        var minecraftAccount = account ?? await mojangService.GetMinecraftAccountByUuid(playerUuid);
         if (minecraftAccount is null) return;
         
-        var existing = await _context.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
-        var playerData = _mapper.Map<PlayerData>(player.Player);
+        var existing = await context.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
+        var playerData = mapper.Map<PlayerData>(player.Player);
         
         if (existing is null) {
             playerData.Uuid = minecraftAccount.Id;
@@ -135,23 +152,23 @@ public class MemberService : IMemberService {
             minecraftAccount.PlayerData = playerData;
             minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             
-            _context.PlayerData.Add(playerData);
+            context.PlayerData.Add(playerData);
         } else {
-            _mapper.Map(playerData, existing);
+            mapper.Map(playerData, existing);
 
             if (existing.MinecraftAccount is not null) {
                 existing.MinecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             } else {
                 minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                if (_context.Entry(minecraftAccount).State == EntityState.Detached) {
-                    _context.Entry(minecraftAccount).State = EntityState.Modified;
+                if (context.Entry(minecraftAccount).State == EntityState.Detached) {
+                    context.Entry(minecraftAccount).State = EntityState.Modified;
                 }
             }
             
-            _context.PlayerData.Update(existing);
+            context.PlayerData.Update(existing);
         }
         
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 }
 
