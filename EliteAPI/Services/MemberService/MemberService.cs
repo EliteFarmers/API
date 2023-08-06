@@ -17,21 +17,13 @@ public class MemberService : IMemberService {
     private readonly DataContext _context;
     private readonly IMojangService _mojangService;
     private readonly ConfigCooldownSettings _coolDowns;
-    private readonly IHypixelService _hypixelService;
-    private readonly ProfileParser _parser;
-    private readonly IMapper _mapper;
-    private readonly ILogger<MemberService> _logger;
     private readonly IServiceScopeFactory _provider;
 
-    public MemberService(DataContext context, IServiceScopeFactory provider, IMojangService mojangService, IHypixelService hypixelService, ProfileParser profileParser, IOptions<ConfigCooldownSettings> coolDowns, IMapper mapper, ILogger<MemberService> logger) {
+    public MemberService(DataContext context, IServiceScopeFactory provider, IMojangService mojangService, IOptions<ConfigCooldownSettings> coolDowns) {
         _context = context;
         _provider = provider;
         _mojangService = mojangService;
-        _hypixelService = hypixelService;
-        _parser = profileParser;
         _coolDowns = coolDowns.Value;
-        _mapper = mapper;
-        _logger = logger;
     }
     
     public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {
@@ -137,7 +129,7 @@ public class MemberService : IMemberService {
         
         var data = await hypixelService.FetchPlayer(playerUuid);
         var player = data.Value;
-
+        
         if (player?.Player is null) return;
 
         var minecraftAccount = account ?? await mojangService.GetMinecraftAccountByUuid(playerUuid);
