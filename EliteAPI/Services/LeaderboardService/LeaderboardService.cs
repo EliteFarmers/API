@@ -106,7 +106,7 @@ public class LeaderboardService : ILeaderboardService {
 
         // Can't use parallel foreach because of database connection
         foreach (var lbId in _settings.Leaderboards.Keys) {
-            if (true || !await db.KeyExistsAsync($"lb:{lbId}")) await FetchLeaderboard(lbId);
+            if (!await db.KeyExistsAsync($"lb:{lbId}")) await FetchLeaderboard(lbId);
             var rank = await db.SortedSetRankAsync($"lb:{lbId}", memberId, Order.Descending);
             result.misc.Add(lbId, rank.HasValue ? (int) rank.Value + 1 : -1);
         }
