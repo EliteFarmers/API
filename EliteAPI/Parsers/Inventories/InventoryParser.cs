@@ -1,7 +1,7 @@
 ﻿using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 
-namespace EliteAPI.Mappers.Inventories; 
+namespace EliteAPI.Parsers.Inventories; 
 
 public static class InventoryParser {
     

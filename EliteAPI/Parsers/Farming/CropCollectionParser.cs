@@ -3,7 +3,7 @@ using EliteAPI.Config.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 
-namespace EliteAPI.Mappers.Farming; 
+namespace EliteAPI.Parsers.Farming; 
 
 public static class CropCollectionParser {
 

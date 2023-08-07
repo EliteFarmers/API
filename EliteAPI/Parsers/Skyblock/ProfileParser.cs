@@ -6,13 +6,14 @@ using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
-using EliteAPI.Mappers.Farming;
-using EliteAPI.Mappers.Profiles;
+using EliteAPI.Parsers.Farming;
+using EliteAPI.Parsers.Profiles;
+using EliteAPI.Parsers.Events;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
-namespace EliteAPI.Mappers.Skyblock;
+namespace EliteAPI.Parsers.Skyblock;
 
 public class ProfileParser
 {
@@ -31,6 +32,7 @@ public class ProfileParser
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(c => c.JacobContest)
+                .Include(p => p.EventEntries)
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
@@ -202,6 +204,13 @@ public class ProfileParser
         profile.CombineMinions(incomingData.CraftedGenerators);
         
         await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
+
+        // Load progress for all active events (if any)
+        if (member.EventEntries is { Count: > 0 }) {
+            foreach (var entry in member.EventEntries) {
+                entry.LoadProgress(member);
+            }
+        }
 
         _context.Farming.Update(member.Farming);
         _context.ProfileMembers.Update(member);

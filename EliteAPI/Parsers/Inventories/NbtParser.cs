@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using McProtoNet.NBT;
 using Microsoft.IdentityModel.Tokens;
 
-namespace EliteAPI.Mappers.Inventories; 
+namespace EliteAPI.Parsers.Inventories; 
 
 public static class NbtParser {
 

@@ -20,5 +20,9 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.AmountGained, opt => opt.MapFrom(e => e.AmountGained.ToString(CultureInfo.InvariantCulture)));
+        
+        CreateMap<EventMember, EventMemberDetailsDto>()
+            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.AmountGained, opt => opt.MapFrom(e => e.AmountGained.ToString(CultureInfo.InvariantCulture)));
     }
 }
