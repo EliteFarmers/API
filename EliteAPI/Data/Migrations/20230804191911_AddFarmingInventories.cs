@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Farming;
 using Microsoft.EntityFrameworkCore.Migrations;
 
