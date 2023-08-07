@@ -72,7 +72,7 @@ public class EventMember {
     public DateTimeOffset EndTime { get; set; }
     
     [MaxLength(128)]
-    public string? Reason { get; set; }
+    public string? Notes { get; set; }
     
     [ForeignKey("ProfileMember")]
     public Guid ProfileMemberId { get; set; }

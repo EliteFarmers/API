@@ -1,6 +1,9 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using EliteAPI.Config.Settings;
+using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Hypixel;
+using Microsoft.IdentityModel.Tokens;
 
-namespace EliteAPI.Mappers.Farming; 
+namespace EliteAPI.Parsers.Farming; 
 
 public static class FarmingToolParser {
     
@@ -16,17 +19,34 @@ public static class FarmingToolParser {
             
             // Skip if the item is already in the dictionary
             if (existing?.ContainsKey(uuid!) is true) continue;
+
+            var collected = item.ExtractCollected();
+            if (collected == 0) continue;
             
-            if (long.TryParse(item.Attributes?["mined_crops"], out var collected)) {
-                tools.Add(uuid!, collected);
-                continue;
-            }
-            
-            if (long.TryParse(item.Attributes?["farmed_cultivating"], out var cultivated)) {
-                tools.Add(uuid!, cultivated);
-            }
+            tools.Add(uuid!, collected);
         }
         
         return tools;
+    }
+    
+    public static Crop? ExtractCrop(this ItemDto tool) {
+        var toolIds = FarmingItemsConfig.Settings.FarmingToolIds;
+        
+        if (tool.SkyblockId is null) return null;
+        if (!toolIds.ContainsKey(tool.SkyblockId)) return null;
+        
+        return toolIds[tool.SkyblockId];
+    }
+
+    public static long ExtractCollected(this ItemDto tool) {
+        if (long.TryParse(tool.Attributes?["mined_crops"], out var collected)) {
+            return collected;
+        }
+            
+        if (long.TryParse(tool.Attributes?["farmed_cultivating"], out var cultivated)) {
+            return cultivated;
+        }
+        
+        return 0;
     }
 }

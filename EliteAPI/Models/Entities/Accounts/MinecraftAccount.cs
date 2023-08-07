@@ -9,7 +9,10 @@ public class MinecraftAccount
     [Key]
     public required string Id { get; set; }
     public required string Name { get; set; }
+    
+    [ForeignKey("EliteAccount")]
     public ulong? AccountId { get; set; }
+    public EliteAccount? EliteAccount { get; set; }
     
     public bool Selected { get; set; }
     

@@ -6,7 +6,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
-using EliteAPI.Mappers.Farming;
+using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -205,8 +205,11 @@ public class EventController : ControllerBase
                 Tools = profileMember.Farming.ToMapOfCollectedItems()
             };
         }
-
+        
+        profileMember.EventEntries ??= new List<EventMember>();
+        profileMember.EventEntries.Add(newMember);
         eliteEvent.Members.Add(newMember);
+
         _context.EventMembers.Add(newMember);
         
         await _context.SaveChangesAsync();

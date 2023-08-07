@@ -20,6 +20,7 @@ public class AccountService : IAccountService
     public async Task<EliteAccount?> GetAccount(ulong accountId) {
         return await _context.Accounts
             .Include(a => a.MinecraftAccounts)
+            .Include(a => a.EventEntries).AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
 

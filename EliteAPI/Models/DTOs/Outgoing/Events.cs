@@ -42,7 +42,16 @@ public class EventMemberDto {
     
     public bool Disqualified { get; set; }
     [MaxLength(128)]
-    public string? Reason { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class EventMemberDetailsDto {
+    public string? PlayerUuid { get; set; }
+    public string? PlayerName { get; set; }
+    public required string EventId { get; set; }
+    
+    public bool Active { get; set; }
+    public string? AmountGained { get; set; }
 }
 
 public class EditEventDto {
