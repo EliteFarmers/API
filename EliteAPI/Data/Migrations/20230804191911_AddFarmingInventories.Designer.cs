@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;

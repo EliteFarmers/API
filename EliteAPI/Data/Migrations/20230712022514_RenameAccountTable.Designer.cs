@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
