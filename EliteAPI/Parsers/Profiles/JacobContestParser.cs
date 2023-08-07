@@ -6,7 +6,7 @@ using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Z.EntityFramework.Plus;
 
-namespace EliteAPI.Parsers.Profiles;
+namespace EliteAPI.Mappers.Profiles;
 
 public static class JacobContestParser
 {

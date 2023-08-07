@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Parsers.Inventories; 
+namespace EliteAPI.Mappers.Inventories; 
 
 public static class FarmingInventoryParser {
     public static async Task<FarmingInventory> ExtractFarmingItems(this RawMemberData memberData, ProfileMember member) {

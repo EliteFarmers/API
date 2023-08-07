@@ -6,13 +6,13 @@ using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
-using EliteAPI.Parsers.FarmingWeight;
-using EliteAPI.Parsers.Profiles;
+using EliteAPI.Mappers.Farming;
+using EliteAPI.Mappers.Profiles;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
-namespace EliteAPI.Parsers.Skyblock;
+namespace EliteAPI.Mappers.Skyblock;
 
 public class ProfileParser
 {

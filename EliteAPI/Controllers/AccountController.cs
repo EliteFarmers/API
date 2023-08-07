@@ -2,7 +2,7 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;

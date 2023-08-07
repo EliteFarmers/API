@@ -1,12 +1,16 @@
-﻿using AutoMapper;
+﻿using System.Net.Mime;
+using AutoMapper;
 using EliteAPI.Authentication;
+using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Mappers.Farming;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Controllers.Events; 
 
@@ -17,18 +21,21 @@ public class EventController : ControllerBase
     private readonly DataContext _context;
     private readonly IMapper _mapper;
     private readonly IDiscordService _discordService;
+    private readonly ConfigFarmingWeightSettings _weight;
 
-    public EventController(DataContext context, IMapper mapper, IDiscordService discordService)
+    public EventController(DataContext context, IMapper mapper, IDiscordService discordService, IOptions<ConfigFarmingWeightSettings> weight)
     {
         _context = context;
         _mapper = mapper;
         _discordService = discordService;
+        _weight = weight.Value;
     }
     
     // GET <EventController>s/
     [Route("/[controller]s")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<EventDetailsDto>>> GetUpcoming()
     {
         await _discordService.RefreshBotGuilds();
@@ -47,6 +54,9 @@ public class EventController : ControllerBase
     // GET <EventController>/12793764936498429
     [HttpGet]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<EventDetailsDto>> GetEvent(ulong eventId)
     {
         await _discordService.RefreshBotGuilds();
@@ -62,28 +72,37 @@ public class EventController : ControllerBase
     // GET <EventController>/12793764936498429
     [HttpGet("members")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventMemberDto>>> GetEventMembers(ulong eventId)
     {
         await _discordService.RefreshBotGuilds();
-        
+
         var eliteEvent = await _context.Events.AsNoTracking()
-            .Include(e => e.Members)
-            .ThenInclude(e => e.ProfileMember)
-            .ThenInclude(p => p.MinecraftAccount)
-            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        eliteEvent.Members.Sort((a, b) => b.AmountGained > a.AmountGained ? 1 : -1);
+        var members = await _context.EventMembers.AsNoTracking()
+            .Include(e => e.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount)
+            .AsNoTracking()
+            .Where(e => e.EventId == eventId && e.Status != EventMemberStatus.Disqualified)
+            .OrderByDescending(e => e.AmountGained)
+            .ToListAsync();
         
-        var members = _mapper.Map<List<EventMemberDto>>(eliteEvent.Members);
+        var mapped = _mapper.Map<List<EventMemberDto>>(members);
 
-        return Ok(members);
+        return Ok(mapped);
     }
     
     // GET <EventController>/12793764936498429
     [HttpGet("member/{playerUuid}")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventMemberDto>>> GetEventMember(ulong eventId, string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
@@ -104,11 +123,15 @@ public class EventController : ControllerBase
     }
     
     // POST <EventController>/12793764936498429/join
-    [HttpPost("")]
+    [HttpPost("join")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId)
     {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
         
@@ -168,18 +191,24 @@ public class EventController : ControllerBase
             ProfileMemberId = profileMember.Id,
             AmountGained = profileMember.Farming.TotalWeight,
             
-            Active = eliteEvent.Active,
+            Status = eliteEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive,
             
             LastUpdated = DateTimeOffset.UtcNow,
             StartTime = eliteEvent.StartTime,
             EndTime = eliteEvent.EndTime,
-
-            Disqualified = false,
-            Reason = null
         };
-        
+
+        if (eliteEvent.Active) {
+            // Save the start conditions
+            newMember.StartConditions = new StartConditions {
+                Collection = profileMember.ExtractCropCollections(),
+                Tools = profileMember.Farming.ToMapOfCollectedItems()
+            };
+        }
+
         eliteEvent.Members.Add(newMember);
         _context.EventMembers.Add(newMember);
+        
         await _context.SaveChangesAsync();
         
         return Ok();

@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
+using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 

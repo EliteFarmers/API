@@ -4,7 +4,7 @@ using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
-using EliteAPI.Parsers.Skyblock;
+using EliteAPI.Mappers.Skyblock;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.CacheService;

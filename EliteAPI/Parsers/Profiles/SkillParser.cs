@@ -1,7 +1,7 @@
 ﻿using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Parsers.Profiles;
+namespace EliteAPI.Mappers.Profiles;
 
 public static class SkillParser
 {

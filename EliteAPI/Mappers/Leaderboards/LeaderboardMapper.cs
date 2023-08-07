@@ -3,7 +3,7 @@ using EliteAPI.Config.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.LeaderboardService;
 
-namespace EliteAPI.Parsers.Leaderboards; 
+namespace EliteAPI.Mappers.Leaderboards; 
 
 public class LeaderboardMapper : Profile {
     public LeaderboardMapper() {

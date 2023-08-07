@@ -1,5 +1,5 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,17 +13,17 @@ public class AccountService : IAccountService
         _context = context;
     }
 
-    public Task<AccountEntity?> GetAccountByIgnOrUuid(string ignOrUuid) {
+    public Task<EliteAccount?> GetAccountByIgnOrUuid(string ignOrUuid) {
         return ignOrUuid.Length == 32 ? GetAccountByMinecraftUuid(ignOrUuid) : GetAccountByIgn(ignOrUuid);
     }
     
-    public async Task<AccountEntity?> GetAccount(ulong accountId) {
+    public async Task<EliteAccount?> GetAccount(ulong accountId) {
         return await _context.Accounts
             .Include(a => a.MinecraftAccounts)
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
 
-    public async Task<AccountEntity?> GetAccountByIgn(string ign)
+    public async Task<EliteAccount?> GetAccountByIgn(string ign)
     {
         var minecraftAccount = await _context.MinecraftAccounts
             .Where(mc => mc.Name == ign)
@@ -34,7 +34,7 @@ public class AccountService : IAccountService
         return await GetAccount(minecraftAccount.AccountId ?? 0);
     }
 
-    public async Task<AccountEntity?> GetAccountByMinecraftUuid(string uuid)
+    public async Task<EliteAccount?> GetAccountByMinecraftUuid(string uuid)
     {
         var minecraftAccount = await _context.MinecraftAccounts
             .FirstOrDefaultAsync(mc => mc.Id.Equals(uuid));

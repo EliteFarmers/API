@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Parsers.Skyblock;
+using EliteAPI.Mappers.Skyblock;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;

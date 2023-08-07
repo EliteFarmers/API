@@ -1,13 +1,11 @@
-﻿using System.Configuration;
-using System.Text.Json;
+﻿using System.Text.Json;
 using EliteAPI.Config.Settings;
 using EliteAPI.Models.DTOs.Incoming;
-using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Parsers.Inventories;
+using EliteAPI.Mappers.Inventories;
 using EliteAPI.Utilities;
 
-namespace EliteAPI.Parsers.FarmingWeight;
+namespace EliteAPI.Mappers.Farming;
 
 public static class FarmingWeightParser
 {

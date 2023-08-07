@@ -1,8 +1,7 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using EliteAPI.Models.DTOs.Outgoing;
-using Microsoft.EntityFrameworkCore;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.Entities.Farming;
 

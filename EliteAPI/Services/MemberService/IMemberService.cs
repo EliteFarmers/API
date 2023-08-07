@@ -1,4 +1,4 @@
-﻿using EliteAPI.Models.Entities;
+﻿using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Services.MemberService; 

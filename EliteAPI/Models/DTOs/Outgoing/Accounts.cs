@@ -1,6 +1,4 @@
-﻿using EliteAPI.Models.Entities;
-using System.Text.Json;
-using Swashbuckle.AspNetCore.Annotations;
+﻿using Swashbuckle.AspNetCore.Annotations;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -10,6 +8,7 @@ public class AuthorizedAccountDto
     public required string Id { get; set; }
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
+    
     public string? Discriminator { get; set; }
     public string? Email { get; set; }
     public string? Locale { get; set; }
@@ -19,6 +18,7 @@ public class AuthorizedAccountDto
     public EliteInventoryDto Inventory { get; set; } = new();
     public EliteSettingsDto Settings { get; set; } = new();
 
+    public List<EventMemberDto> EventEntries { get; set; } = new();
     public List<MinecraftAccountDetailsDto> MinecraftAccounts { get; set; } = new();
 }
 
