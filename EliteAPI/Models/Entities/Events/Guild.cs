@@ -38,11 +38,18 @@ public class GuildFeatures {
     public VerifiedRoleFeature? VerifiedRole { get; set; }
     
     public bool EventsEnabled { get; set; }
-    public GuildEventSettings EventSettings { get; set; } = new();
+    public GuildEventSettings? EventSettings { get; set; } = new();
 }
 
 public class GuildEventSettings {
-    public int MaxEvents { get; set; } = 1;
+    public int MaxMonthlyEvents { get; set; } = 1;
+    public bool PublicEventsEnabled { get; set; }
+    public List<EventCreatedDto> CreatedEvents { get; set; } = new();
+}
+
+public class EventCreatedDto {
+    public required string Id { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 public class GuildJacobLeaderboardFeature {
