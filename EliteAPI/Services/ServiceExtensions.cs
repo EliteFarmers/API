@@ -15,6 +15,7 @@ using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
+using EliteAPI.Services.TimescaleService;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.OpenApi.Models;
 using Prometheus;
@@ -104,6 +105,7 @@ public static class ServiceExtensions
         services.AddScoped<IDiscordService, DiscordService.DiscordService>();
         services.AddScoped<ILeaderboardService, LeaderboardService.LeaderboardService>();
         services.AddScoped<IGuildService, GuildService.GuildService>();
+        services.AddScoped<ITimescaleService, TimescaleService.TimescaleService>();
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();
