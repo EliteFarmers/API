@@ -52,12 +52,8 @@ public class AdminEventController : ControllerBase
         var guilds = await _discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == incoming.GuildId);
 
-        if (userGuild is null) {
-            return NotFound("You need to be in the event's Discord server in order to join!");
-        }
-        
-        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You need to have admin permissions in this Discord server!");
+        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
         }
 
         var guild = await _context.Guilds.FindAsync(guildId);
@@ -134,11 +130,7 @@ public class AdminEventController : ControllerBase
         var guilds = await _discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
-        if (userGuild is null) {
-            return NotFound("You need to be in the event's Discord server in order to join!");
-        }
-        
-        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
         }
         
@@ -158,5 +150,128 @@ public class AdminEventController : ControllerBase
         await _context.SaveChangesAsync();
         
         return Ok(eliteEvent);
+    }
+    
+    // POST <EventController>/12793764936498429/bans
+    [HttpGet("{eventId}/bans")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<EventMemberBannedDto>>> GetBannedMembers(ulong eventId)
+    {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+        
+        await _discordService.RefreshBotGuilds();
+        
+        var eliteEvent = await _context.Events
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
+
+        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You need to have admin permissions in the event's Discord server!");
+        }
+        
+        var members = await _context.EventMembers
+            .Where(em => em.EventId == eventId && em.Status == EventMemberStatus.Disqualified)
+            .ToListAsync();
+        
+        var mapped = _mapper.Map<List<EventMemberBannedDto>>(members);
+        
+        return Ok(mapped);
+    }
+    
+    // POST <EventController>/12793764936498429/bans
+    [HttpGet("{eventId}/bans/{playerUuid}")]
+    [Consumes(MediaTypeNames.Text.Plain)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<EventMemberBannedDto>>> BanMember(ulong eventId, string playerUuid, [FromBody] string reason)
+    {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+        
+        if (playerUuid.Length != 32) {
+            return BadRequest("Invalid player UUID.");
+        }
+        
+        if (string.IsNullOrWhiteSpace(reason) || reason.Length > 128) {
+            return BadRequest("Invalid reason.");
+        }
+        
+        await _discordService.RefreshBotGuilds();
+        
+        var eliteEvent = await _context.Events
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
+
+        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You need to have admin permissions in the event's Discord server!");
+        }
+        
+        var member = await _context.EventMembers
+            .Include(m => m.ProfileMember)
+            .Where(em => em.EventId == eventId && em.ProfileMember.PlayerUuid == playerUuid)
+            .FirstOrDefaultAsync();
+        
+        if (member is null) {
+            return NotFound("Member not found.");
+        }
+        
+        member.Status = EventMemberStatus.Disqualified;
+        member.Notes = reason;
+        
+        await _context.SaveChangesAsync();
+        
+        return Ok(_mapper.Map<EventMemberBannedDto>(member));
+    }
+    
+    // POST <EventController>/12793764936498429/bans
+    [HttpDelete("{eventId}/bans/{playerUuid:length(32)}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> UnbanMember(ulong eventId, string playerUuid)
+    {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+
+        await _discordService.RefreshBotGuilds();
+        
+        var eliteEvent = await _context.Events
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
+
+        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You need to have admin permissions in the event's Discord server!");
+        }
+        
+        var member = await _context.EventMembers
+            .Include(m => m.ProfileMember)
+            .Where(em => em.EventId == eventId && em.ProfileMember.PlayerUuid == playerUuid)
+            .FirstOrDefaultAsync();
+        
+        if (member is null) {
+            return NotFound("Member not found.");
+        }
+        
+        member.Status = EventMemberStatus.Active;
+ 
+        await _context.SaveChangesAsync();
+        
+        return Ok();
     }
 }

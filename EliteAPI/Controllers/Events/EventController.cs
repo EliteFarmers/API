@@ -1,7 +1,6 @@
 ﻿using System.Net.Mime;
 using AutoMapper;
 using EliteAPI.Authentication;
-using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -10,7 +9,6 @@ using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Controllers.Events; 
 
@@ -21,14 +19,12 @@ public class EventController : ControllerBase
     private readonly DataContext _context;
     private readonly IMapper _mapper;
     private readonly IDiscordService _discordService;
-    private readonly ConfigFarmingWeightSettings _weight;
 
-    public EventController(DataContext context, IMapper mapper, IDiscordService discordService, IOptions<ConfigFarmingWeightSettings> weight)
+    public EventController(DataContext context, IMapper mapper, IDiscordService discordService)
     {
         _context = context;
         _mapper = mapper;
         _discordService = discordService;
-        _weight = weight.Value;
     }
     
     // GET <EventController>s/
@@ -72,7 +68,6 @@ public class EventController : ControllerBase
     // GET <EventController>/12793764936498429
     [HttpGet("members")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
-    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventMemberDto>>> GetEventMembers(ulong eventId)
@@ -87,7 +82,7 @@ public class EventController : ControllerBase
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .AsNoTracking()
-            .Where(e => e.EventId == eventId && e.Status != EventMemberStatus.Disqualified)
+            .Where(e => e.EventId == eventId && e.Status != EventMemberStatus.Disqualified && e.Status != EventMemberStatus.Left)
             .OrderByDescending(e => e.AmountGained)
             .ToListAsync();
         
@@ -129,10 +124,14 @@ public class EventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId)
+    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId, [FromQuery] string? playerUuid)
     {
         if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
+        }
+        
+        if (playerUuid is not null && playerUuid.Length != 32) {
+            return BadRequest("Invalid playerUuid provided.");
         }
         
         await _discordService.RefreshBotGuilds();
@@ -148,7 +147,9 @@ public class EventController : ControllerBase
             return NotFound("You need to be in the event's Discord server in order to join!");
         }
         
-        var selectedAccount = account.MinecraftAccounts.FirstOrDefault(a => a.Selected);
+        var selectedAccount = (playerUuid is null) 
+            ? account.MinecraftAccounts.FirstOrDefault(a => a.Selected)
+            : account.MinecraftAccounts.FirstOrDefault(a => a.Id == playerUuid);
         
         if (selectedAccount is null) {
             return NotFound("You need to have a linked Minecraft account in order to join!");
@@ -160,7 +161,7 @@ public class EventController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.EventId == eventId && e.ProfileMember.PlayerUuid == selectedAccount.Id);
         
-        if (member is not null) {
+        if (member is not null && member.Status != EventMemberStatus.Left) {
             return BadRequest("You are already a member of this event!");
         }
         
@@ -186,17 +187,17 @@ public class EventController : ControllerBase
             return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
         }
         
-        var newMember = new EventMember {
+        var newMember = member ?? new EventMember {
             EventId = eliteEvent.Id,
             ProfileMemberId = profileMember.Id,
             AmountGained = profileMember.Farming.TotalWeight,
-            
-            Status = eliteEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive,
             
             LastUpdated = DateTimeOffset.UtcNow,
             StartTime = eliteEvent.StartTime,
             EndTime = eliteEvent.EndTime,
         };
+
+        newMember.Status = eliteEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 
         if (eliteEvent.Active) {
             // Save the start conditions
@@ -207,11 +208,53 @@ public class EventController : ControllerBase
         }
         
         profileMember.EventEntries ??= new List<EventMember>();
-        profileMember.EventEntries.Add(newMember);
-        eliteEvent.Members.Add(newMember);
-
-        _context.EventMembers.Add(newMember);
         
+        if (member is null) {
+            profileMember.EventEntries.Add(newMember);
+            eliteEvent.Members.Add(newMember);
+
+            _context.EventMembers.Add(newMember);
+        }
+        
+        await _context.SaveChangesAsync();
+        
+        return Ok();
+    }
+    
+    // POST <EventController>/12793764936498429/leave
+    [HttpPost("leave")]
+    [ServiceFilter(typeof(DiscordAuthFilter))]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<EventDetailsDto>> LeaveEvent(ulong eventId)
+    {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+
+        await _discordService.RefreshBotGuilds();
+        
+        var eliteEvent = await _context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        var members = await _context.EventMembers.AsNoTracking()
+            .Include(e => e.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
+            .Where(e => e.EventId == eventId && e.ProfileMember.MinecraftAccount.AccountId == account.Id)
+            .ToListAsync();
+        
+        if (members is not {Count: > 0} ) {
+            return BadRequest("You are not a member of this event!");
+        }
+
+        foreach (var member in members)
+        {
+            member.Status = EventMemberStatus.Left;
+        }
+
         await _context.SaveChangesAsync();
         
         return Ok();
