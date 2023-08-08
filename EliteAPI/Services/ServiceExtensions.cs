@@ -79,7 +79,7 @@ public static class ServiceExtensions
                 Description = "A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. Use of this API requires following the TOS. This API is not affiliated with Hypixel or Mojang.",
                 Contact = new OpenApiContact
                 {
-                    Name = "GitHub",
+                    Name = "- GitHub",
                     Url = new Uri("https://github.com/EliteFarmers/API")
                 },
                 License = new OpenApiLicense
