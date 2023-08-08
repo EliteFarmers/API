@@ -31,7 +31,7 @@ public class EventMemberDto {
     public string? PlayerName { get; set; }
     public required string EventId { get; set; }
     
-    public bool Active { get; set; }
+    public EventMemberStatus Status { get; set; }
     public string? AmountGained { get; set; }
 
     public StartConditions StartConditions { get; set; } = new();
@@ -50,8 +50,18 @@ public class EventMemberDetailsDto {
     public string? PlayerName { get; set; }
     public required string EventId { get; set; }
     
-    public bool Active { get; set; }
+    public EventMemberStatus Status { get; set; }
     public string? AmountGained { get; set; }
+}
+
+public class EventMemberBannedDto {
+    public string? PlayerUuid { get; set; }
+    public string? PlayerName { get; set; }
+    
+    public string? AmountGained { get; set; }
+    public string? Notes { get; set; }
+    
+    public DateTimeOffset? LastUpdated { get; set; }
 }
 
 public class EditEventDto {

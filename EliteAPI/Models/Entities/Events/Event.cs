@@ -54,6 +54,7 @@ public enum EventCategory {
 public enum EventMemberStatus {
     Inactive,
     Active,
+    Left,
     Disqualified
 }
 
