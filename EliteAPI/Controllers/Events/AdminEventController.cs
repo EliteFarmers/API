@@ -186,7 +186,7 @@ public class AdminEventController : ControllerBase
     }
     
     // POST <EventController>/12793764936498429/bans
-    [HttpGet("{eventId}/bans/{playerUuid}")]
+    [HttpPost("{eventId}/bans/{playerUuid}")]
     [Consumes(MediaTypeNames.Text.Plain)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]

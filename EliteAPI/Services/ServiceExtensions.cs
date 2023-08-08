@@ -76,7 +76,7 @@ public static class ServiceExtensions
             opt.SwaggerDoc("v1", new OpenApiInfo {
                 Version = "v1",
                 Title = "EliteAPI",
-                Description = "A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. Use of this API requires following the TOS linked below. This API is not affiliated with Hypixel or Mojang.",
+                Description = "A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. Use of this API requires following the TOS. This API is not affiliated with Hypixel or Mojang.",
                 Contact = new OpenApiContact
                 {
                     Name = "GitHub",

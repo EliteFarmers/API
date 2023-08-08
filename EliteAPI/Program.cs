@@ -5,7 +5,6 @@ using EliteAPI.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Prometheus;
 
 DotNetEnv.Env.Load();
 
@@ -46,15 +45,13 @@ app.UseRateLimiter();
 app.UseSwagger(opt => {
     opt.RouteTemplate = "{documentName}/swagger.json";
 });
-app.UseSwaggerUI(opt => {
-    opt.RoutePrefix = "";
-});
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-//app.MapMetrics();
 
 using (var scope = app.Services.CreateScope())
 {
