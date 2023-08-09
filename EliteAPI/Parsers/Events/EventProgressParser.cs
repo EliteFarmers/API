@@ -9,7 +9,7 @@ public static class EventProgressParser {
 
     public static void LoadProgress(this EventMember eventMember, ProfileMember member) {
         var currentTime = DateTimeOffset.UtcNow;
-        
+
         if (eventMember.Status == EventMemberStatus.Disqualified) return;
 
         if (eventMember.StartTime > currentTime || eventMember.EndTime < currentTime) {

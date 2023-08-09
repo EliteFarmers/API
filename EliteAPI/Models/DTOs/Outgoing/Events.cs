@@ -14,8 +14,8 @@ public class EventDetailsDto {
     public string? Banner { get; set; }
     public string? Thumbnail { get; set; }
     
-    public DateTimeOffset StartTime { get; set; }
-    public DateTimeOffset EndTime { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
     
     public bool DynamicStartTime { get; set; }
     public bool Active { get; set; }
@@ -36,9 +36,7 @@ public class EventMemberDto {
 
     public StartConditions StartConditions { get; set; } = new();
 
-    public DateTimeOffset LastUpdated { get; set; }
-    public DateTimeOffset StartTime { get; set; }
-    public DateTimeOffset EndTime { get; set; }
+    public string? LastUpdated { get; set; }
     
     public bool Disqualified { get; set; }
     [MaxLength(128)]
@@ -52,6 +50,7 @@ public class EventMemberDetailsDto {
     
     public EventMemberStatus Status { get; set; }
     public string? AmountGained { get; set; }
+    public string? LastUpdated { get; set; }
 }
 
 public class EventMemberBannedDto {
@@ -61,7 +60,7 @@ public class EventMemberBannedDto {
     public string? AmountGained { get; set; }
     public string? Notes { get; set; }
     
-    public DateTimeOffset? LastUpdated { get; set; }
+    public string? LastUpdated { get; set; }
 }
 
 public class EditEventDto {
@@ -74,8 +73,8 @@ public class EditEventDto {
     public string? Banner { get; set; }
     public string? Thumbnail { get; set; }
     
-    public DateTimeOffset? StartTime { get; set; }
-    public DateTimeOffset? EndTime { get; set; }
+    public long? StartTime { get; set; }
+    public long? EndTime { get; set; }
     
     public bool? DynamicStartTime { get; set; }
     public bool? Active { get; set; }

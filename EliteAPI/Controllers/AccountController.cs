@@ -79,6 +79,7 @@ public class AccountController : ControllerBase
         result.DiscordAvatar = account.Avatar;
         result.PlayerData = _mapper.Map<PlayerDataDto>(playerData);
         result.Profiles = profileDetails;
+        result.EventEntries = _mapper.Map<List<EventMemberDetailsDto>>(account.EventEntries);
         
         return Ok(result);
     }

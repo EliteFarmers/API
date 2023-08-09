@@ -43,7 +43,7 @@ public class AdminEventController : ControllerBase
             return Unauthorized("Account not found.");
         }
         
-        if (ulong.TryParse(incoming.GuildId, out var guildId)) {
+        if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
             return BadRequest("Invalid guild ID.");
         }
         
@@ -75,6 +75,9 @@ public class AdminEventController : ControllerBase
             return BadRequest("You have reached your max amount of events for this month!");
         }
         
+        var startTime = incoming.StartTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.StartTime.Value) : (DateTimeOffset?)null;
+        var endTime = incoming.EndTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.EndTime.Value) : (DateTimeOffset?)null;
+
         var eliteEvent = new Event {
             Id = guildId + (ulong) new Random().Next(100000000, 999999999),
             
@@ -82,12 +85,13 @@ public class AdminEventController : ControllerBase
             Description = incoming.Description,
             Rules = incoming.Rules,
             PrizeInfo = incoming.PrizeInfo,
+            Public = true, // For now, all events are public
             
             Banner = incoming.Banner,
             Thumbnail = incoming.Thumbnail,
             
-            StartTime = incoming.StartTime ?? DateTimeOffset.UtcNow.AddDays(1),
-            EndTime = incoming.EndTime ?? DateTimeOffset.UtcNow.AddDays(8),
+            StartTime = startTime ?? DateTimeOffset.UtcNow.AddDays(1),
+            EndTime = endTime ?? DateTimeOffset.UtcNow.AddDays(8),
             DynamicStartTime = incoming.DynamicStartTime ?? false,
             Active = incoming.Active ?? false,
             
@@ -102,6 +106,7 @@ public class AdminEventController : ControllerBase
             Id = eliteEvent.Id.ToString(),
             CreatedAt = DateTimeOffset.UtcNow
         });
+        _context.Guilds.Update(guild);
         
         await _context.Events.AddAsync(eliteEvent);
         await _context.SaveChangesAsync();
@@ -133,11 +138,14 @@ public class AdminEventController : ControllerBase
         if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
         }
+
+        var startTime = incoming.StartTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.StartTime.Value) : (DateTimeOffset?)null;
+        var endTime = incoming.EndTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.EndTime.Value) : (DateTimeOffset?)null;
         
         eliteEvent.Name = incoming.Name ?? eliteEvent.Name;
         eliteEvent.Description = incoming.Description ?? eliteEvent.Description;
-        eliteEvent.StartTime = incoming.StartTime ?? eliteEvent.StartTime;
-        eliteEvent.EndTime = incoming.EndTime ?? eliteEvent.EndTime;
+        eliteEvent.StartTime = startTime ?? eliteEvent.StartTime;
+        eliteEvent.EndTime = endTime ?? eliteEvent.EndTime;
         eliteEvent.DynamicStartTime = incoming.DynamicStartTime ?? eliteEvent.DynamicStartTime;
         eliteEvent.Active = incoming.Active ?? eliteEvent.Active;
         eliteEvent.Rules = incoming.Rules ?? eliteEvent.Rules;
@@ -177,6 +185,8 @@ public class AdminEventController : ControllerBase
         }
         
         var members = await _context.EventMembers
+            .Include(m => m.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
             .Where(em => em.EventId == eventId && em.Status == EventMemberStatus.Disqualified)
             .ToListAsync();
         
@@ -185,9 +195,8 @@ public class AdminEventController : ControllerBase
         return Ok(mapped);
     }
     
-    // POST <EventController>/12793764936498429/bans
+    // POST <EventController>/12793764936498429/bans/12345678901234567890123456789012
     [HttpPost("{eventId}/bans/{playerUuid}")]
-    [Consumes(MediaTypeNames.Text.Plain)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]

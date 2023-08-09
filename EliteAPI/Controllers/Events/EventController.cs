@@ -9,6 +9,7 @@ using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EliteAPI.Controllers.Events; 
 
@@ -61,8 +62,7 @@ public class EventController : ControllerBase
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-
-        return Ok(eliteEvent);
+        return Ok(_mapper.Map<EventDetailsDto>(eliteEvent));
     }
     
     // GET <EventController>/12793764936498429
@@ -85,8 +85,26 @@ public class EventController : ControllerBase
             .Where(e => e.EventId == eventId && e.Status != EventMemberStatus.Disqualified && e.Status != EventMemberStatus.Left)
             .OrderByDescending(e => e.AmountGained)
             .ToListAsync();
+
+        foreach (var member in members) {
+            var changed = false;
+            
+            if (member.StartTime != eliteEvent.StartTime) {
+                member.StartTime = eliteEvent.StartTime;
+                changed = true;
+            }
+            
+            if (member.EndTime != eliteEvent.EndTime) {
+                member.EndTime = eliteEvent.EndTime;
+                changed = true;
+            }
+            
+            if (changed) _context.Entry(member).State = EntityState.Modified;
+        }
         
-        var mapped = _mapper.Map<List<EventMemberDto>>(members);
+        await _context.SaveChangesAsync();
+        
+        var mapped = _mapper.Map<List<EventMemberDetailsDto>>(members);
 
         return Ok(mapped);
     }
@@ -124,9 +142,17 @@ public class EventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId, [FromQuery] string? playerUuid)
+    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId, [FromQuery] string? playerUuid, [FromQuery] string? profileId)
     {
-        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount authAccount || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+        
+        var account = await _context.Accounts
+            .Include(a => a.MinecraftAccounts)
+            .FirstOrDefaultAsync(a => a.Id == authAccount.Id);
+        
+        if (account is null) {
             return Unauthorized("Account not found.");
         }
         
@@ -136,7 +162,7 @@ public class EventController : ControllerBase
         
         await _discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events.AsNoTracking()
+        var eliteEvent = await _context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
@@ -147,7 +173,7 @@ public class EventController : ControllerBase
             return NotFound("You need to be in the event's Discord server in order to join!");
         }
         
-        var selectedAccount = (playerUuid is null) 
+        var selectedAccount = (playerUuid.IsNullOrEmpty()) 
             ? account.MinecraftAccounts.FirstOrDefault(a => a.Selected)
             : account.MinecraftAccounts.FirstOrDefault(a => a.Id == playerUuid);
         
@@ -164,15 +190,18 @@ public class EventController : ControllerBase
         if (member is not null && member.Status != EventMemberStatus.Left) {
             return BadRequest("You are already a member of this event!");
         }
-        
-        var profileMember = await _context.ProfileMembers.AsNoTracking()
-            .Include(p => p.MinecraftAccount)
-            .Include(p => p.Farming)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.PlayerUuid == selectedAccount.Id);
+
+        var query = _context.ProfileMembers.AsNoTracking()
+            .Include(p => p.MinecraftAccount).AsNoTracking()
+            .Include(p => p.Farming).AsNoTracking()
+            .Where(p => p.PlayerUuid == selectedAccount.Id);
+            
+        var profileMember = (profileId.IsNullOrEmpty()) 
+            ? await query.FirstOrDefaultAsync(a => a.IsSelected)
+            : await query.FirstOrDefaultAsync(a => a.ProfileId == profileId);
 
         if (profileMember?.Farming is null) {
-            return BadRequest("Profile member data not found, please try again later.");
+            return BadRequest("Profile member data not found, please try again later or ensure an existing profile is selected.");
         }
         
         if (!profileMember.Api.Collections) {
@@ -187,17 +216,24 @@ public class EventController : ControllerBase
             return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
         }
         
+        var eventActive = eliteEvent.StartTime < DateTimeOffset.UtcNow && eliteEvent.EndTime > DateTimeOffset.UtcNow;
+        if (eventActive != eliteEvent.Active) {
+            eliteEvent.Active = eventActive;
+        }
+        
         var newMember = member ?? new EventMember {
             EventId = eliteEvent.Id,
             ProfileMemberId = profileMember.Id,
-            AmountGained = profileMember.Farming.TotalWeight,
+            AmountGained = 0,
             
             LastUpdated = DateTimeOffset.UtcNow,
             StartTime = eliteEvent.StartTime,
             EndTime = eliteEvent.EndTime,
+            
+            UserId = account.Id
         };
 
-        newMember.Status = eliteEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive;
+        newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 
         if (eliteEvent.Active) {
             // Save the start conditions
@@ -210,6 +246,7 @@ public class EventController : ControllerBase
         profileMember.EventEntries ??= new List<EventMember>();
         
         if (member is null) {
+            account.EventEntries.Add(newMember);
             profileMember.EventEntries.Add(newMember);
             eliteEvent.Members.Add(newMember);
 

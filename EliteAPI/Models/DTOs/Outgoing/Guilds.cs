@@ -44,7 +44,7 @@ public class PublicGuildFeaturesDto {
     public PublicJacobLeaderboardFeatureDto? JacobLeaderboard { get; set; }
     
     public bool EventsEnabled { get; set; }
-    // public List<EventDetailsDto>? Events { get; set; }
+    public GuildEventSettings EventSettings { get; set; }
 }
 
 public class PublicJacobLeaderboardFeatureDto {

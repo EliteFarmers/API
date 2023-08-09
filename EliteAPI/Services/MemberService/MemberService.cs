@@ -105,7 +105,7 @@ public class MemberService : IMemberService {
         // Refresh tasks are done in separate scopes to prevent DataContext concurrency issues
         
         var tasks = new List<Task>();
-        if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
+        if (true || lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
             tasks.Add(RefreshProfiles(playerUuid));
         }
         

@@ -39,12 +39,14 @@ public static class FarmingToolParser {
     }
 
     public static long ExtractCollected(this ItemDto tool) {
-        if (long.TryParse(tool.Attributes?["mined_crops"], out var collected)) {
-            return collected;
+        if (tool.Attributes?.TryGetValue("mined_crops", out var collected) is true 
+            && long.TryParse(collected, out var mined)) {
+            return mined;
         }
             
-        if (long.TryParse(tool.Attributes?["farmed_cultivating"], out var cultivated)) {
-            return cultivated;
+        if (tool.Attributes?.TryGetValue("farmed_cultivating", out var cultivated) is true 
+            && long.TryParse(cultivated, out var crops)) {
+            return crops;
         }
         
         return 0;
