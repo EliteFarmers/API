@@ -32,6 +32,7 @@ public class ContestsController : ControllerBase
     // GET <ContestsController>/285
     [HttpGet("at/{year:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<YearlyContestsDto>> GetAllContestsInOneYear(int year)
     {
         var currentDate = SkyblockDate.Now;
@@ -87,6 +88,7 @@ public class ContestsController : ControllerBase
     // GET <ContestsController>/at/now
     [HttpGet("at/now")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<YearlyContestsDto>> GetThisYearsContests() {
         return await GetAllContestsInOneYear(SkyblockDate.Now.Year + 1);
     }
@@ -94,6 +96,8 @@ public class ContestsController : ControllerBase
     // GET <ContestsController>/200/12/5
     [HttpGet("at/{year:int}/{month:int}/{day:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<JacobContestWithParticipationsDto>>> GetContestsAt(int year, int month, int day) {
         if (year < 1 || month is > 12 or < 1 || day is > 31 or < 1) return BadRequest("Invalid date.");
         
@@ -105,6 +109,8 @@ public class ContestsController : ControllerBase
     // GET <ContestsController>/200/12
     [HttpGet("at/{year:int}/{month:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<Dictionary<int, List<JacobContestDto>>>> GetAllContestsInOneMonth(int year, int month)
     {
         if (year < 1 || month is > 12 or < 1) return BadRequest("Invalid date.");
@@ -140,6 +146,8 @@ public class ContestsController : ControllerBase
     // GET <ContestsController>/1604957700
     [HttpGet("{timestamp:long}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<JacobContestWithParticipationsDto>>> GetContestsAt(long timestamp)
     {
         var skyblockDate = new SkyblockDate(timestamp);
@@ -174,6 +182,9 @@ public class ContestsController : ControllerBase
     [Route("/contest/{contestKey}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<JacobContestWithParticipationsDto>> GetContestFromKey(string contestKey) {
         var timestamp = FormatUtils.GetTimeFromContestKey(contestKey);
         var cropId = FormatUtils.GetCropFromContestKey(contestKey);
@@ -204,6 +215,8 @@ public class ContestsController : ControllerBase
     // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllOfOnePlayersContests(string playerUuid)
     {
         var profileMembers = await _context.ProfileMembers
@@ -228,6 +241,8 @@ public class ContestsController : ControllerBase
 
     // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfOneProfileMember(string playerUuid, string profileUuid)
     {
         var profileMember = await _context.ProfileMembers
@@ -245,6 +260,8 @@ public class ContestsController : ControllerBase
 
     // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfSelectedProfileMember(string playerUuid)
     {
         var profileMember = await _context.ProfileMembers
@@ -263,6 +280,8 @@ public class ContestsController : ControllerBase
     // POST <ContestsController>/at/now
     [HttpPost("at/now")]
     [RequestSizeLimit(16000)] // Leaves some room for error
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult> SendThisYearsContests([FromBody] Dictionary<long, List<string>> body) {
         var currentDate = new SkyblockDate(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         var currentYear = currentDate.Year;

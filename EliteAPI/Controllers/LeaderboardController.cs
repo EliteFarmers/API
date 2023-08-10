@@ -38,6 +38,8 @@ public class LeaderboardController : ControllerBase
     // GET: <LeaderboardController>/id
     [HttpGet("{id}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardDto>> Get(string id, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
@@ -63,6 +65,8 @@ public class LeaderboardController : ControllerBase
     // GET <LeaderboardController>/skill/farming
     [HttpGet("skill/{skillName}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardDto>> GetSkillLb(string skillName, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
@@ -103,6 +107,8 @@ public class LeaderboardController : ControllerBase
     // GET <LeaderboardController>/collection/wheat
     [HttpGet("collection/{collection}/")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardDto>> GetCollectionLb(string collection, [FromQuery] int offset = 0, [FromQuery] int limit = 20)
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
@@ -127,6 +133,8 @@ public class LeaderboardController : ControllerBase
     // GET <LeaderboardController>/ranks/[player]/[profile]
     [HttpGet("ranks/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardPositionsDto>> GetLeaderboardRanks(string playerUuid, string profileUuid) {
         var memberId = await _context.ProfileMembers
             .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
@@ -143,6 +151,8 @@ public class LeaderboardController : ControllerBase
     // GET <LeaderboardController>/rank/[lbId]/[player]/[profile]
     [HttpGet("rank/{leaderboardId}/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardPositionDto>> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileUuid, [FromQuery] bool includeUpcoming = false, [FromQuery] int atRank = -1) {
         if (!_leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
             return BadRequest("Invalid leaderboard ID.");

@@ -28,6 +28,9 @@ public class ProfileController : ControllerBase
     // GET <ProfileController>/[uuid]/Selected
     [HttpGet("{uuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<ProfileMemberDto>> GetSelectedByPlayerUuid(string uuid)
     {
         if (uuid is not { Length: 32 })
@@ -50,6 +53,8 @@ public class ProfileController : ControllerBase
     // GET <ProfileController>
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<ProfileMemberDto>> GetSpecificProfile(string playerUuid, string profileUuid)
     {
         var profile = await _profileService.GetProfileMember(playerUuid, profileUuid);
@@ -65,6 +70,8 @@ public class ProfileController : ControllerBase
     // GET <ProfileController>
     [HttpGet("{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<ProfileDetailsDto>> Get(string profileUuid)
     {
         var profile = await _profileService.GetProfile(profileUuid);
@@ -81,6 +88,8 @@ public class ProfileController : ControllerBase
     [Route("/[controller]s/{playerUuid}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<ProfileDetailsDto>>> GetProfiles(string playerUuid)
     {
         var profiles = await _profileService.GetProfilesDetails(playerUuid);

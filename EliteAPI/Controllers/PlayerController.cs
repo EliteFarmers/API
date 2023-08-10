@@ -27,6 +27,8 @@ public class PlayerController : ControllerBase
 
     // GET <ProfileController>
     [HttpGet("{playerUuidOrIgn}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<PlayerDataDto>> Get(string playerUuidOrIgn)
     {
         var playerData = await _profileService.GetPlayerDataByUuidOrIgn(playerUuidOrIgn);
@@ -41,6 +43,9 @@ public class PlayerController : ControllerBase
     
     // POST <ProfileController>
     [HttpGet("{discordId:long}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LinkedAccountsDto>> GetLinkedAccounts(long discordId)
     {
         if (discordId <= 0)

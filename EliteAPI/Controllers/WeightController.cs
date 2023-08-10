@@ -40,6 +40,8 @@ public class WeightController : ControllerBase
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
@@ -76,6 +78,8 @@ public class WeightController : ControllerBase
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<FarmingWeightDto>> GetSelectedProfileWeight(string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
@@ -97,6 +101,8 @@ public class WeightController : ControllerBase
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<FarmingWeightDto>> GetSpecificProfileWeight(string playerUuid, string profileUuid)
     {
         var uuid = playerUuid.Replace("-", "");
@@ -118,8 +124,9 @@ public class WeightController : ControllerBase
     
     [Route("/[controller]s")]
     [HttpGet]
-    [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [DisableRateLimiting]
+    [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<Dictionary<string, double>> GetCropWeights() {
         var rawWeights = _weightSettings.CropsPerOneWeight;
         

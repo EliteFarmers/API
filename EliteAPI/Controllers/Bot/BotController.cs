@@ -33,6 +33,8 @@ public class BotController : ControllerBase
     
     // GET <BotController>/12793764936498429
     [HttpGet("{guildId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<GuildDto>> Get(ulong guildId)
     {
         await _discordService.RefreshBotGuilds();
@@ -44,6 +46,9 @@ public class BotController : ControllerBase
     
     // GET <BotController>/12793764936498429/jacob
     [HttpGet("{guildId}/jacob")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<GuildJacobLeaderboardFeature>> GetJacobFeature(ulong guildId)
     {
         await _discordService.RefreshBotGuilds();
@@ -66,6 +71,9 @@ public class BotController : ControllerBase
     
     // PUT <GuildController>/12793764936498429/jacob
     [HttpPut("{guildId}/jacob")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult> PutJacobFeature(ulong guildId, [FromBody] GuildJacobLeaderboardFeature data)
     {
         await _discordService.RefreshBotGuilds();
@@ -87,6 +95,7 @@ public class BotController : ControllerBase
     
     // Patch <GuildController>/account
     [HttpPatch("account")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthorizedAccountDto>> PatchAccount([FromBody] IncomingAccountDto incoming) {
         var exising = await _accountService.GetAccount(incoming.Id);
         
