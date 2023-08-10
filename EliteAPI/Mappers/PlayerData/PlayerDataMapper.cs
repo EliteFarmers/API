@@ -7,8 +7,10 @@ namespace EliteAPI.Mappers.PlayerData;
 
 public class PlayerDataMapper : Profile
 {
-    public PlayerDataMapper()
-    {
+    public PlayerDataMapper() {
+        CreateMap<Models.Entities.Hypixel.PlayerData, Models.Entities.Hypixel.PlayerData>()
+            .ForMember(x => x.Id, opt => opt.Ignore());
+        
         CreateMap<RawPlayerData, Models.Entities.Hypixel.PlayerData>()
             .ForMember(p => p.SocialMedia, opt => opt.MapFrom(
                 x => x.SocialMedia != null && x.SocialMedia.Links != null
