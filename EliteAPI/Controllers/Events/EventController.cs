@@ -277,13 +277,13 @@ public class EventController : ControllerBase
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var members = await _context.EventMembers.AsNoTracking()
+        var members = await _context.EventMembers
             .Include(e => e.ProfileMember)
-            .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
+            .ThenInclude(p => p.MinecraftAccount)
             .Where(e => e.EventId == eventId && e.ProfileMember.MinecraftAccount.AccountId == account.Id)
             .ToListAsync();
         
-        if (members is not {Count: > 0} ) {
+        if (members is not { Count: > 0 } ) {
             return BadRequest("You are not a member of this event!");
         }
 

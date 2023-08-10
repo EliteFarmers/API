@@ -187,7 +187,7 @@ public class AdminEventController : ControllerBase
         var members = await _context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
-            .Where(em => em.EventId == eventId && em.Status == EventMemberStatus.Disqualified)
+            .Where(em => em.EventId == eventId && em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left)
             .ToListAsync();
         
         var mapped = _mapper.Map<List<EventMemberBannedDto>>(members);
