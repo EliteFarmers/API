@@ -8,11 +8,11 @@ namespace EliteAPI.Parsers.Farming;
 
 public static class CropCollectionParser {
 
-    public static Dictionary<Crop, long> ExtractCropCollections(this ProfileMember member) {
-        return member.Collections.ExtractCropCollections();
+    public static Dictionary<Crop, long> ExtractCropCollections(this ProfileMember member, bool includeSeeds = false) {
+        return member.Collections.ExtractCropCollections(includeSeeds);
     }
 
-    public static Dictionary<Crop, long> ExtractCropCollections(this JsonDocument collectionDocument) {
+    public static Dictionary<Crop, long> ExtractCropCollections(this JsonDocument collectionDocument, bool includeSeeds = false) {
         try {
             var collections = collectionDocument.Deserialize<Dictionary<string, long>>() ??
                               new Dictionary<string, long>();
@@ -27,6 +27,11 @@ public static class CropCollectionParser {
                 crops.Add(crop.Value, amount);
             }
 
+            if (!includeSeeds) return crops;
+            
+            var seeds = collections.TryGetValue("SEEDS", out var seedCollection) ? seedCollection : 0;
+            crops.Add(Crop.Seeds, seeds);
+
             return crops;
         }
         catch (Exception e) {
@@ -35,17 +40,17 @@ public static class CropCollectionParser {
         }
     }
 
-    public static Dictionary<string, long> ExtractCropCollections(this CropCollection cropCollection) {
+    public static Dictionary<string, long> ExtractReadableCropCollections(this CropCollection cropCollection) {
         return new Dictionary<string, long> {
             { "cactus", cropCollection.Cactus },
             { "carrot", cropCollection.Carrot },
-            { "cocoaBeans", cropCollection.CocoaBeans },
+            { "cocoa", cropCollection.CocoaBeans },
             { "melon", cropCollection.Melon },
             { "mushroom", cropCollection.Mushroom },
-            { "netherWart", cropCollection.NetherWart },
+            { "wart", cropCollection.NetherWart },
             { "potato", cropCollection.Potato },
             { "pumpkin", cropCollection.Pumpkin },
-            { "sugarCane", cropCollection.SugarCane },
+            { "cane", cropCollection.SugarCane },
             { "wheat", cropCollection.Wheat },
         };
     }

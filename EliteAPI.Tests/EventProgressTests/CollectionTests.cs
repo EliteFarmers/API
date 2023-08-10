@@ -85,7 +85,12 @@ public class CollectionTests {
         
         var jsonDoc = JsonSerializer.SerializeToDocument(input);
         var actual = jsonDoc.ExtractCropCollections();
-
+        
         actual.Should().Equal(expected);
+        
+        var withSeeds = jsonDoc.ExtractCropCollections(true);
+        expected.Add(Crop.Seeds, 12);
+        
+        withSeeds.Should().Equal(expected);
     }
 }

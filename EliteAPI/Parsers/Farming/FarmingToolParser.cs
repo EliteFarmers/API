@@ -18,12 +18,29 @@ public static class FarmingToolParser {
             if (uuid.IsNullOrEmpty()) continue;
             
             // Skip if the item is already in the dictionary
-            if (existing?.ContainsKey(uuid!) is true) continue;
+            if (existing?.ContainsKey(uuid!) is true) {
+                
+                // Check if the tool has cultivated crops when it didn't before
+                if (existing.ContainsKey($"{uuid!}-c")) continue;
+                
+                var cultivated = item.ExtractCultivating();
+                if (cultivated == 0) continue;
+                
+                tools.Add($"{uuid!}-c", cultivated);
+                
+                continue;
+            }
 
             var collected = item.ExtractCollected();
-            if (collected == 0) continue;
+            var cultivating = item.ExtractCultivating();
+
+            if (collected != 0) {
+                tools.Add(uuid!, collected);
+            }
             
-            tools.Add(uuid!, collected);
+            if (cultivating != 0) {
+                tools.Add($"{uuid!}-c", cultivating);
+            }
         }
         
         return tools;
@@ -44,6 +61,15 @@ public static class FarmingToolParser {
             return mined;
         }
             
+        if (tool.Attributes?.TryGetValue("farmed_cultivating", out var cultivated) is true 
+            && long.TryParse(cultivated, out var crops)) {
+            return crops;
+        }
+        
+        return 0;
+    }
+    
+    public static long ExtractCultivating(this ItemDto tool) {
         if (tool.Attributes?.TryGetValue("farmed_cultivating", out var cultivated) is true 
             && long.TryParse(cultivated, out var crops)) {
             return crops;

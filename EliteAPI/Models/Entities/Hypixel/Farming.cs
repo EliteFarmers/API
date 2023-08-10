@@ -70,16 +70,17 @@ public class ContestParticipation
 
 public enum Crop
 {
-    Cactus,
-    Carrot,
-    CocoaBeans,
-    Melon,
-    Mushroom,
-    NetherWart,
-    Potato,
-    Pumpkin,
-    SugarCane,
-    Wheat
+    Cactus = 0,
+    Carrot = 1,
+    CocoaBeans = 2,
+    Melon = 3,
+    Mushroom = 4,
+    NetherWart = 5,
+    Potato = 6,
+    Pumpkin = 7,
+    SugarCane = 8,
+    Wheat = 9,
+    Seeds = 10 // Only used in some scenarios 
 }
 
 public enum ContestMedal

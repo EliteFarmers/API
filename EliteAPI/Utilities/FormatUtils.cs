@@ -61,6 +61,7 @@ public static class FormatUtils
         "PUMPKIN" => Crop.Pumpkin,
         "SUGAR_CANE" => Crop.SugarCane,
         "WHEAT" => Crop.Wheat,
+        "SEEDS" => Crop.Seeds,
         _ => null
     };
 

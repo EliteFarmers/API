@@ -79,7 +79,7 @@ public class TimescaleService : ITimescaleService {
                 {
                     selectedEntries.Add(new CropCollectionsDataPointDto {
                         Timestamp = entry.Time.ToUnixTimeSeconds(),
-                        Crops = entry.ExtractCropCollections()
+                        Crops = entry.ExtractReadableCropCollections()
                     });
                     previousTime = entry.Time;
                 }

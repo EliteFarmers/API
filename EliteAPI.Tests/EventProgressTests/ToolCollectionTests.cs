@@ -19,8 +19,10 @@ public class ToolCollectionTests {
         
         const int expected = 123;
         var actual = item.ExtractCollected();
+        var cultivated = item.ExtractCultivating();
         
         actual.Should().Be(expected);
+        cultivated.Should().Be(456);
     }
     
     [Fact]

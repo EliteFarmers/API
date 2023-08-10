@@ -238,7 +238,7 @@ public class EventController : ControllerBase
         if (eliteEvent.Active) {
             // Save the start conditions
             newMember.StartConditions = new StartConditions {
-                Collection = profileMember.ExtractCropCollections(),
+                Collection = profileMember.ExtractCropCollections(true),
                 Tools = profileMember.Farming.ToMapOfCollectedItems()
             };
         }
