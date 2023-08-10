@@ -1,5 +1,7 @@
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Services.MemberService;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
