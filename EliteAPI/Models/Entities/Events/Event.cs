@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.Entities.Events; 
@@ -7,6 +8,10 @@ namespace EliteAPI.Models.Entities.Events;
 public class Event {
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong Id { get; set; }
+    
+    public bool Public { get; set; }
+    public EventCategory Category { get; set; }
+    public string? Target { get; set; }
     
     [MaxLength(64)]
     public required string Name { get; set; }
@@ -26,28 +31,40 @@ public class Event {
     
     public bool DynamicStartTime { get; set; }
     public bool Active { get; set; }
-    
     public List<EventMember> Members { get; set; } = new();
     
-    [Column(TypeName = "jsonb")]
-    public List<BlockedUser> BlockedUsers { get; set; } = new();
+    public string? RequiredRole { get; set; }
+    public string? BlockedRole { get; set; }
     
     [ForeignKey("Owner")]
     public ulong OwnerId { get; set; }
-    public AccountEntity Owner { get; set; } = null!;
+    public EliteAccount Owner { get; set; } = null!;
     
     [ForeignKey("Guild")]
     public ulong GuildId { get; set; }
     public Guild Guild { get; set; } = null!;
 }
 
+public enum EventCategory {
+    FarmingWeight,
+    Collection,
+    Experience
+}
+
+public enum EventMemberStatus {
+    Inactive,
+    Active,
+    Left,
+    Disqualified
+}
+
 public class EventMember {
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     
-    public bool Active { get; set; }
+    public EventMemberStatus Status { get; set; }
+    public double AmountGained { get; set; }
     
-    public long Collected { get; set; }
     [Column(TypeName = "jsonb")]
     public StartConditions StartConditions { get; set; } = new();
 
@@ -55,9 +72,8 @@ public class EventMember {
     public DateTimeOffset StartTime { get; set; }
     public DateTimeOffset EndTime { get; set; }
     
-    public bool Disqualified { get; set; }
     [MaxLength(128)]
-    public string? Reason { get; set; }
+    public string? Notes { get; set; }
     
     [ForeignKey("ProfileMember")]
     public Guid ProfileMemberId { get; set; }
@@ -69,15 +85,10 @@ public class EventMember {
     
     [ForeignKey("User")]
     public ulong UserId { get; set; }
-    public AccountEntity User { get; set; } = null!;
+    public EliteAccount User { get; set; } = null!;
 }
 
 public class StartConditions {
-    public long Collected { get; set; }
-    public List<Tool> Tools { get; set; } = new();
-}
-
-public class Tool {
-    public required string Uuid { get; set; }
-    public long Collected { get; set; }
+    public Dictionary<Crop, long> Collection { get; set; } = new();
+    public Dictionary<string, long> Tools { get; set; } = new();
 }

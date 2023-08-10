@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
@@ -29,7 +29,7 @@ namespace EliteAPI.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.AccountEntity", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.EliteAccount", b =>
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,6 +79,51 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Accounts");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("AccountId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<List<Badge>>("Badges")
+                        .HasColumnType("jsonb");
+
+                    b.Property<List<FlagReason>>("FlagReasons")
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Flags")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("LastUpdated")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .UseCollation("case_insensitive");
+
+                    b.Property<long>("PlayerDataLastUpdated")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProfilesLastUpdated")
+                        .HasColumnType("bigint");
+
+                    b.Property<List<MinecraftAccountProperty>>("Properties")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<bool>("Selected")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("MinecraftAccounts");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
                 {
                     b.Property<decimal>("Id")
@@ -91,9 +136,11 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("Banner")
                         .HasColumnType("text");
 
-                    b.Property<List<BlockedUser>>("BlockedUsers")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
+                    b.Property<string>("BlockedRole")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1024)
@@ -120,12 +167,21 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
 
+                    b.Property<bool>("Public")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RequiredRole")
+                        .HasColumnType("text");
+
                     b.Property<string>("Rules")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
 
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Target")
+                        .HasColumnType("text");
 
                     b.Property<string>("Thumbnail")
                         .HasColumnType("text");
@@ -147,14 +203,8 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<long>("Collected")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("Disqualified")
-                        .HasColumnType("boolean");
+                    b.Property<double>("AmountGained")
+                        .HasColumnType("double precision");
 
                     b.Property<DateTimeOffset>("EndTime")
                         .HasColumnType("timestamp with time zone");
@@ -165,12 +215,12 @@ namespace EliteAPI.Data.Migrations
                     b.Property<DateTimeOffset>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ProfileMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Reason")
+                    b.Property<string>("Notes")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("ProfileMemberId")
+                        .HasColumnType("uuid");
 
                     b.Property<StartConditions>("StartConditions")
                         .IsRequired()
@@ -178,6 +228,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("UserId")
                         .HasColumnType("numeric(20,0)");
@@ -618,51 +671,6 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Skills");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.MinecraftAccount", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("AccountEntityId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal?>("AccountId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<List<FlagReason>>("FlagReasons")
-                        .HasColumnType("jsonb");
-
-                    b.Property<int>("Flags")
-                        .HasColumnType("integer");
-
-                    b.Property<long>("LastUpdated")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .UseCollation("case_insensitive");
-
-                    b.Property<long>("PlayerDataLastUpdated")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ProfilesLastUpdated")
-                        .HasColumnType("bigint");
-
-                    b.Property<List<MinecraftAccountProperty>>("Properties")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<bool>("Selected")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountEntityId");
-
-                    b.ToTable("MinecraftAccounts");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
                 {
                     b.Property<long>("Cactus")
@@ -755,6 +763,15 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("SkillExperiences");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "EliteAccount")
+                        .WithMany("MinecraftAccounts")
+                        .HasForeignKey("AccountId");
+
+                    b.Navigation("EliteAccount");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Events.Guild", "Guild")
@@ -763,7 +780,7 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Models.Entities.AccountEntity", "Owner")
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -783,13 +800,13 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
-                        .WithMany()
+                        .WithMany("EventEntries")
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Models.Entities.AccountEntity", "User")
-                        .WithMany()
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "User")
+                        .WithMany("EventEntries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -931,7 +948,7 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.PlayerData", b =>
                 {
-                    b.HasOne("EliteAPI.Models.Entities.MinecraftAccount", "MinecraftAccount")
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.MinecraftAccount", "MinecraftAccount")
                         .WithOne("PlayerData")
                         .HasForeignKey("EliteAPI.Models.Entities.Hypixel.PlayerData", "Uuid")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -967,7 +984,7 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
-                    b.HasOne("EliteAPI.Models.Entities.MinecraftAccount", "MinecraftAccount")
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.MinecraftAccount", "MinecraftAccount")
                         .WithMany()
                         .HasForeignKey("PlayerUuid")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1026,13 +1043,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.MinecraftAccount", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.AccountEntity", null)
-                        .WithMany("MinecraftAccounts")
-                        .HasForeignKey("AccountEntityId");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
@@ -1055,9 +1065,16 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.AccountEntity", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.EliteAccount", b =>
                 {
+                    b.Navigation("EventEntries");
+
                     b.Navigation("MinecraftAccounts");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
+                {
+                    b.Navigation("PlayerData");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
@@ -1077,6 +1094,8 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
+                    b.Navigation("EventEntries");
+
                     b.Navigation("Farming")
                         .IsRequired();
 
@@ -1085,11 +1104,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Navigation("Skills")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.MinecraftAccount", b =>
-                {
-                    b.Navigation("PlayerData");
                 });
 #pragma warning restore 612, 618
         }

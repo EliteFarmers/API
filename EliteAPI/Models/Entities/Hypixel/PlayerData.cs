@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Hypixel;

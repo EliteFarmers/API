@@ -2,7 +2,7 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;
@@ -38,9 +38,11 @@ public class AccountController : ControllerBase
     // GET <ValuesController>
     [HttpGet]
     [ServiceFilter(typeof(DiscordAuthFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult<AuthorizedAccountDto>> Get()
     {
-        if (HttpContext.Items["Account"] is not AccountEntity result)
+        if (HttpContext.Items["Account"] is not EliteAccount result)
         {
             return Unauthorized("Account not found.");
         }
@@ -54,6 +56,9 @@ public class AccountController : ControllerBase
     
     // GET <ValuesController>/12793764936498429
     [HttpGet("{discordId:long}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<MinecraftAccountDto>> GetByDiscordId(long discordId)
     {
         if (discordId <= 0) return BadRequest("Invalid Discord ID.");
@@ -74,12 +79,15 @@ public class AccountController : ControllerBase
         result.DiscordAvatar = account.Avatar;
         result.PlayerData = _mapper.Map<PlayerDataDto>(playerData);
         result.Profiles = profileDetails;
+        result.EventEntries = _mapper.Map<List<EventMemberDetailsDto>>(account.EventEntries);
         
         return Ok(result);
     }
     
     // GET <ValuesController>/12793764936498429
     [HttpGet("{playerUuidOrIgn}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<MinecraftAccountDto>> GetByPlayerUuidOrIgn(string playerUuidOrIgn) {
         await _memberService.UpdatePlayerIfNeeded(playerUuidOrIgn);
         
@@ -111,9 +119,11 @@ public class AccountController : ControllerBase
 
     [HttpPost("{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> LinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not AccountEntity loggedInAccount)
+        if (HttpContext.Items["Account"] is not EliteAccount loggedInAccount)
         {
             return Unauthorized("Account not found.");
         }
@@ -123,9 +133,11 @@ public class AccountController : ControllerBase
 
     [HttpDelete("{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> UnlinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not AccountEntity linkedAccount)
+        if (HttpContext.Items["Account"] is not EliteAccount linkedAccount)
         {
             return Unauthorized("Account not found.");
         }
@@ -135,9 +147,11 @@ public class AccountController : ControllerBase
     
     [HttpPost("primary/{playerUuidOrIgn}")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> MakePrimaryAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not AccountEntity loggedInAccount)
+        if (HttpContext.Items["Account"] is not EliteAccount loggedInAccount)
         {
             return Unauthorized("Account not found.");
         }

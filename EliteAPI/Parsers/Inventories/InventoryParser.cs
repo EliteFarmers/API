@@ -1,6 +1,5 @@
 ﻿using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Inventories; 
 

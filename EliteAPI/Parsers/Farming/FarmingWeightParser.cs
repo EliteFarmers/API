@@ -1,13 +1,11 @@
-﻿using System.Configuration;
-using System.Text.Json;
+﻿using System.Text.Json;
 using EliteAPI.Config.Settings;
 using EliteAPI.Models.DTOs.Incoming;
-using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Inventories;
 using EliteAPI.Utilities;
 
-namespace EliteAPI.Parsers.FarmingWeight;
+namespace EliteAPI.Parsers.Farming;
 
 public static class FarmingWeightParser
 {
@@ -67,6 +65,52 @@ public static class FarmingWeightParser
                              normalCropRatio * ((double) mushroomAmount / mushroomPerWeight);
 
         crops["Mushroom"] = mushroomWeight;
+
+        return crops;
+    }
+    
+    public static Dictionary<Crop, double> ParseCropWeight(this Dictionary<Crop, long> collections) {
+        var crops = new Dictionary<Crop, double>();
+
+        var collectionPerWeight = FarmingWeightConfig.Settings.CropsPerOneWeight;
+
+        foreach (var cropId in FarmingWeightConfig.Settings.CropItemIds)
+        {
+            var formattedName = FormatUtils.GetFormattedCropName(cropId);
+            var crop = FormatUtils.FormattedCropNameToCrop(formattedName ?? "");
+            if (formattedName is null || !crop.HasValue) continue;
+
+            collections.TryGetValue(crop.Value, out var amount);
+            collectionPerWeight.TryGetValue(cropId.Replace(':', '_'), out var perWeight);
+
+            if (perWeight == 0 || amount == 0)
+            {
+                crops.Add(crop.Value, 0);
+                continue;
+            }
+
+            var weight = amount / perWeight;
+
+            crops.Add(crop.Value, weight);
+        }
+
+        // Mushroom is a special case, it needs to be calculated dynamically based on the
+        // ratio between the farmed crops that give two mushrooms per break with cow pet
+        // and the farmed crops that give one mushroom per break with cow pet
+        if (!collections.TryGetValue(Crop.Mushroom, out var mushroomAmount)) return crops;
+
+        var mushroomPerWeight = collectionPerWeight["MUSHROOM_COLLECTION"];
+
+        var totalWeight = crops.Sum(x => x.Value);
+        var doubleBreakCrops = crops[Crop.Cactus] + crops[Crop.SugarCane];
+
+        var doubleBreakRatio = doubleBreakCrops / totalWeight;
+        var normalCropRatio = (totalWeight - doubleBreakCrops) / totalWeight;
+
+        var mushroomWeight = doubleBreakRatio * (mushroomAmount / (mushroomPerWeight * 2)) +
+                             normalCropRatio * (mushroomAmount / mushroomPerWeight);
+
+        crops.Add(Crop.Mushroom, mushroomWeight);
 
         return crops;
     }

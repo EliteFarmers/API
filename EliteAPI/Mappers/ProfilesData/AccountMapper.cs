@@ -1,17 +1,18 @@
 ﻿using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 
-namespace EliteAPI.Parsers.ProfilesData;
+namespace EliteAPI.Mappers.ProfilesData;
 
 public class AccountMapper : Profile
 {
     public AccountMapper() {
-        CreateMap<AccountEntity, AuthorizedAccountDto>()
+        CreateMap<EliteAccount, AuthorizedAccountDto>()
             .ForMember(a => a.Inventory, opt => opt.MapFrom(a => a.Inventory))
             .ForMember(a => a.Redemptions, opt => opt.MapFrom(a => a.Redemptions))
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.Settings))
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
+            .ForMember(a => a.EventEntries, opt => opt.MapFrom(a => a.EventEntries))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
     }
 }

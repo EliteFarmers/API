@@ -1,4 +1,4 @@
-﻿using EliteAPI.Models.Entities;
+﻿using EliteAPI.Models.Entities.Accounts;
 
 namespace EliteAPI.Services.MojangService;
 

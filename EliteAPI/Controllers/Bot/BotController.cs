@@ -3,7 +3,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.DiscordService;
@@ -90,7 +90,7 @@ public class BotController : ControllerBase
     public async Task<ActionResult<AuthorizedAccountDto>> PatchAccount([FromBody] IncomingAccountDto incoming) {
         var exising = await _accountService.GetAccount(incoming.Id);
         
-        var account = exising ?? new AccountEntity {
+        var account = exising ?? new EliteAccount {
             Id = incoming.Id,
             Username = incoming.Username,
             DisplayName = incoming.DisplayName ?? incoming.Username,

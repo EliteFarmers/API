@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json;
+using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
@@ -53,14 +55,16 @@ public class ProfileMember : IDisposable
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();
 
+    
     [ForeignKey("MinecraftAccount")]
     public required string PlayerUuid { get; set; }
     public MinecraftAccount MinecraftAccount { get; set; } = null!;
 
     [ForeignKey("Profile")]
     public required string ProfileId { get; set; }
-
     public required Profile Profile { get; set; }
+    
+    public List<EventMember>? EventEntries { get; set; }
 
     public void Dispose() => Collections?.Dispose();
 }

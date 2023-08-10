@@ -1,4 +1,4 @@
-﻿using EliteAPI.Models.Entities;
+﻿using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
@@ -36,7 +36,7 @@ public class DataContext : DbContext
             .UseCollation("case_insensitive");
     }
 
-    public DbSet<AccountEntity> Accounts { get; set; } = null!;
+    public DbSet<EliteAccount> Accounts { get; set; } = null!;
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;

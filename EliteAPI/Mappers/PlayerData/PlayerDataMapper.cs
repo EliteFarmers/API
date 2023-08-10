@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
 
-namespace EliteAPI.Parsers.PlayerData;
+namespace EliteAPI.Mappers.PlayerData;
 
 public class PlayerDataMapper : Profile
 {

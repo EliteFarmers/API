@@ -1,8 +1,8 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using EliteAPI.Config.Settings;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Utilities;
 using Microsoft.Extensions.Options;

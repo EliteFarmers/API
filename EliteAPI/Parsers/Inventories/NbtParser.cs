@@ -2,7 +2,6 @@
 using EliteAPI.Models.DTOs.Outgoing;
 using McProtoNet.NBT;
 using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol;
 
 namespace EliteAPI.Parsers.Inventories; 
 

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Skyblock;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Utilities;
@@ -101,7 +101,7 @@ public class MemberService : IMemberService {
         // Refresh tasks are done in separate scopes to prevent DataContext concurrency issues
         
         var tasks = new List<Task>();
-
+      
         if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown) 
             && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) 
         {

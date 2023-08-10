@@ -5,7 +5,7 @@ using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -81,7 +81,7 @@ public class DiscordService : IDiscordService
         };
     }
 
-    private async Task<AccountEntity?> FetchDiscordUser(string accessToken)
+    private async Task<EliteAccount?> FetchDiscordUser(string accessToken)
     {
         var client = _httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -98,7 +98,7 @@ public class DiscordService : IDiscordService
 
             var existing = await _context.Accounts.FindAsync(user.Id);
                 
-            var account = existing ?? new AccountEntity()
+            var account = existing ?? new EliteAccount()
             {
                 Id = user.Id,
                 Username = user.Username,
@@ -186,7 +186,7 @@ public class DiscordService : IDiscordService
         }
     }
 
-    public async Task<AccountEntity?> GetDiscordUser(string accessToken) {
+    public async Task<EliteAccount?> GetDiscordUser(string accessToken) {
         return await FetchDiscordUser(accessToken);
     }
 
@@ -425,5 +425,5 @@ public class DiscordUpdateResponse
     public DateTimeOffset? AccessTokenExpires { get; set; }
     public required string RefreshToken { get; set; }
     public DateTimeOffset? RefreshTokenExpires { get; set; }
-    public AccountEntity? Account { get; set; }
+    public EliteAccount? Account { get; set; }
 }

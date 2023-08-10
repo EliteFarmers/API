@@ -3,6 +3,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.GuildService;
@@ -30,7 +31,7 @@ public class UserController : ControllerBase {
     // GET <GuildController>/Guilds
     [HttpGet("Guilds")]
     public async Task<ActionResult<IEnumerable<UserGuildDto>>> Get() {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -40,7 +41,7 @@ public class UserController : ControllerBase {
     // GET <GuildController>/Guild/{guildId}
     [HttpGet("Guild/{guildId}")]
     public async Task<ActionResult<AuthorizedGuildDto>> GetGuild(ulong guildId) {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -87,7 +88,7 @@ public class UserController : ControllerBase {
     [HttpPut("Guild/{guildId}/Invite")]
     [RequestSizeLimit(512)]
     public async Task<ActionResult> PutGuildInvite(ulong guildId, [FromBody] string inviteCode) {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -124,7 +125,7 @@ public class UserController : ControllerBase {
     
     [HttpPatch("Guild/{guildId}/Jacob")]
     public async Task<ActionResult> UpdateGuildJacobFeature(ulong guildId, [FromBody] GuildJacobLeaderboardFeature settings) {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -167,7 +168,7 @@ public class UserController : ControllerBase {
     
     [HttpGet("Guild/{guildId}/Jacob")]
     public async Task<ActionResult<GuildJacobLeaderboardFeature>> UpdateGuildJacobFeature(ulong guildId) {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -206,7 +207,7 @@ public class UserController : ControllerBase {
     [HttpPost("Guild/{guildId}/Jacob/Leaderboard")]
     public async Task<ActionResult> AddGuildLeaderboard(ulong guildId, [FromBody] GuildJacobLeaderboard leaderboard) 
     {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -253,7 +254,7 @@ public class UserController : ControllerBase {
     [HttpPut("Guild/{guildId}/Jacob/{lbId}")]
     public async Task<ActionResult<GuildJacobLeaderboardFeature>> UpdateGuildLeaderboard(ulong guildId, string lbId, [FromBody] GuildJacobLeaderboard leaderboard) 
     {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -298,7 +299,7 @@ public class UserController : ControllerBase {
     [HttpDelete("Guild/{guildId}/Jacob/{lbId}")]
     public async Task<ActionResult> RemoveGuildLeaderboard(ulong guildId, string lbId) 
     {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 
@@ -342,7 +343,7 @@ public class UserController : ControllerBase {
     [HttpPost("Guild/{guildId}/Jacob/{lbId}/Send")]
     public async Task<ActionResult> SendGuildLeaderboard(ulong guildId, string lbId) 
     {
-        if (HttpContext.Items["Account"] is not AccountEntity account || HttpContext.Items["DiscordToken"] is not string token) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
 

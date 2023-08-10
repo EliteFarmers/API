@@ -1,6 +1,4 @@
-﻿using EliteAPI.Models.Entities;
-using System.Text.Json;
-using Swashbuckle.AspNetCore.Annotations;
+﻿using Swashbuckle.AspNetCore.Annotations;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -10,6 +8,7 @@ public class AuthorizedAccountDto
     public required string Id { get; set; }
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
+    
     public string? Discriminator { get; set; }
     public string? Email { get; set; }
     public string? Locale { get; set; }
@@ -19,6 +18,7 @@ public class AuthorizedAccountDto
     public EliteInventoryDto Inventory { get; set; } = new();
     public EliteSettingsDto Settings { get; set; } = new();
 
+    public List<EventMemberDetailsDto> EventEntries { get; set; } = new();
     public List<MinecraftAccountDetailsDto> MinecraftAccounts { get; set; } = new();
 }
 
@@ -32,7 +32,7 @@ public class MinecraftAccountDetailsDto
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
 }
 
-[SwaggerSchema(Required = new [] { "Id", "Name", "Properties", "Profiles", "PrimaryAccount" })]
+[SwaggerSchema(Required = new [] { "Id", "Name", "Properties", "Profiles", "PrimaryAccount", "EventEntries" })]
 public class MinecraftAccountDto
 {
     public required string Id { get; set; }
@@ -44,6 +44,7 @@ public class MinecraftAccountDto
     public string? DiscordAvatar { get; set; }
 
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
+    public List<EventMemberDetailsDto> EventEntries { get; set; } = new();
     public List<ProfileDetailsDto> Profiles { get; set; } = new();
     public PlayerDataDto? PlayerData { get; set; }
 }
