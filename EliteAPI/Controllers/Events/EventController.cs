@@ -7,6 +7,7 @@ using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.MemberService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,12 +21,14 @@ public class EventController : ControllerBase
     private readonly DataContext _context;
     private readonly IMapper _mapper;
     private readonly IDiscordService _discordService;
+    private readonly IMemberService _memberService;
 
-    public EventController(DataContext context, IMapper mapper, IDiscordService discordService)
+    public EventController(DataContext context, IMapper mapper, IMemberService memberService, IDiscordService discordService)
     {
         _context = context;
         _mapper = mapper;
         _discordService = discordService;
+        _memberService = memberService;
     }
     
     // GET <EventController>s/
@@ -191,7 +194,13 @@ public class EventController : ControllerBase
             return BadRequest("You are already a member of this event!");
         }
 
-        var query = _context.ProfileMembers.AsNoTracking()
+        var updateQuery = await _memberService.ProfileMemberQuery(selectedAccount.Id);
+
+        if (updateQuery is null) {
+            return BadRequest("Profile member data not found, please try again later or ensure an existing profile is selected.");
+        }
+
+        var query = updateQuery
             .Include(p => p.MinecraftAccount).AsNoTracking()
             .Include(p => p.Farming).AsNoTracking()
             .Where(p => p.PlayerUuid == selectedAccount.Id);
@@ -235,7 +244,7 @@ public class EventController : ControllerBase
 
         newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 
-        if (eliteEvent.Active) {
+        if (eliteEvent.Active && member?.LastUpdated > eliteEvent.StartTime) {
             // Save the start conditions
             newMember.StartConditions = new StartConditions {
                 Collection = profileMember.ExtractCropCollections(true),
