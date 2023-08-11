@@ -47,7 +47,7 @@ public static class EventProgressParser {
         
         // Remove tools that are no longer in the inventory
         foreach (var item in initialTools) {
-            if (currentTools.Any(tool => tool.Uuid == item.Key)) continue;
+            if (currentTools.Any(tool => tool.Uuid == item.Key.Replace("-c", ""))) continue;
             
             // Tool is no longer in the inventory, remove it from the initial tools
             // This prevents trading tools to other players, then having them trade it back to you with more collection
