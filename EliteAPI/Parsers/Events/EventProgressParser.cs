@@ -115,7 +115,7 @@ public static class EventProgressParser {
         }
         
         // Sum up the total farming weight increase
-        var cropWeight = countedCollections.ParseCropWeight();
+        var cropWeight = countedCollections.ParseCropWeight(true);
         eventMember.AmountGained = cropWeight.Sum(x => x.Value);
     }
 }
