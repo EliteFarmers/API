@@ -13,7 +13,8 @@ public class ConfigFarmingWeightSettings
     public List<string> CropItemIds { get; set; } = new();
     public List<string> FarmingMinions { get; set; } = new();
     public Dictionary<string, double> CropsPerOneWeight { get; set; } = new();
-
+    public Dictionary<string, double> EventCropsPerOneWeight { get; set; } = new();
+    
     public int Farming60Bonus { get; set; }
     public int Farming50Bonus { get; set; }
     public int AnitaBuffBonusMultiplier { get; set; }

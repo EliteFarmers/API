@@ -69,10 +69,12 @@ public static class FarmingWeightParser
         return crops;
     }
     
-    public static Dictionary<Crop, double> ParseCropWeight(this Dictionary<Crop, long> collections) {
+    public static Dictionary<Crop, double> ParseCropWeight(this Dictionary<Crop, long> collections, bool forEvent = false) {
         var crops = new Dictionary<Crop, double>();
 
-        var collectionPerWeight = FarmingWeightConfig.Settings.CropsPerOneWeight;
+        var collectionPerWeight = (forEvent) 
+            ? FarmingWeightConfig.Settings.EventCropsPerOneWeight 
+            : FarmingWeightConfig.Settings.CropsPerOneWeight;
 
         foreach (var cropId in FarmingWeightConfig.Settings.CropItemIds)
         {
