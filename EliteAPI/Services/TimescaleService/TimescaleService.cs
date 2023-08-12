@@ -25,7 +25,7 @@ public class TimescaleService : ITimescaleService {
             .OrderBy(cc => cc.Time)
             .ToListAsync();
         
-        var groupedByDay = cropCollection.GroupBy(obj => obj.Time.Date);
+        var groupedByDay = cropCollection.GroupBy(obj => obj.Time.DayOfYear);
 
         var selectedEntries = new List<CropCollection>();
 

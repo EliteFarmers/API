@@ -47,7 +47,7 @@ public class GraphController : ControllerBase {
         
         if (selectedProfile is null) return NotFound("Profile not found.");
         
-        var cropCollections = await _timescaleService.GetCropCollections(selectedProfile.Id, DateTimeOffset.FromUnixTimeSeconds(start), DateTimeOffset.FromUnixTimeSeconds(end), 240);
+        var cropCollections = await _timescaleService.GetCropCollections(selectedProfile.Id, DateTimeOffset.FromUnixTimeSeconds(start), DateTimeOffset.FromUnixTimeSeconds(end), 4);
         
         return Ok(cropCollections);
     }   
