@@ -84,6 +84,8 @@ public static class FarmingWeightParser
 
             collections.TryGetValue(crop.Value, out var amount);
             collectionPerWeight.TryGetValue(cropId.Replace(':', '_'), out var perWeight);
+            
+            if (crops.ContainsKey(crop.Value)) continue;
 
             if (perWeight == 0 || amount == 0)
             {
