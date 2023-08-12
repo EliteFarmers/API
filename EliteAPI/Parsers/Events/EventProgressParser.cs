@@ -80,6 +80,8 @@ public static class EventProgressParser {
             initialTools.TryGetValue($"{tool.Uuid!}-c", out var initialCultivating);
             var cultivatedCount = tool.ExtractCultivating();
             
+            if (cultivatedCount <= initialCultivating) continue;
+            
             // Account for mushrooms being included on cultivating by checking if the cultivated count is higher than the collected count
             
             var increasedCultivating = cultivatedCount - initialCultivating - increasedCount;
