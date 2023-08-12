@@ -114,7 +114,7 @@ public static class FarmingWeightParser
         var mushroomWeight = doubleBreakRatio * (mushroomAmount / (mushroomPerWeight * 2)) +
                              normalCropRatio * (mushroomAmount / mushroomPerWeight);
 
-        crops.Add(Crop.Mushroom, mushroomWeight);
+        crops[Crop.Mushroom] = mushroomWeight;
 
         return crops;
     }
