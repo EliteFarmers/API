@@ -100,19 +100,22 @@ public static class EventProgressParser {
         // Need to make sure that increased collection numbers match the increased tool numbers
         // This is to prevent other sources of collection increases from being counted
 
-        foreach (var (crop, current) in currentCollections) {
+        foreach (var (crop, currentCollection) in currentCollections) {
             if (crop == Crop.Seeds) continue;
             
-            var initial = initialCollections.TryGetValue(crop, out var initialCollection) ? initialCollection : 0;
-            var increase = toolIncreases.TryGetValue(crop, out var toolIncrease) ? toolIncrease : 0;
+            if (!initialCollections.TryGetValue(crop, out var initialCollection)) continue;
+            if (!toolIncreases.TryGetValue(crop, out var toolIncrease)) continue;
             
-            if (current <= initial || increase == 0) continue;
+            var increasedCollection = currentCollection - initialCollection;
+            if (increasedCollection == 0 || toolIncrease == 0) continue;
+
+            var counted = Math.Min(increasedCollection, toolIncrease);
             
             if (!countedCollections.ContainsKey(crop)) {
-                countedCollections.Add(crop, increase);
+                countedCollections.Add(crop, counted);
             }
             else {
-                countedCollections[crop] += increase;
+                countedCollections[crop] += counted;
             }
         }
         
