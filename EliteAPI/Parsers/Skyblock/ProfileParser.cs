@@ -121,7 +121,7 @@ public class ProfileParser
     {
         var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
 
-        if (existing?.WasRemoved == true) return;
+        if (existing?.WasRemoved == true && memberData.DeletionNotice is not null) return;
         
         if (existing is not null)
         {
