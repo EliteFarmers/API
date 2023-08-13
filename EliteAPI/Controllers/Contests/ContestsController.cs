@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Net;
+﻿using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -91,7 +90,9 @@ public class ContestsController : ControllerBase
         var cropInt = (int)crop;
 
         try {
-            var asJson = _context.Database.SqlQuery<string>($@"
+            // Work around EF Core not supporting DISTINCT ON
+            // Also work around EF not supporting mapping to a DTO by parsing as JSON
+            var asJson = await _context.Database.SqlQuery<string>($@"
                 SELECT json_agg(c) as ""Value""
                 FROM (
                     SELECT ""Collected"", ""Position"", ""Crop"", ""Timestamp"", ""Participants"", ""PlayerUuid"", ""ProfileId"" as ""ProfileUuid"", ""Name"" as ""PlayerName""
@@ -107,7 +108,7 @@ public class ContestsController : ControllerBase
                     ORDER BY ""Collected"" DESC
                     LIMIT 100
                 ) c
-            ").FirstOrDefault();
+            ").FirstOrDefaultAsync();
 
             if (asJson is null) return new List<ContestParticipationWithTimestampDto>();
             var parsed = JsonSerializer.Deserialize<List<ContestParticipationWithTimestampDto>>(asJson);
