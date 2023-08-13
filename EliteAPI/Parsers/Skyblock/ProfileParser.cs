@@ -132,6 +132,7 @@ public class ProfileParser
             
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             _context.MinecraftAccounts.Update(existing.MinecraftAccount);
+            _context.Entry(existing).State = EntityState.Modified;
             
             await UpdateProfileMember(profile, existing, memberData);
             
