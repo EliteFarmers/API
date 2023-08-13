@@ -1,16 +1,18 @@
-﻿using System.Net;
+﻿using System.Collections.Immutable;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
-namespace EliteAPI.Controllers;
+namespace EliteAPI.Controllers.Contests;
 
 [Route("[controller]")]
 [ApiController]
@@ -80,6 +82,71 @@ public class ContestsController : ControllerBase
             Count = contests.Count,
             Complete = contests.Count == 372,
             Contests = result
+        };
+
+        return Ok(dto);
+    }
+    
+    private async Task<List<ContestParticipationWithTimestampDto>> FetchRecords(Crop crop, long startTime, long endTime) {
+        var cropInt = (int)crop;
+
+        try {
+            var asJson = _context.Database.SqlQuery<string>($@"
+                SELECT json_agg(c) as ""Value""
+                FROM (
+                    SELECT ""Collected"", ""Position"", ""Crop"", ""Timestamp"", ""Participants"", ""PlayerUuid"", ""ProfileId"" as ""ProfileUuid"", ""Name"" as ""PlayerName""
+                    FROM (
+                        SELECT DISTINCT ON (""ProfileMemberId"") ""ProfileMemberId"", ""Collected"", ""Position"", ""Crop"", ""Timestamp"", ""Participants""
+                        FROM ""ContestParticipations""
+                        LEFT JOIN ""JacobContests"" ON ""JacobContestId"" = ""JacobContests"".""Id""
+                        WHERE ""Crop"" = {cropInt} AND ""JacobContestId"" BETWEEN {startTime} AND {endTime}
+                        ORDER BY ""ProfileMemberId"", ""Collected"" DESC
+                    ) sub
+                    LEFT JOIN ""ProfileMembers"" ON sub.""ProfileMemberId"" = ""ProfileMembers"".""Id""
+                    LEFT JOIN ""MinecraftAccounts"" ON ""PlayerUuid"" = ""MinecraftAccounts"".""Id""
+                    ORDER BY ""Collected"" DESC
+                    LIMIT 100
+                ) c
+            ").FirstOrDefault();
+
+            if (asJson is null) return new List<ContestParticipationWithTimestampDto>();
+            var parsed = JsonSerializer.Deserialize<List<ContestParticipationWithTimestampDto>>(asJson);
+
+            return parsed ?? new List<ContestParticipationWithTimestampDto>();
+        } catch (Exception e) {
+            _logger.LogError(e, "Failed to deserialize contest records");
+            return new List<ContestParticipationWithTimestampDto>();
+        }
+    }
+    
+    // GET <ContestsController>/285
+    [HttpGet("Records/{year:int}")]
+    [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<ActionResult<YearlyCropRecordsDto>> GetRecordsInOneYear(int year)
+    {
+        var startTime = FormatUtils.GetTimeFromSkyblockDate(year - 1, 0, 0);
+        var endTime = FormatUtils.GetTimeFromSkyblockDate(year, 0, 0);
+        
+        if (startTime > SkyblockDate.Now.UnixSeconds) {
+            return BadRequest("Cannot fetch records for a year that hasn't happened yet!");
+        }
+        
+        var dto = new YearlyCropRecordsDto {
+            Year = year,
+            Crops = new Dictionary<string, List<ContestParticipationWithTimestampDto>> {
+                { "cactus", await FetchRecords(Crop.Cactus, startTime, endTime) },
+                { "carrot", await FetchRecords(Crop.Carrot, startTime, endTime) },
+                { "potato", await FetchRecords(Crop.Potato, startTime, endTime) },
+                { "pumpkin", await FetchRecords(Crop.Pumpkin, startTime, endTime) },
+                { "melon", await FetchRecords(Crop.Melon, startTime, endTime) },
+                { "mushroom", await FetchRecords(Crop.Mushroom, startTime, endTime) },
+                { "cocoa", await FetchRecords(Crop.CocoaBeans, startTime, endTime) },
+                { "cane", await FetchRecords(Crop.SugarCane, startTime, endTime) },
+                { "wart", await FetchRecords(Crop.NetherWart, startTime, endTime) },
+                { "wheat", await FetchRecords(Crop.Wheat, startTime, endTime) }
+            }
         };
 
         return Ok(dto);
@@ -179,7 +246,7 @@ public class ContestsController : ControllerBase
     }
     
     // GET /contest/285:2_11:CACTUS
-    [Route("/contest/{contestKey}")]
+    [Route("/Contest/{contestKey}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -210,71 +277,6 @@ public class ContestsController : ControllerBase
         
         data.Participations = stripped;
         return Ok(data);
-    }
-
-    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/
-    [HttpGet("{playerUuid}")]
-    [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllOfOnePlayersContests(string playerUuid)
-    {
-        var profileMembers = await _context.ProfileMembers
-            .Where(p => p.PlayerUuid.Equals(playerUuid))
-            .Include(p => p.JacobData)
-            .ThenInclude(j => j.Contests)
-            .ThenInclude(c => c.JacobContest)
-            .AsSplitQuery()
-            .ToListAsync();
-
-        if (profileMembers.Count == 0) return NotFound("Player not found.");
-
-        var data = new List<ContestParticipationDto>();
-
-        foreach (var profileMember in profileMembers)
-        {
-            data.AddRange(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
-        }
-
-        return Ok(data);
-    }
-
-    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
-    [HttpGet("{playerUuid}/{profileUuid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfOneProfileMember(string playerUuid, string profileUuid)
-    {
-        var profileMember = await _context.ProfileMembers
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.ProfileId.Equals(profileUuid))
-            .Include(p => p.JacobData)
-            .ThenInclude(j => j.Contests)
-            .ThenInclude(c => c.JacobContest)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync();
-
-        if (profileMember is null) return NotFound("Player not found.");
-
-        return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
-    }
-
-    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/Selected
-    [HttpGet("{playerUuid}/Selected")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfSelectedProfileMember(string playerUuid)
-    {
-        var profileMember = await _context.ProfileMembers
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
-            .Include(p => p.JacobData)
-            .ThenInclude(j => j.Contests)
-            .ThenInclude(c => c.JacobContest)
-            .AsSplitQuery()
-            .FirstOrDefaultAsync();
-
-        if (profileMember is null) return NotFound("Player not found.");
-
-        return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
     }
     
     // POST <ContestsController>/at/now
