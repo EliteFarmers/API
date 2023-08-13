@@ -125,13 +125,17 @@ public class AccountService : IAccountService
     }
 
     public async Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn) {
-        var account = await GetAccount(discordId);
+        var account = await _context.Accounts
+            .Include(a => a.MinecraftAccounts)
+            .Include(a => a.EventEntries).AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == discordId);
         
         if (account is null) return new UnauthorizedObjectResult("Account not found.");
         
         // Remove dashes from id
         var id = playerUuidOrIgn.Replace("-", "");
-        var minecraftAccount = account.MinecraftAccounts.FirstOrDefault(mc => mc.Id.Equals(id) || mc.Name.ToLower().Equals(id.ToLower()));
+        var minecraftAccount = account.MinecraftAccounts
+            .FirstOrDefault(mc => mc.Id.Equals(id) || mc.Name.ToLower().Equals(id.ToLower()));
 
         // Check if the player has already linked their account
         if (minecraftAccount is null)
@@ -141,9 +145,12 @@ public class AccountService : IAccountService
         
         // Reset the account id
         minecraftAccount.AccountId = null;
+        minecraftAccount.EliteAccount = null;
         minecraftAccount.Selected = false;
         account.MinecraftAccounts.Remove(minecraftAccount);
         
+        _context.Entry(account).State = EntityState.Modified;
+        _context.Entry(minecraftAccount).State = EntityState.Modified;
         await _context.SaveChangesAsync();
 
         return new NoContentResult();
