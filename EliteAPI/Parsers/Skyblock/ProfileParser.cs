@@ -125,9 +125,12 @@ public class ProfileParser
         
         if (existing is not null)
         {
-            existing.IsSelected = selected;
-            existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            // Only update the selected profile if the player is the requester
+            if (playerId == requesterUuid) {
+                existing.IsSelected = selected;
+            }
             
+            existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             existing.WasRemoved = memberData.DeletionNotice is not null;
             
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
