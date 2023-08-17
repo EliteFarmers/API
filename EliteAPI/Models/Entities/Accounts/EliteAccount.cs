@@ -36,6 +36,7 @@ public class EliteAccount
 public enum PermissionFlags : ushort {
     None = 0,
     Helper = 16,
+    ViewGraphs = 17,
     Moderator = 32,
     Admin = 64
 }

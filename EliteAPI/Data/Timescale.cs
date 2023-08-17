@@ -22,3 +22,7 @@ public static class TimeScaleExtensions {
         }
     }
 }
+
+public interface ITimeScale {
+    public DateTimeOffset Time { get; set; }
+}

@@ -1,8 +1,8 @@
 ﻿using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.Farming;
+using EliteAPI.Parsers.Profiles;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services.TimescaleService; 
@@ -15,7 +15,12 @@ public class TimescaleService : ITimescaleService {
     }
 
     public async Task<List<CollectionDataPointDto>> GetCropCollection(Guid memberId, Crop crop, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
-        throw new NotImplementedException();
+        var crops = await GetCropCollections(memberId, start, end, perDay);
+        
+        return crops.Select(c => new CollectionDataPointDto {
+            Value = c.Crops[crop.SimpleName()],
+            Timestamp = c.Timestamp
+        }).ToList();
     }
 
     public async Task<List<CropCollectionsDataPointDto>> GetCropCollections(Guid memberId, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
@@ -24,10 +29,40 @@ public class TimescaleService : ITimescaleService {
             .Where(cc => cc.ProfileMemberId == memberId && cc.Time >= start && cc.Time <= end)
             .OrderBy(cc => cc.Time)
             .ToListAsync();
-        
-        var groupedByDay = cropCollection.GroupBy(obj => obj.Time.DayOfYear);
 
-        var selectedEntries = new List<CropCollection>();
+        var selectedEntries = MaxPerDayFilter(cropCollection, perDay);
+        
+        return selectedEntries.Select(c => new CropCollectionsDataPointDto {
+            Crops = c.ExtractReadableCropCollections(),
+            Timestamp = c.Time.ToUnixTimeSeconds()
+        }).ToList();
+    }
+
+    public Task<List<SkillDataPointDto>> GetSkill(Guid memberId, string skill, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<SkillsDataPointDto>> GetSkills(Guid memberId, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
+        // Get all crop collections for the member between the start and end time. 
+        var skillExperiences = await _context.SkillExperiences
+            .Where(cc => cc.ProfileMemberId == memberId && cc.Time >= start && cc.Time <= end)
+            .OrderBy(cc => cc.Time)
+            .ToListAsync();
+
+        var selectedEntries = MaxPerDayFilter(skillExperiences, perDay);
+        
+        return selectedEntries.Select(c => new SkillsDataPointDto {
+            Skills = c.ExtractSkills(),
+            Timestamp = c.Time.ToUnixTimeSeconds()
+        }).ToList();
+    }
+    
+    private static List<T> MaxPerDayFilter<T>(IEnumerable<T> collection, int perDay = 4) where T : ITimeScale {
+        if (perDay == -1) return collection.ToList();
+        
+        var groupedByDay = collection.GroupBy(obj => obj.Time.DayOfYear);
+
+        var selectedEntries = new List<T>();
 
         foreach (var group in groupedByDay)
         {
@@ -57,18 +92,7 @@ public class TimescaleService : ITimescaleService {
             // Won't guarantee that that the max amount of entries will be returned, and might go over, but it's close enough
             selectedEntries.AddRange(intervals.Select(g => g.Last()));
         }
-
-        return selectedEntries.Select(c => new CropCollectionsDataPointDto {
-            Crops = c.ExtractReadableCropCollections(),
-            Timestamp = c.Time.ToUnixTimeSeconds()
-        }).ToList();
-    }
-
-    public async Task<List<SkillDataPointDto>> GetSkill(Guid memberId, string skill, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
-        throw new NotImplementedException();
-    }
-
-    public async Task<List<SkillsDataPointDto>> GetSkills(Guid memberId, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
-        throw new NotImplementedException();
+        
+        return selectedEntries;
     }
 }

@@ -254,7 +254,6 @@ public class ProfileParser
         await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
         
         var member = await context.ProfileMembers
-            .Include(p => p.Collections)
             .Include(p => p.Skills)
             .FirstOrDefaultAsync(p => p.Id == memberId);
         if (member is null) return;
@@ -292,6 +291,7 @@ public class ProfileParser
             Mining = member.Skills.Mining,
             Runecrafting = member.Skills.Runecrafting,
             Taming = member.Skills.Taming,
+            Social = member.Skills.Social,
             
             ProfileMemberId = member.Id,
             ProfileMember = member,

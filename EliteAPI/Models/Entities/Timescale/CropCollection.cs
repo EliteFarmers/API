@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Models.Entities.Timescale; 
 
 [Keyless]
-public class CropCollection {
+public class CropCollection : ITimeScale {
     public long Wheat { get; set; }
     public long Carrot { get; set; }
     public long Potato { get; set; }
