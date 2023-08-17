@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Models.Entities.Timescale; 
 
 [Keyless]
-public class SkillExperience {
+public class SkillExperience : ITimeScale {
     public double Combat { get; set; } 
     public double Mining { get; set; }
     public double Foraging { get; set; }
