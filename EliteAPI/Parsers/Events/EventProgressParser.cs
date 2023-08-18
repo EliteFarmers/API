@@ -61,8 +61,8 @@ public static class EventProgressParser {
         var initialSeeds = initialCollections.TryGetValue(Crop.Seeds, out var initialSeedCount) ? initialSeedCount : 0;
         var increasedSeeds = currentSeeds - initialSeeds;
 
-        currentCollections.TryGetValue(Crop.Seeds, out var currentMushroomCollection);
-        initialCollections.TryGetValue(Crop.Seeds, out var initialMushroomCollection);
+        currentCollections.TryGetValue(Crop.Mushroom, out var currentMushroomCollection);
+        initialCollections.TryGetValue(Crop.Mushroom, out var initialMushroomCollection);
         var increasedMushroom = currentMushroomCollection - initialMushroomCollection;
         
         foreach (var tool in currentTools.Where(tool => tool.Uuid is not null)) {
