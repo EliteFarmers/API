@@ -9,6 +9,8 @@ public class AuthorizedAccountDto
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
     
+    public int Permissions { get; set; } = 0;
+    
     public string? Discriminator { get; set; }
     public string? Email { get; set; }
     public string? Locale { get; set; }

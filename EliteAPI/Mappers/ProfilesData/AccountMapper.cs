@@ -13,6 +13,7 @@ public class AccountMapper : Profile
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.Settings))
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
             .ForMember(a => a.EventEntries, opt => opt.MapFrom(a => a.EventEntries))
+            .ForMember(a => a.Permissions, opt => opt.MapFrom(a => (int) a.Permissions))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
     }
 }
