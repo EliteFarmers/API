@@ -244,7 +244,7 @@ public class EventController : ControllerBase
 
         newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 
-        if (eliteEvent.Active && member?.LastUpdated > eliteEvent.StartTime) {
+        if (eliteEvent.Active && DateTimeOffset.FromUnixTimeSeconds(profileMember.LastUpdated) > eliteEvent.StartTime) {
             // Save the start conditions
             newMember.StartConditions = new StartConditions {
                 Collection = profileMember.ExtractCropCollections(true),
@@ -260,6 +260,9 @@ public class EventController : ControllerBase
             eliteEvent.Members.Add(newMember);
 
             _context.EventMembers.Add(newMember);
+        }
+        else {
+            _context.Entry(newMember).State = EntityState.Modified;
         }
         
         await _context.SaveChangesAsync();
