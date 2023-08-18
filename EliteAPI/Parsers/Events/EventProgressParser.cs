@@ -1,4 +1,5 @@
-﻿using EliteAPI.Parsers.Farming;
+﻿using EliteAPI.Data;
+using EliteAPI.Parsers.Farming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
@@ -54,11 +55,15 @@ public static class EventProgressParser {
             initialTools.Remove(item.Key);
             initialTools.Remove($"{item.Key}-c");
         }
-        
+
         // Check if the player has collected any seeds for wheat
         var currentSeeds = currentCollections.TryGetValue(Crop.Seeds, out var currentSeedsCount) ? currentSeedsCount : 0;
         var initialSeeds = initialCollections.TryGetValue(Crop.Seeds, out var initialSeedCount) ? initialSeedCount : 0;
         var increasedSeeds = currentSeeds - initialSeeds;
+
+        currentCollections.TryGetValue(Crop.Seeds, out var currentMushroomCollection);
+        initialCollections.TryGetValue(Crop.Seeds, out var initialMushroomCollection);
+        var increasedMushroom = currentMushroomCollection - initialMushroomCollection;
         
         foreach (var tool in currentTools.Where(tool => tool.Uuid is not null)) {
             var crop = tool.ExtractCrop();
@@ -96,6 +101,9 @@ public static class EventProgressParser {
                 toolIncreases[Crop.Mushroom] += increasedCultivating;
             }
         }
+
+        // Make sure that the mushroom collection is not higher than the mushroom tool increase
+        toolIncreases[Crop.Mushroom] = Math.Min(toolIncreases[Crop.Mushroom], increasedMushroom);
         
         // Need to make sure that increased collection numbers match the increased tool numbers
         // This is to prevent other sources of collection increases from being counted
@@ -122,5 +130,11 @@ public static class EventProgressParser {
         // Sum up the total farming weight increase
         var cropWeight = countedCollections.ParseCropWeight(true);
         eventMember.AmountGained = cropWeight.Sum(x => x.Value);
+        
+        // Update the start conditions with the new/removed tools
+        eventMember.StartConditions = new StartConditions {
+            Collection = eventMember.StartConditions.Collection,
+            Tools = initialTools
+        };
     }
 }
