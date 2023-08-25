@@ -114,7 +114,7 @@ public static class ServiceExtensions
 
     public static void AddEliteRedisCache(this IServiceCollection services)
     {
-        var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6379";
+        var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6380";
         var multiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
         {
             EndPoints = { redisConnection },

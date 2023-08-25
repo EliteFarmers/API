@@ -29,6 +29,7 @@ public class EventDetailsDto {
 public class EventMemberDto {
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
+    public string? ProfileId { get; set; }
     public required string EventId { get; set; }
     
     public EventMemberStatus Status { get; set; }
@@ -46,6 +47,7 @@ public class EventMemberDto {
 public class EventMemberDetailsDto {
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
+    public string? ProfileId { get; set; }
     public required string EventId { get; set; }
     
     public EventMemberStatus Status { get; set; }

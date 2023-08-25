@@ -52,11 +52,11 @@ public partial class MojangService : IMojangService
     }
 
     public async Task<string?> GetUsernameFromUuid(string uuid) {
-        return await _cache.GetUsernameFromUuid(uuid) ?? (await GetMinecraftAccountByUuid(uuid))?.Name;
+        return (await _cache.GetUsernameFromUuid(uuid)) ?? (await GetMinecraftAccountByUuid(uuid))?.Name;
     }
 
     public async Task<string?> GetUuidFromUsername(string username) {
-        return await _cache.GetUuidFromUsername(username) ?? (await GetMinecraftAccountByIgn(username))?.Id;
+        return (await _cache.GetUuidFromUsername(username)) ?? (await GetMinecraftAccountByIgn(username))?.Id;
     }
 
     public async Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid)
@@ -136,6 +136,7 @@ public partial class MojangService : IMojangService
                 existing.Properties = data.Properties;
                 existing.LastUpdated = data.LastUpdated;
                 
+                _context.MinecraftAccounts.Update(existing);
                 await _context.SaveChangesAsync();
                 _context.Entry(existing).State = EntityState.Detached;
                 

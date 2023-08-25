@@ -20,6 +20,7 @@ public class EventMemberMappers : Profile {
         CreateMap<EventMember, EventMemberDto>()
             .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
+            .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.AmountGained, opt => opt.MapFrom(e => e.AmountGained.ToString(CultureInfo.InvariantCulture)));
@@ -27,6 +28,7 @@ public class EventMemberMappers : Profile {
         CreateMap<EventMember, EventMemberDetailsDto>()
             .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
+            .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.AmountGained, opt => opt.MapFrom(e => e.AmountGained.ToString(CultureInfo.InvariantCulture)));
