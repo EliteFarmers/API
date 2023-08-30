@@ -55,7 +55,6 @@ public class ProfileMember : IDisposable
     [Column(TypeName = "jsonb")]
     public List<Pet> Pets { get; set; } = new();
 
-    
     [ForeignKey("MinecraftAccount")]
     public required string PlayerUuid { get; set; }
     public MinecraftAccount MinecraftAccount { get; set; } = null!;
@@ -63,6 +62,7 @@ public class ProfileMember : IDisposable
     [ForeignKey("Profile")]
     public required string ProfileId { get; set; }
     public required Profile Profile { get; set; }
+    public string? ProfileName { get; set; }
     
     public List<EventMember>? EventEntries { get; set; }
 

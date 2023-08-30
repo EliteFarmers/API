@@ -18,6 +18,7 @@ public class ProfileMemberMapper : Profile
 {
     public ProfileMemberMapper() {
         CreateMap<ProfileMember, ProfileMemberDto>()
+            .ForMember(x => x.ProfileName, opt => opt.MapFrom(x => x.ProfileName ?? x.Profile.ProfileName))
             .ForMember(x => x.Collections, opt =>
                 opt.MapFrom(x => x.Collections.Deserialize<Dictionary<string, long>>(new JsonSerializerOptions())))
             .ForMember(x => x.CollectionTiers, opt => opt.MapFrom(x => x.CollectionTiers))
@@ -32,6 +33,7 @@ public class ProfileMemberMapper : Profile
 
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
+            .ForMember(x => x.ProfileName, opt => opt.MapFrom(x => x.ProfileName ?? x.Profile.ProfileName))
             .ForMember(x => x.Username, opt => opt.MapFrom(x => x.MinecraftAccount.Name))
             .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming.TotalWeight))
             .ForMember(x => x.Active, opt => opt.MapFrom(x => !x.WasRemoved));

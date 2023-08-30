@@ -81,7 +81,7 @@ public class ProfileService : IProfileService
         var existing = await _context.ProfileMembers
             .AsNoTracking()
             .Where(m => m.PlayerUuid.Equals(playerUuid))
-            .Select(m => new { m.ProfileId, m.IsSelected })
+            .Select(m => new { m.ProfileId, m.ProfileName, m.IsSelected })
             .ToListAsync();
         
         var profileIds = existing.Select(e => e.ProfileId).ToList();
@@ -99,9 +99,15 @@ public class ProfileService : IProfileService
 
         // This needs to be fetched because "selected" lives on the ProfileMembers
         var selected = existing.FirstOrDefault(e => e.IsSelected)?.ProfileId;
-        if (selected is not null) {
-            mappedProfiles.ForEach(p => p.Selected = p.ProfileId == selected);
-        }
+        
+        mappedProfiles.ForEach(p => {
+            if (selected is not null) {
+                p.Selected = p.ProfileId == selected;
+            }
+
+            // Make the profile name local to the member if it exists
+            p.ProfileName = existing.FirstOrDefault(e => e.ProfileId == p.ProfileId)?.ProfileName ?? p.ProfileName;
+        });
         
         return mappedProfiles;
     }

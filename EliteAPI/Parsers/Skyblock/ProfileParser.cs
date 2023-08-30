@@ -46,14 +46,24 @@ public class ProfileParser
         _leaderboardService = leaderboardService;
     }
 
-    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid)
-    {
+    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid) {
         if (!data.Success || data.Profiles is not { Length: > 0 }) return;
-        
-        foreach (var profile in data.Profiles)
-        {
+
+        foreach (var profile in data.Profiles) {
             await TransformSingleProfile(profile, playerUuid);
         }
+
+        var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
+
+        // Make player as removed from all profiles that aren't in the response
+        await _context.ProfileMembers
+            .Include(p => p.Profile)
+            .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
+            .ExecuteUpdateAsync(member =>
+                member
+                    .SetProperty(m => m.WasRemoved, true)
+                    .SetProperty(m => m.IsSelected, false)
+            );
         
         await _context.SaveChangesAsync();
     }
@@ -125,10 +135,14 @@ public class ProfileParser
         
         if (existing is not null)
         {
-            // Only update the selected profile if the player is the requester
+            // Only update if the player is the requester
             if (playerId == requesterUuid) {
                 existing.IsSelected = selected;
+                existing.ProfileName = profile.ProfileName;
             }
+            
+            // Only update if null (profile names can differ between members)
+            existing.ProfileName ??= profile.ProfileName;
             
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             existing.WasRemoved = memberData.DeletionNotice is not null;
@@ -152,6 +166,7 @@ public class ProfileParser
             
             Profile = profile,
             ProfileId = profile.ProfileId,
+            ProfileName = profile.ProfileName,
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,

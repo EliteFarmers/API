@@ -14,6 +14,7 @@ public class MemberDetailsDto
 {
     public required string Uuid { get; set; }
     public required string Username { get; set; }
+    public string? ProfileName { get; set; }
     public bool Active { get; set; } = true;
     public double FarmingWeight { get; set; }
 }
@@ -22,6 +23,7 @@ public class ProfileMemberDto
 {
     public required string ProfileId { get; set; }
     public required string PlayerUuid { get; set; }
+    public required string ProfileName { get; set; }
     
     public ApiAccessDto Api { get; set; } = new();
     

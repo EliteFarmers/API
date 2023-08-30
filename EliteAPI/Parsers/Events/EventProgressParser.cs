@@ -60,10 +60,6 @@ public static class EventProgressParser {
         var currentSeeds = currentCollections.TryGetValue(Crop.Seeds, out var currentSeedsCount) ? currentSeedsCount : 0;
         var initialSeeds = initialCollections.TryGetValue(Crop.Seeds, out var initialSeedCount) ? initialSeedCount : 0;
         var increasedSeeds = currentSeeds - initialSeeds;
-
-        currentCollections.TryGetValue(Crop.Mushroom, out var currentMushroomCollection);
-        initialCollections.TryGetValue(Crop.Mushroom, out var initialMushroomCollection);
-        var increasedMushroom = currentMushroomCollection - initialMushroomCollection;
         
         foreach (var tool in currentTools.Where(tool => tool.Uuid is not null)) {
             var crop = tool.ExtractCrop();
@@ -101,9 +97,6 @@ public static class EventProgressParser {
                 toolIncreases[Crop.Mushroom] += increasedCultivating;
             }
         }
-
-        // Make sure that the mushroom collection is not higher than the mushroom tool increase
-        toolIncreases[Crop.Mushroom] = Math.Min(toolIncreases[Crop.Mushroom], increasedMushroom);
         
         // Need to make sure that increased collection numbers match the increased tool numbers
         // This is to prevent other sources of collection increases from being counted
