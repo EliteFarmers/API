@@ -33,6 +33,7 @@ public class EliteAccount
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = new();
 }
 
+[Flags]
 public enum PermissionFlags : ushort {
     None = 0,
     Helper = 16,

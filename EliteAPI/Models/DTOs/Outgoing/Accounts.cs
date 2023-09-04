@@ -98,3 +98,14 @@ public enum PurchaseType
     Silver = 2,
     Gold = 3,
 }
+
+public class AccountWithPermsDto {
+    public required string Id { get; set; }
+    public required string DisplayName { get; set; }
+    public required string Username { get; set; }
+
+    public int Permissions { get; set; } = 0;
+
+    public string? Discriminator { get; set; }
+    public string? Avatar { get; set; }
+}

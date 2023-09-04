@@ -94,8 +94,7 @@ public class GraphController : ControllerBase {
             return Unauthorized("You do not have permission to view this resource.");
         }
 
-        if (!account.Permissions.HasFlag(PermissionFlags.ViewGraphs) &&
-            !account.Permissions.HasFlag(PermissionFlags.Admin)) {
+        if (account.Permissions < PermissionFlags.ViewGraphs) {
             return Unauthorized("You do not have permission to view this resource.");
         }
         
@@ -135,8 +134,7 @@ public class GraphController : ControllerBase {
             return Unauthorized("You do not have permission to view this resource.");
         }
 
-        if (!account.Permissions.HasFlag(PermissionFlags.ViewGraphs) &&
-            !account.Permissions.HasFlag(PermissionFlags.Admin)) {
+        if (account.Permissions < PermissionFlags.ViewGraphs) {
             return Unauthorized("You do not have permission to view this resource.");
         }
         
