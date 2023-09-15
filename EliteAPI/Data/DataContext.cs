@@ -12,6 +12,8 @@ public class DataContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        DotNetEnv.Env.Load();
+        
         base.OnConfiguring(optionsBuilder);
         // Get connection string from secrets
         var connection = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");

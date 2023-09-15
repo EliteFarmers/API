@@ -1,10 +1,13 @@
 using System.Net;
+using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 DotNetEnv.Env.Load();
 
@@ -23,6 +26,22 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
 });
 
+builder.Services.AddScoped<LocalOnlyMiddleware>();
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(x =>
+    {
+        x.AddPrometheusExporter();
+
+        x.AddMeter("System.Runtime", "Microsoft.AspNetCore.Hosting",
+            "Microsoft.AspNetCore.Server.Kestrel");
+        x.AddView("http.server.request.duration",
+            new ExplicitBucketHistogramConfiguration
+            {
+                Boundaries = new[] { 0, 0.005, 0.01, 0.025, 0.05,
+                    0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
+            });
+    });
+
 // Use Cloudflare IP address as the client remote IP address
 builder.Services.Configure<ForwardedHeadersOptions>(opt => {
     opt.ForwardedForHeaderName = "CF-Connecting-IP";
@@ -33,18 +52,17 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 });
 
 var app = builder.Build();
+app.MapPrometheusScrapingEndpoint();
 
 app.UseForwardedHeaders();
 app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
 
-//app.UseMetricServer(9102);
-//app.UseHttpMetrics();
-
 app.UseSwagger(opt => {
     opt.RouteTemplate = "{documentName}/swagger.json";
 });
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -53,10 +71,18 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Secure the metrics endpoint
+app.UseWhen(context => context.Request.Path.StartsWithSegments("/metrics"), applicationBuilder => {
+    applicationBuilder.UseMiddleware<LocalOnlyMiddleware>();
+});
+
 using (var scope = app.Services.CreateScope())
 {
     FarmingWeightConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
     FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
+
+    var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logging.LogInformation("Starting EliteAPI...");
 
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try

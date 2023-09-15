@@ -18,7 +18,6 @@ using EliteAPI.Services.ProfileService;
 using EliteAPI.Services.TimescaleService;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.OpenApi.Models;
-using Prometheus;
 using StackExchange.Redis;
 
 namespace EliteAPI.Services;
@@ -30,14 +29,12 @@ public static class ServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         // Add services to the container.
-        // services.AddSingleton<MetricsService>();
         services.AddSingleton<HypixelRequestLimiter>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-        services.AddHttpClient(HypixelService.HypixelService.HttpClientName, client =>
-        {
+        services.AddHttpClient(HypixelService.HypixelService.HttpClientName, client => {
             client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI");
-        }).UseHttpClientMetrics();
+        });
 
         services.AddDbContext<DataContext>();
     }

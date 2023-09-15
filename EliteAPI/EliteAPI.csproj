@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>920c60f9-4ab4-43bc-89e4-bfd2c78143a3</UserSecretsId>
@@ -14,22 +14,17 @@
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 		<PackageReference Include="DotNetEnv" Version="2.5.0" />
 		<PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.8" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.8" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.8">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-			<TreatAsUsed>true</TreatAsUsed>
-		</PackageReference>
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.7" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
-		<PackageReference Include="prometheus-net" Version="8.0.0" />
-		<PackageReference Include="prometheus-net.AspNetCore" Version="8.0.0" />
-		<PackageReference Include="StackExchange.Redis" Version="2.6.116" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0-preview.7.23375.9" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0-preview.7.23375.9" />
+<!--		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0-*" />-->
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0-*" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0-preview.7.23408.2" />
+		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.6.0-rc.1" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.6.0-rc.1" />
+		<PackageReference Include="StackExchange.Redis" Version="2.6.122" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.5.0" />
-		<PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="7.22.4" />
 	</ItemGroup>
 
 	<ItemGroup>

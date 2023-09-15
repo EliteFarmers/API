@@ -49,7 +49,7 @@ services:
     networks:
         - eliteapi-network
   logging:
-    image: grafana/grafana-oss:9.5.1
+    image: grafana/grafana-oss:latest
     restart: unless-stopped
     ports:
         - '8081:3000'

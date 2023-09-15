@@ -9,12 +9,17 @@ services:
     command: []
     entrypoint:
     - "dotnet"
-    - "/app/bin/Debug/net7.0/EliteAPI.dll"
+    - "/app/bin/Debug/net8/EliteAPI.dll"
     environment:
-      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net7.0/EliteAPI.staticwebassets.runtime.CT.json"
+      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net8/EliteAPI.staticwebassets.runtime.CT.json"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+      NUGET_PACKAGES: "C:\\Users\\edmie\\.nuget\\packages"
+      NUGET_FALLBACK_PACKAGES: "C:\\Users\\edmie\\.nuget\\packages"
     image: "eliteapi:dev"
     ports: []
     volumes:
     - "C:\\Users\\edmie\\AppData\\Roaming\\ASP.NET\\Https:/root/.aspnet/https"
+    - "C:\\Users\\edmie\\.nuget\\packages:/root/.nuget/fallbackpackages"
     - "G:\\Programming\\Elite\\EliteAPI:/app:rw"
+    - "G:\\Programming\\Elite:/src:rw"
     working_dir: "/app"

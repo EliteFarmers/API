@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using EliteAPI.Models.Entities.Hypixel;
-using Z.EntityFramework.Plus;
 
 namespace EliteAPI.Services.LeaderboardService; 
 
@@ -346,10 +345,10 @@ public class LeaderboardService : ILeaderboardService {
             case "firstplace":
                 return _context.ProfileMembers
                     .AsNoTracking()
-                    .IncludeOptimized(p => p.Profile)
-                    .IncludeOptimized(p => p.MinecraftAccount)
-                    .IncludeOptimized(p => p.JacobData)
-                    .IncludeOptimized(p => p.JacobData.Contests)
+                    .Include(p => p.Profile)
+                    .Include(p => p.MinecraftAccount)
+                    .Include(p => p.JacobData)
+                    .Include(p => p.JacobData.Contests)
                     .Select(p => new LeaderboardEntry {
                         Ign = p.MinecraftAccount.Name,
                         Profile = p.Profile.ProfileName,

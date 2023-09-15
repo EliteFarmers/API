@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Nodes;
 using EliteAPI.Data;
-using EliteAPI.Services;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
@@ -115,8 +114,6 @@ public class ProfileParser
             await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid ?? "Unknown");
         }
 
-        MetricsService.IncrementProfilesTransformedCount(profileId ?? "Unknown");
-        
         try
         {
             await _context.SaveChangesAsync();
@@ -291,7 +288,7 @@ public class ProfileParser
             ProfileMemberId = member.Id,
             ProfileMember = member,
         };
-        await context.CropCollections.SingleInsertAsync(cropCollection);
+        context.CropCollections.Add(cropCollection);
         
         var skillExp = new SkillExperience {
             Time = DateTimeOffset.UtcNow,
@@ -311,7 +308,7 @@ public class ProfileParser
             ProfileMemberId = member.Id,
             ProfileMember = member,
         };
-        await context.SkillExperiences.SingleInsertAsync(skillExp);
+        context.SkillExperiences.Add(skillExp);
 
         await context.SaveChangesAsync();
     }

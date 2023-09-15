@@ -4,7 +4,6 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Z.EntityFramework.Plus;
 
 namespace EliteAPI.Parsers.Profiles;
 
@@ -88,7 +87,7 @@ public static class JacobContestParser
             if (fetched.Participants == -1 && contest.Participants > 0) {
                 await context.JacobContests
                     .Where(j => j.Id == actualKey)
-                    .UpdateAsync(j => new JacobContest { Participants = contest.Participants ?? -1 });
+                    .ExecuteUpdateAsync(j => j.SetProperty(c => c.Participants, contest.Participants ?? -1));
             }
 
             if (!existingContests.TryGetValue(actualKey, out var existing)) {
