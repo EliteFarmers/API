@@ -79,6 +79,8 @@ app.Use(async (context, next) => {
         var userAgent = context.Request.Headers.UserAgent.ToString() switch {
             var ua when ua.StartsWith("SkyHanni") => "SkyHanni",
             var ua when ua.StartsWith("Mozilla") => "Browser",
+            var ua when ua.StartsWith("EliteWebsite") => "EliteWebsite",
+            var ua when ua.StartsWith("EliteDiscordBot") => "EliteBot",
             _ => "Other"
         };
         
