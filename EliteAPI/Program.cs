@@ -3,6 +3,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -70,6 +71,22 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Use(async (context, next) => {
+    var tagsFeature = context.Features.Get<IHttpMetricsTagsFeature>();
+    
+    if (tagsFeature is not null) {
+        var userAgent = context.Request.Headers.UserAgent.ToString() switch {
+            var ua when ua.StartsWith("SkyHanni") => "SkyHanni",
+            var ua when ua.StartsWith("Mozilla") => "Browser",
+            _ => "Other"
+        };
+        
+        tagsFeature.Tags.Add(new KeyValuePair<string, object?>("user_agent", userAgent));
+    }
+
+    await next.Invoke();
+});
 
 // Secure the metrics endpoint
 app.UseWhen(context => context.Request.Path.StartsWithSegments("/metrics"), applicationBuilder => {
