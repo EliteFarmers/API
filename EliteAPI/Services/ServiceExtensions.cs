@@ -13,6 +13,7 @@ using EliteAPI.Services.GuildService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
 using EliteAPI.Services.MemberService;
+using EliteAPI.Services.MessageService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using EliteAPI.Services.TimescaleService;
@@ -31,6 +32,7 @@ public static class ServiceExtensions
         // Add services to the container.
         services.AddSingleton<HypixelRequestLimiter>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddSingleton<IMessageService, MessageService.MessageService>();
 
         services.AddHttpClient(HypixelService.HypixelService.HttpClientName, client => {
             client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI");
