@@ -381,6 +381,6 @@ public class UserController : ControllerBase {
             return BadRequest("Leaderboard channel not set.");
         }
 
-        return await _guildService.SendLeaderboardPanel(guildId, channelId, lbId);
+        return await _guildService.SendLeaderboardPanel(guildId, channelId, account.Id, lbId);
     }
 }
