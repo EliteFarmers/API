@@ -76,6 +76,20 @@ services:
         - prometheus-data:/data
     networks:
         - eliteapi-network
+  rabbit:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+        - '5672:5672'
+        - '15672:15672'
+    expose:
+        - '5672'
+        - '15672'
+    environment:
+        - RABBITMQ_DEFAULT_USER=user
+        - RABBITMQ_DEFAULT_PASS=rabbitPassword123
+    networks:
+        - eliteapi-network
         
 networks:
     eliteapi-network:
