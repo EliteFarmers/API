@@ -210,10 +210,10 @@ public class ProfileParser
         
         member.ParseSkills(incomingData);
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
-        
+
+        await AddTimeScaleRecords(member);
         // Fire and forget
         #pragma warning disable CS4014
-        Task.Run(() => AddTimeScaleRecords(member.Id));
         Task.Run(() => ParseJacobContests(member.Id, incomingData));
         #pragma warning restore CS4014
 
@@ -261,55 +261,51 @@ public class ProfileParser
         await member.ParseJacobContests(incomingData.Jacob, context, cache);
     }
 
-    private async Task AddTimeScaleRecords(Guid memberId) {
-        using var scope = _provider.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
-        
-        var member = await context.ProfileMembers
-            .Include(p => p.Skills)
-            .FirstOrDefaultAsync(p => p.Id == memberId);
-        if (member is null) return;
-        
-        var cropCollection = new CropCollection {
-            Time = DateTimeOffset.UtcNow,
+    private async Task AddTimeScaleRecords(ProfileMember member) {
+        if (member.Api.Collections) {
+            var cropCollection = new CropCollection {
+                Time = DateTimeOffset.UtcNow,
             
-            Cactus = member.Collections.RootElement.TryGetProperty("CACTUS", out var cactus) ? cactus.GetInt64() : 0,
-            Carrot = member.Collections.RootElement.TryGetProperty("CARROT_ITEM", out var carrot) ? carrot.GetInt64() : 0,
-            CocoaBeans = member.Collections.RootElement.TryGetProperty("INK_SACK:3", out var cocoa) ? cocoa.GetInt64() : 0,
-            Melon = member.Collections.RootElement.TryGetProperty("MELON", out var melon) ? melon.GetInt64() : 0,
-            Mushroom = member.Collections.RootElement.TryGetProperty("MUSHROOM_COLLECTION", out var mushroom) ? mushroom.GetInt64() : 0,
-            NetherWart = member.Collections.RootElement.TryGetProperty("NETHER_STALK", out var netherWart) ? netherWart.GetInt64() : 0,
-            Potato = member.Collections.RootElement.TryGetProperty("POTATO_ITEM", out var potato) ? potato.GetInt64() : 0,
-            Pumpkin = member.Collections.RootElement.TryGetProperty("PUMPKIN", out var pumpkin) ? pumpkin.GetInt64() : 0,
-            SugarCane = member.Collections.RootElement.TryGetProperty("SUGAR_CANE", out var sugarCane) ? sugarCane.GetInt64() : 0,
-            Wheat = member.Collections.RootElement.TryGetProperty("WHEAT", out var wheat) ? wheat.GetInt64() : 0,
-            Seeds = member.Collections.RootElement.TryGetProperty("SEEDS", out var seeds) ? seeds.GetInt64() : 0,
+                Cactus = member.Collections.RootElement.TryGetProperty("CACTUS", out var cactus) ? cactus.GetInt64() : 0,
+                Carrot = member.Collections.RootElement.TryGetProperty("CARROT_ITEM", out var carrot) ? carrot.GetInt64() : 0,
+                CocoaBeans = member.Collections.RootElement.TryGetProperty("INK_SACK:3", out var cocoa) ? cocoa.GetInt64() : 0,
+                Melon = member.Collections.RootElement.TryGetProperty("MELON", out var melon) ? melon.GetInt64() : 0,
+                Mushroom = member.Collections.RootElement.TryGetProperty("MUSHROOM_COLLECTION", out var mushroom) ? mushroom.GetInt64() : 0,
+                NetherWart = member.Collections.RootElement.TryGetProperty("NETHER_STALK", out var netherWart) ? netherWart.GetInt64() : 0,
+                Potato = member.Collections.RootElement.TryGetProperty("POTATO_ITEM", out var potato) ? potato.GetInt64() : 0,
+                Pumpkin = member.Collections.RootElement.TryGetProperty("PUMPKIN", out var pumpkin) ? pumpkin.GetInt64() : 0,
+                SugarCane = member.Collections.RootElement.TryGetProperty("SUGAR_CANE", out var sugarCane) ? sugarCane.GetInt64() : 0,
+                Wheat = member.Collections.RootElement.TryGetProperty("WHEAT", out var wheat) ? wheat.GetInt64() : 0,
+                Seeds = member.Collections.RootElement.TryGetProperty("SEEDS", out var seeds) ? seeds.GetInt64() : 0,
             
-            ProfileMemberId = member.Id,
-            ProfileMember = member,
-        };
-        context.CropCollections.Add(cropCollection);
-        
-        var skillExp = new SkillExperience {
-            Time = DateTimeOffset.UtcNow,
+                ProfileMemberId = member.Id,
+                ProfileMember = member,
+            };
             
-            Alchemy = member.Skills.Alchemy,
-            Carpentry = member.Skills.Carpentry,
-            Combat = member.Skills.Combat,
-            Enchanting = member.Skills.Enchanting,
-            Farming = member.Skills.Farming,
-            Fishing = member.Skills.Fishing,
-            Foraging = member.Skills.Foraging,
-            Mining = member.Skills.Mining,
-            Runecrafting = member.Skills.Runecrafting,
-            Taming = member.Skills.Taming,
-            Social = member.Skills.Social,
-            
-            ProfileMemberId = member.Id,
-            ProfileMember = member,
-        };
-        context.SkillExperiences.Add(skillExp);
+            await _context.CropCollections.SingleInsertAsync(cropCollection);
+        }
 
-        await context.SaveChangesAsync();
+        if (member.Api.Skills) {
+            var skillExp = new SkillExperience {
+                Time = DateTimeOffset.UtcNow,
+            
+                Alchemy = member.Skills.Alchemy,
+                Carpentry = member.Skills.Carpentry,
+                Combat = member.Skills.Combat,
+                Enchanting = member.Skills.Enchanting,
+                Farming = member.Skills.Farming,
+                Fishing = member.Skills.Fishing,
+                Foraging = member.Skills.Foraging,
+                Mining = member.Skills.Mining,
+                Runecrafting = member.Skills.Runecrafting,
+                Taming = member.Skills.Taming,
+                Social = member.Skills.Social,
+            
+                ProfileMemberId = member.Id,
+                ProfileMember = member,
+            };
+            
+            await _context.SkillExperiences.SingleInsertAsync(skillExp);
+        }
     }
 }

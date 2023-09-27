@@ -4,6 +4,7 @@ using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.EntityFrameworkCore;
+using Z.EntityFramework.Extensions;
 
 namespace EliteAPI.Data;
 public class DataContext : DbContext
@@ -13,6 +14,7 @@ public class DataContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         DotNetEnv.Env.Load();
+        EntityFrameworkManager.IsCommunity = true;
         
         base.OnConfiguring(optionsBuilder);
         // Get connection string from secrets
