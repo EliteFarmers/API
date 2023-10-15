@@ -9,6 +9,7 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Contests;
@@ -34,9 +35,18 @@ public class ContestsController : ControllerBase
     [HttpGet("at/{year:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<YearlyContestsDto>> GetAllContestsInOneYear(int year)
+    public async Task<ActionResult<YearlyContestsDto>> GetAllContestsInOneYear(int year, bool now = false)
     {
         var currentDate = SkyblockDate.Now;
+
+        // Decrease cache time to 2 minutes if it's the end/start of the year in preparation for the next year
+        if (now && currentDate is { Month: >= 11, Day: >= 27 } or { Month: 0, Day: <= 2 }) {
+            Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue {
+                Public = true,
+                MaxAge = TimeSpan.FromMinutes(2)
+            };
+        }
+        
         if (currentDate.Year == year - 1) {
             var db = _cache.GetDatabase();
 
@@ -158,7 +168,7 @@ public class ContestsController : ControllerBase
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<YearlyContestsDto>> GetThisYearsContests() {
-        return await GetAllContestsInOneYear(SkyblockDate.Now.Year + 1);
+        return await GetAllContestsInOneYear(SkyblockDate.Now.Year + 1, true);
     }
     
     // GET <ContestsController>/200/12/5
