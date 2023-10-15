@@ -91,4 +91,16 @@ public class EventMember {
 public class StartConditions {
     public Dictionary<Crop, long> Collection { get; set; } = new();
     public Dictionary<string, long> Tools { get; set; } = new();
+    
+    public Dictionary<string, ToolState> ToolStates { get; set; } = new();
+}
+
+public class ToolState {
+    public string? Name { get; set; }
+    public long StartCount { get; set; }
+    public long StartCultivating { get; set; }
+    public long Count { get; set; }
+    public long Cultivating { get; set; }
+    public long CountedIncrease { get; set; }
+    public bool Active { get; set; } = true;
 }

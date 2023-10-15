@@ -29,20 +29,37 @@ public static class EventProgressParser {
         if (eventMember.StartConditions.Collection.Count == 0) {
             eventMember.StartConditions = new StartConditions {
                 Collection = member.ExtractCropCollections(true),
-                Tools = member.Farming.ToMapOfCollectedItems()
+                Tools = member.Farming.ExtractToolCounters()
             };
             // Initial run, no need to check for progress
             return;
         }
 
-        var initialTools = member.Farming.ToMapOfCollectedItems(eventMember.StartConditions.Tools);
+        var initialTools = member.Farming.ExtractToolCounters(eventMember.StartConditions.Tools);
         var currentTools = member.Farming.Inventory?.Tools ?? new List<ItemDto>();
+        
+        // Remove tools that are no longer in the inventory to prevent collection increases from trading tools to other players
+        initialTools.RemoveMissingTools(currentTools);
+        
+        // Save the initial tools again to account for new tools being added
+        eventMember.StartConditions.Tools = initialTools;
+
+        var toolIncreases = initialTools.ExtractIncreasedToolCollections(currentTools);
         
         var initialCollections = eventMember.StartConditions.Collection;
         var currentCollections = member.ExtractCropCollections(true);
+
+        var collectionIncreases = initialCollections.ExtractCollectionIncreases(currentCollections);
+        // Get farmed mushroom from the tools for counting Mushroom Eater perk
+        collectionIncreases.TryGetValue(Crop.Mushroom, out var increasedMushroom);
+
+        var mushroomTools = currentTools.FindAll(x => x.ExtractCrop() == Crop.Mushroom && initialTools.ContainsKey(x.Uuid!));
+        var farmedMushroom = mushroomTools.Sum(x => x.ExtractCultivating());
         
-        var toolIncreases = new Dictionary<Crop, long> {
-            { Crop.Mushroom, 0 }
+        var mushroomEaterMushrooms = Math.Max(increasedMushroom - farmedMushroom, 0);
+
+        var cropIncreases = new Dictionary<Crop, long> {
+            { Crop.Mushroom, mushroomEaterMushrooms }
         };
         var countedCollections = new Dictionary<Crop, long>();
         
@@ -65,18 +82,40 @@ public static class EventProgressParser {
             var crop = tool.ExtractCrop();
             if (crop is null) continue;
 
-            initialTools.TryGetValue(tool.Uuid!, out var initialCount);
-            var currentCount = tool.ExtractCollected();
+            collectionIncreases.TryGetValue(crop.Value, out var increasedCollection);
+            if (increasedCollection <= 0) continue; // Skip if the collection didn't increase
             
-            var increasedCount = currentCount - initialCount;
-            if (increasedCount == 0) continue;
+            toolIncreases.TryGetValue(tool.Uuid!, out var counterIncrease);
+            toolIncreases.TryGetValue($"{tool.Uuid!}-c", out var cultivatingIncrease);
             
-            if (!toolIncreases.ContainsKey(crop.Value)) {
-                toolIncreases.Add(crop.Value, increasedCount);
+            if (counterIncrease <= 0 && cultivatingIncrease <= 0) {
+                cropIncreases.Add(crop.Value, 0);
+                continue;
             }
-            else {
-                toolIncreases[crop.Value] += increasedCount;
+            
+            if (counterIncrease > 0) {
+                cropIncreases.Add(crop.Value, Math.Min(counterIncrease, increasedCollection));
+                continue;
             }
+
+            // Use cultivating if the counter increase is 0
+            if (crop == Crop.Wheat) {
+                // Subtract the amount of seeds collected from the cultivated count if the crop is wheat
+                cultivatingIncrease -= increasedSeeds;
+            }
+
+            //cultivatingIncrease -= increasedCollection;
+            var remaining = increasedCollection - cultivatingIncrease;
+            
+            if (remaining > 0 && mushroomEaterMushrooms > 0 && crop != Crop.Mushroom) {
+                var toRemove = Math.Min(remaining, mushroomEaterMushrooms);
+                
+                cultivatingIncrease -= toRemove;
+                mushroomEaterMushrooms -= toRemove;
+            }
+            
+            cropIncreases.Add(crop.Value, Math.Min(increasedCollection, cultivatingIncrease));
+        
             
             initialTools.TryGetValue($"{tool.Uuid!}-c", out var initialCultivating);
             var cultivatedCount = tool.ExtractCultivating();
@@ -84,8 +123,8 @@ public static class EventProgressParser {
             if (cultivatedCount <= initialCultivating) continue;
             
             // Account for mushrooms being included on cultivating by checking if the cultivated count is higher than the collected count
-            
-            var increasedCultivating = cultivatedCount - initialCultivating - increasedCount;
+
+            var increasedCultivating = cultivatedCount - initialCultivating;//- increasedCount;
 
             // Also subtract the amount of seeds collected from the cultivated count if the crop is wheat
             if (crop == Crop.Wheat) {
@@ -94,7 +133,7 @@ public static class EventProgressParser {
             
             // If the cultivated count is higher than the collected count, then the cultivated count is the amount of mushrooms collected
             if (increasedCultivating > 0) {
-                toolIncreases[Crop.Mushroom] += increasedCultivating;
+                cropIncreases[Crop.Mushroom] += increasedCultivating;
             }
         }
         
@@ -105,7 +144,7 @@ public static class EventProgressParser {
             if (crop == Crop.Seeds) continue;
             
             if (!initialCollections.TryGetValue(crop, out var initialCollection)) continue;
-            if (!toolIncreases.TryGetValue(crop, out var toolIncrease)) continue;
+            if (!cropIncreases.TryGetValue(crop, out var toolIncrease)) continue;
             
             var increasedCollection = currentCollection - initialCollection;
             if (increasedCollection == 0 || toolIncrease == 0) continue;

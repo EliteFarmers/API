@@ -248,7 +248,7 @@ public class EventController : ControllerBase
             // Save the start conditions
             newMember.StartConditions = new StartConditions {
                 Collection = profileMember.ExtractCropCollections(true),
-                Tools = profileMember.Farming.ToMapOfCollectedItems()
+                Tools = profileMember.Farming.ExtractToolCounters()
             };
         }
         

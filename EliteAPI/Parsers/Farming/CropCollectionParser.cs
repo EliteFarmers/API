@@ -40,6 +40,24 @@ public static class CropCollectionParser {
         }
     }
 
+    public static Dictionary<Crop, long> ExtractCollectionIncreases(this Dictionary<Crop, long> initialCollections, Dictionary<Crop, long> currentCollections) {
+        var cropIncreases = new Dictionary<Crop, long>();
+        if (currentCollections is null or { Count: 0 } || initialCollections is { Count: 0 }) return cropIncreases;
+        
+        foreach (var crop in currentCollections.Keys) {
+            if (!initialCollections.ContainsKey(crop)) continue;
+
+            var initialAmount = initialCollections[crop];
+            var currentAmount = currentCollections[crop];
+
+            var increase = Math.Max(currentAmount - initialAmount, 0);
+
+            cropIncreases.Add(crop, increase);
+        }
+
+        return cropIncreases;
+    }
+
     public static Dictionary<string, long> ExtractReadableCropCollections(this CropCollection cropCollection) {
         return new Dictionary<string, long> {
             { "cactus", cropCollection.Cactus },

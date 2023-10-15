@@ -7,52 +7,78 @@ namespace EliteAPI.Parsers.Farming;
 
 public static class FarmingToolParser {
     
-    public static Dictionary<string, long> ToMapOfCollectedItems(this Models.Entities.Farming.Farming farming, Dictionary<string, long>? existing = null) {
+    public static Dictionary<string, long> ExtractToolCounters(this Models.Entities.Farming.Farming farming, Dictionary<string, long>? existing = null) {
+        return farming.Inventory?.Tools.ExtractToolCounters(existing) ?? new Dictionary<string, long>();
+    }
+
+    public static Dictionary<string, long> ExtractToolCounters(this List<ItemDto> items,
+        Dictionary<string, long>? existing = null) {
         var tools = existing ?? new Dictionary<string, long>();
+
+        if (items is null or { Count: 0 }) return tools;
         
-        if (farming.Inventory?.Tools is null or { Count: 0 }) return tools;
-        
-        foreach (var item in farming.Inventory.Tools)
+        foreach (var item in items)
         {
             var uuid = item.Uuid;
-            if (uuid.IsNullOrEmpty()) continue;
+            if (uuid is null || uuid.IsNullOrEmpty()) continue;
             
             // Skip if the item is already in the dictionary
-            if (existing?.ContainsKey(uuid!) is true) {
-                
-                // Check if the tool has cultivated crops when it didn't before
-                if (existing.ContainsKey($"{uuid!}-c")) continue;
-                
-                var cultivated = item.ExtractCultivating();
-                if (cultivated == 0) continue;
-                
-                tools.Add($"{uuid!}-c", cultivated);
-                
-                continue;
-            }
-
-            var collected = item.ExtractCollected();
-            var cultivating = item.ExtractCultivating();
-
-            if (collected != 0) {
-                tools.Add(uuid!, collected);
-            }
+            if (tools.ContainsKey(uuid)) continue;
             
-            if (cultivating != 0) {
-                tools.Add($"{uuid!}-c", cultivating);
-            }
+            // Add initial tools to the dictionary
+            tools.Add(uuid, item.ExtractCounter());
+            tools.Add($"{uuid}-c", item.ExtractCultivating());
         }
         
         return tools;
     }
     
+    public static void RemoveMissingTools(this Dictionary<string, long> tools, List<ItemDto> currentTools) {
+        if (currentTools is null or { Count: 0 }) return;
+        
+        // Simple way to get the uuids from the tools
+        var currentToolCounters = currentTools.ExtractToolCounters();
+
+        // This will work for both counters and cultivating entries
+        foreach (var key in tools.Keys) {
+            if (currentToolCounters.ContainsKey(key)) continue;
+
+            // Tool is no longer in the inventory, remove it from the initial tools
+            // This prevents trading tools to other players, then having them trade it back to you with more collection
+            tools.Remove(key);
+        }
+    }
+    
+    public static Dictionary<string, long> ExtractIncreasedToolCollections(this Dictionary<string, long> initialTools, List<ItemDto> currentTools) {
+        return initialTools.ExtractIncreasedToolCollections(currentTools.ExtractToolCounters());
+    }
+    
+    public static Dictionary<string, long> ExtractIncreasedToolCollections(this Dictionary<string, long> initialTools, Dictionary<string, long> currentTools) {
+        var toolIncreases = new Dictionary<string, long>();
+        if (currentTools is null or { Count: 0 }) return toolIncreases;
+        
+        // This will work for both counters and cultivating entries
+        foreach (var key in initialTools.Keys) {
+            if (!currentTools.ContainsKey(key)) continue;
+            
+            var initialCount = initialTools[key];
+            var currentCount = currentTools[key];
+            
+            var increase = Math.Max(currentCount - initialCount, 0);
+            
+            toolIncreases.Add(key, increase);
+        }
+
+        return toolIncreases;
+    }
+
     public static Crop? ExtractCrop(this ItemDto tool) {
         var toolIds = FarmingItemsConfig.Settings.FarmingToolIds;
         
         if (tool.SkyblockId is null) return null;
-        if (!toolIds.ContainsKey(tool.SkyblockId)) return null;
+        if (!toolIds.TryGetValue(tool.SkyblockId, out var crop)) return null;
         
-        return toolIds[tool.SkyblockId];
+        return crop;
     }
 
     public static long ExtractCollected(this ItemDto tool) {
@@ -66,6 +92,15 @@ public static class FarmingToolParser {
             return crops;
         }
         
+        return 0;
+    }
+    
+    public static long ExtractCounter(this ItemDto tool) {
+        if (tool.Attributes?.TryGetValue("mined_crops", out var collected) is true 
+            && long.TryParse(collected, out var mined)) {
+            return mined;
+        }
+
         return 0;
     }
     
