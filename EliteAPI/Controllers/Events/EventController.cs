@@ -5,6 +5,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Parsers.Events;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.MemberService;
@@ -245,11 +246,8 @@ public class EventController : ControllerBase
         newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 
         if (eliteEvent.Active && DateTimeOffset.FromUnixTimeSeconds(profileMember.LastUpdated) > eliteEvent.StartTime) {
-            // Save the start conditions
-            newMember.StartConditions = new StartConditions {
-                Collection = profileMember.ExtractCropCollections(true),
-                Tools = profileMember.Farming.ExtractToolCounters()
-            };
+            // The event has already started, initialize the event member with the current data
+            newMember.Initialize(profileMember);
         }
         
         profileMember.EventEntries ??= new List<EventMember>();

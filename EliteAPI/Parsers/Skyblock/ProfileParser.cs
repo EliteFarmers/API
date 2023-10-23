@@ -223,8 +223,10 @@ public class ProfileParser
 
         // Load progress for all active events (if any)
         if (member.EventEntries is { Count: > 0 }) {
-            foreach (var entry in member.EventEntries) {
-                entry.LoadProgress(member);
+            foreach (var entry in member.EventEntries.Where(entry => entry.IsEventRunning())) {
+                var @event = await _context.Events.FindAsync(entry.EventId);
+                if (@event is null) continue;
+                entry.LoadProgress(member, @event);
             }
         }
 

@@ -35,7 +35,7 @@ public class EventMemberDto {
     public EventMemberStatus Status { get; set; }
     public string? AmountGained { get; set; }
 
-    public StartConditions StartConditions { get; set; } = new();
+    public EventMemberStartConditions EventMemberStartConditions { get; set; } = new();
 
     public string? LastUpdated { get; set; }
     

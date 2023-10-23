@@ -1,11 +1,79 @@
 ﻿using EliteAPI.Config.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EliteAPI.Parsers.Farming; 
 
 public static class FarmingToolParser {
+    
+    public static Dictionary<string, EventToolState> ExtractToolStates(this List<ItemDto> items, Dictionary<string, EventToolState> existing) {
+        var newStates = items.ExtractToolStates();
+        
+        foreach (var (uuid, existingState) in existing) {
+            existingState.LastSeen = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            if (!newStates.TryGetValue(uuid, out var newState)) {
+                // Tool was in inventory, now is not
+                existingState.IsActive = false;
+                
+                // Add the tool without updating the current values
+                newStates.Add(uuid, existingState);
+                continue;
+            }
+            
+            // Tool was removed from inventory, then added back
+            if (!existingState.IsActive) {
+                // Add the counts gained while the tool was inactive to the uncounted values
+                existingState.Counter.Uncounted += newState.Counter.Current - existingState.Counter.Current;
+                existingState.Cultivating.Uncounted += newState.Cultivating.Current - existingState.Cultivating.Current;
+            }
+                
+            existingState.IsActive = true;
+            existingState.LastSeen = newState.LastSeen;
+            
+            // Update the previous values
+            existingState.Counter.Previous = existingState.Counter.Current;
+            existingState.Cultivating.Previous = existingState.Cultivating.Current;
+            
+            // Update the current values
+            existingState.Counter.Current = newState.Counter.Current;
+            existingState.Cultivating.Current = newState.Cultivating.Current;
+
+            newStates[uuid] = existingState;
+        }
+        
+        return newStates;
+    }
+    
+    public static Dictionary<string, EventToolState> ExtractToolStates(this List<ItemDto> items) {
+        var toolStates = new Dictionary<string, EventToolState>();
+        var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        foreach (var item in items) {
+            var uuid = item.Uuid;
+            
+            if (uuid is null || item.SkyblockId is null || uuid.IsNullOrEmpty()) continue;
+
+            var counter = item.ExtractCounter();
+            var cultivating = item.ExtractCultivating();
+            
+            var state = new EventToolState {
+                SkyblockId = item.SkyblockId,
+                Crop = item.ExtractCrop(),
+                FirstSeen = time,
+                LastSeen = time,
+                IsActive = true,
+                Counter = new EventToolCounterState(counter),
+                Cultivating = new EventToolCounterState(cultivating)
+            };
+            
+            toolStates.Add(uuid, state);
+        }
+        
+        return toolStates;
+    }
     
     public static Dictionary<string, long> ExtractToolCounters(this Models.Entities.Farming.Farming farming, Dictionary<string, long>? existing = null) {
         return farming.Inventory?.Tools.ExtractToolCounters(existing) ?? new Dictionary<string, long>();
@@ -80,7 +148,7 @@ public static class FarmingToolParser {
         
         return crop;
     }
-
+    
     public static long ExtractCollected(this ItemDto tool) {
         if (tool.Attributes?.TryGetValue("mined_crops", out var collected) is true 
             && long.TryParse(collected, out var mined)) {

@@ -10,7 +10,7 @@ public class Event {
     public ulong Id { get; set; }
     
     public bool Public { get; set; }
-    public EventCategory Category { get; set; }
+    public EventType Category { get; set; }
     public string? Target { get; set; }
     
     [MaxLength(64)]
@@ -45,7 +45,7 @@ public class Event {
     public Guild Guild { get; set; } = null!;
 }
 
-public enum EventCategory {
+public enum EventType {
     FarmingWeight,
     Collection,
     Experience
@@ -66,7 +66,7 @@ public class EventMember {
     public double AmountGained { get; set; }
     
     [Column(TypeName = "jsonb")]
-    public StartConditions StartConditions { get; set; } = new();
+    public EventMemberStartConditions EventMemberStartConditions { get; set; } = new();
 
     public DateTimeOffset LastUpdated { get; set; }
     public DateTimeOffset StartTime { get; set; }
@@ -88,19 +88,40 @@ public class EventMember {
     public EliteAccount User { get; set; } = null!;
 }
 
-public class StartConditions {
-    public Dictionary<Crop, long> Collection { get; set; } = new();
+public class EventMemberStartConditions {
+    public Dictionary<Crop, long> InitialCollection { get; set; } = new();
+    public Dictionary<Crop, long> IncreasedCollection { get; set; } = new();
+    public Dictionary<Crop, long> CountedCollection { get; set; } = new();
+    public Dictionary<string, EventToolState> ToolStates { get; set; } = new();
     public Dictionary<string, long> Tools { get; set; } = new();
-    
-    public Dictionary<string, ToolState> ToolStates { get; set; } = new();
 }
 
-public class ToolState {
-    public string? Name { get; set; }
-    public long StartCount { get; set; }
-    public long StartCultivating { get; set; }
-    public long Count { get; set; }
-    public long Cultivating { get; set; }
-    public long CountedIncrease { get; set; }
-    public bool Active { get; set; } = true;
+public class EventToolState {
+    public required string SkyblockId { get; set; }
+    public Crop? Crop { get; set; }
+    
+    public long FirstSeen { get; set; }
+    public long LastSeen { get; set; }
+    public bool IsActive { get; set; }
+
+    public EventToolCounterState Counter { get; set; } = new();
+    public EventToolCounterState Cultivating { get; set; } = new();
+}
+
+public class EventToolCounterState {
+    public long Initial { get; set; }
+    public long Previous { get; set; }
+    public long Current { get; set; }
+    public long Uncounted { get; set; }
+
+    public EventToolCounterState() { }
+    
+    public EventToolCounterState(long initial) {
+        Initial = initial;
+        Previous = initial;
+        Current = initial;
+    }
+    
+    public long IncreaseFromInitial() => Current - Initial - Uncounted;
+    public long IncreaseFromPrevious() => Current - Previous - Uncounted;
 }
