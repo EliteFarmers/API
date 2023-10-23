@@ -63,11 +63,6 @@ public static class EventProgressParser {
             .GroupBy(t => t.Crop!.Value)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        var fancy = from t in eventMember.EventMemberStartConditions.ToolStates
-            select t.Value into tool
-            where tool.Crop.HasValue
-            group tool by tool.Crop!.Value;                
-        
         // Get unaccounted for mushroom collection for dealing with Mushroom Eater perk
         collectionIncreases.TryGetValue(Crop.Mushroom, out var increasedMushroom);
         
