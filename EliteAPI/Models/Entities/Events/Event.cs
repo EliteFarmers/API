@@ -65,7 +65,7 @@ public class EventMember {
     public EventMemberStatus Status { get; set; }
     public double AmountGained { get; set; }
     
-    [Column(TypeName = "jsonb")]
+    [Column("StartConditions", TypeName = "jsonb")]
     public EventMemberStartConditions EventMemberStartConditions { get; set; } = new();
 
     public DateTimeOffset LastUpdated { get; set; }

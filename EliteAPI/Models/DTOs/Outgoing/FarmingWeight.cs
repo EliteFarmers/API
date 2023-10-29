@@ -30,4 +30,5 @@ public class FarmingInventoryDto
     public List<ItemDto> Armor { get; set; } = new();
     public List<ItemDto> Tools { get; set; } = new();
     public List<ItemDto> Equipment { get; set; } = new();
+    public List<ItemDto> Accessories { get; set; } = new();
 }
