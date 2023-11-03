@@ -1,133 +1,138 @@
-﻿using EliteAPI.Data;
-using EliteAPI.Parsers.Farming;
-using EliteAPI.Models.DTOs.Outgoing;
+﻿using EliteAPI.Parsers.Farming;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Events; 
 
 public static class EventProgressParser {
-
-    public static void LoadProgress(this EventMember eventMember, ProfileMember member) {
+    
+    public static bool IsEventRunning(this EventMember member) {
+        var currentTime = DateTimeOffset.UtcNow;
+        
+        // Check if event is running
+        return member.StartTime < currentTime && member.EndTime > currentTime;
+    }
+    
+    public static void LoadProgress(this EventMember eventMember, ProfileMember member, Event @event) {
         var currentTime = DateTimeOffset.UtcNow;
 
+        // Skip if the member is already disqualified or the event hasn't started yet
         if (eventMember.Status == EventMemberStatus.Disqualified) return;
-
-        if (eventMember.StartTime > currentTime || eventMember.EndTime < currentTime) {
+        if (!eventMember.IsEventRunning()) {
             eventMember.Status = EventMemberStatus.Inactive;
             return;
         }
-        
+
+        eventMember.UpdateToolsAndCollections(member);
         eventMember.LastUpdated = currentTime;
 
+        // Disqualify the member if they disabled API access during the event
         if (!member.Api.Collections || !member.Api.Inventories) {
             eventMember.Status = EventMemberStatus.Disqualified;
             eventMember.Notes = "API access was disabled during the event.";
             return;
         }
 
-        if (eventMember.StartConditions.Collection.Count == 0) {
-            eventMember.StartConditions = new StartConditions {
-                Collection = member.ExtractCropCollections(true),
-                Tools = member.Farming.ToMapOfCollectedItems()
-            };
+        // Initialize the start conditions if they haven't been initialized yet
+        if (eventMember.EventMemberStartConditions.InitialCollection.Count == 0) {
+            eventMember.Initialize(member);
             // Initial run, no need to check for progress
             return;
         }
+        
+        // Update the tool states and collection increases
+        // eventMember.UpdateToolsAndCollections(member);
 
-        var initialTools = member.Farming.ToMapOfCollectedItems(eventMember.StartConditions.Tools);
-        var currentTools = member.Farming.Inventory?.Tools ?? new List<ItemDto>();
-        
-        var initialCollections = eventMember.StartConditions.Collection;
-        var currentCollections = member.ExtractCropCollections(true);
-        
-        var toolIncreases = new Dictionary<Crop, long> {
-            { Crop.Mushroom, 0 }
-        };
+        switch (@event.Category) {
+            case EventType.FarmingWeight:
+                eventMember.UpdateFarmingWeight();
+                break;
+            case EventType.Collection:
+                break;
+            case EventType.Experience:
+                break;
+        }
+    }
+    
+    public static void UpdateFarmingWeight(this EventMember eventMember) {
+        var collectionIncreases = eventMember.EventMemberStartConditions.IncreasedCollection;
         var countedCollections = new Dictionary<Crop, long>();
         
-        // Remove tools that are no longer in the inventory
-        foreach (var item in initialTools) {
-            if (currentTools.Any(tool => tool.Uuid == item.Key.Replace("-c", ""))) continue;
-            
-            // Tool is no longer in the inventory, remove it from the initial tools
-            // This prevents trading tools to other players, then having them trade it back to you with more collection
-            initialTools.Remove(item.Key);
-            initialTools.Remove($"{item.Key}-c");
-        }
+        var toolsByCrop = eventMember.EventMemberStartConditions.ToolStates
+            .Where(t => t.Value.Crop.HasValue)
+            .Select(t => t.Value)
+            .GroupBy(t => t.Crop!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
 
-        // Check if the player has collected any seeds for wheat
-        var currentSeeds = currentCollections.TryGetValue(Crop.Seeds, out var currentSeedsCount) ? currentSeedsCount : 0;
-        var initialSeeds = initialCollections.TryGetValue(Crop.Seeds, out var initialSeedCount) ? initialSeedCount : 0;
-        var increasedSeeds = currentSeeds - initialSeeds;
+        // Get unaccounted for mushroom collection for dealing with Mushroom Eater perk
+        collectionIncreases.TryGetValue(Crop.Mushroom, out var increasedMushroom);
         
-        foreach (var tool in currentTools.Where(tool => tool.Uuid is not null)) {
-            var crop = tool.ExtractCrop();
-            if (crop is null) continue;
+        var farmedMushroom = toolsByCrop.TryGetValue(Crop.Mushroom, out var mushroomTools)
+            ? mushroomTools.Sum(t => t.Cultivating.IncreaseFromInitial()) : 0;
+        var mushroomEaterMushrooms = Math.Max(increasedMushroom - farmedMushroom, 0);
+        
+        foreach (var (crop, tools) in toolsByCrop) {
+            collectionIncreases.TryGetValue(crop, out var increasedCollection);
+            if (increasedCollection <= 0) continue; // Skip if the collection didn't increase
+            
+            var counterIncrease = tools.Sum(t => t.Counter.IncreaseFromInitial());
 
-            initialTools.TryGetValue(tool.Uuid!, out var initialCount);
-            var currentCount = tool.ExtractCollected();
-            
-            var increasedCount = currentCount - initialCount;
-            if (increasedCount == 0) continue;
-            
-            if (!toolIncreases.ContainsKey(crop.Value)) {
-                toolIncreases.Add(crop.Value, increasedCount);
-            }
-            else {
-                toolIncreases[crop.Value] += increasedCount;
+            // Counter should always be prioritized over cultivating
+            // This handles Wheat, Carrot, Potato, Sugar Cane, and Nether Wart
+            if (counterIncrease > 0) {
+                countedCollections.TryAdd(crop, Math.Min(counterIncrease, increasedCollection));
+                continue;
             }
             
-            initialTools.TryGetValue($"{tool.Uuid!}-c", out var initialCultivating);
-            var cultivatedCount = tool.ExtractCultivating();
+            // Cultivating should be used if the counter increase is 0
+            // This handles Mushroom, Cocoa Beans, Cactus, Pumpkin, and Melon
+            var cultivatingIncrease = tools.Sum(t => t.Cultivating.IncreaseFromInitial());
+            if (cultivatingIncrease <= 0) continue; // Skip if the cultivating didn't increase
             
-            if (cultivatedCount <= initialCultivating) continue;
             
-            // Account for mushrooms being included on cultivating by checking if the cultivated count is higher than the collected count
-            
-            var increasedCultivating = cultivatedCount - initialCultivating - increasedCount;
-
-            // Also subtract the amount of seeds collected from the cultivated count if the crop is wheat
-            if (crop == Crop.Wheat) {
-                increasedCultivating -= increasedSeeds;
+            // If there's a positive difference between the increased collection and cultivating
+            // and the mushroom eater mushrooms are greater than 0, then remove the difference
+            // from the counted collection to avoid counting extra mushrooms
+            var difference = increasedCollection - cultivatingIncrease;
+            if (difference > 0 && mushroomEaterMushrooms > 0 && crop != Crop.Mushroom) {
+                var toRemove = Math.Min(difference, mushroomEaterMushrooms);
+                
+                cultivatingIncrease -= toRemove;
+                mushroomEaterMushrooms -= toRemove;
             }
             
-            // If the cultivated count is higher than the collected count, then the cultivated count is the amount of mushrooms collected
-            if (increasedCultivating > 0) {
-                toolIncreases[Crop.Mushroom] += increasedCultivating;
-            }
+            countedCollections.TryAdd(crop, Math.Min(increasedCollection, cultivatingIncrease));
         }
         
-        // Need to make sure that increased collection numbers match the increased tool numbers
-        // This is to prevent other sources of collection increases from being counted
-
-        foreach (var (crop, currentCollection) in currentCollections) {
-            if (crop == Crop.Seeds) continue;
-            
-            if (!initialCollections.TryGetValue(crop, out var initialCollection)) continue;
-            if (!toolIncreases.TryGetValue(crop, out var toolIncrease)) continue;
-            
-            var increasedCollection = currentCollection - initialCollection;
-            if (increasedCollection == 0 || toolIncrease == 0) continue;
-
-            var counted = Math.Min(increasedCollection, toolIncrease);
-            
-            if (!countedCollections.ContainsKey(crop)) {
-                countedCollections.Add(crop, counted);
-            }
-            else {
-                countedCollections[crop] += counted;
-            }
-        }
+        eventMember.EventMemberStartConditions.CountedCollection = countedCollections;
         
-        // Sum up the total farming weight increase
         var cropWeight = countedCollections.ParseCropWeight(true);
         eventMember.AmountGained = cropWeight.Sum(x => x.Value);
+    }
+
+
+    public static void UpdateToolsAndCollections(this EventMember eventMember, ProfileMember member) {
+        var toolStates =
+            member.Farming.Inventory?.Tools.ExtractToolStates(eventMember.EventMemberStartConditions.ToolStates)
+            ?? new Dictionary<string, EventToolState>();
+
+        // Update the tool states
+        eventMember.EventMemberStartConditions.ToolStates = toolStates;
         
-        // Update the start conditions with the new/removed tools
-        eventMember.StartConditions = new StartConditions {
-            Collection = eventMember.StartConditions.Collection,
-            Tools = initialTools
+        // Get collection increases
+        var initialCollections = eventMember.EventMemberStartConditions.InitialCollection;
+        var currentCollections = member.ExtractCropCollections(true);
+
+        var collectionIncreases = initialCollections.ExtractCollectionIncreases(currentCollections);
+        
+        // Update the collection increases
+        eventMember.EventMemberStartConditions.IncreasedCollection = collectionIncreases;
+    }
+
+    public static void Initialize(this EventMember eventMember, ProfileMember member) {
+        eventMember.EventMemberStartConditions = new EventMemberStartConditions {
+            InitialCollection = member.ExtractCropCollections(true),
+            ToolStates = member.Farming.Inventory?.Tools.ExtractToolStates() ?? new Dictionary<string, EventToolState>()
         };
     }
 }

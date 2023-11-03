@@ -222,7 +222,7 @@ namespace EliteAPI.Data.Migrations
                     b.Property<Guid>("ProfileMemberId")
                         .HasColumnType("uuid");
 
-                    b.Property<StartConditions>("StartConditions")
+                    b.Property<EventMemberStartConditions>("StartConditions")
                         .IsRequired()
                         .HasColumnType("jsonb");
 

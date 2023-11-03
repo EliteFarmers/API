@@ -79,7 +79,7 @@ namespace EliteAPI.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Active = table.Column<bool>(type: "boolean", nullable: false),
                     Collected = table.Column<long>(type: "bigint", nullable: false),
-                    StartConditions = table.Column<StartConditions>(type: "jsonb", nullable: false),
+                    StartConditions = table.Column<EventMemberStartConditions>(type: "jsonb", nullable: false),
                     LastUpdated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     StartTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     EndTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

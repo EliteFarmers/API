@@ -39,12 +39,8 @@ public class FarmingFortune {
 
 public class FarmingInventory
 {
-    [Column(TypeName = "jsonb")]
     public List<ItemDto> Armor { get; set; } = new();
-    
-    [Column(TypeName = "jsonb")]
     public List<ItemDto> Tools { get; set; } = new();
-    
-    [Column(TypeName = "jsonb")]
     public List<ItemDto> Equipment { get; set; } = new();
+    public List<ItemDto> Accessories { get; set; } = new();
 }

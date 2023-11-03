@@ -59,7 +59,12 @@
       "FERMENTO_HELMET": -1,
       "FERMENTO_CHESTPLATE": -1,
       "FERMENTO_LEGGINGS": -1,
-      "FERMENTO_BOOTS": -1,
+      "FERMENTO_BOOTS": -1
+    },
+    "FarmingAccessoryIds": {
+      "FERMENTO_ARTIFACT": -1,
+      "SQUASH_RING": -1,
+      "CROPIE_TALISMAN": -1
     }
   }
 }

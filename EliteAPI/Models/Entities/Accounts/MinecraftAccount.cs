@@ -39,6 +39,7 @@ public class Badge {
     public required string Id { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }
 
 public class MinecraftAccountProperty

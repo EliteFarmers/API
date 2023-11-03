@@ -1,0 +1,14 @@
+﻿{
+  "Events": {
+    "Types": {
+      "FarmingWeight": {
+        "Name": "Farming Weight Gain",
+        "Description": "Count gained farming weight."
+      },
+      "GoldMedals": {
+        "Name": "Gold Medals",
+        "Description": "Count amount of earned gold medals."
+      }
+    }
+  }
+}

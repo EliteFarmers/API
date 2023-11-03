@@ -20,7 +20,8 @@ public static class FarmingInventoryParser {
             farming.PopulateFrom(memberData.PersonalVaultContents?.Data),
             farming.PopulateFrom(memberData.Armor?.Data),
             farming.PopulateFrom(memberData.WardrobeContents?.Data),
-            farming.PopulateFrom(memberData.EquipmentContents?.Data)
+            farming.PopulateFrom(memberData.EquipmentContents?.Data),
+            farming.PopulateFrom(memberData.TalismanBag?.Data),
         };
         tasks.AddRange(memberData.BackpackContents?.Values
             .Select(i => farming.PopulateFrom(i.Data)) ?? new List<Task>());
@@ -37,6 +38,7 @@ public static class FarmingInventoryParser {
         var toolIds = FarmingItemsConfig.Settings.FarmingToolIds;
         var equipmentIds = FarmingItemsConfig.Settings.FarmingEquipmentIds;
         var armorIds = FarmingItemsConfig.Settings.FarmingArmorIds;
+        var accessoryIds = FarmingItemsConfig.Settings.FarmingAccessoryIds;
         
         foreach (var item in data) {
             if (item?.SkyblockId is null) continue;
@@ -51,6 +53,10 @@ public static class FarmingInventoryParser {
             
             if (armorIds.ContainsKey(item.SkyblockId)) {
                 farming.Armor.Add(item);
+            }
+            
+            if (accessoryIds.ContainsKey(item.SkyblockId)) {
+                farming.Accessories.Add(item);
             }
         }
     }

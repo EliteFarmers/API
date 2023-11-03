@@ -2,6 +2,7 @@
 using EliteAPI.Data;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.Entities.Events;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
@@ -224,7 +225,22 @@ public class ProfileParser
         // Load progress for all active events (if any)
         if (member.EventEntries is { Count: > 0 }) {
             foreach (var entry in member.EventEntries) {
-                entry.LoadProgress(member);
+                if (!entry.IsEventRunning()) continue;
+                
+                var real = await _context.EventMembers.FirstOrDefaultAsync(e => e.Id == entry.Id);
+                var @event = await _context.Events.FindAsync(entry.EventId);
+                
+                if (real is null || @event is null) continue;
+                
+                real.LoadProgress(member, @event);
+                
+                real.EventMemberStartConditions = new EventMemberStartConditions {
+                    InitialCollection = real.EventMemberStartConditions.InitialCollection,
+                    IncreasedCollection = real.EventMemberStartConditions.IncreasedCollection,
+                    CountedCollection = real.EventMemberStartConditions.CountedCollection,
+                    ToolStates = real.EventMemberStartConditions.ToolStates,
+                    Tools = real.EventMemberStartConditions.Tools
+                };
             }
         }
 
