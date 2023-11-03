@@ -4,6 +4,7 @@ using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Z.EntityFramework.Extensions;
 
 namespace EliteAPI.Data;
@@ -16,6 +17,11 @@ public class DataContext : DbContext
         DotNetEnv.Env.Load();
         EntityFrameworkManager.IsCommunity = true;
         
+        // TODO: Remake DataContext to use the NpgsqlDataSourceBuilder instead of needing to use this obsolete method
+        #pragma warning disable CS0618 // Type or member is obsolete
+        NpgsqlConnection.GlobalTypeMapper.EnableDynamicJsonMappings();
+        #pragma warning restore CS0618 // Type or member is obsolete
+        
         base.OnConfiguring(optionsBuilder);
         // Get connection string from secrets
         var connection = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
@@ -23,6 +29,7 @@ public class DataContext : DbContext
         if (!string.IsNullOrEmpty(connection))
         {
             optionsBuilder.UseNpgsql(connection);
+            
             optionsBuilder.EnableSensitiveDataLogging();
         }
         else

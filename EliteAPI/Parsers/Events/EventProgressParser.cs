@@ -10,7 +10,7 @@ public static class EventProgressParser {
         var currentTime = DateTimeOffset.UtcNow;
         
         // Check if event is running
-        return member.StartTime > currentTime || member.EndTime < currentTime;
+        return member.StartTime < currentTime && member.EndTime > currentTime;
     }
     
     public static void LoadProgress(this EventMember eventMember, ProfileMember member, Event @event) {

@@ -227,23 +227,20 @@ public class ProfileParser
             foreach (var entry in member.EventEntries) {
                 if (!entry.IsEventRunning()) continue;
                 
-                var real = await _context.EventMembers.FindAsync(entry.Id);
+                var real = await _context.EventMembers.FirstOrDefaultAsync(e => e.Id == entry.Id);
                 var @event = await _context.Events.FindAsync(entry.EventId);
                 
                 if (real is null || @event is null) continue;
                 
                 real.LoadProgress(member, @event);
                 
-                // entry.EventMemberStartConditions = new EventMemberStartConditions {
-                //     InitialCollection = entry.EventMemberStartConditions.InitialCollection,
-                //     IncreasedCollection = entry.EventMemberStartConditions.IncreasedCollection,
-                //     CountedCollection = entry.EventMemberStartConditions.CountedCollection,
-                //     ToolStates = entry.EventMemberStartConditions.ToolStates,
-                //     Tools = entry.EventMemberStartConditions.Tools
-                // };
-                //
-                // _context.Entry(entry).Property(e => e.EventMemberStartConditions).IsModified = true;
-                // _context.Entry(entry).State = EntityState.Modified;
+                real.EventMemberStartConditions = new EventMemberStartConditions {
+                    InitialCollection = real.EventMemberStartConditions.InitialCollection,
+                    IncreasedCollection = real.EventMemberStartConditions.IncreasedCollection,
+                    CountedCollection = real.EventMemberStartConditions.CountedCollection,
+                    ToolStates = real.EventMemberStartConditions.ToolStates,
+                    Tools = real.EventMemberStartConditions.Tools
+                };
             }
         }
 
