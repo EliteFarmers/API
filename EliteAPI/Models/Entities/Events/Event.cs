@@ -121,7 +121,13 @@ public class EventToolCounterState {
         Previous = initial;
         Current = initial;
     }
-    
-    public long IncreaseFromInitial() => Current - Initial - Uncounted;
-    public long IncreaseFromPrevious() => Current - Previous - Uncounted;
+}
+
+public static class ToolCounterStateExtensions {
+    public static long IncreaseFromInitial(this EventToolCounterState e) {
+        return e.Current - e.Initial - e.Uncounted;
+    }
+    public static long IncreaseFromPrevious(this EventToolCounterState e) {
+        return e.Current - e.Previous - e.Uncounted;
+    }
 }

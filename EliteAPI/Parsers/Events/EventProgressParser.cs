@@ -22,7 +22,8 @@ public static class EventProgressParser {
             eventMember.Status = EventMemberStatus.Inactive;
             return;
         }
-        
+
+        eventMember.UpdateToolsAndCollections(member);
         eventMember.LastUpdated = currentTime;
 
         // Disqualify the member if they disabled API access during the event
@@ -40,7 +41,7 @@ public static class EventProgressParser {
         }
         
         // Update the tool states and collection increases
-        eventMember.UpdateToolsAndCollections(member);
+        // eventMember.UpdateToolsAndCollections(member);
 
         switch (@event.Category) {
             case EventType.FarmingWeight:
