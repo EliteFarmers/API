@@ -9,19 +9,20 @@ using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Parsers.Events;
+using EliteAPI.Services.Background;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Parsers.Skyblock;
 
-public class ProfileParser
+public class ProfileParser(
+    DataContext context, 
+    IMojangService mojangService, 
+    IBackgroundTaskQueue taskQueue,
+    ILeaderboardService leaderboardService) 
 {
-    private readonly DataContext _context;
-    private readonly IMojangService _mojangService;
-    private readonly ILeaderboardService _leaderboardService;
-    private readonly IServiceScopeFactory _provider;
-
+    
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
             context.ProfileMembers
@@ -36,16 +37,7 @@ public class ProfileParser
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
-
-
-    public ProfileParser(DataContext context, IMojangService mojangService, IServiceScopeFactory provider, ILeaderboardService leaderboardService)
-    {
-        _context = context;
-        _mojangService = mojangService;
-        _provider = provider;
-        _leaderboardService = leaderboardService;
-    }
-
+    
     public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid) {
         if (!data.Success || data.Profiles is not { Length: > 0 }) return;
 
@@ -56,7 +48,7 @@ public class ProfileParser
         var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
 
         // Make player as removed from all profiles that aren't in the response
-        await _context.ProfileMembers
+        await context.ProfileMembers
             .Include(p => p.Profile)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
             .ExecuteUpdateAsync(member =>
@@ -65,7 +57,7 @@ public class ProfileParser
                     .SetProperty(m => m.IsSelected, false)
             );
         
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 
     private async Task TransformSingleProfile(RawProfileData profile, string? playerUuid)
@@ -74,7 +66,7 @@ public class ProfileParser
         if (members.Count == 0) return;
 
         var profileId = profile.ProfileId.Replace("-", "");
-        var existing = await _context.Profiles.FindAsync(profileId);
+        var existing = await context.Profiles.FindAsync(profileId);
 
         var profileObj = existing ?? new Profile
         {
@@ -97,8 +89,8 @@ public class ProfileParser
         {
             try
             {
-                _context.Profiles.Add(profileObj);
-                await _context.SaveChangesAsync();
+                context.Profiles.Add(profileObj);
+                await context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -117,7 +109,7 @@ public class ProfileParser
 
         try
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
         catch (Exception e)
         {
@@ -127,7 +119,7 @@ public class ProfileParser
 
     private async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
     {
-        var existing = await _fetchProfileMemberData(_context, playerId, profile.ProfileId);
+        var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
 
         if (existing?.WasRemoved == true && memberData.DeletionNotice is not null) return;
         
@@ -146,15 +138,15 @@ public class ProfileParser
             existing.WasRemoved = memberData.DeletionNotice is not null;
             
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            _context.MinecraftAccounts.Update(existing.MinecraftAccount);
-            _context.Entry(existing).State = EntityState.Modified;
+            context.MinecraftAccounts.Update(existing.MinecraftAccount);
+            context.Entry(existing).State = EntityState.Modified;
             
             await UpdateProfileMember(profile, existing, memberData);
             
             return;
         }
         
-        var minecraftAccount = await _mojangService.GetMinecraftAccountByUuid(playerId);
+        var minecraftAccount = await mojangService.GetMinecraftAccountByUuid(playerId);
         if (minecraftAccount is null) return;
 
         var member = new ProfileMember
@@ -171,7 +163,7 @@ public class ProfileParser
             WasRemoved = memberData.DeletionNotice is not null
         };
         
-        _context.ProfileMembers.Add(member);
+        context.ProfileMembers.Add(member);
         profile.Members.Add(member);
 
         minecraftAccount.ProfilesLastUpdated = playerId == requesterUuid 
@@ -181,8 +173,8 @@ public class ProfileParser
 
         try
         {
-            await _context.SaveChangesAsync();
-            await _context.Entry(member).GetDatabaseValuesAsync();
+            await context.SaveChangesAsync();
+            await context.Entry(member).GetDatabaseValuesAsync();
         }
         catch (Exception ex)
         {
@@ -207,17 +199,15 @@ public class ProfileParser
         };
         
         member.ParseJacob(incomingData.Jacob);
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
         member.ParseSkills(incomingData);
         member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
 
         await AddTimeScaleRecords(member);
-        // Fire and forget
-        #pragma warning disable CS4014
-        Task.Run(() => ParseJacobContests(member.Id, incomingData));
-        #pragma warning restore CS4014
-
+        // Runs on background service
+        ParseJacobContests(member.Id, incomingData);
+        
         profile.CombineMinions(incomingData.CraftedGenerators);
         
         await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
@@ -227,8 +217,8 @@ public class ProfileParser
             foreach (var entry in member.EventEntries) {
                 if (!entry.IsEventRunning()) continue;
                 
-                var real = await _context.EventMembers.FirstOrDefaultAsync(e => e.Id == entry.Id);
-                var @event = await _context.Events.FindAsync(entry.EventId);
+                var real = await context.EventMembers.FirstOrDefaultAsync(e => e.Id == entry.Id);
+                var @event = await context.Events.FindAsync(entry.EventId);
                 
                 if (real is null || @event is null) continue;
                 
@@ -244,14 +234,14 @@ public class ProfileParser
             }
         }
 
-        _context.Farming.Update(member.Farming);
-        _context.ProfileMembers.Update(member);
-        _context.JacobData.Update(member.JacobData);
-        _context.Profiles.Update(profile);
+        context.Farming.Update(member.Farming);
+        context.ProfileMembers.Update(member);
+        context.JacobData.Update(member.JacobData);
+        context.Profiles.Update(profile);
         
         UpdateLeaderboards(member);
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
     
     private void UpdateLeaderboards(ProfileMember member) {
@@ -259,22 +249,24 @@ public class ProfileParser
         // (I'm avoiding this right now because idk a clever solution that's not a ton of if statements)
 
         var farmingWeight = member.Farming.TotalWeight;
-        _leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
+        leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
     }
 
-    private async Task ParseJacobContests(Guid memberId, RawMemberData incomingData) {
-        using var scope = _provider.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
-        var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+    private void ParseJacobContests(Guid memberId, RawMemberData incomingData) {
+        // Defer jacob contest parsing to the background task queue
+        taskQueue.EnqueueAsync(async (scope, ct) => {
+            await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
         
-        var member = await context.ProfileMembers
-            .Include(p => p.JacobData)
-            .ThenInclude(j => j.Contests)
-            .ThenInclude(c => c.JacobContest)
-            .FirstOrDefaultAsync(p => p.Id == memberId);
-        if (member is null) return;
+            var member = await context.ProfileMembers
+                .Include(p => p.JacobData)
+                .ThenInclude(j => j.Contests)
+                .ThenInclude(c => c.JacobContest)
+                .FirstOrDefaultAsync(p => p.Id == memberId, cancellationToken: ct);
+            if (member is null) return;
 
-        await member.ParseJacobContests(incomingData.Jacob, context, cache);
+            await member.ParseJacobContests(incomingData.Jacob, context, cache);
+        });
     }
 
     private async Task AddTimeScaleRecords(ProfileMember member) {
@@ -298,7 +290,7 @@ public class ProfileParser
                 ProfileMember = member,
             };
             
-            await _context.CropCollections.SingleInsertAsync(cropCollection);
+            await context.CropCollections.SingleInsertAsync(cropCollection);
         }
 
         if (member.Api.Skills) {
@@ -321,7 +313,7 @@ public class ProfileParser
                 ProfileMember = member,
             };
             
-            await _context.SkillExperiences.SingleInsertAsync(skillExp);
+            await context.SkillExperiences.SingleInsertAsync(skillExp);
         }
     }
 }
