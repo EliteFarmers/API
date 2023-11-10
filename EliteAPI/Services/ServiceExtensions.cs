@@ -7,6 +7,7 @@ using EliteAPI.Data;
 using EliteAPI.Parsers.Skyblock;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.Background;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.GuildService;
@@ -33,7 +34,10 @@ public static class ServiceExtensions
         services.AddSingleton<HypixelRequestLimiter>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<IMessageService, MessageService.MessageService>();
+        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
+        services.AddHostedService<BackgroundQueueWorker>();
+        
         services.AddHttpClient(HypixelService.HypixelService.HttpClientName, client => {
             client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI");
         });
