@@ -19,7 +19,8 @@ public class ConfigFarmingWeightSettings
     public int Farming50Bonus { get; set; }
     public int AnitaBuffBonusMultiplier { get; set; }
     public int MaxMedalsCounted { get; set; }
-    public int GoldMedalRewardInterval { get; set; }
+    public float WeightPerDiamondMedal { get; set; }
+    public float WeightPerPlatinumMedal { get; set; }
     public float WeightPerGoldMedal { get; set; }
     public int MinionRewardTier { get; set; }
     public int MinionRewardWeight { get; set; }

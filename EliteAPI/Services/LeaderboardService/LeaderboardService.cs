@@ -303,7 +303,7 @@ public class LeaderboardService : ILeaderboardService {
                         MemberId = member.Id.ToString()
                     }).Take(lb.Limit);
 
-            case "goldmedals" or "silvermedals" or "bronzemedals": 
+            case "diamondmedals" or "platinummedals" or "goldmedals" or "silvermedals" or "bronzemedals": 
                 var medal = leaderboardId.Replace("medals", "");
                 // Capitalize first letter
                 medal = medal.First().ToString().ToUpper() + medal[1..];
