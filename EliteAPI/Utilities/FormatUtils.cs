@@ -123,6 +123,8 @@ public static class FormatUtils
         ContestMedal.Bronze => "bronze",
         ContestMedal.Silver => "silver",
         ContestMedal.Gold => "gold",
+        ContestMedal.Platinum => "platinum",
+        ContestMedal.Diamond => "diamond",
         _ => "none"
     };
 

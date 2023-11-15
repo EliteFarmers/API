@@ -12,7 +12,7 @@ public class JacobData
     public int Id { get; set; }
 
     public MedalInventory Medals { get; set; } = new();
-    public MedalInventory EarnedMedals { get; set; } = new();
+    public EarnedMedalInventory EarnedMedals { get; set; } = new();
     public JacobPerks Perks { get; set; } = new();
     public int Participations { get; set; } = 0;
     public virtual List<ContestParticipation> Contests { get; set; } = new();
@@ -29,6 +29,16 @@ public class MedalInventory
     public int Bronze { get; set; } = 0;
     public int Silver { get; set; } = 0;
     public int Gold { get; set; } = 0;
+}
+
+[Owned]
+public class EarnedMedalInventory
+{
+    public int Bronze { get; set; } = 0;
+    public int Silver { get; set; } = 0;
+    public int Gold { get; set; } = 0;
+    public int Platinum { get; set; } = 0;
+    public int Diamond { get; set; } = 0;
 }
 
 [Owned]
@@ -88,5 +98,7 @@ public enum ContestMedal
     None,
     Bronze,
     Silver,
-    Gold
+    Gold,
+    Platinum,
+    Diamond
 }

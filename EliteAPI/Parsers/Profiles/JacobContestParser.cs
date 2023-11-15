@@ -114,12 +114,35 @@ public static class JacobContestParser
         member.JacobData.Contests.AddRange(newParticipations);
 
         jacob.Participations = jacob.Contests.Count;
-        jacob.EarnedMedals.Gold = jacob.Contests.Count(c => c.MedalEarned == ContestMedal.Gold);
-        jacob.EarnedMedals.Silver = jacob.Contests.Count(c => c.MedalEarned == ContestMedal.Silver);
-        jacob.EarnedMedals.Bronze = jacob.Contests.Count(c => c.MedalEarned == ContestMedal.Bronze);
 
+        jacob.EarnedMedals.Bronze = 0;
+        jacob.EarnedMedals.Silver = 0;
+        jacob.EarnedMedals.Gold = 0;
+        jacob.EarnedMedals.Platinum = 0;
+        jacob.EarnedMedals.Diamond = 0;
+        
+        foreach (var contest in jacob.Contests) {
+            switch (contest.MedalEarned) {
+                case ContestMedal.Bronze:
+                    jacob.EarnedMedals.Bronze++;
+                    break;
+                case ContestMedal.Silver:
+                    jacob.EarnedMedals.Silver++;
+                    break;
+                case ContestMedal.Gold:
+                    jacob.EarnedMedals.Gold++;
+                    break;
+                case ContestMedal.Platinum:
+                    jacob.EarnedMedals.Platinum++;
+                    break;
+                case ContestMedal.Diamond:
+                    jacob.EarnedMedals.Diamond++;
+                    break;
+            }
+        }
+        
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
+        
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
     }
@@ -134,6 +157,8 @@ public static class JacobContestParser
                 "gold" => ContestMedal.Gold,
                 "silver" => ContestMedal.Silver,
                 "bronze" => ContestMedal.Bronze,
+                "platinum" => ContestMedal.Platinum,
+                "diamond" => ContestMedal.Diamond,
                 _ => ContestMedal.None
             };
         }
@@ -144,10 +169,12 @@ public static class JacobContestParser
         if (position is null || participants is null) return ContestMedal.None;
 
         // Calculate medal based on position
-        if (position <= (participants * 0.05) + 1) return ContestMedal.Gold;
-        if (position <= (participants * 0.25) + 1) return ContestMedal.Silver;
-        if (position <= (participants * 0.6) + 1) return ContestMedal.Bronze;
-        
+        if (position <= Math.Floor((double) (participants * 0.02))) return ContestMedal.Diamond;
+        if (position <= Math.Floor((double) (participants * 0.05))) return ContestMedal.Platinum;
+        if (position <= Math.Floor((double) (participants * 0.10))) return ContestMedal.Gold;
+        if (position <= Math.Floor((double) (participants * 0.30))) return ContestMedal.Silver;
+        if (position <= Math.Floor((double) (participants * 0.60))) return ContestMedal.Bronze;
+
         return ContestMedal.None;
     }
 }
