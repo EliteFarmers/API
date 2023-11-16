@@ -10,7 +10,7 @@ public class JacobDataMapper : Profile
     public JacobDataMapper()
     {
         CreateMap<JacobData, JacobDataDto>()
-            .ForMember(j => j.Contests, opt => opt.MapFrom(x => x.Contests))
+            .ForMember(j => j.Contests, opt => opt.MapFrom(x => x.Contests.OrderBy(c => c.JacobContestId)))
             .ForMember(j => j.EarnedMedals, opt => opt.MapFrom(x => x.EarnedMedals))
             .ForMember(j => j.Medals, opt => opt.MapFrom(x => x.Medals))
             .ForMember(j => j.Perks, opt => opt.MapFrom(x => x.Perks));
@@ -65,5 +65,6 @@ public class MedalInventoryMapper : Profile
     public MedalInventoryMapper()
     {
         CreateMap<MedalInventory, MedalInventoryDto>();
+        CreateMap<EarnedMedalInventory, EarnedMedalInventoryDto>();
     }
 }

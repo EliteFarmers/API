@@ -48,6 +48,14 @@
         "Title": "Farming Weight",
         "Limit": 10000
       },
+      "diamondmedals": {
+        "Title": "Earned Diamond Medals",
+        "Limit": 1000
+      },
+      "platinummedals": {
+        "Title": "Earned Platinum Medals",
+        "Limit": 1000
+      },
       "goldmedals": {
         "Title": "Earned Gold Medals",
         "Limit": 1000

@@ -3,7 +3,7 @@
 public class JacobDataDto
 {
     public MedalInventoryDto Medals { get; set; } = new();
-    public MedalInventoryDto EarnedMedals { get; set; } = new();
+    public EarnedMedalInventoryDto EarnedMedals { get; set; } = new();
     public JacobPerksDto Perks { get; set; } = new();
     public int Participations { get; set; } = 0;
     public List<ContestParticipationDto> Contests { get; set; } = new();
@@ -14,6 +14,15 @@ public class MedalInventoryDto
     public int Bronze { get; set; } = 0;
     public int Silver { get; set; } = 0;
     public int Gold { get; set; } = 0;
+}
+
+public class EarnedMedalInventoryDto
+{
+    public int Bronze { get; set; } = 0;
+    public int Silver { get; set; } = 0;
+    public int Gold { get; set; } = 0;
+    public int Platinum { get; set; } = 0;
+    public int Diamond { get; set; } = 0;
 }
 
 public class JacobPerksDto

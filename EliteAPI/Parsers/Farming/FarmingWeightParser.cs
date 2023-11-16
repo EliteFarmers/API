@@ -141,18 +141,22 @@ public static class FarmingWeightParser
             bonus.Add("Anita", member.JacobData.Perks.DoubleDrops * config.AnitaBuffBonusMultiplier);
         }
 
-        // Gold medals
-        if (member.JacobData.EarnedMedals.Gold > FarmingWeightConfig.Settings.MaxMedalsCounted)
+        // Contest medals
+        var maxMedals = FarmingWeightConfig.Settings.MaxMedalsCounted;
+        if (member.JacobData.EarnedMedals.Diamond >= maxMedals)
         {
-            bonus.Add("Gold Medals", (int) (config.WeightPerGoldMedal * config.MaxMedalsCounted));
+            bonus.Add("Contest Medals", (int) (config.WeightPerDiamondMedal * config.MaxMedalsCounted));
         }
-        else
-        {
-            var rewardCount = (member.JacobData.EarnedMedals.Gold / 50) * 50;
-            if (rewardCount > 0)
-            {
-                bonus.Add("Gold Medals", (int) (config.WeightPerGoldMedal * rewardCount));
-            }
+        else {
+            var diamond = member.JacobData.EarnedMedals.Diamond;
+            var platinum = Math.Min(maxMedals - diamond, member.JacobData.EarnedMedals.Platinum);
+            var gold = Math.Min(maxMedals - diamond - platinum, member.JacobData.EarnedMedals.Gold);
+
+            var medals = diamond * config.WeightPerDiamondMedal
+             + platinum * config.WeightPerPlatinumMedal
+             + gold * config.WeightPerGoldMedal;
+
+            bonus.Add("Contest Medals", medals);
         }
 
         // Tier 12 farming minions
