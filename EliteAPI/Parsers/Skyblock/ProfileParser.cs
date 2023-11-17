@@ -126,7 +126,7 @@ public class ProfileParser(
         var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
         
         // Should remove if deleted or co op invitation is not accepted
-        var shouldRemove = memberData.DeletionNotice is not null || memberData.CoopInvitation is { Confirmed: false };
+        var shouldRemove = memberData.DeletionNotice is not null || memberData.Profile?.CoopInvitation is { Confirmed: false };
         
         // Exit early if removed, and still should be removed
         if (existing?.WasRemoved == true && shouldRemove) return;
@@ -206,27 +206,28 @@ public class ProfileParser(
         member.Api.Collections = incomingData.Collection is not null;
         
         member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
-        member.Purse = incomingData.CoinPurse ?? 0;
-        member.Pets = incomingData.Pets?.ToList() ?? new List<Pet>();
+        member.Purse = incomingData.Currencies?.CoinPurse ?? 0;
+        member.Pets = incomingData.PetsData?.Pets?.ToList() ?? new List<Pet>();
         
         member.Unparsed = new UnparsedApiData
         {
-            Perks = incomingData.Perks,
-            TempStatBuffs = incomingData.TempStatBuffs,
+            Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
+            TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? new List<TempStatBuff>(),
             AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
+            Bestiary = incomingData.Bestiary ?? new JsonObject()
         };
         
         member.ParseJacob(incomingData.Jacob);
         await context.SaveChangesAsync();
         
         member.ParseSkills(incomingData);
-        member.ParseCollectionTiers(incomingData.UnlockedCollTiers);
+        member.ParseCollectionTiers(incomingData.PlayerData?.UnlockedCollTiers);
 
         await AddTimeScaleRecords(member);
         // Runs on background service
         ParseJacobContests(member.Id, incomingData);
         
-        profile.CombineMinions(incomingData.CraftedGenerators);
+        profile.CombineMinions(incomingData.PlayerData?.CraftedGenerators);
         
         await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
 

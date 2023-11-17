@@ -9,21 +9,26 @@ public static class SkillParser
     public static void ParseSkills(this ProfileMember member, RawMemberData memberData)
     {
         var skills = member.Skills;
+        var incoming = memberData.PlayerData?.Experience;
 
-        member.Api.Skills =
-            memberData.ExperienceSkillCombat is not null && memberData.ExperienceSkillMining is not null;
+        if (incoming is null) {
+            member.Api.Skills = false;
+            return;
+        }
+        
+        member.Api.Skills = incoming.SkillCombat is not null && incoming.SkillMining is not null;
 
-        skills.Combat = memberData.ExperienceSkillCombat ?? skills.Combat;
-        skills.Mining = memberData.ExperienceSkillMining ?? skills.Mining;
-        skills.Foraging = memberData.ExperienceSkillForaging ?? skills.Foraging;
-        skills.Fishing = memberData.ExperienceSkillFishing ?? skills.Fishing;
-        skills.Enchanting = memberData.ExperienceSkillEnchanting ?? skills.Enchanting;
-        skills.Alchemy = memberData.ExperienceSkillAlchemy ?? skills.Alchemy;
-        skills.Taming = memberData.ExperienceSkillTaming ?? skills.Taming;
-        skills.Carpentry = memberData.ExperienceSkillCarpentry ?? skills.Carpentry;
-        skills.Runecrafting = memberData.ExperienceSkillRunecrafting ?? skills.Runecrafting;
-        skills.Social = memberData.ExperienceSkillSocial ?? skills.Social;
-        skills.Farming = memberData.ExperienceSkillFarming ?? skills.Farming;
+        skills.Combat = incoming.SkillCombat ?? skills.Combat;
+        skills.Mining = incoming.SkillMining ?? skills.Mining;
+        skills.Foraging = incoming.SkillForaging ?? skills.Foraging;
+        skills.Fishing = incoming.SkillFishing ?? skills.Fishing;
+        skills.Enchanting = incoming.SkillEnchanting ?? skills.Enchanting;
+        skills.Alchemy = incoming.SkillAlchemy ?? skills.Alchemy;
+        skills.Taming = incoming.SkillTaming ?? skills.Taming;
+        skills.Carpentry = incoming.SkillCarpentry ?? skills.Carpentry;
+        skills.Runecrafting = incoming.SkillRunecrafting ?? skills.Runecrafting;
+        skills.Social = incoming.SkillSocial ?? skills.Social;
+        skills.Farming = incoming.SkillFarming ?? skills.Farming;
     }
 
     public static Dictionary<string, double> ExtractSkills(this SkillExperience skills) {
