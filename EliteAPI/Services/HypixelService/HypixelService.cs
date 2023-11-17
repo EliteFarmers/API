@@ -28,7 +28,7 @@ public class HypixelService : IHypixelService
         var client = _httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/skyblock/profiles?uuid={uuid}");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/v2/skyblock/profiles?uuid={uuid}");
         var response = await client.SendAsync(request);
 
         if (!response.IsSuccessStatusCode)
@@ -74,7 +74,7 @@ public class HypixelService : IHypixelService
         var client = _httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/player?uuid={uuid}");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/v2/player?uuid={uuid}");
         var response = await client.SendAsync(request);
 
         if (!response.IsSuccessStatusCode)
