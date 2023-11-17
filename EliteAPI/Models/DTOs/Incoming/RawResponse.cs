@@ -94,6 +94,9 @@ public class RawMemberData
     
     [JsonPropertyName("deletion_notice")]
     public JsonObject? DeletionNotice { get; set; }
+    
+    [JsonPropertyName("coop_invitation")]
+    public RawCoopInvitation? CoopInvitation { get; set; }
 
     [JsonPropertyName("crafted_generators")]
     public string[]? CraftedGenerators { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Models.DTOs.Incoming;
@@ -12,6 +13,7 @@ using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.LeaderboardService;
+using Microsoft.Extensions.Options;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Parsers.Skyblock;
@@ -20,8 +22,10 @@ public class ProfileParser(
     DataContext context, 
     IMojangService mojangService, 
     IBackgroundTaskQueue taskQueue,
+    IOptions<ConfigLeaderboardSettings> lbOptions,
     ILeaderboardService leaderboardService) 
 {
+    private readonly ConfigLeaderboardSettings lbSettings = lbOptions.Value;
     
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
@@ -47,7 +51,7 @@ public class ProfileParser(
 
         var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
 
-        // Make player as removed from all profiles that aren't in the response
+        // Mark player as removed from all profiles that aren't in the response
         await context.ProfileMembers
             .Include(p => p.Profile)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
@@ -120,11 +124,20 @@ public class ProfileParser(
     private async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
     {
         var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
-
-        if (existing?.WasRemoved == true && memberData.DeletionNotice is not null) return;
+        
+        // Should remove if deleted or co op invitation is not accepted
+        var shouldRemove = memberData.DeletionNotice is not null || memberData.CoopInvitation is { Confirmed: false };
+        
+        // Exit early if removed, and still should be removed
+        if (existing?.WasRemoved == true && shouldRemove) return;
         
         if (existing is not null)
         {
+            if (shouldRemove) {
+                // Remove leaderboard positions
+                await leaderboardService.RemoveMemberFromAllLeaderboards(existing.Id.ToString());
+            }
+            
             // Only update if the player is the requester
             if (playerId == requesterUuid) {
                 existing.IsSelected = selected;
@@ -135,7 +148,7 @@ public class ProfileParser(
             existing.ProfileName ??= profile.ProfileName;
             
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            existing.WasRemoved = memberData.DeletionNotice is not null;
+            existing.WasRemoved = shouldRemove;
             
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             context.MinecraftAccounts.Update(existing.MinecraftAccount);
@@ -182,8 +195,13 @@ public class ProfileParser(
         }
     }
 
-    private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData)
-    {
+    private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData) {
+        var previousApi = new ApiAccess {
+            Collections = member.Api.Collections,
+            Inventories = member.Api.Inventories,
+            Skills = member.Api.Skills
+        };
+        
         member.Collections = incomingData.Collection ?? member.Collections;
         member.Api.Collections = incomingData.Collection is not null;
         
@@ -239,17 +257,27 @@ public class ProfileParser(
         context.JacobData.Update(member.JacobData);
         context.Profiles.Update(profile);
         
-        UpdateLeaderboards(member);
-
         await context.SaveChangesAsync();
+
+        await UpdateLeaderboards(member, previousApi);
     }
     
-    private void UpdateLeaderboards(ProfileMember member) {
-        // TODO: Update all leaderboards, not just farming weight
-        // (I'm avoiding this right now because idk a clever solution that's not a ton of if statements)
+    private async Task UpdateLeaderboards(ProfileMember member, ApiAccess previousApi) {
+        var memberId = member.Id.ToString();
+        
+        // Update misc leaderboards
+        leaderboardService.UpdateLeaderboardScore("farmingweight", memberId, member.Farming.TotalWeight);
+        leaderboardService.UpdateLeaderboardScore("skyblockxp", memberId, member.SkyblockXp);
 
-        var farmingWeight = member.Farming.TotalWeight;
-        leaderboardService.UpdateLeaderboardScore("farmingweight", member.Id.ToString(), farmingWeight);
+        // If collections api was turned off, remove scores
+        if (previousApi.Collections && !member.Api.Collections) {
+            await leaderboardService.RemoveMemberFromLeaderboards(lbSettings.CollectionLeaderboards.Keys, memberId);
+        }
+        
+        // If skills api was turned off, remove scores
+        if (previousApi.Skills && !member.Api.Skills) {
+            await leaderboardService.RemoveMemberFromLeaderboards(lbSettings.SkillLeaderboards.Keys, memberId);
+        }
     }
 
     private void ParseJacobContests(Guid memberId, RawMemberData incomingData) {
@@ -257,6 +285,7 @@ public class ProfileParser(
         taskQueue.EnqueueAsync(async (scope, ct) => {
             await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
             var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
+            var lbService = scope.ServiceProvider.GetRequiredService<ILeaderboardService>();
         
             var member = await context.ProfileMembers
                 .Include(p => p.JacobData)
@@ -266,6 +295,15 @@ public class ProfileParser(
             if (member is null) return;
 
             await member.ParseJacobContests(incomingData.Jacob, context, cache);
+
+            // Update leaderboard positions
+            var mId = memberId.ToString();
+            lbService.UpdateLeaderboardScore("participations", mId, member.JacobData.Participations);
+            lbService.UpdateLeaderboardScore("diamondmedals", mId, member.JacobData.EarnedMedals.Diamond);
+            lbService.UpdateLeaderboardScore("platinummedals", mId, member.JacobData.EarnedMedals.Platinum);
+            lbService.UpdateLeaderboardScore("goldmedals", mId, member.JacobData.EarnedMedals.Gold);
+            lbService.UpdateLeaderboardScore("silvermedals", mId, member.JacobData.EarnedMedals.Silver);
+            lbService.UpdateLeaderboardScore("bronzemedals", mId, member.JacobData.EarnedMedals.Bronze);
         });
     }
 
@@ -291,6 +329,19 @@ public class ProfileParser(
             };
             
             await context.CropCollections.SingleInsertAsync(cropCollection);
+
+            // Update leaderboard positions
+            var memberId = member.Id.ToString();
+            leaderboardService.UpdateLeaderboardScore("cactus", memberId, cropCollection.Cactus);
+            leaderboardService.UpdateLeaderboardScore("carrot", memberId, cropCollection.Carrot);
+            leaderboardService.UpdateLeaderboardScore("cocoa", memberId, cropCollection.CocoaBeans);
+            leaderboardService.UpdateLeaderboardScore("melon", memberId, cropCollection.Melon);
+            leaderboardService.UpdateLeaderboardScore("mushroom", memberId, cropCollection.Mushroom);
+            leaderboardService.UpdateLeaderboardScore("netherwart", memberId, cropCollection.NetherWart);
+            leaderboardService.UpdateLeaderboardScore("potato", memberId, cropCollection.Potato);
+            leaderboardService.UpdateLeaderboardScore("pumpkin", memberId, cropCollection.Pumpkin);
+            leaderboardService.UpdateLeaderboardScore("sugarcane", memberId, cropCollection.SugarCane);
+            leaderboardService.UpdateLeaderboardScore("wheat", memberId, cropCollection.Wheat);
         }
 
         if (member.Api.Skills) {
@@ -314,6 +365,19 @@ public class ProfileParser(
             };
             
             await context.SkillExperiences.SingleInsertAsync(skillExp);
+            
+            // Update leaderboard positions
+            var memberId = member.Id.ToString();
+            leaderboardService.UpdateLeaderboardScore("alchemy", memberId, skillExp.Alchemy);
+            leaderboardService.UpdateLeaderboardScore("carpentry", memberId, skillExp.Carpentry);
+            leaderboardService.UpdateLeaderboardScore("combat", memberId, skillExp.Combat);
+            leaderboardService.UpdateLeaderboardScore("enchanting", memberId, skillExp.Enchanting);
+            leaderboardService.UpdateLeaderboardScore("farming", memberId, skillExp.Farming);
+            leaderboardService.UpdateLeaderboardScore("fishing", memberId, skillExp.Fishing);
+            leaderboardService.UpdateLeaderboardScore("mining", memberId, skillExp.Mining);
+            leaderboardService.UpdateLeaderboardScore("runecrafting", memberId, skillExp.Runecrafting);
+            leaderboardService.UpdateLeaderboardScore("taming", memberId, skillExp.Taming);
+            leaderboardService.UpdateLeaderboardScore("social", memberId, skillExp.Social);
         }
     }
 }

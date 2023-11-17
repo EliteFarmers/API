@@ -1,6 +1,4 @@
-﻿using EliteAPI.Services.LeaderboardService;
-
-namespace EliteAPI.Models.DTOs.Outgoing; 
+﻿namespace EliteAPI.Models.DTOs.Outgoing; 
 
 public class LeaderboardDto {
     public required string Id { get; set; }
@@ -25,9 +23,9 @@ public class LeaderboardEntryWithRankDto {
 }
 
 public class LeaderboardPositionsDto {
-    public Dictionary<string, int> misc { get; set; } = new();
-    public Dictionary<string, int> skills { get; set; } = new();
-    public Dictionary<string, int> collections { get; set; } = new();
+    public Dictionary<string, int> Misc { get; set; } = new();
+    public Dictionary<string, int> Skills { get; set; } = new();
+    public Dictionary<string, int> Collections { get; set; } = new();
 }
 
 public class LeaderboardPositionDto {

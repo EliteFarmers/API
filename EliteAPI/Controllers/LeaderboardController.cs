@@ -92,7 +92,7 @@ public class LeaderboardController : ControllerBase
             return BadRequest("Invalid skill.");
         }
         
-        var entries = await _leaderboardService.GetSkillLeaderboardSlice(skill, offset, limit);
+        var entries = await _leaderboardService.GetLeaderboardSlice(skill, offset, limit);
 
         return Ok(new LeaderboardDto {
             Id = lb.Id,
@@ -118,7 +118,7 @@ public class LeaderboardController : ControllerBase
             return BadRequest("Invalid collection.");
         }
         
-        var entries = await _leaderboardService.GetCollectionLeaderboardSlice(collection, offset, limit);
+        var entries = await _leaderboardService.GetLeaderboardSlice(collection, offset, limit);
 
         return Ok(new LeaderboardDto {
             Id = lb.Id,
