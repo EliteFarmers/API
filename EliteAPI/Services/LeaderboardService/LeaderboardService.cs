@@ -208,7 +208,7 @@ public class LeaderboardService : ILeaderboardService {
             .ThenInclude(pm => pm!.Profile)
             .Include(p => p.ProfileMember)
             .ThenInclude(pm => pm!.MinecraftAccount)
-            .Where(s => EF.Property<double>(s, lbSettings.Id) > 0 && s.ProfileMember != null)
+            .Where(s => EF.Property<double>(s, lbSettings.Id) > 0 && s.ProfileMember != null && !s.ProfileMember.WasRemoved)
             .OrderByDescending(s => EF.Property<double>(s, lbSettings.Id))
             .Take(1000)
             .Select(s => new LeaderboardEntry {
@@ -234,7 +234,8 @@ public class LeaderboardService : ILeaderboardService {
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
             .Where(p => 
-                EF.Functions.JsonExists(p.Collections, lbSettings.Id) 
+                !p.WasRemoved
+                && EF.Functions.JsonExists(p.Collections, lbSettings.Id) 
                 && p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64() > 0)
             .OrderByDescending(p => p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64())
             .Take(lbSettings.Limit)
