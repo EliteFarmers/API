@@ -7,21 +7,22 @@ public static class InventoryParser {
     
     public static void ParseInventory(this Models.Entities.Hypixel.Inventories inventories, RawMemberData memberData) {
         inventories.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        if (memberData.InventoryContents is null) return;
+        var incoming = memberData.Inventories;
         
-        inventories.Armor = memberData.Armor?.Data;
-        inventories.EnderChest = memberData.EnderChestContents?.Data;
-        inventories.Equipment = memberData.EquipmentContents?.Data;
-        inventories.Inventory = memberData.InventoryContents?.Data;
-        inventories.TalismanBag = memberData.TalismanBag?.Data;
-        inventories.Wardrobe = memberData.WardrobeContents?.Data;
+        if (incoming?.InventoryContents is null) return;
+        
+        inventories.Armor = incoming.Armor?.Data;
+        inventories.EnderChest = incoming.EnderChestContents?.Data;
+        inventories.Equipment = incoming.EquipmentContents?.Data;
+        inventories.Inventory = incoming.InventoryContents?.Data;
+        inventories.TalismanBag = incoming.BagContents?.TalismanBag?.Data;
+        inventories.Wardrobe = incoming.WardrobeContents?.Data;
 
-        if (memberData.PersonalVaultContents is not null) {
-            inventories.PersonalVault = memberData.PersonalVaultContents.Data;
+        if (incoming.PersonalVaultContents is not null) {
+            inventories.PersonalVault = incoming.PersonalVaultContents.Data;
         }
 
-        inventories.Backpacks = memberData.BackpackContents?.Values.Select(x => x.Data).ToList();
+        inventories.Backpacks = incoming.BackpackContents?.Values.Select(x => x.Data).ToList();
     }
 
     public static async Task<DecodedInventoriesDto> DecodeToNbt(this Models.Entities.Hypixel.Inventories inventories) {
