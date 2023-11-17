@@ -47,7 +47,7 @@ public class ProfileParser(
 
         var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
 
-        // Make player as removed from all profiles that aren't in the response
+        // Mark player as removed from all profiles that aren't in the response
         await context.ProfileMembers
             .Include(p => p.Profile)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
@@ -120,8 +120,12 @@ public class ProfileParser(
     private async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
     {
         var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
-
-        if (existing?.WasRemoved == true && memberData.DeletionNotice is not null) return;
+        
+        // Should remove if deleted or co op invitation is not accepted
+        var shouldRemove = memberData.DeletionNotice is not null || memberData.CoopInvitation is { Confirmed: false };
+        
+        // Exit early if removed, and still should be removed
+        if (existing?.WasRemoved == true && shouldRemove) return;
         
         if (existing is not null)
         {
@@ -135,7 +139,7 @@ public class ProfileParser(
             existing.ProfileName ??= profile.ProfileName;
             
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            existing.WasRemoved = memberData.DeletionNotice is not null;
+            existing.WasRemoved = shouldRemove;
             
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             context.MinecraftAccounts.Update(existing.MinecraftAccount);
