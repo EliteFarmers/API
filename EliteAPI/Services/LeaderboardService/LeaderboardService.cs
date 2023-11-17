@@ -5,40 +5,45 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Services.Background;
 
 namespace EliteAPI.Services.LeaderboardService; 
 
-public class LeaderboardService : ILeaderboardService {
-    
-    private readonly DataContext _context;
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ConfigLeaderboardSettings _settings;
+public class LeaderboardService(
+    DataContext dataContext, 
+    IConnectionMultiplexer redis,
+    IOptions<ConfigLeaderboardSettings> lbSettings,
+    IBackgroundTaskQueue taskQueue
+) : ILeaderboardService 
+{
+    private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
 
-    public LeaderboardService(DataContext dataContext, IConnectionMultiplexer redis, IOptions<ConfigLeaderboardSettings> lbSettings) {
-        _context = dataContext;
-        _redis = redis;
-        _settings = lbSettings.Value;
-    }
-    
     public async Task<List<LeaderboardEntry>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
-        if (!LeaderboardExists(leaderboardId)) return new List<LeaderboardEntry>();
+        if (!TryGetLeaderboardSettings(leaderboardId, out var settings)) return new List<LeaderboardEntry>();
+        await UpdateLeaderboardIfNeeded(leaderboardId);
+
+        return await GetSlice(leaderboardId, offset, Math.Min(limit, settings?.Limit ?? limit));
+    }
+
+    private async Task UpdateLeaderboardIfNeeded(string leaderboardId) {
+        var db = redis.GetDatabase();
+        var key = $"lb:updated:{leaderboardId}";
         
-        var db = _redis.GetDatabase();
+        // If key exists, lb does not need updating
+        // This also prevents repeated calls from triggering it twice
+        if (await db.KeyExistsAsync(key)) return;
         
-        var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
-        if (exists) return await GetSlice(leaderboardId, offset, limit);
+        var expiry = DateTime.UtcNow.AddSeconds(_settings.CompleteRefreshInterval);
+        // Set updated
+        await db.StringSetAsync(key, value: "1");
+        await db.StringGetSetExpiryAsync(key, expiry);
         
-        if (_settings.Leaderboards.ContainsKey(leaderboardId)) {
-            await FetchLeaderboard(leaderboardId);
-        } else if (_settings.CollectionLeaderboards.ContainsKey(leaderboardId)) {
-            await FetchCollectionLeaderboard(leaderboardId);
-        } else if (_settings.SkillLeaderboards.ContainsKey(leaderboardId)) {
-            await FetchSkillLeaderboard(leaderboardId);
-        } else {
-            return new List<LeaderboardEntry>();
-        }
-        
-        return await GetSlice(leaderboardId, offset, limit);
+        // Enqueue refresh task
+        await taskQueue.EnqueueAsync(async (scope, ct) => {
+            var lbService = scope.ServiceProvider.GetRequiredService<ILeaderboardService>();
+            
+            await lbService.FetchLeaderboard(leaderboardId);
+        });
     }
 
     public async Task<List<LeaderboardEntryWithRank>> GetLeaderboardSliceAtScore(string leaderboardId, double score, int limit = 5, string? excludeMemberId = null) {
@@ -46,7 +51,7 @@ public class LeaderboardService : ILeaderboardService {
         
         var memberRank = excludeMemberId is null ? -1 : await GetLeaderboardPosition(leaderboardId, excludeMemberId);
         
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
         if (!exists) await GetLeaderboardSlice(leaderboardId); // Will populate the leaderboard if it doesn't exist
         
@@ -80,77 +85,41 @@ public class LeaderboardService : ILeaderboardService {
         return (await Task.WhenAll(tasks)).ToList();
     }
 
-    public async Task<List<LeaderboardEntry>> GetSkillLeaderboardSlice(string skillName, int offset = 0, int limit = 20) {
-        var db = _redis.GetDatabase();
-        
-        var exists = await db.KeyExistsAsync($"lb:{skillName}");
-        if (!exists) await FetchSkillLeaderboard(skillName);
-
-        return await GetSlice(skillName, offset, limit);
-    }
-
-    public async Task<List<LeaderboardEntry>> GetCollectionLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
-        var db = _redis.GetDatabase();
-        
-        var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
-        if (!exists) await FetchCollectionLeaderboard(leaderboardId);
-
-        return await GetSlice(leaderboardId, offset, limit);
-    }
-
     public async Task<LeaderboardPositionsDto> GetLeaderboardPositions(string memberId) {
         var result = new LeaderboardPositionsDto();
         
-        var db = _redis.GetDatabase();
-
         // Can't use parallel foreach because of database connection
         foreach (var lbId in _settings.Leaderboards.Keys) {
-            if (!await db.KeyExistsAsync($"lb:{lbId}")) await FetchLeaderboard(lbId);
-            var rank = await db.SortedSetRankAsync($"lb:{lbId}", memberId, Order.Descending);
-            result.misc.Add(lbId, rank.HasValue ? (int) rank.Value + 1 : -1);
+            result.Misc.Add(lbId, await GetLeaderboardPositionNoCheck(lbId, memberId));
         }
 
         foreach (var skillName in _settings.SkillLeaderboards.Keys) {
-            if (!await db.KeyExistsAsync($"lb:{skillName}")) await FetchSkillLeaderboard(skillName);
-            var rank = await db.SortedSetRankAsync($"lb:{skillName}", memberId, Order.Descending);
-            result.skills.Add(skillName, rank.HasValue ? (int) rank.Value + 1 : -1);
+            result.Skills.Add(skillName, await GetLeaderboardPositionNoCheck(skillName, memberId));
         }
         
         foreach (var lbId in _settings.CollectionLeaderboards.Keys) {
-            if (!await db.KeyExistsAsync($"lb:{lbId}")) await FetchCollectionLeaderboard(lbId);
-            var rank = await db.SortedSetRankAsync($"lb:{lbId}", memberId, Order.Descending);
-            result.collections.Add(lbId, rank.HasValue ? (int) rank.Value + 1 : -1);
+            result.Collections.Add(lbId, await GetLeaderboardPositionNoCheck(lbId, memberId));
         }
         
         return result;
     }
 
-    public async Task<int> GetLeaderboardPosition(string leaderboardId, string memberId) {
-        if (!LeaderboardExists(leaderboardId)) return -1;
+    private async Task<int> GetLeaderboardPositionNoCheck(string leaderboardId, string memberId) {
+        await UpdateLeaderboardIfNeeded(leaderboardId);
         
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var rank = await db.SortedSetRankAsync($"lb:{leaderboardId}", memberId, Order.Descending);
         
         return rank.HasValue ? (int) rank.Value + 1 : -1;
     }
 
-    public async Task<LeaderboardEntryWithRank?> GetLeaderboardEntry(string leaderboardId, string memberId) {
-        var rank = await GetLeaderboardPosition(leaderboardId, memberId);
-        if (rank == -1) return null;
-        
-        var entry = (await GetSlice(leaderboardId, rank - 1, 1)).FirstOrDefault();
-        
-        return entry is null ? null : new LeaderboardEntryWithRank {
-            MemberId = entry.MemberId,
-            Profile = entry.Profile,
-            Ign = entry.Ign,
-            Amount = entry.Amount,
-            Rank = rank
-        };
+    public async Task<int> GetLeaderboardPosition(string leaderboardId, string memberId) {
+        if (!LeaderboardExists(leaderboardId)) return -1;
+        return await GetLeaderboardPositionNoCheck(leaderboardId, memberId);
     }
-
+    
     private async Task<List<LeaderboardEntry>> GetSlice(string leaderboardId, int offset = 0, int limit = 20) {
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
 
         var slice = await db.SortedSetRangeByScoreWithScoresAsync(
             $"lb:{leaderboardId}", 
@@ -178,7 +147,39 @@ public class LeaderboardService : ILeaderboardService {
         return (await Task.WhenAll(tasks)).ToList();
     }
 
-    private async Task FetchLeaderboard(string leaderboardId) {
+    public async Task RemoveMemberFromAllLeaderboards(string memberId) {
+        var lbs = _settings.Leaderboards.Keys
+            .Concat(_settings.CollectionLeaderboards.Keys)
+            .Concat(_settings.SkillLeaderboards.Keys);
+        
+        await RemoveMemberFromLeaderboards(lbs, memberId);
+    }
+
+    public async Task RemoveMemberFromLeaderboards(IEnumerable<string> leaderboardIds, string memberId) {
+        var db = redis.GetDatabase();
+
+        await Task.WhenAll(leaderboardIds.Select(async lbId => {
+            await db.SortedSetRemoveAsync($"lb:{lbId}", memberId);
+        }));
+    }
+
+    public async Task FetchLeaderboard(string leaderboardId) {
+        if (_settings.Leaderboards.ContainsKey(leaderboardId)) {
+            await FetchMiscLeaderboard(leaderboardId);
+            return;
+        }
+        
+        if (_settings.SkillLeaderboards.ContainsKey(leaderboardId)) {
+            await FetchSkillLeaderboard(leaderboardId);
+            return;
+        }
+        
+        if (_settings.CollectionLeaderboards.ContainsKey(leaderboardId)) {
+            await FetchCollectionLeaderboard(leaderboardId);
+        }
+    }
+
+    private async Task FetchMiscLeaderboard(string leaderboardId) {
         if (!_settings.Leaderboards.ContainsKey(leaderboardId)) {
             throw new Exception($"Leaderboard {leaderboardId} not found");
         }
@@ -202,7 +203,7 @@ public class LeaderboardService : ILeaderboardService {
             throw new Exception($"Skill leaderboard {leaderboardId} not found");
         }
 
-        var scores = await _context.Skills
+        var scores = await dataContext.Skills
             .AsNoTracking()
             .Include(s => s.ProfileMember)
             .ThenInclude(pm => pm!.Profile)
@@ -229,7 +230,7 @@ public class LeaderboardService : ILeaderboardService {
             throw new Exception($"Collection leaderboard {leaderboardId} not found");
         }
         
-        var scores = await _context.ProfileMembers
+        var scores = await dataContext.ProfileMembers
             .AsNoTracking()
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
@@ -253,10 +254,8 @@ public class LeaderboardService : ILeaderboardService {
     }
     
     private async Task StoreLeaderboardEntries(List<LeaderboardEntry> entries, string leaderboardId) {
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var lbKey = $"lb:{leaderboardId}";
-
-        var expiry = DateTime.UtcNow.AddSeconds(_settings.CompleteRefreshInterval);
 
         foreach (var score in entries) {
             db.HashSet(score.MemberId, new[] {
@@ -274,7 +273,6 @@ public class LeaderboardService : ILeaderboardService {
         #pragma warning disable CS4014 
         transaction.KeyDeleteAsync(lbKey);
         transaction.SortedSetAddAsync(lbKey, sortedSetEntries);
-        transaction.KeyExpireAsync(lbKey, expiry);
         #pragma warning restore CS4014        
         
         await transaction.ExecuteAsync();
@@ -285,7 +283,7 @@ public class LeaderboardService : ILeaderboardService {
             throw new Exception($"Leaderboard {leaderboardId} not found");
         }
 
-        var query = _context.ProfileMembers
+        var query = dataContext.ProfileMembers
             .AsNoTracking()
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount);
@@ -294,8 +292,8 @@ public class LeaderboardService : ILeaderboardService {
         {
             case "farmingweight":
                 return (from member in query
-                    join farmingWeight in _context.Farming on member.Id equals farmingWeight.ProfileMemberId
-                    where farmingWeight.TotalWeight > 0
+                    join farmingWeight in dataContext.Farming on member.Id equals farmingWeight.ProfileMemberId
+                    where farmingWeight.TotalWeight > 0 && !member.WasRemoved
                     orderby farmingWeight.TotalWeight descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
@@ -310,8 +308,8 @@ public class LeaderboardService : ILeaderboardService {
                 medal = medal.First().ToString().ToUpper() + medal[1..];
 
                 return (from member in query
-                    join jacobData in _context.JacobData on member.Id equals jacobData.ProfileMemberId
-                    where EF.Property<int>(jacobData.EarnedMedals, medal) > 0
+                    join jacobData in dataContext.JacobData on member.Id equals jacobData.ProfileMemberId
+                    where EF.Property<int>(jacobData.EarnedMedals, medal) > 0 && !member.WasRemoved
                     orderby EF.Property<int>(jacobData.EarnedMedals, medal) descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
@@ -322,8 +320,8 @@ public class LeaderboardService : ILeaderboardService {
             
             case "participations":
                 return (from member in query
-                    join jacobData in _context.JacobData on member.Id equals jacobData.ProfileMemberId
-                    where jacobData.Participations > 0
+                    join jacobData in dataContext.JacobData on member.Id equals jacobData.ProfileMemberId
+                    where jacobData.Participations > 0 && !member.WasRemoved
                     orderby jacobData.Participations descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
@@ -334,7 +332,7 @@ public class LeaderboardService : ILeaderboardService {
             
             case "skyblockxp":
                 return (from member in query
-                    where member.SkyblockXp > 0
+                    where member.SkyblockXp > 0 && !member.WasRemoved
                     orderby member.SkyblockXp descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
@@ -344,12 +342,13 @@ public class LeaderboardService : ILeaderboardService {
                     }).Take(lb.Limit);
             
             case "firstplace":
-                return _context.ProfileMembers
+                return dataContext.ProfileMembers
                     .AsNoTracking()
                     .Include(p => p.Profile)
                     .Include(p => p.MinecraftAccount)
                     .Include(p => p.JacobData)
                     .Include(p => p.JacobData.Contests)
+                    .Where(p => !p.WasRemoved)
                     .Select(p => new LeaderboardEntry {
                         Ign = p.MinecraftAccount.Name,
                         Profile = p.Profile.ProfileName,
@@ -377,10 +376,8 @@ public class LeaderboardService : ILeaderboardService {
     public void UpdateLeaderboardScore(string leaderboardId, string memberId, double score) {
         if (!LeaderboardExists(leaderboardId)) return;
         
-        var db = _redis.GetDatabase();
-        var lbKey = $"lb:{leaderboardId}";
-
-        db.SortedSetAddAsync(lbKey, memberId, score, When.Exists, CommandFlags.FireAndForget);
+        var db = redis.GetDatabase();
+        db.SortedSetAddAsync($"lb:{leaderboardId}", memberId, score, When.Exists, CommandFlags.FireAndForget);
     }
 }
 
