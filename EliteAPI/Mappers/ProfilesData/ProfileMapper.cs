@@ -43,9 +43,10 @@ public class ProfileMemberMapper : Profile
 public class ApiDataMapper : Profile {
     public ApiDataMapper() {
         CreateMap<ApiAccess, ApiAccessDto>();
-        
+
         CreateMap<UnparsedApiData, UnparsedApiDataDto>()
-            .ForMember(x => x.AccessoryBagSettings, opt => opt.MapFrom(x => x.AccessoryBagSettings));
+            .ForMember(x => x.AccessoryBagSettings, opt => opt.MapFrom(x => x.AccessoryBagSettings))
+            .ForMember(x => x.Bestiary, opt => opt.MapFrom(x => x.Bestiary));
     }
 }
 

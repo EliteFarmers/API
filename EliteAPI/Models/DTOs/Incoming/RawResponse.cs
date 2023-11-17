@@ -35,194 +35,171 @@ public class RawProfileData
 
 public class RawMemberData
 {
-    public Pet[]? Pets { get; set; }
-
-    public JsonObject? Dungeons { get; set; }
-
-    [JsonPropertyName("slayer_bosses")]
-    public JsonObject? SlayerBosses { get; set; }
-
-    [JsonPropertyName("nether_island_player_data")]
-    public RawNetherPlayerData? NetherIslandPlayerData { get; set; }
-
-    [JsonPropertyName("jacob2")]
+    [JsonPropertyName("player_data")]
+    public RawMemberPlayerData? PlayerData { get; set; }
+    
+    [JsonPropertyName("pets_data")]
+    public RawMemberPetsData? PetsData { get; set; }
+    
+    public RawMemberProfileData? Profile { get; set; }
+    
+    [JsonPropertyName("jacobs_contest")]
     public RawJacobData? Jacob { get; set; }
-
-    public Dictionary<string, double> Stats { get; set; } = new();
-
-    [JsonPropertyName("death_count")]
-    public long? DeathCount { get; set; }
-
-    [JsonPropertyName("harp_quest")]
-    public JsonObject? HarpQuest { get; set; }
-
-    public JsonObject? Experimentation { get; set; }
-
-    [JsonPropertyName("first_join_hub")]
-    public long? FirstJoinHub { get; set; }
-
-    [JsonPropertyName("personal_bank_upgrade")]
-    public int? PersonalBankUpgrade { get; set; }
-
-    [JsonPropertyName("fairy_souls")]
-    public int FairySouls { get; set; }
-
-    [JsonPropertyName("fairy_exchanges")]
-    public int? FairyExchanges { get; set; }
-
-    [JsonPropertyName("fairy_souls_collected")]
-    public int? FairySoulsCollected { get; set; }
-
+    
+    public JsonDocument? Collection { get; set; }
+    
+    [JsonPropertyName("accessory_bag_storage")]
+    public JsonObject? AccessoryBagSettings { get; set; }
     public JsonObject? Bestiary { get; set; }
-
-    public string[]? Tutorial { get; set; }
-
-    public Dictionary<string, int> Perks { get; set; } = new();
-
-    [JsonPropertyName("visited_zones")]
-    public string[]? VisitedZones { get; set; }
-
-    public int? Soulflow { get; set; }
-    public JsonObject? Quests { get; set; }
-
-    [JsonPropertyName("coin_purse")]
-    public double? CoinPurse { get; set; }
-
-    public JsonObject? Autopet { get; set; }
     
     public RawLeveling? Leveling { get; set; }
     
     [JsonPropertyName("deletion_notice")]
     public JsonObject? DeletionNotice { get; set; }
-    
-    [JsonPropertyName("coop_invitation")]
-    public RawCoopInvitation? CoopInvitation { get; set; }
 
+    public RawMemberCurrencies? Currencies { get; set; }
+    
+    [JsonPropertyName("inventory")]
+    public RawMemberInventories? Inventories { get; set; }
+
+    //
+    // public Dictionary<string, double> Stats { get; set; } = new();
+    //
+    // [JsonPropertyName("death_count")]
+    // public long? DeathCount { get; set; }
+    //
+    // [JsonPropertyName("harp_quest")]
+    // public JsonObject? HarpQuest { get; set; }
+    //
+    // public JsonObject? Experimentation { get; set; }
+    //
+    // [JsonPropertyName("first_join_hub")]
+    // public long? FirstJoinHub { get; set; }
+    //
+    // [JsonPropertyName("personal_bank_upgrade")]
+    // public int? PersonalBankUpgrade { get; set; }
+    //
+    // [JsonPropertyName("fairy_souls")]
+    // public int FairySouls { get; set; }
+    //
+    // [JsonPropertyName("fairy_exchanges")]
+    // public int? FairyExchanges { get; set; }
+    //
+    // [JsonPropertyName("fairy_souls_collected")]
+    // public int? FairySoulsCollected { get; set; }
+    //
+    // public JsonObject? Bestiary { get; set; }
+    //
+    // public string[]? Tutorial { get; set; }
+    //
+    //
+    // [JsonPropertyName("visited_zones")]
+    // public string[]? VisitedZones { get; set; }
+    //
+    // public int? Soulflow { get; set; }
+    // public JsonObject? Quests { get; set; }
+    //
+}
+
+public class RawMemberPlayerData {
+    public Dictionary<string, int> Perks { get; set; } = new();
+    
     [JsonPropertyName("crafted_generators")]
     public string[]? CraftedGenerators { get; set; }
-
-    [JsonPropertyName("visited_modes")]
-    public string[]? VisitedModes { get; set; }
-
-    [JsonPropertyName("achievement_spawned_island_types")]
-    public string[]? AchievementSpawnedIslandTypes { get; set; }
-
-    [JsonPropertyName("trapper_quest")]
-    public JsonObject? TrapperQuest { get; set; }
-
-    [JsonPropertyName("mining_core")]
-    public JsonObject? MiningCore { get; set; }
-
-    [JsonPropertyName("trophy_fish")]
-    public JsonObject? TrophyFish { get; set; }
-
-    public JsonObject? Forge { get; set; }
-
-    public JsonObject? Objectives { get; set; }
-
-    [JsonPropertyName("last_death")]
-    public int LastDeath { get; set; }
-
-    [JsonPropertyName("FirstJoin")]
-    public long FirstJoin { get; set; }
-
-    [JsonPropertyName("slayer_quest")]
-    public JsonObject? SlayerQuest { get; set; }
-
-    [JsonPropertyName("experience_skill_runecrafting")]
-    public double? ExperienceSkillRunecrafting { get; set; }
-    [JsonPropertyName("experience_skill_mining")]
-    public double? ExperienceSkillMining { get; set; }
-    [JsonPropertyName("experience_skill_alchemy")]
-    public double? ExperienceSkillAlchemy { get; set; }
-    [JsonPropertyName("experience_skill_combat")]
-    public double? ExperienceSkillCombat { get; set; }
-    [JsonPropertyName("experience_skill_farming")]
-    public double? ExperienceSkillFarming { get; set; }
-    [JsonPropertyName("experience_skill_taming")]
-    public double? ExperienceSkillTaming { get; set; }
-    [JsonPropertyName("experience_skill_social2")]
-    public double? ExperienceSkillSocial { get; set; }
-    [JsonPropertyName("experience_skill_enchanting")]
-    public double? ExperienceSkillEnchanting { get; set; }
-    [JsonPropertyName("experience_skill_fishing")]
-    public double? ExperienceSkillFishing { get; set; }
-    [JsonPropertyName("experience_skill_foraging")]
-    public double? ExperienceSkillForaging { get; set; }
-    [JsonPropertyName("experience_skill_carpentry")]
-    public double? ExperienceSkillCarpentry { get; set; }
     
     [JsonPropertyName("unlocked_coll_tiers")]
     public string[]? UnlockedCollTiers { get; set; }
     
-    public JsonObject? Quiver { get; set; }
-    
     [JsonPropertyName("temp_stat_buffs")]
     public List<TempStatBuff> TempStatBuffs { get; set; } = new();
 
-    [JsonPropertyName("sacks_counts")]
-    public Dictionary<string, long> SackContents { get; set; } = new();
+    public RawPlayerExperience? Experience { get; set; } = new();
+}
 
-    [JsonPropertyName("essence_undead")]
-    public long? EssenceUndead { get; set; }
-    [JsonPropertyName("essence_dragon")]
-    public long? EssenceDragon { get; set; }
-    [JsonPropertyName("essence_gold")]
-    public long? EssenceGold { get; set; }
-    [JsonPropertyName("essence_diamond")]
-    public long? EssenceDiamond { get; set; }
-    [JsonPropertyName("essence_crimson")]
-    public long? EssenceCrimson { get; set; }
-    [JsonPropertyName("essence_spider")]
-    public long? EssenceSpider { get; set; }
-    [JsonPropertyName("essence_wither")]
-    public long? EssenceWither { get; set; }
-    [JsonPropertyName("essence_ice")]
-    public long? EssenceIce { get; set; }
-    
-    [JsonPropertyName("accessory_bag_storage")]
-    public JsonObject? AccessoryBagSettings { get; set; }
+public class RawMemberPetsData {
+    public Pet[]? Pets { get; set; }
+}
 
-    public JsonDocument? Collection { get; set; }
+public class RawMemberCurrencies {
+    [JsonPropertyName("coin_purse")]
+    public double? CoinPurse { get; set; }
+}
 
-    [JsonPropertyName("inv_armor")]
-    public RawInventoryData? Armor { get; set; }
-    
-    [JsonPropertyName("talisman_bag")]
-    public RawInventoryData? TalismanBag { get; set; }
+public class RawPlayerExperience {
+    [JsonPropertyName("SKILL_RUNECRAFTING")]
+    public double? SkillRunecrafting { get; set; }
+    [JsonPropertyName("SKILL_MINING")]
+    public double? SkillMining { get; set; }
+    [JsonPropertyName("SKILL_ALCHEMY")]
+    public double? SkillAlchemy { get; set; }
+    [JsonPropertyName("SKILL_COMBAT")]
+    public double? SkillCombat { get; set; }
+    [JsonPropertyName("SKILL_FARMING")]
+    public double? SkillFarming { get; set; }
+    [JsonPropertyName("SKILL_TAMING")]
+    public double? SkillTaming { get; set; }
+    [JsonPropertyName("SKILL_SOCIAL")]
+    public double? SkillSocial { get; set; }
+    [JsonPropertyName("SKILL_ENCHANTING")]
+    public double? SkillEnchanting { get; set; }
+    [JsonPropertyName("SKILL_FISHING")]
+    public double? SkillFishing { get; set; }
+    [JsonPropertyName("SKILL_FORAGING")]
+    public double? SkillForaging { get; set; }
+    [JsonPropertyName("SKILL_CARPENTRY")]
+    public double? SkillCarpentry { get; set; }
+}
 
-    [JsonPropertyName("backpack_icons")]
-    public RawInventoryData? BackpackIcons { get; set; }
+public class RawMemberProfileData {
+    [JsonPropertyName("coop_invitation")]
+    public RawCoopInvitation? CoopInvitation { get; set; }
+}
 
-    [JsonPropertyName("fishing_bag")]
-    public RawInventoryData? FishingBag { get; set; }
-
+public class RawMemberInventories {
     [JsonPropertyName("wardrobe_equipped_slot")]
     public int? WardrobeEquippedSlot { get; set; }
     
-    [JsonPropertyName("equippment_contents")]
-    public RawInventoryData? EquipmentContents { get; set; }
-
-    [JsonPropertyName("ender_chest_contents")]
-    public RawInventoryData? EnderChestContents { get; set; }
-
     [JsonPropertyName("wardrobe_contents")]
     public RawInventoryData? WardrobeContents { get; set; }
     
-    [JsonPropertyName("potion_bag")]
-    public RawInventoryData? PotionBag { get; set; }
-
+    [JsonPropertyName("inv_armor")]
+    public RawInventoryData? Armor { get; set; }
+    
+    [JsonPropertyName("equipment_contents")]
+    public RawInventoryData? EquipmentContents { get; set; }
+    
+    [JsonPropertyName("bag_contents")]
+    public RawMemberBagContents? BagContents { get; set; }
+    
     [JsonPropertyName("inv_contents")]
     public RawInventoryData? InventoryContents { get; set; }
 
-    [JsonPropertyName("candy_inventory_contents")]
-    public RawInventoryData? CandyInventoryContents { get; set; }
+    [JsonPropertyName("backpack_icons")]
+    public RawInventoryData? BackpackIcons { get; set; }
     
     [JsonPropertyName("personal_vault_contents")]
     public RawInventoryData? PersonalVaultContents { get; set; }
     
+    [JsonPropertyName("sacks_counts")]
+    public Dictionary<string, long> SackContents { get; set; } = new();
+    
     [JsonPropertyName("backpack_contents")]
     public Dictionary<int, RawInventoryData>? BackpackContents { get; set; }
+
+    [JsonPropertyName("ender_chest_contents")]
+    public RawInventoryData? EnderChestContents { get; set; }
+}
+
+public class RawMemberBagContents {
+    [JsonPropertyName("fishing_bag")]
+    public RawInventoryData? FishingBag { get; set; }
+    
+    [JsonPropertyName("talisman_bag")]
+    public RawInventoryData? TalismanBag { get; set; }
+    
+    [JsonPropertyName("potion_bag")]
+    public RawInventoryData? PotionBag { get; set; }
+
 }
 
 public class RawInventoryData
@@ -236,47 +213,6 @@ public class RawLeveling
     public int? Experience { get; set; }
 }
 
-public class RawNetherPlayerData
-{
-    public JsonObject? Dojo { get; set; }
-    public Abiphone? Abiphone { get; set; }
-    public JsonObject? Matriarch { get; set; }
-
-    [JsonPropertyName("kuudra_completed_tiers")]
-    public JsonObject? KuudraCompletedTiers { get; set; }
-
-    [JsonPropertyName("mages_reputation")]
-    public float? MageReputation { get; set; }
-
-    [JsonPropertyName("barbarians_reputation")]
-    public float? BarbarianReputation { get; set; }
-
-    [JsonPropertyName("selected_faction")]
-    public string? SelectedFaction { get; set; }
-
-    [JsonPropertyName("last_minibosses_killed")]
-    public string[]? LastMinibossesKilled { get; set; }
-
-    [JsonPropertyName("kuudra_party_finder")]
-    public JsonObject? KuudraPartyFinder { get; set; }
-}
-
-public class Abiphone
-{
-    [JsonPropertyName("contact_data")]
-    public JsonObject? ContactData { get; set; }
-
-    public JsonObject? Games { get; set; }
-
-    [JsonPropertyName("active_contacts")]
-    public string[]? ActiveContacts { get; set; }
-
-    [JsonPropertyName("operator_chip")]
-    public JsonObject? OperatorChip { get; set; }
-
-    [JsonPropertyName("trio_contact_addons")]
-    public int TrioContactAddons { get; set; }
-}
 public class RawJacobData
 {
     public RawJacobPerks? Perks { get; set; }
@@ -286,8 +222,11 @@ public class RawJacobData
     [JsonPropertyName("medals_inv")]
     public RawMedalsInventory? MedalsInventory { get; set; }
 
-    [JsonPropertyName("unique_golds2")]
-    public string[]? UniqueGolds { get; set; }
+    [JsonPropertyName("unique_brackets")]
+    public RawJacobUniqueBrackets? UniqueBrackets { get; set; }
+
+    [JsonPropertyName("personal_bests")]
+    public Dictionary<string, long> PersonalBests { get; set; } = new();
 }
 
 public class RawMedalsInventory
@@ -304,6 +243,14 @@ public class RawJacobPerks
 
     [JsonPropertyName("double_drops")]
     public int? DoubleDrops { get; set; }
+}
+
+public class RawJacobUniqueBrackets {
+    public List<string> Bronze { get; set; } = new();
+    public List<string> Silver { get; set; } = new();
+    public List<string> Gold { get; set; } = new();
+    public List<string> Platinum { get; set; } = new();
+    public List<string> Diamond { get; set; } = new();
 }
 
 public class RawJacobContest

@@ -14,4 +14,5 @@ public class UnparsedApiDataDto {
     public Dictionary<string, int>? Perks { get; set; }
     public List<TempStatBuff>? TempStatBuffs { get; set; }
     public object? AccessoryBagSettings { get; set; }
+    public object? Bestiary { get; set; }
 }
