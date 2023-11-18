@@ -7,13 +7,15 @@ namespace EliteAPI.Mappers.Farming;
 
 public class JacobDataMapper : Profile
 {
-    public JacobDataMapper()
-    {
+    public JacobDataMapper() {
         CreateMap<JacobData, JacobDataDto>()
             .ForMember(j => j.Contests, opt => opt.MapFrom(x => x.Contests.OrderBy(c => c.JacobContestId)))
             .ForMember(j => j.EarnedMedals, opt => opt.MapFrom(x => x.EarnedMedals))
             .ForMember(j => j.Medals, opt => opt.MapFrom(x => x.Medals))
-            .ForMember(j => j.Perks, opt => opt.MapFrom(x => x.Perks));
+            .ForMember(j => j.Perks, opt => opt.MapFrom(x => x.Perks))
+            .ForMember(j => j.Stats, opt => opt.MapFrom(x => x.Stats));
+
+        CreateMap<JacobStats, JacobStatsDto>();
     }
 }
 

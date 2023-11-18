@@ -300,6 +300,8 @@ public class ProfileParser(
             // Update leaderboard positions
             var mId = memberId.ToString();
             lbService.UpdateLeaderboardScore("participations", mId, member.JacobData.Participations);
+            lbService.UpdateLeaderboardScore("firstplace", mId, member.JacobData.FirstPlaceScores);
+            
             lbService.UpdateLeaderboardScore("diamondmedals", mId, member.JacobData.EarnedMedals.Diamond);
             lbService.UpdateLeaderboardScore("platinummedals", mId, member.JacobData.EarnedMedals.Platinum);
             lbService.UpdateLeaderboardScore("goldmedals", mId, member.JacobData.EarnedMedals.Gold);

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
@@ -14,9 +13,14 @@ public class JacobData
     public MedalInventory Medals { get; set; } = new();
     public EarnedMedalInventory EarnedMedals { get; set; } = new();
     public JacobPerks Perks { get; set; } = new();
-    public int Participations { get; set; } = 0;
+    public int Participations { get; set; }
+    public int FirstPlaceScores { get; set; }
+
+    [Column(TypeName = "jsonb")] 
+    public JacobStats? Stats { get; set; } = new();
+    
     public virtual List<ContestParticipation> Contests { get; set; } = new();
-    public long ContestsLastUpdated { get; set; } = 0;
+    public long ContestsLastUpdated { get; set; }
 
     [ForeignKey("ProfileMember")]
     public Guid ProfileMemberId { get; set; }
@@ -46,6 +50,11 @@ public class JacobPerks
 {
     public int DoubleDrops { get; set; } = 0;
     public int LevelCap { get; set; } = 0;
+}
+
+public class JacobStats {
+    public Dictionary<Crop, ContestMedal> Brackets { get; set; } = new();
+    public Dictionary<Crop, long> PersonalBests { get; set; } = new();
 }
 
 [Index(nameof(Timestamp))]
