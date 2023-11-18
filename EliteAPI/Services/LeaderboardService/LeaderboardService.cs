@@ -342,19 +342,16 @@ public class LeaderboardService(
                     }).Take(lb.Limit);
             
             case "firstplace":
-                return dataContext.ProfileMembers
-                    .AsNoTracking()
-                    .Include(p => p.Profile)
-                    .Include(p => p.MinecraftAccount)
-                    .Include(p => p.JacobData)
-                    .Include(p => p.JacobData.Contests)
-                    .Where(p => !p.WasRemoved)
-                    .Select(p => new LeaderboardEntry {
-                        Ign = p.MinecraftAccount.Name,
-                        Profile = p.Profile.ProfileName,
-                        MemberId = p.Id.ToString(),
-                        Amount = p.JacobData.Contests.Count(c => c.Position == 0)
-                    }).OrderByDescending(p => p.Amount).Take(lb.Limit);
+                return (from member in query
+                    join jacobData in dataContext.JacobData on member.Id equals jacobData.ProfileMemberId
+                    where jacobData.FirstPlaceScores > 0 && !member.WasRemoved
+                    orderby jacobData.FirstPlaceScores descending
+                    select new LeaderboardEntry {
+                        Ign = member.MinecraftAccount.Name,
+                        Profile = member.Profile.ProfileName,
+                        MemberId = member.Id.ToString(),
+                        Amount = jacobData.FirstPlaceScores
+                    }).Take(lb.Limit);
 
             default:
                 throw new Exception($"Leaderboard {leaderboardId} not found");

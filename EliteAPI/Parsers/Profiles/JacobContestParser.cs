@@ -120,6 +120,7 @@ public static class JacobContestParser
         jacob.EarnedMedals.Gold = 0;
         jacob.EarnedMedals.Platinum = 0;
         jacob.EarnedMedals.Diamond = 0;
+        jacob.FirstPlaceScores = 0;
         
         foreach (var contest in jacob.Contests) {
             switch (contest.MedalEarned) {
@@ -137,6 +138,10 @@ public static class JacobContestParser
                     break;
                 case ContestMedal.Diamond:
                     jacob.EarnedMedals.Diamond++;
+
+                    if (contest.Position == 0) {
+                        jacob.FirstPlaceScores++;
+                    }
                     break;
             }
         }
