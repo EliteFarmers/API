@@ -18,8 +18,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20231118010859_NewJacobStats")]
-    partial class NewJacobStats
+    [Migration("20231118042134_AddNewJacobStats")]
+    partial class AddNewJacobStats
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -461,7 +461,6 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<JacobStats>("Stats")
-                        .IsRequired()
                         .HasColumnType("jsonb");
 
                     b.HasKey("Id");

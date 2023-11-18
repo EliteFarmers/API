@@ -458,7 +458,6 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<JacobStats>("Stats")
-                        .IsRequired()
                         .HasColumnType("jsonb");
 
                     b.HasKey("Id");
