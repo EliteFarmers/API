@@ -115,36 +115,22 @@ public static class JacobContestParser
 
         jacob.Participations = jacob.Contests.Count;
 
-        jacob.EarnedMedals.Bronze = 0;
-        jacob.EarnedMedals.Silver = 0;
-        jacob.EarnedMedals.Gold = 0;
-        jacob.EarnedMedals.Platinum = 0;
-        jacob.EarnedMedals.Diamond = 0;
-        jacob.FirstPlaceScores = 0;
-        
-        foreach (var contest in jacob.Contests) {
-            switch (contest.MedalEarned) {
-                case ContestMedal.Bronze:
-                    jacob.EarnedMedals.Bronze++;
-                    break;
-                case ContestMedal.Silver:
-                    jacob.EarnedMedals.Silver++;
-                    break;
-                case ContestMedal.Gold:
-                    jacob.EarnedMedals.Gold++;
-                    break;
-                case ContestMedal.Platinum:
-                    jacob.EarnedMedals.Platinum++;
-                    break;
-                case ContestMedal.Diamond:
-                    jacob.EarnedMedals.Diamond++;
+        var medalCounts = await context.JacobData
+            .Where(p => p.Id == jacob.Id)
+            .SelectMany(p => p.Contests)
+            .GroupBy(x => x.MedalEarned)
+            .Select(p => new {
+                Medal = p.Key,
+                Count = p.Count()
+            }).ToDictionaryAsync(k => k.Medal, v => v.Count);
 
-                    if (contest.Position == 0) {
-                        jacob.FirstPlaceScores++;
-                    }
-                    break;
-            }
-        }
+        jacob.EarnedMedals.Bronze = medalCounts.TryGetValue(ContestMedal.Bronze, out var bronze) ? bronze : 0;
+        jacob.EarnedMedals.Silver = medalCounts.TryGetValue(ContestMedal.Silver, out var silver) ? silver : 0;
+        jacob.EarnedMedals.Gold = medalCounts.TryGetValue(ContestMedal.Gold, out var gold) ? gold : 0;
+        jacob.EarnedMedals.Platinum = medalCounts.TryGetValue(ContestMedal.Platinum, out var platinum) ? platinum : 0;
+        jacob.EarnedMedals.Diamond = medalCounts.TryGetValue(ContestMedal.Diamond, out var diamond) ? diamond : 0;
+        
+        jacob.FirstPlaceScores = jacob.Contests.Count(c => c.Position == 0);
         
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         
