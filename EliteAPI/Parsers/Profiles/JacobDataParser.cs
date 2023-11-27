@@ -55,8 +55,14 @@ public static class JacobDataParser
     private static void PopulateBrackets(this IDictionary<Crop, ContestMedal> result, List<string> crops, ContestMedal medal) {
         foreach (var crop in crops) {
             if (!crop.TryGetCrop(out var key)) continue;
+
+            if (result.TryGetValue(key, out var currentMedal)) {
+                if (currentMedal < medal) {
+                    result[key] = medal;
+                }
+                continue;
+            }
             
-            if (result.ContainsKey(key)) continue;
             result[key] = medal;
         }
     }
