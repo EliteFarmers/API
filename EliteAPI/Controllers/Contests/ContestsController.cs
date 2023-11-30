@@ -6,6 +6,7 @@ using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Profiles;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -249,8 +250,10 @@ public class ContestsController : ControllerBase
             var crop = FormatUtils.GetFormattedCropName(contest.Crop);
 
             var stripped = _mapper.Map<List<StrippedContestParticipationDto>>(participations);
-           
-            data.First(d => d.Crop.Equals(crop)).Participations = stripped;
+
+            var contestDto = data.First(d => d.Crop.Equals(crop));
+            contestDto.Participations = stripped;
+            contestDto.CalculateBrackets();
         }
 
         return Ok(data);

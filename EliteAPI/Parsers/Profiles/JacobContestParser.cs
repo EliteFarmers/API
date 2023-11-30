@@ -1,5 +1,7 @@
-﻿using EliteAPI.Data;
+﻿using System.Collections.Frozen;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Utilities;
@@ -168,4 +170,33 @@ public static class JacobContestParser
 
         return ContestMedal.None;
     }
+
+    public static void CalculateBrackets(this JacobContestWithParticipationsDto contest) {
+        var participations = contest.Participations;
+        var brackets = contest.Brackets;
+
+        var grouped = participations
+            .Where(p => p.Medal != null)
+            .OrderBy(p => p.Collected)
+            .GroupBy(p => p.Medal)
+            .Select(p => new {
+                Medal = p.Key!,
+                Collected = p.First().Collected
+            }).ToFrozenDictionary(p => p.Medal, p => p.Collected);
+        
+        brackets.Bronze = grouped.TryGetValue(ContestMedal.Bronze.MedalName(), out var bronze) ? bronze : 0;
+        brackets.Silver = grouped.TryGetValue(ContestMedal.Silver.MedalName(), out var silver) ? silver : 0;
+        brackets.Gold = grouped.TryGetValue(ContestMedal.Gold.MedalName(), out var gold) ? gold : 0;
+        brackets.Platinum = grouped.TryGetValue(ContestMedal.Platinum.MedalName(), out var platinum) ? platinum : 0;
+        brackets.Diamond = grouped.TryGetValue(ContestMedal.Diamond.MedalName(), out var diamond) ? diamond : 0;
+    }
+
+    private static string MedalName(this ContestMedal medal) => medal switch {
+        ContestMedal.Gold => "gold",
+        ContestMedal.Silver => "silver",
+        ContestMedal.Bronze => "bronze",
+        ContestMedal.Platinum => "platinum",
+        ContestMedal.Diamond => "diamond",
+        _ => "none"
+    };
 }
