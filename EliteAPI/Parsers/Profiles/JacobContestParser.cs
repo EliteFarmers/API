@@ -181,14 +181,14 @@ public static class JacobContestParser
             .GroupBy(p => p.Medal)
             .Select(p => new {
                 Medal = p.Key!,
-                Collected = p.First().Collected
+                p.First().Collected
             }).ToFrozenDictionary(p => p.Medal, p => p.Collected);
         
-        brackets.Bronze = grouped.TryGetValue(ContestMedal.Bronze.MedalName(), out var bronze) ? bronze : 0;
-        brackets.Silver = grouped.TryGetValue(ContestMedal.Silver.MedalName(), out var silver) ? silver : 0;
-        brackets.Gold = grouped.TryGetValue(ContestMedal.Gold.MedalName(), out var gold) ? gold : 0;
-        brackets.Platinum = grouped.TryGetValue(ContestMedal.Platinum.MedalName(), out var platinum) ? platinum : 0;
-        brackets.Diamond = grouped.TryGetValue(ContestMedal.Diamond.MedalName(), out var diamond) ? diamond : 0;
+        brackets.Bronze = grouped.TryGetValue(ContestMedal.Bronze.MedalName(), out var bronze) ? bronze : -1;
+        brackets.Silver = grouped.TryGetValue(ContestMedal.Silver.MedalName(), out var silver) ? silver : -1;
+        brackets.Gold = grouped.TryGetValue(ContestMedal.Gold.MedalName(), out var gold) ? gold : -1;
+        brackets.Platinum = grouped.TryGetValue(ContestMedal.Platinum.MedalName(), out var platinum) ? platinum : -1;
+        brackets.Diamond = grouped.TryGetValue(ContestMedal.Diamond.MedalName(), out var diamond) ? diamond : -1;
     }
 
     private static string MedalName(this ContestMedal medal) => medal switch {

@@ -252,6 +252,7 @@ public class ContestsController : ControllerBase
             var stripped = _mapper.Map<List<StrippedContestParticipationDto>>(participations);
 
             var contestDto = data.First(d => d.Crop.Equals(crop));
+
             contestDto.Participations = stripped;
             contestDto.CalculateBrackets();
         }
