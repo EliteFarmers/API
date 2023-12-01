@@ -17,7 +17,7 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
     };
 
     [HttpGet("now")]
-    [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<ContestBracketsDetailsDto>> GetMedalBrackets([FromQuery] int months = 2) {
