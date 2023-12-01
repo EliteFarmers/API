@@ -20,7 +20,6 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<ContestBracketsDetailsDto>> GetMedalBrackets([FromQuery] int months = 2) {
         switch (months) {
             case < 1:
@@ -45,7 +44,6 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<ContestBracketsDetailsDto>> GetMedalBrackets(int sbYear, int sbMonth, [FromQuery] int months = 2) {
         if (sbYear < 1) {
             return BadRequest("Year cannot be less than 1.");
@@ -75,6 +73,48 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
             End = end.ToString(),
             Brackets = brackets ?? new(),
         });
+    }
+    
+    [HttpGet("{sbYear:int}")]
+    [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<ActionResult<List<ContestBracketsDetailsDto>>> GetMedalBracketsGraph(int sbYear, [FromQuery] int years = 1, [FromQuery] int months = 2) {
+        if (sbYear < 1) {
+            return BadRequest("Year cannot be less than 1.");
+        }
+
+        switch (years) {
+            case < 1:
+                return BadRequest("Years cannot be less than 1.");
+            case > 5:
+                return BadRequest("Years cannot be greater than 5.");
+        }
+        
+        switch (months) {
+            case < 1:
+                return BadRequest("Months cannot be less than 1.");
+            case > 12:
+                return BadRequest("Months cannot be greater than 12.");
+        }
+
+
+        var result = new List<ContestBracketsDetailsDto>();
+        
+        for (var i = years; i > 0; i--) {
+            for (var month = 0; month < 12; month++) {
+                var start = new SkyblockDate(sbYear - years - 1, month - months, 0).UnixSeconds;
+                var end = new SkyblockDate(sbYear - years, month, 0).UnixSeconds;
+
+                result.Add(new ContestBracketsDetailsDto {
+                    Start = start.ToString(),
+                    End = end.ToString(),
+                    Brackets = await GetAverageMedalBrackets(context, start, end) ?? new Dictionary<string, ContestBracketsDto>()
+                });
+            }
+        }
+
+        return Ok(result);
     }
 
     private static async Task<Dictionary<string, ContestBracketsDto>?> GetAverageMedalBrackets(DbContext context, long start, long end) {
