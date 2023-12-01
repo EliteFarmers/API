@@ -71,7 +71,7 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
         return Ok(new ContestBracketsDetailsDto {
             Start = start.ToString(),
             End = end.ToString(),
-            Brackets = brackets ?? new(),
+            Brackets = brackets ?? new Dictionary<string, ContestBracketsDto>(),
         });
     }
     
@@ -122,29 +122,16 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
             .SqlQuery<string>($@"
                 SELECT json_agg(c) AS ""Value""
                 FROM (
-                   WITH brackets AS (
-                       SELECT
-                           ""JacobContestId"" AS contest_id,
-                           ""JacobContestId"" % 10 AS crop,
-                           MIN(""Collected"") filter (where ""MedalEarned"" = 5) AS diamond,
-                           MIN(""Collected"") filter (where ""MedalEarned"" = 4) AS platinum,
-                           MIN(""Collected"") filter (where ""MedalEarned"" = 3) AS gold,
-                           MIN(""Collected"") filter (where ""MedalEarned"" = 2) AS silver,
-                           MIN(""Collected"") filter (where ""MedalEarned"" = 1) AS bronze
-                       FROM ""ContestParticipations""
-                       WHERE ""MedalEarned"" > 0
-                       GROUP BY ""JacobContestId""
-                   )
-                   SELECT
-                       crop,
-                       AVG(diamond) as diamond,
-                       AVG(platinum) as platinum,
-                       AVG(gold) as gold,
-                       AVG(silver) as silver,
-                       AVG(bronze) as bronze
-                   FROM brackets
-                   WHERE contest_id >= {start} AND contest_id <= {end}
-                   GROUP BY crop
+                    SELECT
+                        ""Crop"",
+                        AVG(NULLIF(""Diamond"", 0)) AS ""Diamond"",
+                        AVG(NULLIF(""Platinum"", 0)) AS ""Platinum"",
+                        AVG(NULLIF(""Gold"", 0)) AS ""Gold"",
+                        AVG(NULLIF(""Silver"", 0)) AS ""Silver"",
+                        AVG(NULLIF(""Bronze"", 0)) AS ""Bronze""
+                    FROM ""JacobContests""
+                    WHERE ""Timestamp"" >= {start} AND ""Timestamp"" <= {end}
+                    GROUP BY ""Crop""
                 ) c
             ")
             .ToListAsync();

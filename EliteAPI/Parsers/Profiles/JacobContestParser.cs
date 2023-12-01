@@ -104,11 +104,14 @@ public static class JacobContestParser
                     JacobContestId = actualKey
                 };
                 
+                fetched.UpdateMedalBracket(newParticipation);
                 newParticipations.Add(newParticipation);
             } else {
                 existing.Collected = contest.Collected;
                 existing.Position = contest.Position ?? -1;
                 existing.MedalEarned = medal;
+                
+                fetched.UpdateMedalBracket(existing);
             }
         }
 
@@ -189,6 +192,38 @@ public static class JacobContestParser
         brackets.Gold = grouped.TryGetValue(ContestMedal.Gold.MedalName(), out var gold) ? gold : -1;
         brackets.Platinum = grouped.TryGetValue(ContestMedal.Platinum.MedalName(), out var platinum) ? platinum : -1;
         brackets.Diamond = grouped.TryGetValue(ContestMedal.Diamond.MedalName(), out var diamond) ? diamond : -1;
+    }
+
+    private static void UpdateMedalBracket(this JacobContest contest, ContestParticipation participation) {
+        if (participation.MedalEarned == ContestMedal.None) return;
+
+        switch (participation.MedalEarned) {
+            case ContestMedal.Bronze:
+                if (contest.Bronze == 0 || contest.Bronze > participation.Collected) {
+                    contest.Bronze = participation.Collected;
+                }
+                break;
+            case ContestMedal.Silver:
+                if (contest.Silver == 0 || contest.Silver > participation.Collected) {
+                    contest.Silver = participation.Collected;
+                }
+                break;
+            case ContestMedal.Gold:
+                if (contest.Gold == 0 || contest.Gold > participation.Collected) {
+                    contest.Gold = participation.Collected;
+                }
+                break;
+            case ContestMedal.Platinum:
+                if (contest.Platinum == 0 || contest.Platinum > participation.Collected) {
+                    contest.Platinum = participation.Collected;
+                }
+                break;
+            case ContestMedal.Diamond:
+                if (contest.Diamond == 0 || contest.Diamond > participation.Collected) {
+                    contest.Diamond = participation.Collected;
+                }
+                break;
+        }
     }
 
     private static string MedalName(this ContestMedal medal) => medal switch {
