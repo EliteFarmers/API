@@ -54,6 +54,7 @@ public class JacobContestWithParticipationsDto
     public required string Crop { get; set; }
     public long Timestamp { get; set; }
     public int Participants { get; set; }
+    public ContestBracketsDto Brackets { get; set; } = new();
     public List<StrippedContestParticipationDto> Participations { get; set; } = new();
 }
 
@@ -65,6 +66,20 @@ public class StrippedContestParticipationDto {
     public string PlayerName { get; set; } = "";
 }
 
+public class ContestBracketsDetailsDto {
+    public string Start { get; set; } = "";
+    public string End { get; set; } = "";
+    public Dictionary<string, ContestBracketsDto> Brackets { get; set; } = new();
+}
+
+public class ContestBracketsDto {
+    public int Bronze { get; set; }
+    public int Silver { get; set; }
+    public int Gold { get; set; }
+    public int Platinum { get; set; }
+    public int Diamond { get; set; }
+}
+
 public class ContestParticipationDto
 {
     public string Crop { get; set; } = "";
@@ -73,4 +88,13 @@ public class ContestParticipationDto
     public int Position { get; set; } = -1;
     public int Participants { get; set; } = 0;
     public string? Medal { get; set; }
+}
+
+public class MedalCutoffsDbDto {
+    public int Crop { get; set; } = -1;
+    public double? Bronze { get; set; } = -1;
+    public double? Silver { get; set; } = -1;
+    public double? Gold { get; set; } = -1;
+    public double? Platinum { get; set; } = -1;
+    public double? Diamond { get; set; } = -1;
 }
