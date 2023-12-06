@@ -2,6 +2,14 @@
 
 public static class TimeExtensions
 {
+    public static bool IsValidJacobContestTime(this long unixTimeSeconds, int fromYear = -1)
+    {
+        var correctMinute = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).Minute == 15;
+        if (fromYear == -1) return correctMinute;
+        
+        return correctMinute && new SkyblockDate(unixTimeSeconds).Year == fromYear;
+    }
+    
     public static bool OlderThanSeconds(this long unixTimeSeconds, int seconds)
     {
         return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);

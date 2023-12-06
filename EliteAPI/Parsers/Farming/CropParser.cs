@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using EliteAPI.Models.Entities.Hypixel;
+﻿using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Utilities;
 
 namespace EliteAPI.Parsers.Farming;
 
@@ -19,6 +19,10 @@ public static class CropParser {
             Crop.Seeds => "seeds",
             _ => throw new ArgumentOutOfRangeException(nameof(crop), crop, null)
         };
+    }
+    
+    public static string ProperName(this Crop crop) {
+        return FormatUtils.GetFormattedCropName(crop);
     }
 
     public static bool TryGetCrop(this string itemId, out Crop crop) {
