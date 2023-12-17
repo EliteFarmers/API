@@ -28,6 +28,7 @@ public class RawPlayerData
     public int TotalDailyRewards { get; set; }
     public int TotalRewards { get; set; }
 
+    public string? Prefix { get; set; }
     public string? Rank { get; set; }
     public string? NewPackageRank { get; set; }
     public string? RankPlusColor { get; set; }
