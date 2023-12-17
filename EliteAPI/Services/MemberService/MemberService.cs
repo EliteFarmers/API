@@ -98,27 +98,30 @@ public class MemberService : IMemberService {
         var playerUuid = lastUpdated.PlayerUuid;
         var db = _redis.GetDatabase();
         
-        // Refresh tasks are done in separate scopes to prevent DataContext concurrency issues
+        var updatePlayer = false;
+        var updateProfiles = false;
         
-        var tasks = new List<Task>();
-      
         if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown) 
             && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) 
         {
             db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(10));
-            
-            tasks.Add(RefreshProfiles(playerUuid));
+            updateProfiles = true;
         }
         
         if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown) 
             && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) 
         {
             db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(10));
-            
-            tasks.Add(RefreshPlayerData(playerUuid, account));
+            updatePlayer = true;
         }
-        
-        await Task.WhenAll(tasks);
+
+        if (updatePlayer) {
+            await RefreshPlayerData(playerUuid, account);
+        }
+
+        if (updateProfiles) {
+            await RefreshProfiles(playerUuid);
+        }
     }
 
     public async Task RefreshProfiles(string playerUuid) {
@@ -136,6 +139,7 @@ public class MemberService : IMemberService {
     public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {
         using var scope = _provider.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+        
         var mojangService = scope.ServiceProvider.GetRequiredService<IMojangService>();
         var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
