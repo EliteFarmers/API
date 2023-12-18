@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -76,6 +77,18 @@ public class PublicJacobLeaderboardDto {
     public bool PingForSmallImprovements { get; set; }
     
     public CropRecords Crops { get; set; } = new();
+}
+
+public class ContestPingsFeatureDto {
+    public bool Enabled { get; set; }
+
+    public string? GuildId { get; set; }
+    public string? ChannelId { get; set; }
+    public string? AlwaysPingRole { get; set; }
+    public CropSettings<string>? CropPingRoles { get; set; } = new();
+
+    public int DelaySeconds { get; set; }
+    public string? DisabledReason { get; set; }
 }
 
 public class GuildDetailsDto {

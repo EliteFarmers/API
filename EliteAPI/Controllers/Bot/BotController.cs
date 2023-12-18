@@ -7,7 +7,10 @@ using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.DiscordService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Bot; 
 
@@ -91,6 +94,55 @@ public class BotController : ControllerBase
         await _context.SaveChangesAsync();
         
         return Accepted();
+    }
+    
+    // GET <BotController>/ContestPings
+    [HttpGet("ContestPings")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ContestPingsFeatureDto>))]
+    public async Task<ActionResult<List<ContestPingsFeatureDto>>> GetContestPingServers()
+    {
+        var guilds = await _context.Guilds
+            .Where(g => g.Features.ContestPingsEnabled == true
+                        && g.Features.ContestPings != null 
+                        && g.Features.ContestPings.Enabled)
+            .Select(g => new { g.Id, g.Features.ContestPings })
+            .ToListAsync();
+        
+        return Ok(guilds.Select(g => new ContestPingsFeatureDto {
+            GuildId = g.Id.ToString(),
+            ChannelId = g.ContestPings!.ChannelId,
+            AlwaysPingRole = g.ContestPings.AlwaysPingRole,
+            CropPingRoles = g.ContestPings.CropPingRoles,
+            DelaySeconds = g.ContestPings.DelaySeconds,
+            DisabledReason = g.ContestPings.DisabledReason,
+            Enabled = g.ContestPings.Enabled
+        }));
+    }
+    
+    // DELETE <BotController>/ContestPings/12793764936498429
+    [HttpDelete("ContestPings/{guildId:long}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> DeleteGuildContestPings(long guildId, string reason) {
+        var guild = await _context.Guilds.FindAsync((ulong) guildId);
+
+        if (guild is null) {
+            return NotFound("Guild Not Found");
+        }
+
+        if (!guild.Features.ContestPingsEnabled) {
+            return BadRequest("Contest Pings feature is already disabled for this guild.");
+        }
+
+        var pings = guild.Features.ContestPings ?? new ContestPingsFeature();
+
+        pings.Enabled = false;
+        pings.DisabledReason = reason;
+        
+        guild.Features.ContestPings = pings;
+
+        await _context.SaveChangesAsync();
+        return Ok();
     }
     
     // Patch <GuildController>/account
