@@ -46,6 +46,9 @@ public class PublicGuildFeaturesDto {
     
     public bool EventsEnabled { get; set; }
     public GuildEventSettings EventSettings { get; set; }
+    
+    public bool ContestPingsEnabled { get; set; }
+    public ContestPingsFeatureDto? ContestPings { get; set; }
 }
 
 public class PublicJacobLeaderboardFeatureDto {

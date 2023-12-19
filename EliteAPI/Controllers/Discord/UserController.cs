@@ -384,12 +384,12 @@ public class UserController : ControllerBase {
         return await _guildService.SendLeaderboardPanel(guildId, channelId, account.Id, lbId);
     }
     
-    [HttpPut("Guild/{guildId:long}/ContestPings")]
+    [HttpPut("Guild/{guildId}/ContestPings")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    public async Task<ActionResult> PutGuildContestPings(long guildId, [FromBody] ContestPingsFeatureDto feature) {
+    public async Task<ActionResult> PutGuildContestPings(ulong guildId, [FromBody] ContestPingsFeatureDto feature) {
         if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
@@ -405,8 +405,8 @@ public class UserController : ControllerBase {
             return Unauthorized("You do not have permission to access this guild.");
         }
         
-        var fullGuild = await _discordService.GetGuild((ulong) guildId);
-        var guild = await _context.Guilds.FindAsync((ulong) guildId);
+        var fullGuild = await _discordService.GetGuild(guildId);
+        var guild = await _context.Guilds.FindAsync(guildId);
 
         if (fullGuild is null || guild is null) {
             if (guild?.Features.ContestPings?.Enabled is true) {
@@ -439,13 +439,13 @@ public class UserController : ControllerBase {
         return Accepted();
     }
     
-    [HttpDelete("Guild/{guildId:long}/ContestPings")]
+    [HttpDelete("Guild/{guildId}/ContestPings")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-    public async Task<ActionResult> DeleteGuildContestPings(long guildId, string reason) {
+    public async Task<ActionResult> DeleteGuildContestPings(ulong guildId, string reason) {
         if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
@@ -461,8 +461,8 @@ public class UserController : ControllerBase {
             return Unauthorized("You do not have permission to access this guild.");
         }
         
-        await _discordService.GetGuild((ulong) guildId);
-        var guild = await _context.Guilds.FindAsync((ulong) guildId);
+        await _discordService.GetGuild(guildId);
+        var guild = await _context.Guilds.FindAsync(guildId);
 
         if (guild is null) {
             if (guild?.Features.ContestPings?.Enabled is true) {

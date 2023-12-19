@@ -44,7 +44,7 @@ public class GuildController : Controller {
     }
     
     // GET <GuildController>/[guildId]
-    [HttpGet("{guildId:long}")]
+    [HttpGet("{guildId}")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -61,7 +61,7 @@ public class GuildController : Controller {
     }
     
     // GET <GuildController>/[guildId]/Events
-    [HttpGet("{guildId:long}/Events")]
+    [HttpGet("{guildId}/Events")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]

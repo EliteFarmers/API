@@ -86,7 +86,8 @@ public class GuildJacobLeaderboard {
     public long StartCutoff { get; set; } = -1;
     public long EndCutoff { get; set; } = -1;
 
-    [MaxLength(64)] public string? Title { get; set; }
+    [MaxLength(64)] 
+    public string? Title { get; set; }
     public bool Active { get; set; } = true;
 
     public string? RequiredRole { get; set; }

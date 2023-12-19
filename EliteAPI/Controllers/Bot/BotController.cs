@@ -17,34 +17,21 @@ namespace EliteAPI.Controllers.Bot;
 [Route("[controller]")]
 [ServiceFilter(typeof(DiscordBotOnlyFilter))]
 [ApiController]
-public class BotController : ControllerBase
+public class BotController(DataContext context, IMapper mapper, IDiscordService discordService,
+        IAccountService accountService, ILogger<BotController> logger)
+    : ControllerBase
 {
-    private readonly DataContext _context;
-    private readonly IMapper _mapper;
-    private readonly IDiscordService _discordService;
-    private readonly IAccountService _accountService;
-    private readonly ILogger<BotController> _logger;
-
-    public BotController(DataContext context, IMapper mapper, IDiscordService discordService, IAccountService accountService, ILogger<BotController> logger)
-    {
-        _context = context;
-        _mapper = mapper;
-        _discordService = discordService;
-        _accountService = accountService;
-        _logger = logger;
-    }
-    
     // GET <BotController>/12793764936498429
     [HttpGet("{guildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<GuildDto>> Get(ulong guildId)
     {
-        await _discordService.RefreshBotGuilds();
-        var guild = await _context.Guilds.FindAsync(guildId);
+        await discordService.RefreshBotGuilds();
+        var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
         
-        return Ok(_mapper.Map<GuildDto>(guild));
+        return Ok(mapper.Map<GuildDto>(guild));
     }
     
     // GET <BotController>/12793764936498429/jacob
@@ -54,8 +41,8 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<GuildJacobLeaderboardFeature>> GetJacobFeature(ulong guildId)
     {
-        await _discordService.RefreshBotGuilds();
-        var guild = await _context.Guilds.FindAsync(guildId);
+        await discordService.RefreshBotGuilds();
+        var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
         
         if (!guild.Features.JacobLeaderboardEnabled) {
@@ -66,8 +53,8 @@ public class BotController : ControllerBase
         
         guild.Features.JacobLeaderboard = new GuildJacobLeaderboardFeature();
         
-        _context.Guilds.Update(guild);
-        await _context.SaveChangesAsync();
+        context.Guilds.Update(guild);
+        await context.SaveChangesAsync();
 
         return Ok(guild.Features.JacobLeaderboard);
     }
@@ -79,9 +66,9 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult> PutJacobFeature(ulong guildId, [FromBody] GuildJacobLeaderboardFeature data)
     {
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var guild = await _context.Guilds.FindAsync(guildId);
+        var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
 
         if (!guild.Features.JacobLeaderboardEnabled) {
@@ -90,8 +77,8 @@ public class BotController : ControllerBase
 
         guild.Features.JacobLeaderboard = data;
         
-        _context.Guilds.Update(guild);
-        await _context.SaveChangesAsync();
+        context.Guilds.Update(guild);
+        await context.SaveChangesAsync();
         
         return Accepted();
     }
@@ -101,7 +88,7 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ContestPingsFeatureDto>))]
     public async Task<ActionResult<List<ContestPingsFeatureDto>>> GetContestPingServers()
     {
-        var guilds = await _context.Guilds
+        var guilds = await context.Guilds
             .Where(g => g.Features.ContestPingsEnabled == true
                         && g.Features.ContestPings != null 
                         && g.Features.ContestPings.Enabled)
@@ -124,7 +111,7 @@ public class BotController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> DeleteGuildContestPings(long guildId, string reason) {
-        var guild = await _context.Guilds.FindAsync((ulong) guildId);
+        var guild = await context.Guilds.FindAsync((ulong) guildId);
 
         if (guild is null) {
             return NotFound("Guild Not Found");
@@ -141,7 +128,7 @@ public class BotController : ControllerBase
         
         guild.Features.ContestPings = pings;
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return Ok();
     }
     
@@ -149,7 +136,7 @@ public class BotController : ControllerBase
     [HttpPatch("account")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<AuthorizedAccountDto>> PatchAccount([FromBody] IncomingAccountDto incoming) {
-        var exising = await _accountService.GetAccount(incoming.Id);
+        var exising = await accountService.GetAccount(incoming.Id);
         
         var account = exising ?? new EliteAccount {
             Id = incoming.Id,
@@ -165,33 +152,33 @@ public class BotController : ControllerBase
 
         if (exising is null) {
             try {
-                await _context.Accounts.AddAsync(account);
-                await _context.SaveChangesAsync();
+                await context.Accounts.AddAsync(account);
+                await context.SaveChangesAsync();
             } catch (Exception e) {
-                _logger.LogWarning("Failed to add account to database: {Error}", e);
+                logger.LogWarning("Failed to add account to database: {Error}", e);
             }
         } else {
-            _context.Accounts.Update(account);
+            context.Accounts.Update(account);
         }
         
-        return Ok(_mapper.Map<AuthorizedAccountDto>(account));
+        return Ok(mapper.Map<AuthorizedAccountDto>(account));
     }
     
     // Post <GuildController>/account/12793764936498429/Ke5o
     [HttpPost("account/{discordId:long:min(0)}/{playerIgnOrUuid}")]
     public async Task<ActionResult> LinkAccount(long discordId, string playerIgnOrUuid) {
-        return await _accountService.LinkAccount((ulong) discordId, playerIgnOrUuid);
+        return await accountService.LinkAccount((ulong) discordId, playerIgnOrUuid);
     }
     
     // Delete <GuildController>/account/12793764936498429/Ke5o
     [HttpDelete("account/{discordId:long:min(0)}/{playerIgnOrUuid}")]
     public async Task<ActionResult> UnlinkAccount(long discordId, string playerIgnOrUuid) {
-        return await _accountService.UnlinkAccount((ulong) discordId, playerIgnOrUuid);
+        return await accountService.UnlinkAccount((ulong) discordId, playerIgnOrUuid);
     }
     
     // Post <GuildController>/account/12793764936498429/Ke5o/primary
     [HttpPost("account/{discordId:long:min(0)}/{playerIgnOrUuid}/primary")]
     public async Task<ActionResult> MakePrimaryAccount(long discordId, string playerIgnOrUuid) {
-        return await _accountService.MakePrimaryAccount((ulong) discordId, playerIgnOrUuid);
+        return await accountService.MakePrimaryAccount((ulong) discordId, playerIgnOrUuid);
     }
 }
