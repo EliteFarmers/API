@@ -14,16 +14,16 @@
       "CACTUS": "177254.45"
     },
     "EventCropsPerOneWeight": {
-      "WHEAT": "100000",
-      "CARROT_ITEM": "302061.86",
-      "POTATO_ITEM": "300000",
-      "SUGAR_CANE": "200000",
-      "NETHER_STALK": "250000",
-      "PUMPKIN": "89813.77",
-      "MELON": "442381.49",
-      "MUSHROOM_COLLECTION": "90178.06",
-      "INK_SACK_3": "267174.04",
-      "CACTUS": "177254.45"
+      "CACTUS": "166872.65",
+      "CARROT_ITEM": "293403.78",
+      "INK_SACK_3": "262715.06",
+      "MELON": "438289.96",
+      "MUSHROOM_COLLECTION": "93339.42",
+      "NETHER_STALK": "241825.31",
+      "POTATO_ITEM": "291444.92",
+      "PUMPKIN": "88932.55",
+      "SUGAR_CANE": "194296.62",
+      "WHEAT": "100000"
     },
     "Farming60Bonus": 250,
     "Farming50Bonus": 100,
