@@ -107,7 +107,11 @@ public static class EventProgressParser {
         eventMember.EventMemberStartConditions.CountedCollection = countedCollections;
         
         var cropWeight = countedCollections.ParseCropWeight(true);
-        eventMember.AmountGained = cropWeight.Sum(x => x.Value);
+        var newAmount = cropWeight.Sum(x => x.Value);
+        
+        // Update the event member status and amount gained
+        eventMember.Status = newAmount >= eventMember.AmountGained ? EventMemberStatus.Inactive : EventMemberStatus.Active;
+        eventMember.AmountGained = newAmount;
     }
 
 
