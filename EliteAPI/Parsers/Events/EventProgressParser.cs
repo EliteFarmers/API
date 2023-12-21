@@ -110,7 +110,7 @@ public static class EventProgressParser {
         var newAmount = cropWeight.Sum(x => x.Value);
         
         // Update the event member status and amount gained
-        eventMember.Status = newAmount >= eventMember.AmountGained ? EventMemberStatus.Inactive : EventMemberStatus.Active;
+        eventMember.Status = newAmount >= eventMember.AmountGained ? EventMemberStatus.Active : EventMemberStatus.Inactive;
         eventMember.AmountGained = newAmount;
     }
 
