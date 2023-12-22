@@ -8,36 +8,32 @@ using Npgsql;
 using Z.EntityFramework.Extensions;
 
 namespace EliteAPI.Data;
-public class DataContext : DbContext
+public class DataContext(DbContextOptions<DataContext> options, IConfiguration config) : DbContext(options) 
 {
-    public DataContext(DbContextOptions<DataContext> options) : base(options) { }
-
+    private static NpgsqlDataSource? Source { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        DotNetEnv.Env.Load();
         EntityFrameworkManager.IsCommunity = true;
         
-        // TODO: Remake DataContext to use the NpgsqlDataSourceBuilder instead of needing to use this obsolete method
-        #pragma warning disable CS0618 // Type or member is obsolete
-        NpgsqlConnection.GlobalTypeMapper.EnableDynamicJsonMappings();
-        #pragma warning restore CS0618 // Type or member is obsolete
-        
         base.OnConfiguring(optionsBuilder);
-        // Get connection string from secrets
-        var connection = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        
+        // Get connection string from config "PostgresConnection"
+        var connection = config.GetConnectionString("Postgres");
 
-        if (!string.IsNullOrEmpty(connection))
-        {
-            optionsBuilder.UseNpgsql(connection);
-            
-            optionsBuilder.EnableSensitiveDataLogging();
-        }
-        else
-        {
-            // Quit
+        if (string.IsNullOrEmpty(connection)) {
             Console.WriteLine("No connection string found. Quitting...");
-            //Environment.Exit(1);
+            Environment.Exit(1);
+            return;
         }
+        
+        if (Source is null) {
+            var builder = new NpgsqlDataSourceBuilder(connection);
+            builder.EnableDynamicJson();
+            Source = builder.Build();
+        }
+        
+        optionsBuilder.UseNpgsql(Source);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -51,7 +47,6 @@ public class DataContext : DbContext
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
-    public DbSet<Inventories> Inventories { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
