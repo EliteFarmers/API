@@ -65,7 +65,7 @@ public class MemberService : IMemberService {
         if (account is null) return;
         
         var lastUpdated = new LastUpdatedDto {
-            PlayerUuid = playerUuid,
+            PlayerUuid = account.Id,
             PlayerData = account.PlayerDataLastUpdated,
             Profiles = account.ProfilesLastUpdated
         };
