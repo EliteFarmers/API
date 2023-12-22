@@ -131,9 +131,18 @@ public class MemberService : IMemberService {
         
         var data = await hypixelService.FetchProfiles(playerUuid);
 
-        if (data.Value is null) return;
+        if (data.Value is null) {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
+            logger.LogError("Failed to load profiles for {PlayerUuid}", playerUuid);
+            return;
+        }
         
-        await parser.TransformProfilesResponse(data.Value, playerUuid);
+        try {
+            await parser.TransformProfilesResponse(data.Value, playerUuid);
+        } catch (Exception e) {
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
+            logger.LogError(e, "Failed to transform profiles for {PlayerUuid}", playerUuid);
+        }
     }
     
     public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {

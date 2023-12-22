@@ -23,6 +23,7 @@ public class ProfileParser(
     IMojangService mojangService, 
     IBackgroundTaskQueue taskQueue,
     IOptions<ConfigLeaderboardSettings> lbOptions,
+    ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService) 
 {
     private readonly ConfigLeaderboardSettings lbSettings = lbOptions.Value;
@@ -43,7 +44,10 @@ public class ProfileParser(
         );
     
     public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid) {
-        if (!data.Success || data.Profiles is not { Length: > 0 }) return;
+        if (!data.Success || data.Profiles is not { Length: > 0 }) {
+            logger.LogWarning("Received empty profiles from {PlayerUuid}", playerUuid);
+            return;
+        }
 
         foreach (var profile in data.Profiles) {
             await TransformSingleProfile(profile, playerUuid);
@@ -98,7 +102,7 @@ public class ProfileParser(
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                logger.LogError(e, "Failed to add profile {ProfileId} to database", profileId);
             }
         }
 
@@ -117,7 +121,7 @@ public class ProfileParser(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, "Failed to save profile {ProfileId} to database", profileId);
         }
     }
 
@@ -191,7 +195,7 @@ public class ProfileParser(
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            logger.LogError(ex, "Failed to save profile member {ProfileMemberId} to database", member.Id);
         }
     }
 
