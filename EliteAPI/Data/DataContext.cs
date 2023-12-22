@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
@@ -11,8 +10,8 @@ using Z.EntityFramework.Extensions;
 namespace EliteAPI.Data;
 public class DataContext(DbContextOptions<DataContext> options, IConfiguration config) : DbContext(options) 
 {
-    private readonly IConfiguration _configuration = config;
-
+    private static NpgsqlDataSource? Source { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         EntityFrameworkManager.IsCommunity = true;
@@ -20,7 +19,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
         base.OnConfiguring(optionsBuilder);
         
         // Get connection string from config "PostgresConnection"
-        var connection = _configuration.GetConnectionString("Postgres");
+        var connection = config.GetConnectionString("Postgres");
 
         if (string.IsNullOrEmpty(connection)) {
             Console.WriteLine("No connection string found. Quitting...");
@@ -28,10 +27,13 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             return;
         }
         
-        var builder = new NpgsqlDataSourceBuilder(connection);
-        builder.EnableDynamicJson();
+        if (Source is null) {
+            var builder = new NpgsqlDataSourceBuilder(connection);
+            builder.EnableDynamicJson();
+            Source = builder.Build();
+        }
         
-        optionsBuilder.UseNpgsql(builder.Build());
+        optionsBuilder.UseNpgsql(Source);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
