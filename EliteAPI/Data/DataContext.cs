@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Accounts;
+﻿using System.Configuration;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
@@ -8,36 +9,29 @@ using Npgsql;
 using Z.EntityFramework.Extensions;
 
 namespace EliteAPI.Data;
-public class DataContext : DbContext
+public class DataContext(DbContextOptions<DataContext> options, IConfiguration config) : DbContext(options) 
 {
-    public DataContext(DbContextOptions<DataContext> options) : base(options) { }
+    private readonly IConfiguration _configuration = config;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        DotNetEnv.Env.Load();
         EntityFrameworkManager.IsCommunity = true;
         
-        // TODO: Remake DataContext to use the NpgsqlDataSourceBuilder instead of needing to use this obsolete method
-        #pragma warning disable CS0618 // Type or member is obsolete
-        NpgsqlConnection.GlobalTypeMapper.EnableDynamicJsonMappings();
-        #pragma warning restore CS0618 // Type or member is obsolete
-        
         base.OnConfiguring(optionsBuilder);
-        // Get connection string from secrets
-        var connection = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+        
+        // Get connection string from config "PostgresConnection"
+        var connection = _configuration.GetConnectionString("Postgres");
 
-        if (!string.IsNullOrEmpty(connection))
-        {
-            optionsBuilder.UseNpgsql(connection);
-            
-            optionsBuilder.EnableSensitiveDataLogging();
-        }
-        else
-        {
-            // Quit
+        if (string.IsNullOrEmpty(connection)) {
             Console.WriteLine("No connection string found. Quitting...");
-            //Environment.Exit(1);
+            Environment.Exit(1);
+            return;
         }
+        
+        var builder = new NpgsqlDataSourceBuilder(connection);
+        builder.EnableDynamicJson();
+        
+        optionsBuilder.UseNpgsql(builder.Build());
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -51,7 +45,6 @@ public class DataContext : DbContext
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
-    public DbSet<Inventories> Inventories { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;
