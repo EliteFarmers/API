@@ -26,7 +26,7 @@ public class ProfileParser(
     ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService) 
 {
-    private readonly ConfigLeaderboardSettings lbSettings = lbOptions.Value;
+    private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
     
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
@@ -44,11 +44,25 @@ public class ProfileParser(
         );
     
     public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid) {
-        if (!data.Success || data.Profiles is not { Length: > 0 }) {
-            logger.LogWarning("Received empty profiles from {PlayerUuid}", playerUuid);
+        if (!data.Success) {
+            logger.LogWarning("Received unsuccessful profiles response from {PlayerUuid}", playerUuid);
             return;
         }
-
+        
+        if (data.Profiles is not { Length: > 0 }) {
+            // Mark player as removed from all of their profiles if they have none in the response
+            await context.ProfileMembers
+                .Include(p => p.Profile)
+                .Where(p => p.PlayerUuid.Equals(playerUuid))
+                .ExecuteUpdateAsync(member =>
+                    member
+                        .SetProperty(m => m.WasRemoved, true)
+                        .SetProperty(m => m.IsSelected, false)
+                );
+            return;
+        }
+        
+        // Parse each profile
         foreach (var profile in data.Profiles) {
             await TransformSingleProfile(profile, playerUuid);
         }
@@ -276,12 +290,12 @@ public class ProfileParser(
 
         // If collections api was turned off, remove scores
         if (previousApi.Collections && !member.Api.Collections) {
-            await leaderboardService.RemoveMemberFromLeaderboards(lbSettings.CollectionLeaderboards.Keys, memberId);
+            await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.CollectionLeaderboards.Keys, memberId);
         }
         
         // If skills api was turned off, remove scores
         if (previousApi.Skills && !member.Api.Skills) {
-            await leaderboardService.RemoveMemberFromLeaderboards(lbSettings.SkillLeaderboards.Keys, memberId);
+            await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.SkillLeaderboards.Keys, memberId);
         }
     }
 
