@@ -98,9 +98,16 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
             var asJson = await dataContext.Database.SqlQuery<string>($@"
                 SELECT json_agg(c) as ""Value""
                 FROM (
-                    SELECT ""Collected"", ""Position"", ""Crop"", ""Timestamp"", ""Participants"", ""PlayerUuid"", ""ProfileId"" as ""ProfileUuid"", ""Name"" as ""PlayerName""
+                    SELECT 
+                        ""Collected"", ""Position"", ""Crop"", 
+                        ""Timestamp"", ""Participants"", ""PlayerUuid"", 
+                        ""ProfileId"" as ""ProfileUuid"", 
+                        ""Name"" as ""PlayerName"",
+                        ""WasRemoved"" as ""Removed""
                     FROM (
-                        SELECT DISTINCT ON (""ProfileMemberId"") ""ProfileMemberId"", ""Collected"", ""Position"", ""Crop"", ""Timestamp"", ""Participants""
+                        SELECT 
+                            DISTINCT ON (""ProfileMemberId"") ""ProfileMemberId"", 
+                            ""Collected"", ""Position"", ""Crop"", ""Timestamp"", ""Participants""
                         FROM ""ContestParticipations""
                         LEFT JOIN ""JacobContests"" ON ""JacobContestId"" = ""JacobContests"".""Id""
                         WHERE ""Crop"" = {cropInt} AND ""JacobContestId"" BETWEEN {startTime} AND {endTime}

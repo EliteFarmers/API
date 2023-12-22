@@ -16,6 +16,7 @@ public class ContestParticipationWithTimestampDto {
     public string PlayerUuid { get; set; } = "";
     public string PlayerName { get; set; } = "";
     public string ProfileUuid { get; set; } = "";
+    public bool Removed { get; set; } = false;
     public long Timestamp { get; set; }
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;

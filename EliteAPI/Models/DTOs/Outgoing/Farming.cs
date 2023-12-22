@@ -62,6 +62,7 @@ public class StrippedContestParticipationDto {
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;
     public string? Medal { get; set; }
+    public bool Removed { get; set; } = false;
     public string PlayerUuid { get; set; } = "";
     public string PlayerName { get; set; } = "";
 }
