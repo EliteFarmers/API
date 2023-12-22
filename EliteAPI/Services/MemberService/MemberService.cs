@@ -104,23 +104,23 @@ public class MemberService : IMemberService {
         if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown) 
             && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) 
         {
-            db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(10));
+            db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(60));
             updateProfiles = true;
         }
         
         if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown) 
             && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) 
         {
-            db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(10));
+            db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(60));
             updatePlayer = true;
-        }
-
-        if (updatePlayer) {
-            await RefreshPlayerData(playerUuid, account);
         }
 
         if (updateProfiles) {
             await RefreshProfiles(playerUuid);
+        }
+        
+        if (updatePlayer) {
+            await RefreshPlayerData(playerUuid, account);
         }
     }
 
