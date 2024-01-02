@@ -144,7 +144,7 @@ public class ProfileParser(
         var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
         
         // Should remove if deleted or co op invitation is not accepted
-        var shouldRemove = memberData.DeletionNotice is not null || memberData.Profile?.CoopInvitation is { Confirmed: false };
+        var shouldRemove = memberData.Profile?.DeletionNotice is not null || memberData.Profile?.CoopInvitation is { Confirmed: false };
         
         // Exit early if removed, and still should be removed
         if (existing?.WasRemoved == true && shouldRemove) return;
@@ -191,7 +191,7 @@ public class ProfileParser(
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,
-            WasRemoved = memberData.DeletionNotice is not null
+            WasRemoved = memberData.Profile?.DeletionNotice is not null
         };
         
         context.ProfileMembers.Add(member);

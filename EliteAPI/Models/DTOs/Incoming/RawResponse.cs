@@ -54,9 +54,6 @@ public class RawMemberData
     
     public RawLeveling? Leveling { get; set; }
     
-    [JsonPropertyName("deletion_notice")]
-    public JsonObject? DeletionNotice { get; set; }
-
     public RawMemberCurrencies? Currencies { get; set; }
     
     [JsonPropertyName("inventory")]
@@ -153,6 +150,9 @@ public class RawPlayerExperience {
 public class RawMemberProfileData {
     [JsonPropertyName("coop_invitation")]
     public RawCoopInvitation? CoopInvitation { get; set; }
+    
+    [JsonPropertyName("deletion_notice")]
+    public JsonObject? DeletionNotice { get; set; }
 }
 
 public class RawMemberInventories {
