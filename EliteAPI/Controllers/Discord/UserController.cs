@@ -434,6 +434,7 @@ public class UserController : ControllerBase {
         } 
         
         guild.Features.ContestPings = pings;
+        _context.Entry(guild).Property(g => g.Features).IsModified = true;
 
         await _context.SaveChangesAsync();
         return Accepted();
@@ -483,6 +484,7 @@ public class UserController : ControllerBase {
         pings.DisabledReason = reason;
         
         guild.Features.ContestPings = pings;
+        _context.Entry(guild).Property(g => g.Features).IsModified = true;
 
         await _context.SaveChangesAsync();
         return Ok();

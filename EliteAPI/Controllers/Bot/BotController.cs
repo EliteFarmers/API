@@ -92,22 +92,21 @@ public class BotController(DataContext context, IMapper mapper, IDiscordService 
             .Where(g => g.Features.ContestPingsEnabled == true
                         && g.Features.ContestPings != null 
                         && g.Features.ContestPings.Enabled)
-            .Select(g => new { g.Id, g.Features.ContestPings })
             .ToListAsync();
         
         return Ok(guilds.Select(g => new ContestPingsFeatureDto {
             GuildId = g.Id.ToString(),
-            ChannelId = g.ContestPings!.ChannelId,
-            AlwaysPingRole = g.ContestPings.AlwaysPingRole,
-            CropPingRoles = g.ContestPings.CropPingRoles,
-            DelaySeconds = g.ContestPings.DelaySeconds,
-            DisabledReason = g.ContestPings.DisabledReason,
-            Enabled = g.ContestPings.Enabled
+            ChannelId = g.Features.ContestPings?.ChannelId ?? "",
+            AlwaysPingRole = g.Features.ContestPings?.AlwaysPingRole ?? "",
+            CropPingRoles = g.Features.ContestPings?.CropPingRoles ?? new CropSettings<string>(),
+            DelaySeconds = g.Features.ContestPings?.DelaySeconds ?? 0,
+            DisabledReason = g.Features.ContestPings?.DisabledReason ?? "",
+            Enabled = g.Features.ContestPings?.Enabled ?? false
         }));
     }
     
     // DELETE <BotController>/ContestPings/12793764936498429
-    [HttpDelete("ContestPings/{guildId:long}")]
+    [HttpDelete("ContestPings/{guildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> DeleteGuildContestPings(long guildId, string reason) {
@@ -127,6 +126,7 @@ public class BotController(DataContext context, IMapper mapper, IDiscordService 
         pings.DisabledReason = reason;
         
         guild.Features.ContestPings = pings;
+        context.Entry(guild).Property(g => g.Features).IsModified = true;
 
         await context.SaveChangesAsync();
         return Ok();
