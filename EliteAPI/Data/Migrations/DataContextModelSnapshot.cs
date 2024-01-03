@@ -76,7 +76,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
@@ -121,7 +121,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("MinecraftAccounts");
+                    b.ToTable("MinecraftAccounts", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
@@ -192,7 +192,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.EventMember", b =>
@@ -244,7 +244,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EventMembers");
+                    b.ToTable("EventMembers", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Guild", b =>
@@ -292,7 +292,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Guilds");
+                    b.ToTable("Guilds", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Farming.Farming", b =>
@@ -328,7 +328,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("FarmingWeights");
+                    b.ToTable("FarmingWeights", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
@@ -365,7 +365,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("ContestParticipations");
+                    b.ToTable("ContestParticipations", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Inventories", b =>
@@ -410,7 +410,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("Inventories");
+                    b.ToTable("Inventories", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContest", b =>
@@ -449,7 +449,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("Timestamp");
 
-                    b.ToTable("JacobContests");
+                    b.ToTable("JacobContests", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>
@@ -480,7 +480,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("JacobData");
+                    b.ToTable("JacobData", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.PlayerData", b =>
@@ -557,7 +557,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("Uuid")
                         .IsUnique();
 
-                    b.ToTable("PlayerData");
+                    b.ToTable("PlayerData", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Profile", b =>
@@ -587,7 +587,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("ProfileId");
 
-                    b.ToTable("Profiles");
+                    b.ToTable("Profiles", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
@@ -644,7 +644,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("ProfileMembers");
+                    b.ToTable("ProfileMembers", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Skills", b =>
@@ -696,7 +696,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
@@ -742,7 +742,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("CropCollections");
+                    b.ToTable("CropCollections", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.SkillExperience", b =>
@@ -788,7 +788,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("SkillExperiences");
+                    b.ToTable("SkillExperiences", (string)null);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
@@ -899,7 +899,7 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.EarnedMedalInventory", "EarnedMedals", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.JacobData.EarnedMedals#EliteAPI.Models.Entities.Hypixel.EarnedMedalInventory", "EarnedMedals", b1 =>
                         {
                             b1.Property<int>("JacobDataId")
                                 .HasColumnType("integer");
@@ -921,32 +921,13 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("JacobDataId");
 
-                            b1.ToTable("JacobData");
+                            b1.ToTable("JacobData", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("JacobDataId");
                         });
 
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.JacobPerks", "Perks", b1 =>
-                        {
-                            b1.Property<int>("JacobDataId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("DoubleDrops")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("LevelCap")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("JacobDataId");
-
-                            b1.ToTable("JacobData");
-
-                            b1.WithOwner()
-                                .HasForeignKey("JacobDataId");
-                        });
-
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.MedalInventory", "Medals", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.JacobData.Medals#EliteAPI.Models.Entities.Hypixel.MedalInventory", "Medals", b1 =>
                         {
                             b1.Property<int>("JacobDataId")
                                 .HasColumnType("integer");
@@ -962,7 +943,26 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("JacobDataId");
 
-                            b1.ToTable("JacobData");
+                            b1.ToTable("JacobData", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("JacobDataId");
+                        });
+
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.JacobData.Perks#EliteAPI.Models.Entities.Hypixel.JacobPerks", "Perks", b1 =>
+                        {
+                            b1.Property<int>("JacobDataId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("DoubleDrops")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("LevelCap")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("JacobDataId");
+
+                            b1.ToTable("JacobData", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("JacobDataId");
@@ -988,7 +988,7 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.SocialMediaLinks", "SocialMedia", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.PlayerData.SocialMedia#EliteAPI.Models.Entities.Hypixel.SocialMediaLinks", "SocialMedia", b1 =>
                         {
                             b1.Property<int>("PlayerDataId")
                                 .HasColumnType("integer");
@@ -1004,7 +1004,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("PlayerDataId");
 
-                            b1.ToTable("PlayerData");
+                            b1.ToTable("PlayerData", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("PlayerDataId");
@@ -1030,7 +1030,7 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.ApiAccess", "Api", b1 =>
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.ProfileMember.Api#EliteAPI.Models.Entities.Hypixel.ApiAccess", "Api", b1 =>
                         {
                             b1.Property<Guid>("ProfileMemberId")
                                 .HasColumnType("uuid");
@@ -1052,7 +1052,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("ProfileMemberId");
 
-                            b1.ToTable("ProfileMembers");
+                            b1.ToTable("ProfileMembers", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ProfileMemberId");

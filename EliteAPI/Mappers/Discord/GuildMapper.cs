@@ -29,5 +29,7 @@ public class GuildFeaturesMapper : Profile {
             .ForMember(g => g.Leaderboards, opt => opt.MapFrom(g => g.Leaderboards));
             
         CreateMap<GuildJacobLeaderboard, PublicJacobLeaderboardDto>();
+
+        CreateMap<ContestPingsFeature, ContestPingsFeatureDto>();
     }
 }

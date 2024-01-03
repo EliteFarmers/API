@@ -383,4 +383,110 @@ public class UserController : ControllerBase {
 
         return await _guildService.SendLeaderboardPanel(guildId, channelId, account.Id, lbId);
     }
+    
+    [HttpPut("Guild/{guildId}/ContestPings")]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<ActionResult> PutGuildContestPings(ulong guildId, [FromBody] ContestPingsFeatureDto feature) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+
+        if (userGuild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
+        }
+        
+        var fullGuild = await _discordService.GetGuild(guildId);
+        var guild = await _context.Guilds.FindAsync(guildId);
+
+        if (fullGuild is null || guild is null) {
+            if (guild?.Features.ContestPings?.Enabled is true) {
+                guild.Features.ContestPings.Enabled = false;
+                guild.Features.ContestPings.DisabledReason = "Guild no longer found.";
+            }
+            
+            return NotFound("Guild not found.");
+        }
+
+        if (!guild.Features.ContestPingsEnabled) {
+            return Unauthorized("Contest Pings feature is not enabled for this guild.");
+        }
+
+        var pings = guild.Features.ContestPings ?? new ContestPingsFeature();
+
+        pings.Enabled = feature.Enabled;
+        pings.ChannelId = feature.ChannelId;
+        pings.DelaySeconds = feature.DelaySeconds;
+        pings.AlwaysPingRole = feature.AlwaysPingRole;
+        pings.CropPingRoles = feature.CropPingRoles;
+
+        if (pings is { Enabled: true, DisabledReason: not null }) {
+            pings.DisabledReason = null;
+        } 
+        
+        guild.Features.ContestPings = pings;
+        _context.Entry(guild).Property(g => g.Features).IsModified = true;
+
+        await _context.SaveChangesAsync();
+        return Accepted();
+    }
+    
+    [HttpDelete("Guild/{guildId}/ContestPings")]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<ActionResult> DeleteGuildContestPings(ulong guildId, string reason) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+
+        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+
+        if (userGuild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        if (!_guildService.HasGuildAdminPermissions(userGuild)) {
+            return Unauthorized("You do not have permission to access this guild.");
+        }
+        
+        await _discordService.GetGuild(guildId);
+        var guild = await _context.Guilds.FindAsync(guildId);
+
+        if (guild is null) {
+            if (guild?.Features.ContestPings?.Enabled is true) {
+                guild.Features.ContestPings.Enabled = false;
+                guild.Features.ContestPings.DisabledReason = "Guild no longer found.";
+            }
+            
+            return NotFound("Guild not found.");
+        }
+
+        if (!guild.Features.ContestPingsEnabled) {
+            return BadRequest("Contest Pings feature is already disabled for this guild.");
+        }
+
+        var pings = guild.Features.ContestPings ?? new ContestPingsFeature();
+
+        pings.Enabled = false;
+        pings.DisabledReason = reason;
+        
+        guild.Features.ContestPings = pings;
+        _context.Entry(guild).Property(g => g.Features).IsModified = true;
+
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
 }

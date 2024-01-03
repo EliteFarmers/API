@@ -39,6 +39,9 @@ public class GuildFeatures {
     
     public bool EventsEnabled { get; set; }
     public GuildEventSettings? EventSettings { get; set; } = new();
+
+    public bool ContestPingsEnabled { get; set; } = true;
+    public ContestPingsFeature? ContestPings { get; set; }
 }
 
 public class GuildEventSettings {
@@ -65,6 +68,17 @@ public class GuildJacobLeaderboardFeature {
     public List<GuildJacobLeaderboard> Leaderboards { get; set; } = new();
 }
 
+public class ContestPingsFeature {
+    public bool Enabled { get; set; }
+
+    public string? ChannelId { get; set; }
+    public string? AlwaysPingRole { get; set; }
+    public CropSettings<string>? CropPingRoles { get; set; } = new();
+
+    public int DelaySeconds { get; set; }
+    public string? DisabledReason { get; set; }
+}
+
 public class GuildJacobLeaderboard {
     public required string Id { get; set; }
     public string? ChannelId { get; set; }
@@ -72,7 +86,8 @@ public class GuildJacobLeaderboard {
     public long StartCutoff { get; set; } = -1;
     public long EndCutoff { get; set; } = -1;
 
-    [MaxLength(64)] public string? Title { get; set; }
+    [MaxLength(64)] 
+    public string? Title { get; set; }
     public bool Active { get; set; } = true;
 
     public string? RequiredRole { get; set; }
@@ -83,6 +98,19 @@ public class GuildJacobLeaderboard {
     public bool PingForSmallImprovements { get; set; }
 
     public CropRecords Crops { get; set; } = new();
+}
+
+public class CropSettings<T> {
+    public T? Cactus { get; set; }
+    public T? Carrot { get; set; }
+    public T? Potato { get; set; }
+    public T? Wheat { get; set; }
+    public T? Melon { get; set; }
+    public T? Pumpkin { get; set; }
+    public T? Mushroom { get; set; }
+    public T? CocoaBeans { get; set; }
+    public T? SugarCane { get; set; }
+    public T? NetherWart { get; set; }
 }
 
 public class CropRecords {
