@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Hypixel;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Accounts; 
 
+[Index(nameof(Name), Name = "idx_minecraft_accounts_name")]
 public class MinecraftAccount
 {
     [Key]
