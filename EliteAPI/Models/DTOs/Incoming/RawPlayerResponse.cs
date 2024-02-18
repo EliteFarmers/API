@@ -19,7 +19,7 @@ public class RawPlayerData
     public long LastLogin { get; set; }
     public long LastLogout { get; set; }
 
-    public long Karma { get; set; }
+    public double Karma { get; set; }
     public double NetworkExp { get; set; }
    
     public int RewardHighScore { get; set; }
