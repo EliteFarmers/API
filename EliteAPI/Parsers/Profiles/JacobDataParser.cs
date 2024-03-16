@@ -34,13 +34,9 @@ public static class JacobDataParser
         if (incomingJacob.UniqueBrackets is not null) {
             jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Diamond, ContestMedal.Diamond);
             jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Platinum, ContestMedal.Platinum);
-
-            // Exit early if we can
-            if (jacob.Stats.Brackets.Count < 9) {
-                jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Gold, ContestMedal.Gold);
-                jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Silver, ContestMedal.Silver);
-                jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Bronze, ContestMedal.Bronze);
-            }
+            jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Gold, ContestMedal.Gold);
+            jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Silver, ContestMedal.Silver);
+            jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Bronze, ContestMedal.Bronze);
         }
 
         foreach (var (cropId, value) in incomingJacob.PersonalBests) {
