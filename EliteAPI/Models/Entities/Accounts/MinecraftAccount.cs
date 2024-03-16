@@ -28,20 +28,12 @@ public class MinecraftAccount
     
     [Column(TypeName = "jsonb")]
     public List<FlagReason>? FlagReasons { get; set; }
-    
-    [Column(TypeName = "jsonb")]
-    public List<Badge>? Badges { get; set; }
+
+    public List<UserBadge> Badges { get; set; } = null!;
 
     public long LastUpdated { get; set; }
     public long ProfilesLastUpdated { get; set; }
     public long PlayerDataLastUpdated { get; set; }
-}
-
-public class Badge {
-    public required string Id { get; set; }
-    public required string Name { get; set; }
-    public required string Description { get; set; }
-    public DateTimeOffset Timestamp { get; set; }
 }
 
 public class MinecraftAccountProperty
