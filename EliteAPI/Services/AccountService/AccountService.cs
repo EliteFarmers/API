@@ -23,7 +23,9 @@ public class AccountService : IAccountService
     
     public async Task<EliteAccount?> GetAccount(ulong accountId) {
         return await _context.Accounts
-            .Include(a => a.MinecraftAccounts).AsNoTracking()
+            .Include(a => a.MinecraftAccounts)
+            .ThenInclude(a => a.Badges)
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
 
@@ -126,7 +128,6 @@ public class AccountService : IAccountService
     public async Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn) {
         var account = await _context.Accounts
             .Include(a => a.MinecraftAccounts)
-            .Include(a => a.EventEntries).AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == discordId);
         
         if (account is null) return new UnauthorizedObjectResult("Account not found.");
