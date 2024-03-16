@@ -253,7 +253,6 @@ public class EventController : ControllerBase
         profileMember.EventEntries ??= new List<EventMember>();
         
         if (member is null) {
-            account.EventEntries.Add(newMember);
             profileMember.EventEntries.Add(newMember);
             eliteEvent.Members.Add(newMember);
 
