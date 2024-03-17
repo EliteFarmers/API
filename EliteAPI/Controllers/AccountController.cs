@@ -35,6 +35,7 @@ public class AccountController(DataContext context, IProfileService profileServi
 
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
+            .ThenInclude(a => a.Badges)
             .FirstOrDefaultAsync(a => a.Id.Equals(result.Id));
 
         return Ok(mapper.Map<AuthorizedAccountDto>(account));

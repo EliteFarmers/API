@@ -162,6 +162,68 @@ public class BotController(DataContext context, IMapper mapper, IDiscordService 
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
     }
     
+    // POST <BotController>/Badges/7da0c47581dc42b4962118f8049147b7
+    [HttpPost("Badges/{playerUuid}/{badgeId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> AddPlayerBadge(string playerUuid, int badgeId) {
+        var member = await context.MinecraftAccounts
+            .Include(m => m.Badges)
+            .FirstOrDefaultAsync(a => a.Id == playerUuid);
+        
+        if (member is null) {
+            return NotFound("User not found.");
+        }
+        
+        var badge = await context.Badges
+            .FirstOrDefaultAsync(b => b.Id == badgeId);
+        
+        if (badge is null) {
+            return NotFound("Badge not found.");
+        }
+        
+        if (member.Badges.Any(b => b.BadgeId == badgeId)) {
+            return BadRequest("User already has this badge.");
+        }
+        
+        var userBadge = new UserBadge {
+            BadgeId = badge.Id,
+            MinecraftAccountId = member.Id,
+            Visible = true
+        };
+        
+        context.UserBadges.Add(userBadge);
+        
+        // Add badge to user's relationship
+        member.Badges.Add(userBadge);
+        
+        await context.SaveChangesAsync();
+        
+        return Ok();
+    }
+    
+    [HttpDelete("Badges/{playerUuid}/{badgeId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> RemovePlayerBadge(string playerUuid, int badgeId) {
+        var userBadge = await context.UserBadges
+            .FirstOrDefaultAsync(a => a.MinecraftAccountId == playerUuid && a.BadgeId == badgeId);
+        
+        if (userBadge is null) {
+            return NotFound("User badge not found.");
+        }
+        
+        context.UserBadges.Remove(userBadge);
+        
+        await context.SaveChangesAsync();
+        
+        return Ok();
+    }
+    
     // Post <GuildController>/account/12793764936498429/Ke5o
     [HttpPost("account/{discordId:long:min(0)}/{playerIgnOrUuid}")]
     public async Task<ActionResult> LinkAccount(long discordId, string playerIgnOrUuid) {

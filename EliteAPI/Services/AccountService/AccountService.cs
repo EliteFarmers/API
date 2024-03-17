@@ -32,6 +32,7 @@ public class AccountService : IAccountService
     public async Task<EliteAccount?> GetAccountByIgn(string ign)
     {
         var minecraftAccount = await _context.MinecraftAccounts
+            .Include(mc => mc.Badges)
             .Where(mc => mc.Name == ign)
             .FirstOrDefaultAsync();
         
@@ -43,6 +44,7 @@ public class AccountService : IAccountService
     public async Task<EliteAccount?> GetAccountByMinecraftUuid(string uuid)
     {
         var minecraftAccount = await _context.MinecraftAccounts
+            .Include(mc => mc.Badges)
             .FirstOrDefaultAsync(mc => mc.Id.Equals(uuid));
         
         if (minecraftAccount?.AccountId is null) return null;

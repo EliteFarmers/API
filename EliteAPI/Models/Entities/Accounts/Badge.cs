@@ -21,7 +21,7 @@ public class UserBadge {
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     
-    public bool Visible { get; set; }
+    public bool Visible { get; set; } = true;
     public int Order { get; set; }
     public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.UtcNow;
     

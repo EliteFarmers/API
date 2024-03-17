@@ -14,7 +14,7 @@ public class BadgeController(DataContext context, IMapper mapper) : ControllerBa
     [HttpGet]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<Dictionary<string, double>> GetBadges() {
+    public ActionResult<List<BadgeDto>> GetBadges() {
         var badges = context.Badges
             .AsNoTracking()
             .ToList();

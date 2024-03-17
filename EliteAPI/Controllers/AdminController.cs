@@ -166,7 +166,8 @@ public class AdminController(DataContext context, IMapper mapper, IConnectionMul
         
         var userBadge = new UserBadge {
             BadgeId = badge.Id,
-            MinecraftAccountId = member.Id
+            MinecraftAccountId = member.Id,
+            Visible = true
         };
         
         context.UserBadges.Add(userBadge);
