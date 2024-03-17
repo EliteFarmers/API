@@ -6,6 +6,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.BadgeService;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace EliteAPI.Controllers.Bot;
 [ServiceFilter(typeof(DiscordBotOnlyFilter))]
 [ApiController]
 public class BotController(DataContext context, IMapper mapper, IDiscordService discordService,
-        IAccountService accountService, ILogger<BotController> logger)
+        IAccountService accountService, ILogger<BotController> logger, IBadgeService badgeService)
     : ControllerBase
 {
     // GET <BotController>/12793764936498429
@@ -169,39 +170,7 @@ public class BotController(DataContext context, IMapper mapper, IDiscordService 
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> AddPlayerBadge(string playerUuid, int badgeId) {
-        var member = await context.MinecraftAccounts
-            .Include(m => m.Badges)
-            .FirstOrDefaultAsync(a => a.Id == playerUuid);
-        
-        if (member is null) {
-            return NotFound("User not found.");
-        }
-        
-        var badge = await context.Badges
-            .FirstOrDefaultAsync(b => b.Id == badgeId);
-        
-        if (badge is null) {
-            return NotFound("Badge not found.");
-        }
-        
-        if (member.Badges.Any(b => b.BadgeId == badgeId)) {
-            return BadRequest("User already has this badge.");
-        }
-        
-        var userBadge = new UserBadge {
-            BadgeId = badge.Id,
-            MinecraftAccountId = member.Id,
-            Visible = true
-        };
-        
-        context.UserBadges.Add(userBadge);
-        
-        // Add badge to user's relationship
-        member.Badges.Add(userBadge);
-        
-        await context.SaveChangesAsync();
-        
-        return Ok();
+        return await badgeService.AddBadgeToUser(playerUuid, badgeId);
     }
     
     [HttpDelete("Badges/{playerUuid}/{badgeId:int}")]
@@ -210,18 +179,7 @@ public class BotController(DataContext context, IMapper mapper, IDiscordService 
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> RemovePlayerBadge(string playerUuid, int badgeId) {
-        var userBadge = await context.UserBadges
-            .FirstOrDefaultAsync(a => a.MinecraftAccountId == playerUuid && a.BadgeId == badgeId);
-        
-        if (userBadge is null) {
-            return NotFound("User badge not found.");
-        }
-        
-        context.UserBadges.Remove(userBadge);
-        
-        await context.SaveChangesAsync();
-        
-        return Ok();
+        return await badgeService.RemoveBadgeFromUser(playerUuid, badgeId);
     }
     
     // Post <GuildController>/account/12793764936498429/Ke5o

@@ -27,7 +27,8 @@ namespace EliteAPI.Data.Migrations
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: false),
                     Requirements = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
-                    ImageId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false)
+                    ImageId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    TieToAccount = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

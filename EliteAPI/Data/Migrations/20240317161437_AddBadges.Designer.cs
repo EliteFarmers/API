@@ -18,7 +18,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240315234515_AddBadges")]
+    [Migration("20240317161437_AddBadges")]
     partial class AddBadges
     {
         /// <inheritdoc />
@@ -59,6 +59,9 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
+
+                    b.Property<bool>("TieToAccount")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

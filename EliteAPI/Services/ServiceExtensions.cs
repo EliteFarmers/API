@@ -8,6 +8,7 @@ using EliteAPI.Parsers.Skyblock;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.Background;
+using EliteAPI.Services.BadgeService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.GuildService;
@@ -109,6 +110,7 @@ public static class ServiceExtensions
         services.AddScoped<ILeaderboardService, LeaderboardService.LeaderboardService>();
         services.AddScoped<IGuildService, GuildService.GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService.TimescaleService>();
+        services.AddScoped<IBadgeService, BadgeService.BadgeService>();
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();

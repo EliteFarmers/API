@@ -15,6 +15,7 @@ public class Badge {
     public required string Requirements { get; set; }
     [MaxLength(256)]
     public required string ImageId { get; set; }
+    public bool TieToAccount { get; set; }
 }
 
 public class UserBadge {

@@ -4,6 +4,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Services.BadgeService;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ namespace EliteAPI.Controllers;
 
 [ServiceFilter(typeof(DiscordAuthFilter))]
 [ApiController]
-public class AdminController(DataContext context, IMapper mapper, IConnectionMultiplexer redis) : ControllerBase
+public class AdminController(DataContext context, IMapper mapper, IConnectionMultiplexer redis, IBadgeService badgeService) : ControllerBase
 {
     // GET <AdminController>/Admins
     [HttpGet("Admins")]
@@ -145,39 +146,7 @@ public class AdminController(DataContext context, IMapper mapper, IConnectionMul
             return Unauthorized("You do not have permission to do this!");
         }
         
-        var member = await context.MinecraftAccounts
-            .Include(m => m.Badges)
-            .FirstOrDefaultAsync(a => a.Id == playerUuid);
-        
-        if (member is null) {
-            return NotFound("User not found.");
-        }
-        
-        var badge = await context.Badges
-            .FirstOrDefaultAsync(b => b.Id == badgeId);
-        
-        if (badge is null) {
-            return NotFound("Badge not found.");
-        }
-        
-        if (member.Badges.Any(b => b.BadgeId == badgeId)) {
-            return BadRequest("User already has this badge.");
-        }
-        
-        var userBadge = new UserBadge {
-            BadgeId = badge.Id,
-            MinecraftAccountId = member.Id,
-            Visible = true
-        };
-        
-        context.UserBadges.Add(userBadge);
-        
-        // Add badge to user's relationship
-        member.Badges.Add(userBadge);
-        
-        await context.SaveChangesAsync();
-        
-        return Ok();
+        return await badgeService.AddBadgeToUser(playerUuid, badgeId);
     }
     
     [HttpDelete("[controller]/Badges/{playerUuid}/{badgeId:int}")]
@@ -194,18 +163,7 @@ public class AdminController(DataContext context, IMapper mapper, IConnectionMul
             return Unauthorized("You do not have permission to do this!");
         }
         
-        var userBadge = await context.UserBadges
-            .FirstOrDefaultAsync(a => a.MinecraftAccountId == playerUuid && a.BadgeId == badgeId);
-        
-        if (userBadge is null) {
-            return NotFound("User badge not found.");
-        }
-        
-        context.UserBadges.Remove(userBadge);
-        
-        await context.SaveChangesAsync();
-        
-        return Ok();
+        return await badgeService.RemoveBadgeFromUser(playerUuid, badgeId);
     }
     
     [HttpPost("[controller]/Badges")]
@@ -226,7 +184,8 @@ public class AdminController(DataContext context, IMapper mapper, IConnectionMul
             Name = badge.Name,
             Description = badge.Description,
             ImageId = badge.ImageId,
-            Requirements = badge.Requirements
+            Requirements = badge.Requirements,
+            TieToAccount = badge.TieToAccount
         };
         
         context.Badges.Add(newBadge);
