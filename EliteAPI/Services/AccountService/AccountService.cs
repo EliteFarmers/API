@@ -7,29 +7,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services.AccountService;
 
-public class AccountService : IAccountService
-{
-    private readonly DataContext _context;
-    private readonly IMemberService _memberService;
-    public AccountService(DataContext context, IMemberService memberService)
-    {
-        _context = context;
-        _memberService = memberService;
-    }
-
+public class AccountService(DataContext context, IMemberService memberService) : IAccountService {
     public Task<EliteAccount?> GetAccountByIgnOrUuid(string ignOrUuid) {
         return ignOrUuid.Length == 32 ? GetAccountByMinecraftUuid(ignOrUuid) : GetAccountByIgn(ignOrUuid);
     }
     
     public async Task<EliteAccount?> GetAccount(ulong accountId) {
-        return await _context.Accounts
-            .Include(a => a.MinecraftAccounts).AsNoTracking()
+        return await context.Accounts
+            .Include(a => a.MinecraftAccounts)
+            .ThenInclude(a => a.Badges)
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
 
     public async Task<EliteAccount?> GetAccountByIgn(string ign)
     {
-        var minecraftAccount = await _context.MinecraftAccounts
+        var minecraftAccount = await context.MinecraftAccounts
+            .Include(mc => mc.Badges)
             .Where(mc => mc.Name == ign)
             .FirstOrDefaultAsync();
         
@@ -40,7 +34,8 @@ public class AccountService : IAccountService
 
     public async Task<EliteAccount?> GetAccountByMinecraftUuid(string uuid)
     {
-        var minecraftAccount = await _context.MinecraftAccounts
+        var minecraftAccount = await context.MinecraftAccounts
+            .Include(mc => mc.Badges)
             .FirstOrDefaultAsync(mc => mc.Id.Equals(uuid));
         
         if (minecraftAccount?.AccountId is null) return null;
@@ -64,16 +59,16 @@ public class AccountService : IAccountService
             return new BadRequestObjectResult("You have already linked this account.");
         }
 
-        var playerData = await _context.PlayerData
+        var playerData = await context.PlayerData
             .Include(pd => pd.MinecraftAccount)
             .Include(pd => pd.SocialMedia)
             .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
             .FirstOrDefaultAsync();
 
         if (playerData is not null && playerData.LastUpdated.OlderThanSeconds(120)) {
-            await _memberService.RefreshPlayerData(id);
+            await memberService.RefreshPlayerData(id);
             
-            playerData = await _context.PlayerData
+            playerData = await context.PlayerData
                 .Include(pd => pd.MinecraftAccount)
                 .Include(pd => pd.SocialMedia)
                 .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
@@ -116,17 +111,16 @@ public class AccountService : IAccountService
         
         // Set the account id
         playerData.MinecraftAccount.AccountId = account.Id;
-        _context.MinecraftAccounts.Update(playerData.MinecraftAccount);
+        context.MinecraftAccounts.Update(playerData.MinecraftAccount);
         
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
         return new AcceptedResult();
     }
 
     public async Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn) {
-        var account = await _context.Accounts
+        var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
-            .Include(a => a.EventEntries).AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == discordId);
         
         if (account is null) return new UnauthorizedObjectResult("Account not found.");
@@ -142,15 +136,18 @@ public class AccountService : IAccountService
             return new BadRequestObjectResult("You have not linked this account.");
         }
         
+        // Remove the badges from the user that are tied to the account
+        context.UserBadges.RemoveRange(minecraftAccount.Badges.Where(x => x.Badge.TieToAccount));
+        
         // Reset the account id
         minecraftAccount.AccountId = null;
         minecraftAccount.EliteAccount = null;
         minecraftAccount.Selected = false;
         account.MinecraftAccounts.Remove(minecraftAccount);
         
-        _context.Entry(account).State = EntityState.Modified;
-        _context.Entry(minecraftAccount).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        context.Entry(account).State = EntityState.Modified;
+        context.Entry(minecraftAccount).State = EntityState.Modified;
+        await context.SaveChangesAsync();
 
         return new NoContentResult();
     }
@@ -175,13 +172,13 @@ public class AccountService : IAccountService
         if (selectedAccount is not null)
         {
             selectedAccount.Selected = false;
-            _context.MinecraftAccounts.Update(selectedAccount);
+            context.MinecraftAccounts.Update(selectedAccount);
         }
         
         newSelectedAccount.Selected = true;
-        _context.MinecraftAccounts.Update(newSelectedAccount);
+        context.MinecraftAccounts.Update(newSelectedAccount);
         
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
         return new AcceptedResult();
     }

@@ -6,6 +6,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.BadgeService;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace EliteAPI.Controllers.Bot;
 [ServiceFilter(typeof(DiscordBotOnlyFilter))]
 [ApiController]
 public class BotController(DataContext context, IMapper mapper, IDiscordService discordService,
-        IAccountService accountService, ILogger<BotController> logger)
+        IAccountService accountService, ILogger<BotController> logger, IBadgeService badgeService)
     : ControllerBase
 {
     // GET <BotController>/12793764936498429
@@ -160,6 +161,25 @@ public class BotController(DataContext context, IMapper mapper, IDiscordService 
         }
         
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
+    }
+    
+    // POST <BotController>/Badges/7da0c47581dc42b4962118f8049147b7
+    [HttpPost("Badges/{playerUuid}/{badgeId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> AddPlayerBadge(string playerUuid, int badgeId) {
+        return await badgeService.AddBadgeToUser(playerUuid, badgeId);
+    }
+    
+    [HttpDelete("Badges/{playerUuid}/{badgeId:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> RemovePlayerBadge(string playerUuid, int badgeId) {
+        return await badgeService.RemoveBadgeFromUser(playerUuid, badgeId);
     }
     
     // Post <GuildController>/account/12793764936498429/Ke5o

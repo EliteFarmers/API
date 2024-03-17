@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.GuildService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Discord; 
 
@@ -486,6 +487,41 @@ public class UserController : ControllerBase {
         guild.Features.ContestPings = pings;
         _context.Entry(guild).Property(g => g.Features).IsModified = true;
 
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+    
+    [HttpPatch("Badges/{playerUuid}")]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<ActionResult> UpdateBadgeSettings(string playerUuid, [FromBody] List<EditUserBadgeDto> badges) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string) {
+            return Unauthorized("Account not found.");
+        }
+
+        var userBadges = await _context.UserBadges
+            .Include(a => a.MinecraftAccount)
+            .Where(a => a.MinecraftAccountId == playerUuid && a.MinecraftAccount.AccountId == account.Id)
+            .ToListAsync();
+        
+        if (userBadges is { Count: 0 }) {
+            return NotFound("Account not found.");
+        }
+
+        foreach (var badge in badges) {
+            var existing = userBadges.FirstOrDefault(b => b.BadgeId == badge.BadgeId);
+            
+            if (existing is null) {
+                return BadRequest($"Badge {badge.BadgeId} not found on user account.");
+            }
+            
+            existing.Visible = badge.Visible ?? existing.Visible;
+            existing.Order = badge.Order ?? existing.Order;
+        }
+        
         await _context.SaveChangesAsync();
         return Ok();
     }

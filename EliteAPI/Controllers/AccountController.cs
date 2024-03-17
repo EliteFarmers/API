@@ -35,6 +35,7 @@ public class AccountController(DataContext context, IProfileService profileServi
 
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
+            .ThenInclude(a => a.Badges)
             .FirstOrDefaultAsync(a => a.Id.Equals(result.Id));
 
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
@@ -96,7 +97,6 @@ public class AccountController(DataContext context, IProfileService profileServi
         result.DiscordAvatar = account.Avatar;
         result.PlayerData = mapper.Map<PlayerDataDto>(playerData);
         result.Profiles = profileDetails;
-        result.EventEntries = mapper.Map<List<EventMemberDetailsDto>>(account.EventEntries);
         
         return Ok(result);
     }

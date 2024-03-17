@@ -29,7 +29,6 @@ public class EliteAccount
     [Column(TypeName = "jsonb")]
     public EliteSettings Settings { get; set; } = new();
     
-    public List<EventMember> EventEntries { get; set; } = new();
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = new();
 }
 

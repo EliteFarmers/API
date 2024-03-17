@@ -36,6 +36,7 @@ public partial class MojangService : IMojangService
         }
     
         var account = await _context.MinecraftAccounts
+            .Include(mc => mc.Badges)
             .Where(mc => mc.Name.Equals(ign))
             .FirstOrDefaultAsync();
         
@@ -63,6 +64,7 @@ public partial class MojangService : IMojangService
     {
         var account = await _context.MinecraftAccounts
             .Where(mc => mc.Id.Equals(uuid))
+            .Include(mc => mc.Badges)
             .AsNoTracking()
             .FirstOrDefaultAsync();
 
@@ -128,6 +130,7 @@ public partial class MojangService : IMojangService
             _cache.SetUsernameUuidCombo(data.Name, data.Id);
             
             var existing = await _context.MinecraftAccounts
+                .Include(mc => mc.Badges)
                 .Where(mc => mc.Id.Equals(data.Id))
                 .FirstOrDefaultAsync();
 

@@ -1,4 +1,5 @@
-﻿using Swashbuckle.AspNetCore.Annotations;
+﻿using EliteAPI.Models.DTOs.Incoming;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -19,8 +20,6 @@ public class AuthorizedAccountDto
     public List<RedemptionDto> Redemptions { get; set; } = new();
     public EliteInventoryDto Inventory { get; set; } = new();
     public EliteSettingsDto Settings { get; set; } = new();
-
-    public List<EventMemberDetailsDto> EventEntries { get; set; } = new();
     public List<MinecraftAccountDetailsDto> MinecraftAccounts { get; set; } = new();
 }
 
@@ -30,7 +29,7 @@ public class MinecraftAccountDetailsDto
     public required string Id { get; set; }
     public required string Name { get; set; }
     public bool PrimaryAccount { get; set; } = true;
-
+    public List<UserBadgeDto> Badges { get; set; } = new();
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
 }
 
@@ -46,8 +45,8 @@ public class MinecraftAccountDto
     public string? DiscordAvatar { get; set; }
 
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
-    public List<EventMemberDetailsDto> EventEntries { get; set; } = new();
     public List<ProfileDetailsDto> Profiles { get; set; } = new();
+    public List<UserBadgeDto> Badges { get; set; } = new();
     public PlayerDataDto? PlayerData { get; set; }
 }
 
