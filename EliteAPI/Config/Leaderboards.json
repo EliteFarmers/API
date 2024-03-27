@@ -126,6 +126,58 @@
         "Id": "Carpentry",
         "Title": "Carpentry"
       }
+    },
+    "PestLeaderboards": {
+      "mite": {
+        "Id": "Mite",
+        "Title": "Mite Kills",
+        "Limit": 5000
+      },
+      "cricket": {
+        "Id": "Cricket",
+        "Title": "Cricket Kills",
+        "Limit": 5000
+      },
+      "moth": {
+        "Id": "Moth",
+        "Title": "Moth Kills",
+        "Limit": 5000
+      },
+      "earthworm": {
+        "Id": "Earthworm",
+        "Title": "Earthworm Kills",
+        "Limit": 5000
+      },
+      "slug": {
+        "Id": "Slug",
+        "Title": "Slug Kills",
+        "Limit": 5000
+      },
+      "beetle": {
+        "Id": "Beetle",
+        "Title": "Beetle Kills",
+        "Limit": 5000
+      },
+      "locust": {
+        "Id": "Locust",
+        "Title": "Locust Kills",
+        "Limit": 5000
+      },
+      "rat": {
+        "Id": "Rat",
+        "Title": "Rat Kills",
+        "Limit": 5000
+      },
+      "mosquito": {
+        "Id": "Mosquito",
+        "Title": "Mosquito Kills",
+        "Limit": 5000
+      },
+      "fly": {
+        "Id": "Fly",
+        "Title": "Fly Kills",
+        "Limit": 5000
+      }
     }
   }
 }

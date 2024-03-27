@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Farming;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -19,7 +20,7 @@ public class LeaderboardService(
     private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
 
     public async Task<List<LeaderboardEntry>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
-        if (!TryGetLeaderboardSettings(leaderboardId, out var settings)) return new List<LeaderboardEntry>();
+        if (!TryGetLeaderboardSettings(leaderboardId, out var settings)) return [];
         await UpdateLeaderboardIfNeeded(leaderboardId);
 
         return await GetSlice(leaderboardId, offset, Math.Min(limit, settings?.Limit ?? limit));
@@ -101,6 +102,10 @@ public class LeaderboardService(
             result.Collections.Add(lbId, await GetLeaderboardPositionNoCheck(lbId, memberId));
         }
         
+        foreach (var lbId in _settings.PestLeaderboards.Keys) {
+            result.Pests.Add(lbId, await GetLeaderboardPositionNoCheck(lbId, memberId));
+        }
+        
         return result;
     }
 
@@ -176,6 +181,11 @@ public class LeaderboardService(
         
         if (_settings.CollectionLeaderboards.ContainsKey(leaderboardId)) {
             await FetchCollectionLeaderboard(leaderboardId);
+            return;
+        }
+        
+        if (_settings.PestLeaderboards.ContainsKey(leaderboardId)) {
+            await FetchPestLeaderboard(leaderboardId);
         }
     }
 
@@ -243,6 +253,38 @@ public class LeaderboardService(
             .Select(p => new LeaderboardEntry {
                 MemberId = p.Id.ToString(),
                 Amount = p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64(),
+                Profile = p.Profile.ProfileName,
+                Ign = p.MinecraftAccount.Name
+            })
+            .ToListAsync();
+
+        if (scores.Count == 0) return;
+        
+        await StoreLeaderboardEntries(scores, leaderboardId);
+    }
+
+    private async Task FetchPestLeaderboard(string leaderboardId) {
+        if (!_settings.PestLeaderboards.TryGetValue(leaderboardId, out var lbSettings)) {
+            throw new Exception($"Pest leaderboard {leaderboardId} not found");
+        }
+
+        // Ensure leaderboard Id corresponds to a pest column with reflection
+        var pestProperty = typeof(Pests).GetProperty(lbSettings.Id);
+        if (pestProperty is null) {
+            throw new Exception($"Pest leaderboard {leaderboardId} not found");
+        }
+
+        var scores = await dataContext.ProfileMembers
+            .AsNoTracking()
+            .Include(p => p.Profile)
+            .Include(p => p.MinecraftAccount)
+            .Include(p => p.Farming)
+            .Where(p => !p.WasRemoved && EF.Property<int>(p.Farming.Pests, lbSettings.Id) > 0)
+            .OrderByDescending(p => EF.Property<int>(p.Farming.Pests, lbSettings.Id))
+            .Take(lbSettings.Limit)
+            .Select(p => new LeaderboardEntry {
+                MemberId = p.Id.ToString(),
+                Amount = EF.Property<int>(p.Farming.Pests, lbSettings.Id),
                 Profile = p.Profile.ProfileName,
                 Ign = p.MinecraftAccount.Name
             })
@@ -361,13 +403,15 @@ public class LeaderboardService(
     private bool LeaderboardExists(string leaderboardId) {
         return _settings.CollectionLeaderboards.ContainsKey(leaderboardId)
                || _settings.SkillLeaderboards.ContainsKey(leaderboardId)
-               || _settings.Leaderboards.ContainsKey(leaderboardId);
+               || _settings.Leaderboards.ContainsKey(leaderboardId)
+               || _settings.PestLeaderboards.ContainsKey(leaderboardId);
     }
 
     public bool TryGetLeaderboardSettings(string leaderboardId, out Leaderboard? lb) {
         return _settings.CollectionLeaderboards.TryGetValue(leaderboardId, out lb)
                || _settings.SkillLeaderboards.TryGetValue(leaderboardId, out lb) 
-               || _settings.Leaderboards.TryGetValue(leaderboardId, out lb);
+               || _settings.Leaderboards.TryGetValue(leaderboardId, out lb)
+               || _settings.PestLeaderboards.TryGetValue(leaderboardId, out lb);
     }
 
     public void UpdateLeaderboardScore(string leaderboardId, string memberId, double score) {

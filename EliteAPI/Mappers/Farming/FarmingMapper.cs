@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 using Profile = AutoMapper.Profile;
@@ -69,5 +70,13 @@ public class MedalInventoryMapper : Profile
     {
         CreateMap<MedalInventory, MedalInventoryDto>();
         CreateMap<EarnedMedalInventory, EarnedMedalInventoryDto>();
+    }
+}
+
+public class FarmingPestsMapper : Profile
+{
+    public FarmingPestsMapper()
+    {
+        CreateMap<Pests, PestsDto>();
     }
 }

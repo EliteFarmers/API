@@ -26,6 +26,7 @@ public class LeaderboardPositionsDto {
     public Dictionary<string, int> Misc { get; set; } = new();
     public Dictionary<string, int> Skills { get; set; } = new();
     public Dictionary<string, int> Collections { get; set; } = new();
+    public Dictionary<string, int> Pests { get; set; } = new();
 }
 
 public class LeaderboardPositionDto {

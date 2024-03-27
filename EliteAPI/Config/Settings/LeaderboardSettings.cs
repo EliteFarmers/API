@@ -6,6 +6,7 @@ public class ConfigLeaderboardSettings {
     public Dictionary<string, Leaderboard> Leaderboards { get; set; } = new();
     public Dictionary<string, Leaderboard> CollectionLeaderboards { get; set; } = new();
     public Dictionary<string, Leaderboard> SkillLeaderboards { get; set; } = new();
+    public Dictionary<string, Leaderboard> PestLeaderboards { get; set; } = new();
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global

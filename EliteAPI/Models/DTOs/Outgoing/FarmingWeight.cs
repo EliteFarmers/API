@@ -6,6 +6,10 @@ public class FarmingWeightDto
     public Dictionary<string, double> CropWeight { get; set; } = new();
     public Dictionary<string, double> BonusWeight { get; set; } = new();
     
+    public Dictionary<string, int> UncountedCrops { get; set; } = new();
+    
+    public PestsDto Pests { get; set; } = new();
+    
     public FarmingInventoryDto? Inventory { get; set; } = new();
 }
 
@@ -23,6 +27,10 @@ public class FarmingWeightWithProfileDto
 
     public Dictionary<string, double> CropWeight { get; set; } = new();
     public Dictionary<string, double> BonusWeight { get; set; } = new();
+        
+    public Dictionary<string, int> UncountedCrops { get; set; } = new();
+    
+    public PestsDto Pests { get; set; } = new();
 }
 
 public class FarmingInventoryDto
@@ -31,4 +39,22 @@ public class FarmingInventoryDto
     public List<ItemDto> Tools { get; set; } = new();
     public List<ItemDto> Equipment { get; set; } = new();
     public List<ItemDto> Accessories { get; set; } = new();
+}
+
+public class PestsDto {
+    public int Beetle { get; set; } = 0;
+    public int Cricket { get; set; } = 0;
+    public int Fly { get; set; } = 0;
+    public int Locust { get; set; } = 0;
+    public int Mite { get; set; } = 0;
+    public int Mosquito { get; set; } = 0;
+    public int Moth { get; set; } = 0;
+    public int Rat { get; set; } = 0;
+    public int Slug { get; set; } = 0;
+    public int Earthworm { get; set; } = 0;
+}
+
+public class WeightsDto {
+    public Dictionary<string, double> Crops { get; set; } = new();
+    public Dictionary<string, Dictionary<int, double>> Pests { get; set; } = new();
 }

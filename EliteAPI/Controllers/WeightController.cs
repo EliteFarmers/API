@@ -142,4 +142,29 @@ public class WeightController : ControllerBase
 
         return Ok(weights);
     }
+    
+    [Route("/All")]
+    [HttpGet]
+    [DisableRateLimiting]
+    [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<WeightsDto> GetWeights() {
+        var rawWeights = _weightSettings.CropsPerOneWeight;
+        var crops = new Dictionary<string, double>();
+        
+        foreach (var (key, value) in rawWeights) {
+            var formattedKey = FormatUtils.GetFormattedCropName(key);
+            if (formattedKey is null) continue;
+            
+            crops.Add(formattedKey, value);
+        }
+
+        var result = new WeightsDto {
+            Crops = crops,
+            Pests = FarmingItemsConfig.Settings.PestCropDropChances
+                    .ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.Precomputed)
+        };
+        
+        return Ok(result);
+    }
 }

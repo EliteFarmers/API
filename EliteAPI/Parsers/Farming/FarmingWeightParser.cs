@@ -14,16 +14,20 @@ public static class FarmingWeightParser
         member.Farming.ProfileMemberId = member.Id;
         member.Farming.ProfileMember = member;
 
-        member.Farming.CropWeight = ParseCropWeight(member.Collections);
+        member.Farming.UncountedCrops = new Dictionary<Crop, long>();
+        member.ParsePests(memberData);
+
+        member.Farming.CropWeight = ParseCropWeight(member.Collections, member.Farming.UncountedCrops);
         member.Farming.BonusWeight = ParseBonusWeight(member, craftedMinions);
 
         member.Farming.TotalWeight = member.Farming.CropWeight.Sum(x => x.Value) 
                                            + member.Farming.BonusWeight.Sum(x => x.Value);
 
         member.Farming.Inventory = await memberData.ExtractFarmingItems(member);
+        
     }
 
-    public static Dictionary<string, double> ParseCropWeight(JsonDocument jsonCollections) {
+    public static Dictionary<string, double> ParseCropWeight(JsonDocument jsonCollections, Dictionary<Crop, long> uncounted) {
         var collections = jsonCollections.Deserialize<Dictionary<string, long>>() ?? new Dictionary<string, long>();
         var crops = new Dictionary<string, double>();
 
@@ -41,6 +45,12 @@ public static class FarmingWeightParser
             {
                 crops.Add(formattedName, 0);
                 continue;
+            }
+            
+            // Subtract uncounted crops from the total amount
+            var crop = FormatUtils.GetCropFromItemId(cropId);
+            if (crop.HasValue && uncounted.TryGetValue(crop.Value, out var uncountedAmount)) {
+                amount = Math.Max(0, amount - uncountedAmount);
             }
 
             var weight = (double) amount / perWeight;
