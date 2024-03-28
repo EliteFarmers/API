@@ -22,7 +22,7 @@ public class PestDropChance {
     public List<PestRngDrop> Rare { get; set; } = [];
     
     [JsonIgnore]
-    public Dictionary<int, double> Precomputed { get; } = new();
+    private Dictionary<int, double> Precomputed { get; } = new();
     
     public double GetChance(int fortune) {
         if (Precomputed.TryGetValue(fortune, out var chance)) return chance;
@@ -32,6 +32,17 @@ public class PestDropChance {
         
         Precomputed[fortune] = drops + rng;
         return Precomputed[fortune];
+    }
+    
+    public Dictionary<int, double> GetPrecomputed() {
+        if (Precomputed.Count >= FarmingItemsConfig.Settings.PestDropBrackets.Count) return Precomputed;
+        
+        var pestBrackets = FarmingItemsConfig.Settings.PestDropBrackets;
+        foreach (var fortune in pestBrackets.Values) {
+            GetChance(fortune);
+        }
+        
+        return Precomputed;
     }
 }
 

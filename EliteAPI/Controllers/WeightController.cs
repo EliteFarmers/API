@@ -143,7 +143,7 @@ public class WeightController : ControllerBase
         return Ok(weights);
     }
     
-    [Route("/All")]
+    [Route("/[controller]s/All")]
     [HttpGet]
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
@@ -161,8 +161,11 @@ public class WeightController : ControllerBase
 
         var result = new WeightsDto {
             Crops = crops,
-            Pests = FarmingItemsConfig.Settings.PestCropDropChances
-                    .ToDictionary(pair => pair.Key.ToString(), pair => pair.Value.Precomputed)
+            Pests = {
+                Brackets = FarmingItemsConfig.Settings.PestDropBrackets,
+                Values = FarmingItemsConfig.Settings.PestCropDropChances
+                    .ToDictionary(pair => pair.Key.ToString().ToLowerInvariant(), pair => pair.Value.GetPrecomputed())
+            }
         };
         
         return Ok(result);

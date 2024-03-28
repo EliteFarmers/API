@@ -25,29 +25,47 @@ public static class PestParser {
     }
     
     public static long CalcUncountedCrops(Pest pest, int kills) {
-        var pestBrackets = FarmingItemsConfig.Settings.PestDropBrackets;
+        var pestBrackets = FarmingItemsConfig.Settings.PestDropBrackets.ToList();
         var pestDropChances = FarmingItemsConfig.Settings.PestCropDropChances;
 
         var pestCount = kills;
-        var window = 0;
+        var pestsToCount = 0;
         var totalDrops = 0;
-        foreach (var (key, fortune) in pestBrackets) {
+        for (var i = 0; i < pestBrackets.Count; i++) {
+            // Exit if there are no more pests to calculate
             if (pestCount <= 0) break;
-
-            if (!int.TryParse(key, out var cutoff)) continue;
-            window = Math.Min(cutoff - window, pestCount);
             
+            var fortune = pestBrackets[i].Value;
+            var pestDrops = pestDropChances[pest];
+            
+            // Use the last bracket for all remaining pests
+            if (i == pestBrackets.Count - 1) {
+                totalDrops += (int) Math.Ceiling(pestDrops.GetChance(fortune) * pestCount);
+                continue;
+            }
+            
+            // Get the next bracket to find the maximum pests in the current bracket
+            var nextBracket = pestBrackets.ElementAtOrDefault(i + 1).Key;
+            if (nextBracket is null) break;
+            
+            if (!int.TryParse(nextBracket, out var maxPestsInBracket)) continue;
+            
+            // Calculate the pests to count in the current bracket
+            pestsToCount = Math.Min(maxPestsInBracket - pestsToCount, pestCount);
+
             if (fortune == 0) {
-                pestCount -= window;
+                // If the fortune is 0, we don't need to calculate the drops
+                pestCount -= pestsToCount;
                 continue;
             }
 
-            var drops = pestDropChances[pest].GetChance(fortune) * window;
-            
-            pestCount -= window;
+            // Calculate the drops for the current bracket
+            var drops = pestDrops.GetChance(fortune) * pestsToCount;
+
+            pestCount -= pestsToCount;
             totalDrops += (int) Math.Ceiling(drops);
         }
-        
+
         return totalDrops;
     }
     
