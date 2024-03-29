@@ -297,23 +297,35 @@ public class ProfileParser(
         if (previousApi.Skills && !member.Api.Skills) {
             await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.SkillLeaderboards.Keys, memberId);
         }
+        
+        // Update pest leaderboards
+        leaderboardService.UpdateLeaderboardScore("mite", memberId, member.Farming.Pests.Mite);
+        leaderboardService.UpdateLeaderboardScore("cricket", memberId, member.Farming.Pests.Cricket);
+        leaderboardService.UpdateLeaderboardScore("moth", memberId, member.Farming.Pests.Moth);
+        leaderboardService.UpdateLeaderboardScore("earthworm", memberId, member.Farming.Pests.Earthworm);
+        leaderboardService.UpdateLeaderboardScore("slug", memberId, member.Farming.Pests.Slug);
+        leaderboardService.UpdateLeaderboardScore("beetle", memberId, member.Farming.Pests.Beetle);
+        leaderboardService.UpdateLeaderboardScore("locust", memberId, member.Farming.Pests.Locust);
+        leaderboardService.UpdateLeaderboardScore("rat", memberId, member.Farming.Pests.Rat);
+        leaderboardService.UpdateLeaderboardScore("mosquito", memberId, member.Farming.Pests.Mosquito);
+        leaderboardService.UpdateLeaderboardScore("fly", memberId, member.Farming.Pests.Fly);
     }
 
     private void ParseJacobContests(Guid memberId, RawMemberData incomingData) {
         // Defer jacob contest parsing to the background task queue
         taskQueue.EnqueueAsync(async (scope, ct) => {
-            await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+            await using var ctx = scope.ServiceProvider.GetRequiredService<DataContext>();
             var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
             var lbService = scope.ServiceProvider.GetRequiredService<ILeaderboardService>();
         
-            var member = await context.ProfileMembers
+            var member = await ctx.ProfileMembers
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(c => c.JacobContest)
                 .FirstOrDefaultAsync(p => p.Id == memberId, cancellationToken: ct);
             if (member is null) return;
 
-            await member.ParseJacobContests(incomingData.Jacob, context, cache);
+            await member.ParseJacobContests(incomingData.Jacob, ctx, cache);
 
             // Update leaderboard positions
             var mId = memberId.ToString();

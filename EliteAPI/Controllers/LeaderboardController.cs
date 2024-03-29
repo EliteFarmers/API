@@ -44,7 +44,7 @@ public class LeaderboardController : ControllerBase
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
 
-        if (!_settings.Leaderboards.TryGetValue(id, out var lb)) {
+        if (!_leaderboardService.TryGetLeaderboardSettings(id, out var lb) || lb is null) {
             return BadRequest("Leaderboard not found");
         }
 

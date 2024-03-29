@@ -108,6 +108,19 @@ public enum Crop
     Seeds = 10 // Only used in some scenarios 
 }
 
+public enum Pest {
+    Mite = 0,
+    Cricket = 1,
+    Moth = 2,
+    Earthworm = 3,
+    Slug = 4,
+    Beetle = 5,
+    Locust = 6,
+    Rat = 7,
+    Mosquito = 8,
+    Fly = 9
+}
+
 public enum ContestMedal
 {
     None,
