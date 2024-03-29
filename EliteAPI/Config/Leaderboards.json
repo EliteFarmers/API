@@ -4,43 +4,53 @@
     "CollectionLeaderboards": {
       "cactus": {
         "Id": "CACTUS",
-        "Title": "Cactus"
+        "Title": "Cactus",
+        "Limit": 5000
       },
       "carrot": {
-          "Id": "CARROT_ITEM",
-          "Title": "Carrot"
+        "Id": "CARROT_ITEM",
+        "Title": "Carrot",
+        "Limit": 5000
       },
       "cocoa": {
-          "Id": "INK_SACK:3",
-          "Title": "Cocoa Bean"
+        "Id": "INK_SACK:3",
+        "Title": "Cocoa Bean",
+        "Limit": 5000
       },
       "melon": {
-          "Id": "MELON",
-          "Title": "Melon"
+        "Id": "MELON",
+        "Title": "Melon",
+        "Limit": 5000
       },
       "mushroom": {
-          "Id": "MUSHROOM_COLLECTION",
-          "Title": "Mushroom"
+        "Id": "MUSHROOM_COLLECTION",
+        "Title": "Mushroom",
+        "Limit": 5000
       },
       "netherwart": {
-          "Id": "NETHER_STALK",
-          "Title": "Nether Wart"
+        "Id": "NETHER_STALK",
+        "Title": "Nether Wart",
+        "Limit": 5000
       },
       "potato": {
-          "Id": "POTATO_ITEM",
-          "Title": "Potato"
+        "Id": "POTATO_ITEM",
+        "Title": "Potato",
+        "Limit": 5000
       },
       "pumpkin": {
-          "Id": "PUMPKIN",
-          "Title": "Pumpkin"
+        "Id": "PUMPKIN",
+        "Title": "Pumpkin",
+        "Limit": 5000
       },
       "sugarcane": {
-          "Id": "SUGAR_CANE",
-          "Title": "Sugar Cane"
+        "Id": "SUGAR_CANE",
+        "Title": "Sugar Cane",
+        "Limit": 5000
       },
       "wheat": {
-          "Id": "WHEAT",
-          "Title": "Wheat"
+        "Id": "WHEAT",
+        "Title": "Wheat",
+        "Limit": 5000
       }
     },
     "Leaderboards": {
