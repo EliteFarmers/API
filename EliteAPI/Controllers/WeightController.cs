@@ -1,14 +1,15 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.MemberService;
-using EliteAPI.Services.ProfileService;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,26 +17,16 @@ namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class WeightController : ControllerBase
+public class WeightController(
+    DataContext context,
+    IMapper mapper,
+    IConnectionMultiplexer redis,
+    IOptions<ConfigFarmingWeightSettings> weightSettings,
+    IMemberService memberService
+) : ControllerBase 
 {
-    private readonly DataContext _context;
-    private readonly IMapper _mapper;
-    private readonly ConfigCooldownSettings _coolDowns;
-    private readonly IProfileService _profileService;
-    private readonly ConfigFarmingWeightSettings _weightSettings;
-    private readonly IMemberService _memberService;
-
-    public WeightController(DataContext context, IMapper mapper, IProfileService profileService, 
-        IOptions<ConfigCooldownSettings> coolDowns, IOptions<ConfigFarmingWeightSettings> weightSettings,
-        IMemberService memberService)
-    {
-        _context = context;
-        _mapper = mapper;
-        _memberService = memberService;
-        _profileService = profileService;
-        _coolDowns = coolDowns.Value;
-        _weightSettings = weightSettings.Value;
-    }
+    private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
+    private readonly IConnectionMultiplexer _redis = redis;
 
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
@@ -45,16 +36,16 @@ public class WeightController : ControllerBase
     public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
-        await _memberService.UpdatePlayerIfNeeded(uuid);
+        await memberService.UpdatePlayerIfNeeded(uuid);
 
-        var farmingWeightIds = await _context.ProfileMembers
+        var farmingWeightIds = await context.ProfileMembers
             .AsNoTracking()
             .Where(x => x.PlayerUuid.Equals(uuid))
             .Include(x => x.Farming)
             .Select(x => x.Farming.Id)
             .ToListAsync();
 
-        var farmingWeights = await _context.Farming
+        var farmingWeights = await context.Farming
             .AsNoTracking()
             .Where(x => farmingWeightIds.Contains(x.Id))
             .Include(x => x.ProfileMember)
@@ -69,7 +60,7 @@ public class WeightController : ControllerBase
         var dto = new FarmingWeightAllProfilesDto {
             SelectedProfileId = farmingWeights
                 .FirstOrDefault(w => w.ProfileMember?.IsSelected ?? false)?.ProfileMember?.ProfileId,
-            Profiles = _mapper.Map<List<FarmingWeightWithProfileDto>>(farmingWeights)
+            Profiles = mapper.Map<List<FarmingWeightWithProfileDto>>(farmingWeights)
         };
 
         return Ok(dto);
@@ -84,7 +75,7 @@ public class WeightController : ControllerBase
     {
         var uuid = playerUuid.Replace("-", "");
         
-        var query = await _memberService.ProfileMemberQuery(uuid);
+        var query = await memberService.ProfileMemberQuery(uuid);
         if (query is null) return NotFound("No profiles for the player matching this UUID was found");
 
         var weight = await query
@@ -95,7 +86,7 @@ public class WeightController : ControllerBase
         
         if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
         
-        return Ok(_mapper.Map<FarmingWeightDto>(weight));
+        return Ok(mapper.Map<FarmingWeightDto>(weight));
     }
 
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
@@ -108,7 +99,7 @@ public class WeightController : ControllerBase
         var uuid = playerUuid.Replace("-", "");
         var profile = profileUuid.Replace("-", "");
 
-        var query = await _memberService.ProfileMemberQuery(uuid);
+        var query = await memberService.ProfileMemberQuery(uuid);
         if (query is null) return NotFound("No profiles for the player matching this UUID was found");
 
         var weight = await query
@@ -119,7 +110,7 @@ public class WeightController : ControllerBase
         
         if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
         
-        return Ok(_mapper.Map<FarmingWeightDto>(weight));
+        return Ok(mapper.Map<FarmingWeightDto>(weight));
     }
     
     [Route("/[controller]s")]
@@ -148,7 +139,19 @@ public class WeightController : ControllerBase
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<WeightsDto> GetWeights() {
+    public async Task<ActionResult<WeightsDto>> GetWeights() {
+        var db = _redis.GetDatabase();
+        var stored = await db.StringGetAsync("farming:weights");
+        
+        if (!stored.IsNullOrEmpty) {
+            try {
+                var storedWeights = JsonSerializer.Deserialize<WeightsDto>(stored!);
+                return Ok(storedWeights);
+            } catch (JsonException) {
+                await db.KeyDeleteAsync("farming:weights");
+            }
+        }
+        
         var rawWeights = _weightSettings.CropsPerOneWeight;
         var crops = new Dictionary<string, double>();
         
@@ -158,15 +161,26 @@ public class WeightController : ControllerBase
             
             crops.Add(formattedKey, value);
         }
+        
+        var reversed = FarmingItemsConfig.Settings.PestDropBrackets
+            .ToDictionary(pair => pair.Value, pair => pair.Key);
 
         var result = new WeightsDto {
             Crops = crops,
             Pests = {
                 Brackets = FarmingItemsConfig.Settings.PestDropBrackets,
                 Values = FarmingItemsConfig.Settings.PestCropDropChances
-                    .ToDictionary(pair => pair.Key.ToString().ToLowerInvariant(), pair => pair.Value.GetPrecomputed())
+                    .ToDictionary(
+                        pair => pair.Key.ToString().ToLowerInvariant(), 
+                        pair => pair.Value.GetPrecomputed().ToDictionary(
+                            valuePair => reversed[valuePair.Key], 
+                            valuePair => valuePair.Value
+                        )
+                    )
             }
         };
+
+        await db.StringSetAsync("farming:weights", JsonSerializer.Serialize(result), TimeSpan.FromHours(12));
         
         return Ok(result);
     }

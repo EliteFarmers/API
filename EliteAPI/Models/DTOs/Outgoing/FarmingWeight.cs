@@ -62,5 +62,5 @@ public class WeightsDto {
 
 public class PestWeightsDto {
     public Dictionary<string, int> Brackets { get; set; } = new();
-    public Dictionary<string, Dictionary<int, double>> Values { get; set; } = new();
+    public Dictionary<string, Dictionary<string, double>> Values { get; set; } = new();
 }
