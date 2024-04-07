@@ -155,7 +155,8 @@ public class LeaderboardService(
     public async Task RemoveMemberFromAllLeaderboards(string memberId) {
         var lbs = _settings.Leaderboards.Keys
             .Concat(_settings.CollectionLeaderboards.Keys)
-            .Concat(_settings.SkillLeaderboards.Keys);
+            .Concat(_settings.SkillLeaderboards.Keys)
+            .Concat(_settings.PestLeaderboards.Keys);
         
         await RemoveMemberFromLeaderboards(lbs, memberId);
     }
@@ -225,7 +226,7 @@ public class LeaderboardService(
             .Select(s => new LeaderboardEntry {
                 MemberId = s.ProfileMemberId.ToString(),
                 Amount = EF.Property<double>(s, lbSettings.Id),
-                Profile = s.ProfileMember!.Profile.ProfileName,
+                Profile = s.ProfileMember!.ProfileName ?? s.ProfileMember.Profile.ProfileName,
                 Ign = s.ProfileMember.MinecraftAccount.Name
             })
             .ToListAsync();
@@ -253,7 +254,7 @@ public class LeaderboardService(
             .Select(p => new LeaderboardEntry {
                 MemberId = p.Id.ToString(),
                 Amount = p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64(),
-                Profile = p.Profile.ProfileName,
+                Profile = p.ProfileName ?? p.Profile.ProfileName,
                 Ign = p.MinecraftAccount.Name
             })
             .ToListAsync();
@@ -285,7 +286,7 @@ public class LeaderboardService(
             .Select(p => new LeaderboardEntry {
                 MemberId = p.Id.ToString(),
                 Amount = EF.Property<int>(p.Farming.Pests, lbSettings.Id),
-                Profile = p.Profile.ProfileName,
+                Profile = p.ProfileName ?? p.Profile.ProfileName,
                 Ign = p.MinecraftAccount.Name
             })
             .ToListAsync();
@@ -339,7 +340,7 @@ public class LeaderboardService(
                     orderby farmingWeight.TotalWeight descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
-                        Profile = member.Profile.ProfileName,
+                        Profile = member.ProfileName ?? member.Profile.ProfileName,
                         Amount = farmingWeight.TotalWeight,
                         MemberId = member.Id.ToString()
                     }).Take(lb.Limit);
@@ -355,7 +356,7 @@ public class LeaderboardService(
                     orderby EF.Property<int>(jacobData.EarnedMedals, medal) descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
-                        Profile = member.Profile.ProfileName,
+                        Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
                         Amount = EF.Property<int>(jacobData.EarnedMedals, medal)
                     }).Take(lb.Limit);
@@ -367,7 +368,7 @@ public class LeaderboardService(
                     orderby jacobData.Participations descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
-                        Profile = member.Profile.ProfileName,
+                        Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
                         Amount = jacobData.Participations
                     }).Take(lb.Limit);
@@ -378,7 +379,7 @@ public class LeaderboardService(
                     orderby member.SkyblockXp descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
-                        Profile = member.Profile.ProfileName,
+                        Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
                         Amount = member.SkyblockXp
                     }).Take(lb.Limit);
@@ -390,7 +391,7 @@ public class LeaderboardService(
                     orderby jacobData.FirstPlaceScores descending
                     select new LeaderboardEntry {
                         Ign = member.MinecraftAccount.Name,
-                        Profile = member.Profile.ProfileName,
+                        Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
                         Amount = jacobData.FirstPlaceScores
                     }).Take(lb.Limit);
