@@ -216,8 +216,6 @@ public class LeaderboardService(
 
         var scores = await dataContext.Skills
             .AsNoTracking()
-            .Include(s => s.ProfileMember)
-            .ThenInclude(pm => pm!.Profile)
             .Include(p => p.ProfileMember)
             .ThenInclude(pm => pm!.MinecraftAccount)
             .Where(s => EF.Property<double>(s, lbSettings.Id) > 0 && s.ProfileMember != null && !s.ProfileMember.WasRemoved)
@@ -243,7 +241,6 @@ public class LeaderboardService(
         
         var scores = await dataContext.ProfileMembers
             .AsNoTracking()
-            .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
             .Where(p => 
                 !p.WasRemoved
@@ -277,7 +274,6 @@ public class LeaderboardService(
 
         var scores = await dataContext.ProfileMembers
             .AsNoTracking()
-            .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
             .Include(p => p.Farming)
             .Where(p => !p.WasRemoved && EF.Property<int>(p.Farming.Pests, lbSettings.Id) > 0)
@@ -328,7 +324,6 @@ public class LeaderboardService(
 
         var query = dataContext.ProfileMembers
             .AsNoTracking()
-            .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount);
         
         switch (leaderboardId)
