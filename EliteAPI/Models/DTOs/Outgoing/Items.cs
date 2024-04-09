@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Models.DTOs.Outgoing; 
+﻿using System.Text.Json.Serialization;
+
+namespace EliteAPI.Models.DTOs.Outgoing; 
 
 public class ItemDto {
     public int Id { get; set; }
@@ -12,4 +14,7 @@ public class ItemDto {
     
     public Dictionary<string, int>? Enchantments { get; set; }
     public Dictionary<string, string>? Attributes { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? Gems { get; set; }
 }

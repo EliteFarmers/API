@@ -60,7 +60,11 @@ public static class NbtParser {
             Attributes = ((NbtCompound?) tag["tag"]?["ExtraAttributes"])?
                 .Where(e => !e.Name.IsNullOrEmpty() && e.HasValue && e.TagType != NbtTagType.Compound && e.TagType != NbtTagType.List && e.Name != "id" && e.Name != "uuid")
                 .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
-                .ToDictionary(x => x.Key, x => x.Value)
+                .ToDictionary(x => x.Key, x => x.Value),
+            Gems = ((NbtCompound?) tag["tag"]?["ExtraAttributes"]?["gems"])?
+                .Where(e => !e.Name.IsNullOrEmpty() && e.HasValue && e.TagType != NbtTagType.Compound && e.TagType != NbtTagType.List)
+                .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
+                .ToDictionary(x => x.Key, x => x.Value),
         };
 
         return item;
