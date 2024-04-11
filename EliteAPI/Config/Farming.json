@@ -64,7 +64,8 @@
     "FarmingAccessoryIds": {
       "FERMENTO_ARTIFACT": -1,
       "SQUASH_RING": -1,
-      "CROPIE_TALISMAN": -1
+      "CROPIE_TALISMAN": -1,
+      "POWER_RELIC": -1
     },
     "PestIds": {
       "0": "pest_mite_1",
