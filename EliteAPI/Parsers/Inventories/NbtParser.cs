@@ -62,8 +62,10 @@ public static class NbtParser {
                 .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
                 .ToDictionary(x => x.Key, x => x.Value),
             Gems = ((NbtCompound?) tag["tag"]?["ExtraAttributes"]?["gems"])?
-                .Where(e => !e.Name.IsNullOrEmpty() && e.HasValue && e.TagType != NbtTagType.Compound && e.TagType != NbtTagType.List)
-                .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
+                .Where(e => !e.Name.IsNullOrEmpty() && (e is { TagType: NbtTagType.String, HasValue: true } || (e.TagType == NbtTagType.Compound && e["quality"]?.HasValue is true)))
+                .Select(e => e.TagType != NbtTagType.Compound 
+                    ? new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty) 
+                    : new KeyValuePair<string, string>(e.Name!, e["quality"]?.GetValue()?.ToString() ?? string.Empty))
                 .ToDictionary(x => x.Key, x => x.Value),
         };
 
