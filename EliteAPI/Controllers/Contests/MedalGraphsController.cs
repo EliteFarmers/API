@@ -28,7 +28,8 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
                 return BadRequest("Months cannot be greater than 12.");
         }
 
-        var end = SkyblockDate.Now;
+        // Exclude the last 3 hours to minimize the chance of inaccurate data from new contests
+        var end = new SkyblockDate(DateTimeOffset.UtcNow.AddHours(-3).ToUnixTimeSeconds());
         var start = new SkyblockDate(end.Year - 1, end.Month - months, end.Day).UnixSeconds;
         
         var brackets = await GetAverageMedalBrackets(context, start, end.UnixSeconds);
