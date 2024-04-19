@@ -73,7 +73,7 @@ public class AccountController(DataContext context, IProfileService profileServi
     }
     
     // GET <ValuesController>/12793764936498429
-    [HttpGet("{discordId:long}")]
+    [HttpGet("{discordId:long:minlength(17)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -82,7 +82,9 @@ public class AccountController(DataContext context, IProfileService profileServi
         if (discordId <= 0) return BadRequest("Invalid Discord ID.");
 
         var account = await accountService.GetAccount((ulong) discordId);
-        if (account is null) return NotFound("Account not found.");
+        if (account is null) {
+            return await GetByPlayerUuidOrIgn(discordId.ToString());
+        }
         
         var minecraftAccount = account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
         if (minecraftAccount is null) return NotFound("User doesn't have any linked Minecraft accounts.");
