@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Models.DTOs.Outgoing;
+﻿using System.Text.Json.Serialization;
+
+namespace EliteAPI.Models.DTOs.Outgoing;
 
 public class ProfileDetailsDto
 {
@@ -8,6 +10,14 @@ public class ProfileDetailsDto
     public bool Selected { get; set; }
     public double BankBalance { get; set; }
     public List<MemberDetailsDto> Members { get; set; } = new();
+}
+
+public class ProfileNamesDto
+{
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Selected { get; set; }
 }
 
 public class MemberDetailsDto

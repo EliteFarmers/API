@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
 using EliteAPI.Services.ProfileService;
 using AutoMapper;
 using EliteAPI.Data;
@@ -12,19 +11,14 @@ namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class ProfileController : ControllerBase
-{
-    private readonly IProfileService _profileService;
-    private readonly IMapper _mapper;
-    private readonly DataContext _context;
-
-    public ProfileController(IProfileService profileService, IMapper mapper, DataContext dataContext)
-    {
-        _profileService = profileService;
-        _mapper = mapper;
-        _context = dataContext;
-    }
-
+public class ProfileController(IProfileService profileService, IMapper mapper, DataContext context)
+    : ControllerBase {
+    
+    /// <summary>
+    /// Selected Profile Member
+    /// </summary>
+    /// <param name="uuid"></param>
+    /// <returns></returns>
     // GET <ProfileController>/[uuid]/Selected
     [HttpGet("{uuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -38,18 +32,24 @@ public class ProfileController : ControllerBase
             return BadRequest("UUID must be 32 characters in length and match [a-Z0-9].");
         }
 
-        var member = await _profileService.GetSelectedProfileMember(uuid);
+        var member = await profileService.GetSelectedProfileMember(uuid);
 
         if (member is null)
         {
             return NotFound("No selected profile member found for this UUID.");
         }
 
-        var mapped = _mapper.Map<ProfileMemberDto>(member);
+        var mapped = mapper.Map<ProfileMemberDto>(member);
 
         return Ok(mapped);
     }
 
+    /// <summary>
+    /// Profile Member
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileUuid"></param>
+    /// <returns></returns>
     // GET <ProfileController>
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -57,16 +57,21 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<ProfileMemberDto>> GetSpecificProfile(string playerUuid, string profileUuid)
     {
-        var profile = await _profileService.GetProfileMember(playerUuid, profileUuid);
+        var profile = await profileService.GetProfileMember(playerUuid, profileUuid);
         if (profile is null)
         {
             return NotFound("No profile matching this UUID was found for this player");
         }
 
-        var mapped = _mapper.Map<ProfileMemberDto>(profile);
+        var mapped = mapper.Map<ProfileMemberDto>(profile);
         return Ok(mapped);
     }
     
+    /// <summary>
+    /// Get Profile Details
+    /// </summary>
+    /// <param name="profileUuid"></param>
+    /// <returns></returns>
     // GET <ProfileController>
     [HttpGet("{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -74,16 +79,21 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<ProfileDetailsDto>> Get(string profileUuid)
     {
-        var profile = await _profileService.GetProfile(profileUuid);
+        var profile = await profileService.GetProfile(profileUuid);
         if (profile is null)
         {
             return NotFound("No profile matching this UUID was found");
         }
 
-        var mapped = _mapper.Map<ProfileDetailsDto>(profile);
+        var mapped = mapper.Map<ProfileDetailsDto>(profile);
         return Ok(mapped);
     }
 
+    /// <summary>
+    /// Get List of Profile Details
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <returns></returns>
     // GET <ProfileController>s
     [Route("/[controller]s/{playerUuid}")]
     [HttpGet]
@@ -92,12 +102,44 @@ public class ProfileController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<ProfileDetailsDto>>> GetProfiles(string playerUuid)
     {
-        var profiles = await _profileService.GetProfilesDetails(playerUuid);
+        var profiles = await profileService.GetProfilesDetails(playerUuid);
 
         if (profiles.Count == 0)
         {
             return NotFound("No profiles matching this UUID were found");
         }
+        
+        return Ok(profiles);
+    }
+    
+    /// <summary>
+    /// Get List of Profile Names
+    /// </summary>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
+    // GET <ProfileController>s
+    [Route("/[controller]s/{playerUuidOrIgn}/Names")]
+    [HttpGet]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<ProfileNamesDto>>> GetProfilesNames(string playerUuidOrIgn) {
+        var uuid = playerUuidOrIgn;
+        
+        if (uuid is null or { Length: < 32 }) {
+            var player = await profileService.GetPlayerDataByUuidOrIgn(playerUuidOrIgn);
+            uuid = player?.Uuid;
+            
+            if (uuid is null) return Ok(new List<ProfileNamesDto>());
+        }
+        
+        var profiles = await context.ProfileMembers
+            .AsNoTracking()
+            .Where(m => m.PlayerUuid.Equals(uuid))
+            .Select(m => new ProfileNamesDto {
+                Id = m.ProfileId,
+                Name = m.ProfileName ?? m.Profile.ProfileName,
+                Selected = m.IsSelected
+            }).ToListAsync();
         
         return Ok(profiles);
     }
