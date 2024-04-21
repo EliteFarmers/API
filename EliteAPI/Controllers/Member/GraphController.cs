@@ -10,22 +10,25 @@ namespace EliteAPI.Controllers.Member;
 
 [Route("[controller]/{playerUuid:length(32)}")]
 [ApiController]
-public class GraphController : ControllerBase {
-    private readonly ITimescaleService _timescaleService;
-    private readonly DataContext _context;
-
-    public GraphController(DataContext context, ITimescaleService timescaleService) {
-        _timescaleService = timescaleService;
-        _context = context;
-    }
+public class GraphController(DataContext context, ITimescaleService timescaleService) : ControllerBase {
     
+    /// <summary>
+    /// Crop Collections Over Time
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileUuid"></param>
+    /// <param name="days">Amount of days after the "from" time to include</param>
+    /// <param name="from">Unix timestamp in seconds for the start of the data to return</param>
+    /// <param name="perDay">Data points returned per 24 hour period</param>
+    /// <response code="200">Returns the list of data points</response>
+    /// <returns></returns>
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/crops
     [HttpGet("{profileUuid:length(32)}/crops")]
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetCropCollections(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0) {
+    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetCropCollections(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0, [FromQuery] int perDay = 4) {
         var now = DateTimeOffset.UtcNow;
         var start = (from == 0) 
             ? now - TimeSpan.FromDays(days)
@@ -37,15 +40,16 @@ public class GraphController : ControllerBase {
 
         if (start > end) return BadRequest("Start time cannot be greater than end time.");
         if (end - start > TimeSpan.FromDays(30)) return BadRequest("Time range cannot be greater than 30 days.");
+        if (perDay is < 1 or > 4) return BadRequest("Per day must be between 1 and 4.");
         
-        var profile = await _context.ProfileMembers.AsNoTracking()
+        var profile = await context.ProfileMembers.AsNoTracking()
             .Where(m => m.PlayerUuid == playerUuid && m.ProfileId == profileUuid)
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
         
         if (profile == Guid.Empty) return NotFound("Profile not found.");
         
-        var cropCollections = await _timescaleService.GetCropCollections(profile, start, end);
+        var cropCollections = await timescaleService.GetCropCollections(profile, start, end, perDay);
         
         return Ok(cropCollections);
     }
@@ -65,7 +69,7 @@ public class GraphController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetSkillExperiences(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0) {
+    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetSkillExperiences(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0, [FromQuery] int perDay = 4) {
         var now = DateTimeOffset.UtcNow;
         var start = (from == 0) 
             ? now - TimeSpan.FromDays(days)
@@ -77,15 +81,16 @@ public class GraphController : ControllerBase {
 
         if (start > end) return BadRequest("Start time cannot be greater than end time.");
         if (end - start > TimeSpan.FromDays(30)) return BadRequest("Time range cannot be greater than 30 days.");
+        if (perDay is < 1 or > 4) return BadRequest("Per day must be between 1 and 4.");
         
-        var profile = await _context.ProfileMembers.AsNoTracking()
+        var profile = await context.ProfileMembers.AsNoTracking()
             .Where(m => m.PlayerUuid == playerUuid && m.ProfileId == profileUuid)
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
         
         if (profile == Guid.Empty) return NotFound("Profile not found.");
         
-        var cropCollections = await _timescaleService.GetSkills(profile, start, end);
+        var cropCollections = await timescaleService.GetSkills(profile, start, end, perDay);
         
         return Ok(cropCollections);
     }
@@ -126,14 +131,14 @@ public class GraphController : ControllerBase {
 
         if (start > end) return BadRequest("Start time cannot be greater than end time.");
 
-        var profile = await _context.ProfileMembers.AsNoTracking()
+        var profile = await context.ProfileMembers.AsNoTracking()
             .Where(m => m.PlayerUuid == playerUuid && m.ProfileId == profileUuid)
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
         
         if (profile == Guid.Empty) return NotFound("Profile not found.");
         
-        var cropCollections = await _timescaleService.GetCropCollections(profile, start, end, -1);
+        var cropCollections = await timescaleService.GetCropCollections(profile, start, end, -1);
         
         return Ok(cropCollections);
     }
@@ -174,14 +179,14 @@ public class GraphController : ControllerBase {
 
         if (start > end) return BadRequest("Start time cannot be greater than end time.");
 
-        var profile = await _context.ProfileMembers.AsNoTracking()
+        var profile = await context.ProfileMembers.AsNoTracking()
             .Where(m => m.PlayerUuid == playerUuid && m.ProfileId == profileUuid)
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
         
         if (profile == Guid.Empty) return NotFound("Profile not found.");
         
-        var skills = await _timescaleService.GetSkills(profile, start, end, -1);
+        var skills = await timescaleService.GetSkills(profile, start, end, -1);
         
         return Ok(skills);
     }
