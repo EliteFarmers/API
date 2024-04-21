@@ -50,6 +50,15 @@ public class GraphController : ControllerBase {
         return Ok(cropCollections);
     }
     
+    /// <summary>
+    /// Skill XP Over Time
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileUuid"></param>
+    /// <param name="from">Unix timestamp in seconds for the start of the data to return</param>
+    /// <param name="perDay">Data points returned per 24 hour period</param>
+    /// <response code="200">Returns the list of data points</response>
+    /// <returns></returns>
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/skills
     [HttpGet("{profileUuid:length(32)}/skills")]
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
@@ -81,6 +90,14 @@ public class GraphController : ControllerBase {
         return Ok(cropCollections);
     }
 
+    /// <summary>
+    /// Admin: Crop Collections Over Time
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileUuid"></param>
+    /// <param name="days"></param>
+    /// <param name="from"></param>
+    /// <returns></returns>
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/crops
     [Route("/[controller]/Admin/{playerUuid:length(32)}/{profileUuid:length(32)}/crops")]
     [HttpGet]
@@ -121,6 +138,14 @@ public class GraphController : ControllerBase {
         return Ok(cropCollections);
     }
     
+    /// <summary>
+    /// Admin: Skill XP Over Time
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileUuid"></param>
+    /// <param name="days"></param>
+    /// <param name="from"></param>
+    /// <returns></returns>
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/skills
     [Route("/[controller]/Admin/{playerUuid:length(32)}/{profileUuid:length(32)}/skills")]
     [HttpGet]

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Reflection;
 using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
@@ -96,6 +97,7 @@ public static class ServiceExtensions
 
             opt.SupportNonNullableReferenceTypes();
             opt.EnableAnnotations();
+            opt.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
         });
     }
 
