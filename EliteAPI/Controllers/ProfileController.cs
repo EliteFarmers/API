@@ -134,7 +134,7 @@ public class ProfileController(IProfileService profileService, IMapper mapper, D
         
         var profiles = await context.ProfileMembers
             .AsNoTracking()
-            .Where(m => m.PlayerUuid.Equals(uuid))
+            .Where(m => m.PlayerUuid.Equals(uuid) && !m.WasRemoved)
             .Select(m => new ProfileNamesDto {
                 Id = m.ProfileId,
                 Name = m.ProfileName ?? m.Profile.ProfileName,
