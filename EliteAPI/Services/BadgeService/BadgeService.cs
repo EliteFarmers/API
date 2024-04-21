@@ -20,7 +20,7 @@ public class BadgeService(DataContext context, IMojangService mojangService) : I
             return new NotFoundObjectResult("Badge not found");
         }
 
-        var player = await mojangService.GetMinecraftAccountByUuid(playerUuid);
+        var player = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
 
         if (player is null) {
             return new NotFoundObjectResult("Player not found");
@@ -69,8 +69,10 @@ public class BadgeService(DataContext context, IMojangService mojangService) : I
     }
 
     public async Task<ActionResult> RemoveBadgeFromUser(string playerUuid, int badgeId) {
+        var uuid = await mojangService.GetUuid(playerUuid);
+        
         var userBadge = await context.UserBadges
-            .FirstOrDefaultAsync(a => a.MinecraftAccountId == playerUuid && a.BadgeId == badgeId);
+            .FirstOrDefaultAsync(a => a.MinecraftAccountId == uuid && a.BadgeId == badgeId);
 
         if (userBadge is null) {
             return new NotFoundObjectResult("User badge not found");

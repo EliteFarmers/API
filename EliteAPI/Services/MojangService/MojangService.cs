@@ -60,6 +60,15 @@ public partial class MojangService : IMojangService
         return (await _cache.GetUuidFromUsername(username)) ?? (await GetMinecraftAccountByIgn(username))?.Id;
     }
 
+    public async Task<string?> GetUuid(string usernameOrUuid) {
+        if (usernameOrUuid.Length < 32)
+        {
+            return await GetUuidFromUsername(usernameOrUuid);
+        }
+
+        return usernameOrUuid;
+    }
+
     public async Task<MinecraftAccount?> GetMinecraftAccountByUuid(string uuid)
     {
         var account = await _context.MinecraftAccounts
