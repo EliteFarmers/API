@@ -367,7 +367,7 @@ public class DiscordService : IDiscordService
         if (guildId is not null) {
             url += "&after=" + guildId;
         }
-        guilds ??= new List<DiscordGuild>();
+        guilds ??= [];
         
         var client = _httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
@@ -391,9 +391,7 @@ public class DiscordService : IDiscordService
             
             guilds.AddRange(list);
             
-            if (list.Count == 200) {
-                return await FetchBotGuildsRecursive(list.Last().Id.ToString(), guilds);
-            }
+            return await FetchBotGuildsRecursive(list.Last().Id.ToString(), guilds);
         } catch (Exception e) {
             _logger.LogError(e, "Failed to parse bot guilds from Discord");
         }
