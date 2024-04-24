@@ -15,21 +15,18 @@ namespace EliteAPI.Controllers.Events;
 [Route("/Event")]
 [ServiceFilter(typeof(DiscordAuthFilter))]
 [ApiController]
-public class AdminEventController : ControllerBase
+public class AdminEventController(
+    DataContext context,
+    IMapper mapper,
+    IDiscordService discordService,
+    IGuildService guildService)
+    : ControllerBase 
 {
-    private readonly DataContext _context;
-    private readonly IMapper _mapper;
-    private readonly IDiscordService _discordService;
-    private readonly IGuildService _guildService;
-    
-    public AdminEventController(DataContext context, IMapper mapper, IDiscordService discordService, IGuildService guildService)
-    {
-        _context = context;
-        _mapper = mapper;
-        _discordService = discordService;
-        _guildService = guildService;
-    }
-    
+    /// <summary>
+    /// Create an Event
+    /// </summary>
+    /// <param name="incoming"></param>
+    /// <returns></returns>
     // POST <EventController>/12793764936498429/create
     [Route("/Event/Create")]
     [HttpPost("create")]
@@ -47,16 +44,16 @@ public class AdminEventController : ControllerBase
             return BadRequest("Invalid guild ID.");
         }
         
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == incoming.GuildId);
 
-        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
         }
 
-        var guild = await _context.Guilds.FindAsync(guildId);
+        var guild = await context.Guilds.FindAsync(guildId);
         
         if (guild is null) {
             return NotFound("Guild not found.");
@@ -106,14 +103,20 @@ public class AdminEventController : ControllerBase
             Id = eliteEvent.Id.ToString(),
             CreatedAt = DateTimeOffset.UtcNow
         });
-        _context.Guilds.Update(guild);
+        context.Guilds.Update(guild);
         
-        await _context.Events.AddAsync(eliteEvent);
-        await _context.SaveChangesAsync();
+        await context.Events.AddAsync(eliteEvent);
+        await context.SaveChangesAsync();
         
-        return Ok(_mapper.Map<EventDetailsDto>(eliteEvent));
+        return Ok(mapper.Map<EventDetailsDto>(eliteEvent));
     }
 
+    /// <summary>
+    /// Edit an Event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="incoming"></param>
+    /// <returns></returns>
     // POST <EventController>/12793764936498429/edit
     [HttpPost("{eventId}/edit")]
     [Consumes(MediaTypeNames.Application.Json)]
@@ -126,16 +129,16 @@ public class AdminEventController : ControllerBase
             return Unauthorized("Account not found.");
         }
         
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events
+        var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
-        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
         }
 
@@ -155,12 +158,30 @@ public class AdminEventController : ControllerBase
         eliteEvent.RequiredRole = incoming.RequiredRole ?? eliteEvent.RequiredRole;
         eliteEvent.BlockedRole = incoming.BlockedRole ?? eliteEvent.BlockedRole;
         
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
+
+        // Update all related event members if the start or end time has changed
+        
+        var updateStart = startTime is not null && startTime != eliteEvent.StartTime;
+        var updateEnd = endTime is not null && endTime != eliteEvent.EndTime;
+        
+        if (updateStart || updateEnd) {
+            await context.EventMembers
+                .Where(em => em.EventId == eventId)
+                .ExecuteUpdateAsync(m => m
+                    .SetProperty(e => e.StartTime, startTime)
+                    .SetProperty(e => e.EndTime, endTime));
+        }
         
         return Ok(eliteEvent);
     }
     
-    // POST <EventController>/12793764936498429/bans
+    /// <summary>
+    /// Get banned members from an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
+    // GET <EventController>/12793764936498429/bans
     [HttpGet("{eventId}/bans")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -171,30 +192,37 @@ public class AdminEventController : ControllerBase
             return Unauthorized("Account not found.");
         }
         
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events
+        var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
-        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server!");
         }
         
-        var members = await _context.EventMembers
+        var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
             .Where(em => em.EventId == eventId && em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left)
             .ToListAsync();
         
-        var mapped = _mapper.Map<List<EventMemberBannedDto>>(members);
+        var mapped = mapper.Map<List<EventMemberBannedDto>>(members);
         
         return Ok(mapped);
     }
     
+    /// <summary>
+    /// Ban a member from an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="playerUuid"></param>
+    /// <param name="reason"></param>
+    /// <returns></returns>
     // POST <EventController>/12793764936498429/bans/12345678901234567890123456789012
     [HttpPost("{eventId}/bans/{playerUuid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -214,20 +242,20 @@ public class AdminEventController : ControllerBase
             return BadRequest("Invalid reason.");
         }
         
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events
+        var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
-        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server!");
         }
         
-        var member = await _context.EventMembers
+        var member = await context.EventMembers
             .Include(m => m.ProfileMember)
             .Where(em => em.EventId == eventId && em.ProfileMember.PlayerUuid == playerUuid)
             .FirstOrDefaultAsync();
@@ -239,12 +267,18 @@ public class AdminEventController : ControllerBase
         member.Status = EventMemberStatus.Disqualified;
         member.Notes = reason;
         
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
-        return Ok(_mapper.Map<EventMemberBannedDto>(member));
+        return Ok(mapper.Map<EventMemberBannedDto>(member));
     }
     
-    // POST <EventController>/12793764936498429/bans
+    /// <summary>
+    /// Unban a member from an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="playerUuid"></param>
+    /// <returns></returns>
+    // DELETE <EventController>/12793764936498429/bans
     [HttpDelete("{eventId}/bans/{playerUuid:length(32)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -255,20 +289,20 @@ public class AdminEventController : ControllerBase
             return Unauthorized("Account not found.");
         }
 
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events
+        var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
-        if (userGuild is null || !_guildService.HasGuildAdminPermissions(userGuild)) {
+        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
             return Unauthorized("You need to have admin permissions in the event's Discord server!");
         }
         
-        var member = await _context.EventMembers
+        var member = await context.EventMembers
             .Include(m => m.ProfileMember)
             .Where(em => em.EventId == eventId && em.ProfileMember.PlayerUuid == playerUuid)
             .FirstOrDefaultAsync();
@@ -279,7 +313,7 @@ public class AdminEventController : ControllerBase
         
         member.Status = EventMemberStatus.Active;
  
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
         return Ok();
     }

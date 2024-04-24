@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Hypixel;
+using StackExchange.Redis;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -22,8 +25,8 @@ public class EventDetailsDto {
     
     public string? RequiredRole { get; set; }
     public string? BlockedRole { get; set; }
-    
     public string? GuildId { get; set; }
+    public object? Data { get; set; }
 }
 
 public class EventMemberDto {
@@ -33,10 +36,9 @@ public class EventMemberDto {
     public required string EventId { get; set; }
     
     public EventMemberStatus Status { get; set; }
-    public string? AmountGained { get; set; }
+    public string? Score { get; set; }
 
-    public EventMemberStartConditions StartConditions { get; set; } = new();
-
+    public object? Data { get; set; }
     public string? LastUpdated { get; set; }
     
     public bool Disqualified { get; set; }
@@ -51,7 +53,7 @@ public class EventMemberDetailsDto {
     public required string EventId { get; set; }
     
     public EventMemberStatus Status { get; set; }
-    public string? AmountGained { get; set; }
+    public string? Score { get; set; }
     public string? LastUpdated { get; set; }
 }
 
@@ -59,7 +61,7 @@ public class EventMemberBannedDto {
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
     
-    public string? AmountGained { get; set; }
+    public string? Score { get; set; }
     public string? Notes { get; set; }
     
     public string? LastUpdated { get; set; }

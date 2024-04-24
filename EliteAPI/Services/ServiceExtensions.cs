@@ -12,6 +12,7 @@ using EliteAPI.Services.Background;
 using EliteAPI.Services.BadgeService;
 using EliteAPI.Services.CacheService;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.EventService;
 using EliteAPI.Services.GuildService;
 using EliteAPI.Services.HypixelService;
 using EliteAPI.Services.LeaderboardService;
@@ -113,6 +114,7 @@ public static class ServiceExtensions
         services.AddScoped<IGuildService, GuildService.GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService.TimescaleService>();
         services.AddScoped<IBadgeService, BadgeService.BadgeService>();
+        services.AddScoped<IEventService, EventService.EventService>();
 
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordAuthFilter>();

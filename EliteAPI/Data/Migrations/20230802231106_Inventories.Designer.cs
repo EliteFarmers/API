@@ -175,7 +175,7 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
-                    b.Property<EventMemberStartConditions>("StartConditions")
+                    b.Property<EventMemberWeightData>("StartConditions")
                         .IsRequired()
                         .HasColumnType("jsonb");
 
