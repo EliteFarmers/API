@@ -1,5 +1,4 @@
-﻿using EliteAPI.Parsers.Farming;
-using EliteAPI.Models.Entities.Events;
+﻿using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Events; 
@@ -38,8 +37,9 @@ public static class EventProgressParser {
         switch (@event.Type) {
             case EventType.None:
             case EventType.FarmingWeight:
-                if (eventMember is not WeightEventMember m) return;
-                m.UpdateFarmingWeight(member);
+                if (eventMember is WeightEventMember m && @event is WeightEvent weightEvent) {
+                    m.UpdateFarmingWeight(weightEvent, member);
+                }
                 break;
             case EventType.Collection:
                 break;

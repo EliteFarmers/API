@@ -5,7 +5,7 @@ using EliteAPI.Parsers.Farming;
 namespace EliteAPI.Parsers.Events;
 
 public static class WeightEventProgressParser {
-	public static void UpdateFarmingWeight(this WeightEventMember eventMember, ProfileMember? member = null) {
+	public static void UpdateFarmingWeight(this WeightEventMember eventMember, WeightEvent weightEvent, ProfileMember? member = null) {
 		if (member is not null) {
 			eventMember.UpdateToolsAndCollections(member);
             
@@ -68,7 +68,7 @@ public static class WeightEventProgressParser {
         
 		eventMember.Data.CountedCollection = countedCollections;
         
-		var cropWeight = countedCollections.ParseCropWeight(true);
+		var cropWeight = countedCollections.ParseCropWeight(weightEvent.Data.CropWeights, true);
 		var newAmount = cropWeight.Sum(x => x.Value);
         
 		// Update the event member status and amount gained

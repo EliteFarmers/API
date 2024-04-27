@@ -379,7 +379,7 @@ public class DiscordService(
             if (!response.IsSuccessStatusCode) {
                 scopedLogger.LogWarning("Failed to fetch bot guilds from Discord");
                 return guildList;
-            };
+            }
 
             try {
                 var list = await response.Content.ReadFromJsonAsync<List<DiscordGuild>>(cancellationToken: ct);
@@ -404,7 +404,7 @@ public class DiscordService(
 
     private DiscordUpdateResponse? ProcessResponse(RefreshTokenResponse? tokenResponse)
     {
-        if (tokenResponse?.AccessToken is null || tokenResponse?.RefreshToken is null || tokenResponse.Error is not null) return null;
+        if (tokenResponse?.AccessToken is null || tokenResponse.RefreshToken is null || tokenResponse.Error is not null) return null;
 
         DateTimeOffset? accessTokenExpires = tokenResponse.ExpiresIn > 0 ? DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn) : null;
         var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);

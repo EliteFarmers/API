@@ -6,6 +6,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.EventService;
 using EliteAPI.Services.GuildService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,27 +20,83 @@ public class AdminEventController(
     DataContext context,
     IMapper mapper,
     IDiscordService discordService,
-    IGuildService guildService)
+    IGuildService guildService,
+    IEventService eventService)
     : ControllerBase 
 {
     /// <summary>
-    /// Create an Event
+    /// Create a Farming Weight Event
     /// </summary>
     /// <param name="incoming"></param>
     /// <returns></returns>
     // POST <EventController>/12793764936498429/create
     [Route("/Event/Create")]
-    [HttpPost("create")]
+    [HttpPost]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> CreateEvent([FromBody] EditEventDto incoming) {
+    public async Task<ActionResult<EventDetailsDto>> CreateEvent([FromBody] CreateWeightEventDto incoming) {
         if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
             return Unauthorized("Account not found.");
         }
         
+        if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
+            return BadRequest("Invalid guild ID.");
+        }
+
+        var canCreate = await CanCreateEvent(incoming, account, token);
+        if (canCreate is not OkResult) {
+            return canCreate;
+        }
+
+        var result = await eventService.CreateEvent(incoming, guildId, account.Id);
+
+        if (result.Value is null) {
+            return BadRequest(result.Result);
+        }
+
+        return Ok(mapper.Map<EventDetailsDto>(result.Value));
+    }
+    
+    /// <summary>
+    /// Create a Medal Collection Event
+    /// </summary>
+    /// <param name="incoming"></param>
+    /// <returns></returns>
+    // POST <EventController>/12793764936498429/create
+    [Route("/Event/Create/Medals")]
+    [HttpPost]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<EventDetailsDto>> CreateMedalEvent([FromBody] CreateMedalEventDto incoming) {
+        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
+            return Unauthorized("Account not found.");
+        }
+        
+        if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
+            return BadRequest("Invalid guild ID.");
+        }
+
+        var canCreate = await CanCreateEvent(incoming, account, token);
+        if (canCreate is not OkResult) {
+            return canCreate;
+        }
+
+        var result = await eventService.CreateEvent(incoming, guildId, account.Id);
+
+        if (result.Value is null) {
+            return BadRequest(result.Result);
+        }
+
+        return Ok(mapper.Map<EventDetailsDto>(result.Value));
+    }
+
+    private async Task<ActionResult> CanCreateEvent(CreateEventDto incoming, EliteAccount account, string token) {
         if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
             return BadRequest("Invalid guild ID.");
         }
@@ -53,7 +110,7 @@ public class AdminEventController(
             return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
         }
 
-        var guild = await context.Guilds.FindAsync(guildId);
+        var guild = await context.Guilds.AsNoTracking().FirstOrDefaultAsync(g => g.Id == guildId);
         
         if (guild is null) {
             return NotFound("Guild not found.");
@@ -63,52 +120,16 @@ public class AdminEventController(
             return BadRequest("This guild does not have access to make events!");
         }
         
-        guild.Features.EventSettings ??= new GuildEventSettings();
-
-        // Check if the user has reached their max amount of events for the month
-        var startOfMonth = new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero);
-        var count = guild.Features.EventSettings.CreatedEvents.Count(e => e.CreatedAt > startOfMonth);
-        if (count >= guild.Features.EventSettings.MaxMonthlyEvents) {
-            return BadRequest("You have reached your max amount of events for this month!");
+        if (guild.Features.EventSettings is not null) {
+            // Check if the guild has reached their max amount of events for the month
+            var startOfMonth = new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero);
+            var count = guild.Features.EventSettings.CreatedEvents.Count(e => e.CreatedAt > startOfMonth);
+            if (count >= guild.Features.EventSettings.MaxMonthlyEvents) {
+                return BadRequest("You have reached your maximum amount of events for this month!");
+            }
         }
-        
-        var startTime = incoming.StartTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.StartTime.Value) : (DateTimeOffset?)null;
-        var endTime = incoming.EndTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.EndTime.Value) : (DateTimeOffset?)null;
 
-        var eliteEvent = new Event {
-            Id = guildId + (ulong) new Random().Next(100000000, 999999999),
-            
-            Name = incoming.Name ?? "Untitled Event",
-            Description = incoming.Description,
-            Rules = incoming.Rules,
-            PrizeInfo = incoming.PrizeInfo,
-            Public = true, // For now, all events are public
-            
-            Banner = incoming.Banner,
-            Thumbnail = incoming.Thumbnail,
-            
-            StartTime = startTime ?? DateTimeOffset.UtcNow.AddDays(1),
-            EndTime = endTime ?? DateTimeOffset.UtcNow.AddDays(8),
-            DynamicStartTime = incoming.DynamicStartTime ?? false,
-            Active = incoming.Active ?? false,
-            
-            RequiredRole = incoming.RequiredRole,
-            BlockedRole = incoming.BlockedRole,
-            
-            OwnerId = account.Id,
-            GuildId = guildId
-        };
-        
-        guild.Features.EventSettings.CreatedEvents.Add(new EventCreatedDto {
-            Id = eliteEvent.Id.ToString(),
-            CreatedAt = DateTimeOffset.UtcNow
-        });
-        context.Guilds.Update(guild);
-        
-        await context.Events.AddAsync(eliteEvent);
-        await context.SaveChangesAsync();
-        
-        return Ok(mapper.Map<EventDetailsDto>(eliteEvent));
+        return Ok();
     }
 
     /// <summary>
@@ -118,7 +139,7 @@ public class AdminEventController(
     /// <param name="incoming"></param>
     /// <returns></returns>
     // POST <EventController>/12793764936498429/edit
-    [HttpPost("{eventId}/edit")]
+    [HttpPost("{eventId}/Edit")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]

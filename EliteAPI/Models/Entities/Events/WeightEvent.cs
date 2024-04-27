@@ -22,7 +22,10 @@ public class WeightEventMember : EventMember {
 }
 
 public class WeightEventData {
-	public Dictionary<Crop, double> Data { get; set; } = new();
+	/// <summary>
+	/// The weights of each crop in the event
+	/// </summary>
+	public Dictionary<Crop, double> CropWeights { get; set; } = new();
 }
 
 public class EventToolState {

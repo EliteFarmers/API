@@ -79,11 +79,11 @@ public static class FarmingWeightParser
         return crops;
     }
     
-    public static Dictionary<Crop, double> ParseCropWeight(this Dictionary<Crop, long> collections, bool forEvent = false) {
+    public static Dictionary<Crop, double> ParseCropWeight(this Dictionary<Crop, long> collections, Dictionary<Crop, double>? weights = null, bool forEvent = false) {
         var crops = new Dictionary<Crop, double>();
 
-        var collectionPerWeight = (forEvent) 
-            ? FarmingWeightConfig.Settings.EventCropsPerOneWeight 
+        var collectionPerWeight = forEvent
+            ? FarmingWeightConfig.Settings.EventCropsPerOneWeight
             : FarmingWeightConfig.Settings.CropsPerOneWeight;
 
         foreach (var cropId in FarmingWeightConfig.Settings.CropItemIds)
@@ -93,7 +93,14 @@ public static class FarmingWeightParser
             if (formattedName is null || !crop.HasValue) continue;
 
             collections.TryGetValue(crop.Value, out var amount);
+            
             collectionPerWeight.TryGetValue(cropId.Replace(':', '_'), out var perWeight);
+
+            // Use the provided weight if it exists
+            if (weights is not null && weights.TryGetValue(crop.Value, out var overrideWeight))
+            {
+                perWeight = overrideWeight;
+            }
             
             if (crops.ContainsKey(crop.Value)) continue;
 
