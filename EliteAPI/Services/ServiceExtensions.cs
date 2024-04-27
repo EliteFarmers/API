@@ -64,20 +64,7 @@ public static class ServiceExtensions
                 Scheme = "Bearer"
             });
             
-            opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference 
-                        {
-                            Id = "Bearer",
-                            Type = ReferenceType.SecurityScheme
-                        }
-                    },
-                    new string[] {}
-                }
-            });
+            opt.OperationFilter<SwaggerAuthFilter>();
             
             opt.SwaggerDoc("v1", new OpenApiInfo {
                 Version = "v1",
