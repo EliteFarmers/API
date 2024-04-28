@@ -8,7 +8,6 @@ public static class MedalEventProgressParser {
 		var weights = @event.Data.MedalWeights;
 
 		eventMember.Data = new MedalEventMemberData();
-		eventMember.Score = 0;
 		
 		var start = eventMember.StartTime.ToUnixTimeSeconds();
 		var end = eventMember.EndTime.ToUnixTimeSeconds();
@@ -18,15 +17,18 @@ public static class MedalEventProgressParser {
 			select participation.MedalEarned;
 		
 		// Count the medals earned by the member in the event
+		var newScore = 0.0;
 		foreach (var medal in medals) {
 			eventMember.Data.ContestParticipations++;
+			newScore += weights[medal];
+
 			if (!eventMember.Data.EarnedMedals.TryAdd(medal, 1)) {
 				eventMember.Data.EarnedMedals[medal]++;
 			}
 		}
-
-		foreach (var (medal, count) in eventMember.Data.EarnedMedals) {
-			eventMember.Score += weights[medal] * count;
-		}
+		
+		// Update the event member status and amount gained
+		eventMember.Status = newScore > eventMember.Score ? EventMemberStatus.Active : EventMemberStatus.Inactive;
+		eventMember.Score = newScore;
 	}
 }

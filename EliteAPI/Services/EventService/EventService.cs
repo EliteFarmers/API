@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using AutoMapper;
+﻿using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
@@ -88,8 +87,11 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		var endTime = eventDto.EndTime is not null 
 			? DateTimeOffset.FromUnixTimeSeconds(eventDto.EndTime.Value) 
 			: (DateTimeOffset?) null;
+		var joinUntilTime = eventDto.JoinTime is not null 
+			? DateTimeOffset.FromUnixTimeSeconds(eventDto.JoinTime.Value) 
+			: endTime;
 		
-		if (endTime is null || startTime is null) {
+		if (endTime is null || startTime is null || joinUntilTime is null) {
 			return new BadRequestObjectResult("Invalid start or end time");
 		}
 		
@@ -108,6 +110,8 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			
 			StartTime = startTime.Value,
 			EndTime = endTime.Value,
+			JoinUntilTime = joinUntilTime.Value,
+			
 			DynamicStartTime = eventDto.DynamicStartTime ?? false,
 			Active = false,
 			
@@ -133,8 +137,11 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		var endTime = eventDto.EndTime is not null 
 			? DateTimeOffset.FromUnixTimeSeconds(eventDto.EndTime.Value) 
 			: (DateTimeOffset?) null;
+		var joinUntilTime = eventDto.JoinTime is not null 
+			? DateTimeOffset.FromUnixTimeSeconds(eventDto.JoinTime.Value) 
+			: endTime;
 		
-		if (endTime is null || startTime is null) {
+		if (endTime is null || startTime is null || joinUntilTime is null) {
 			return new BadRequestObjectResult("Invalid start or end time");
 		}
 		
@@ -153,6 +160,8 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			
 			StartTime = startTime.Value,
 			EndTime = endTime.Value,
+			JoinUntilTime = joinUntilTime.Value,
+			
 			DynamicStartTime = eventDto.DynamicStartTime ?? false,
 			Active = false,
 			

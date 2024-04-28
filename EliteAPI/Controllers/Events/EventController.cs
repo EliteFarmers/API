@@ -76,24 +76,25 @@ public class EventController(
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<EventMemberDto>>> GetEventMembers(ulong eventId)
+    public async Task<ActionResult<List<EventMemberDetailsDto>>> GetEventMembers(ulong eventId)
     {
         await discordService.RefreshBotGuilds();
 
         var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
-        
+
         var members = await context.EventMembers.AsNoTracking()
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .AsNoTracking()
-            .Where(e => e.EventId == eventId && e.Status != EventMemberStatus.Disqualified && e.Status != EventMemberStatus.Left)
+            .Where(e => e.EventId == eventId 
+                        && e.Status != EventMemberStatus.Disqualified 
+                        && e.Status != EventMemberStatus.Left)
             .OrderByDescending(e => e.Score)
             .ToListAsync();
 
-        var mapped = mapper.Map<List<EventMemberDetailsDto>>(members);
-
+        var mapped = members.Select(mapper.Map<EventMemberDetailsDto>);
         return Ok(mapped);
     }
     
@@ -167,6 +168,10 @@ public class EventController(
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
+        if (DateTimeOffset.UtcNow > eliteEvent.JoinUntilTime || DateTimeOffset.UtcNow > eliteEvent.EndTime) {
+            return BadRequest("You can no longer join this event.");
+        }
+        
         var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
@@ -215,12 +220,14 @@ public class EventController(
             return BadRequest("Collections API needs to be enabled in order to join this event.");
         }
 
-        if (!profileMember.Api.Inventories) {
-            return BadRequest("Inventories API needs to be enabled in order to join this event.");
-        }
-        
-        if (profileMember.Farming.Inventory?.Tools is null || profileMember.Farming.Inventory.Tools.Count == 0) {
-            return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
+        if (eliteEvent.Type == EventType.FarmingWeight) {
+            if (!profileMember.Api.Inventories) {
+                return BadRequest("Inventories API needs to be enabled in order to join this event.");
+            }
+            
+            if (profileMember.Farming.Inventory?.Tools is null || profileMember.Farming.Inventory.Tools.Count == 0) {
+                return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
+            }
         }
         
         var eventActive = eliteEvent.StartTime < DateTimeOffset.UtcNow && eliteEvent.EndTime > DateTimeOffset.UtcNow;
@@ -230,6 +237,8 @@ public class EventController(
         
         var newMember = member ?? new EventMember {
             EventId = eliteEvent.Id,
+            Type = eliteEvent.Type,
+            
             ProfileMemberId = profileMember.Id,
             Score = 0,
             
@@ -242,17 +251,15 @@ public class EventController(
 
         newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 
-        if (newMember is WeightEventMember wMember && eliteEvent.Active && DateTimeOffset.FromUnixTimeSeconds(profileMember.LastUpdated) > eliteEvent.StartTime) {
+        if (eliteEvent is { Type: EventType.FarmingWeight, Active: true } && DateTimeOffset.FromUnixTimeSeconds(profileMember.LastUpdated) > eliteEvent.StartTime) {
             // The event has already started, initialize the event member with the current data
-            wMember.Initialize(profileMember);
+            ((WeightEventMember) newMember).Initialize(profileMember);
         }
         
         profileMember.EventEntries ??= new List<EventMember>();
         
         if (member is null) {
             profileMember.EventEntries.Add(newMember);
-            eliteEvent.Members.Add(newMember);
-
             context.EventMembers.Add(newMember);
         }
         else {
@@ -296,6 +303,10 @@ public class EventController(
         
         if (members is not { Count: > 0 } ) {
             return BadRequest("You are not a member of this event!");
+        }
+        
+        if (DateTimeOffset.UtcNow > eliteEvent.EndTime) {
+            return BadRequest("You can no longer leave this event as it has ended.");
         }
 
         foreach (var member in members)

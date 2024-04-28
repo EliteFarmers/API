@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Events;
+﻿using System;
+using EliteAPI.Models.Entities.Events;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -14,7 +15,7 @@ namespace EliteAPI.Data.Migrations
             migrationBuilder.DropColumn(
                 name: "Target",
                 table: "Events");
-            
+
             migrationBuilder.RenameColumn(
                 name: "Category",
                 table: "Events",
@@ -71,6 +72,13 @@ namespace EliteAPI.Data.Migrations
                 type: "jsonb",
                 nullable: true);
 
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "JoinUntilTime",
+                table: "Events",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new TimeSpan(0, 0, 0, 0, 0)).ToUniversalTime());
+
             migrationBuilder.AddColumn<MedalEventMemberData>(
                 name: "Data",
                 table: "EventMembers",
@@ -82,14 +90,16 @@ namespace EliteAPI.Data.Migrations
                 table: "EventMembers",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 1);
             
+            // Populate "JoinUntilTime" with the event end time
+            migrationBuilder.Sql($"""UPDATE "Events" SET "JoinUntilTime" = "EndTime";""");
             // Update all old events to the new event type "1"
-            migrationBuilder.Sql($"""UPDATE "Events" SET "Type" = 1 WHERE "Type" = 0""");
+            migrationBuilder.Sql($"""UPDATE "Events" SET "Type" = 1 WHERE "Type" = 0;""");
             // Update old event members to the new event type "1"
-            migrationBuilder.Sql($"""UPDATE "EventMembers" SET "Type" = 1 WHERE "Type" = 0""");
+            migrationBuilder.Sql($"""UPDATE "EventMembers" SET "Type" = 1 WHERE "Type" = 0;""");
             // Move "StartConditions" jsonb data to "Data" column
-            migrationBuilder.Sql($"""UPDATE "EventMembers" SET "Data" = "StartConditions" WHERE "Type" = 1""");
+            migrationBuilder.Sql($"""UPDATE "EventMembers" SET "Data" = "StartConditions" WHERE "Type" = 1;""");
             
             // Drop the old "StartConditions" column
             migrationBuilder.DropColumn(
@@ -104,13 +114,18 @@ namespace EliteAPI.Data.Migrations
                 name: "StartConditions",
                 table: "EventMembers",
                 type: "jsonb",
-                nullable: false);
+                nullable: false,
+                defaultValue: "{}");
             
             // Move "Data" jsonb data to "StartConditions" column
-            migrationBuilder.Sql($"""UPDATE "EventMembers" SET "StartConditions" = "Data" WHERE "Type" = 1""");
-            
+            migrationBuilder.Sql($"""UPDATE "EventMembers" SET "StartConditions" = "Data" WHERE "Type" = 1;""");
+
             migrationBuilder.DropColumn(
                 name: "Data",
+                table: "Events");
+
+            migrationBuilder.DropColumn(
+                name: "JoinUntilTime",
                 table: "Events");
 
             migrationBuilder.DropColumn(

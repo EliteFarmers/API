@@ -18,7 +18,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240423225617_AddMoreEvents")]
+    [Migration("20240428004435_AddMoreEvents")]
     partial class AddMoreEvents
     {
         /// <inheritdoc />
@@ -225,6 +225,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset>("JoinUntilTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -931,7 +934,7 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.EventMember", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Events.Event", "Event")
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1253,11 +1256,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Badges");
 
                     b.Navigation("PlayerData");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
-                {
-                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>

@@ -36,6 +36,7 @@ public class Event {
     
     public DateTimeOffset StartTime { get; set; }
     public DateTimeOffset EndTime { get; set; }
+    public DateTimeOffset JoinUntilTime { get; set; }
     
     public bool DynamicStartTime { get; set; }
     public bool Active { get; set; }
@@ -52,8 +53,6 @@ public class Event {
     [ForeignKey("Guild")]
     public ulong GuildId { get; set; }
     public Guild Guild { get; set; } = null!;
-    
-    public List<EventMember> Members { get; set; } = new();
 }
 
 public enum EventMemberStatus {

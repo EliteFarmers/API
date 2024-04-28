@@ -1,31 +1,82 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
 public class EventDetailsDto {
+    /// <summary>
+    /// Event id as a string
+    /// </summary>
     public required string Id { get; set; }
+    /// <summary>
+    /// Name of the event
+    /// </summary>
     public required string Name { get; set; }
+    /// <summary>
+    /// Type of the event
+    /// </summary>
     public EventType Type { get; set; }
     
+    /// <summary>
+    /// Event description
+    /// </summary>
     public string? Description { get; set; }
+    /// <summary>
+    /// Event rules
+    /// </summary>
     public string? Rules { get; set; }
+    /// <summary>
+    /// Event prize information
+    /// </summary>
     public string? PrizeInfo { get; set; }
     
+    /// <summary>
+    /// Image URL for the event banner
+    /// </summary>
     public string? Banner { get; set; }
+    /// <summary>
+    /// Image URL for the event thumbnail
+    /// </summary>
     public string? Thumbnail { get; set; }
     
+    /// <summary>
+    /// Start time of the event as a string in Unix seconds
+    /// </summary>
     public string? StartTime { get; set; }
+    /// <summary>
+    /// Join time of the event as a string in Unix seconds
+    /// </summary>
+    public string? JoinUntilTime { get; set; }
+    /// <summary>
+    /// End time of the event as a string in Unix seconds
+    /// </summary>
     public string? EndTime { get; set; }
     
+    /// <summary>
+    /// Currently unused
+    /// </summary>
     public bool DynamicStartTime { get; set; }
+    /// <summary>
+    /// Event status
+    /// </summary>
     public bool Active { get; set; }
     
+    /// <summary>
+    /// Discord role id required to participate in the event
+    /// </summary>
     public string? RequiredRole { get; set; }
+    /// <summary>
+    /// Discord role id blocked from participating in the event
+    /// </summary>
     public string? BlockedRole { get; set; }
+    /// <summary>
+    /// Discord server id as a string
+    /// </summary>
     public string? GuildId { get; set; }
+    /// <summary>
+    /// Data specific to the event
+    /// </summary>
     public object? Data { get; set; }
 }
 
@@ -48,13 +99,16 @@ public class EventMemberDto {
 
 public class EventMemberDetailsDto {
     public string? PlayerUuid { get; set; }
-    public string? PlayerName { get; set; }
     public string? ProfileId { get; set; }
+    public string? PlayerName { get; set; }
     public required string EventId { get; set; }
     
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
     public string? LastUpdated { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? Data { get; set; } = null;
 }
 
 public class EventMemberBannedDto {
@@ -79,6 +133,7 @@ public class EditEventDto {
     public string? Thumbnail { get; set; }
     
     public long? StartTime { get; set; }
+    public long? JoinUntilTime { get; set; }
     public long? EndTime { get; set; }
     
     public bool? DynamicStartTime { get; set; }
@@ -157,6 +212,11 @@ public class CreateEventDto {
     /// </summary>
     [Required]
     public long? EndTime { get; set; }
+    
+    /// <summary>
+    /// Unix timestamp for the latest time a new member can join the event in seconds
+    /// </summary>
+    public long? JoinTime { get; set; }
     
     /// <summary>
     /// Currently unused
