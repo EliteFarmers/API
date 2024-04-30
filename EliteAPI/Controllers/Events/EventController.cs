@@ -5,7 +5,6 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
-using EliteAPI.Parsers.Events;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.EventService;
 using EliteAPI.Services.MemberService;

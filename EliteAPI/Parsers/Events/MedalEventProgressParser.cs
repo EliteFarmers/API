@@ -20,6 +20,8 @@ public static class MedalEventProgressParser {
 		var newScore = 0.0;
 		foreach (var medal in medals) {
 			eventMember.Data.ContestParticipations++;
+			if (!weights.ContainsKey(medal)) continue;
+			
 			newScore += weights[medal];
 
 			if (!eventMember.Data.EarnedMedals.TryAdd(medal, 1)) {
