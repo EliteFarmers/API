@@ -12,9 +12,11 @@ public static class MedalEventProgressParser {
 		var start = eventMember.StartTime.ToUnixTimeSeconds();
 		var end = eventMember.EndTime.ToUnixTimeSeconds();
 
+		// Get the highest participation in each contest (prevents duplicates)
 		var participations = from participation in member.JacobData.Contests
 			where participation.JacobContestId >= start && participation.JacobContestId <= end
-			select participation;
+			group participation by participation.JacobContest.Timestamp into g
+			select g.OrderByDescending(p => p.Collected).First();
 		
 		// Count the medals earned by the member in the event
 		var newScore = 0.0;
