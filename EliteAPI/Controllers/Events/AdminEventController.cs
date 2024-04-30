@@ -165,11 +165,13 @@ public class AdminEventController(
 
         var startTime = incoming.StartTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.StartTime.Value) : (DateTimeOffset?)null;
         var endTime = incoming.EndTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.EndTime.Value) : (DateTimeOffset?)null;
+        var joinTime = incoming.JoinTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.JoinTime.Value) : (DateTimeOffset?)null;
         
         eliteEvent.Name = incoming.Name ?? eliteEvent.Name;
         eliteEvent.Description = incoming.Description ?? eliteEvent.Description;
         eliteEvent.StartTime = startTime ?? eliteEvent.StartTime;
         eliteEvent.EndTime = endTime ?? eliteEvent.EndTime;
+        eliteEvent.JoinUntilTime = joinTime ?? eliteEvent.JoinUntilTime;
         eliteEvent.DynamicStartTime = incoming.DynamicStartTime ?? eliteEvent.DynamicStartTime;
         eliteEvent.Active = incoming.Active ?? eliteEvent.Active;
         eliteEvent.Rules = incoming.Rules ?? eliteEvent.Rules;

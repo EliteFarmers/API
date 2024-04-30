@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -133,7 +134,7 @@ public class EditEventDto {
     public string? Thumbnail { get; set; }
     
     public long? StartTime { get; set; }
-    public long? JoinUntilTime { get; set; }
+    public long? JoinTime { get; set; }
     public long? EndTime { get; set; }
     
     public bool? DynamicStartTime { get; set; }
@@ -256,4 +257,19 @@ public class CreateMedalEventDto : CreateEventDto {
     public CreateMedalEventDto() {
         Type = EventType.Medals;
     }
+}
+
+public class CreateEventMemberDto  {
+    public ulong EventId { get; set; }
+    public EventType Type { get; set; }
+    
+    public Guid ProfileMemberId { get; set; }
+    public double Score { get; set; }
+    
+    public DateTimeOffset StartTime { get; set; }
+    public DateTimeOffset EndTime { get; set; }
+    
+    public ulong UserId { get; set; }
+    
+    public ProfileMember ProfileMember { get; set; }
 }

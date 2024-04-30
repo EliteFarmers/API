@@ -2,6 +2,8 @@
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Events;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -78,6 +80,69 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		await context.SaveChangesAsync();
 
 		return eliteEvent;
+	}
+
+	public async Task<ActionResult<EventMember>> CreateEventMember(Event eliteEvent, CreateEventMemberDto eventMemberDto) {
+		switch (eliteEvent) {
+			case WeightEvent weightEvent:
+				return await CreateWeightEventMember(weightEvent, eventMemberDto);
+			case MedalEvent medalEvent:
+				return await CreateMedalsEventMember(medalEvent, eventMemberDto);
+		}
+		return new BadRequestObjectResult("Invalid event type");
+	}
+
+	public async Task InitializeEventMember(EventMember eventMember, ProfileMember member) {
+		// Don't do anything if the data isn't past the event start time
+		if (DateTimeOffset.FromUnixTimeSeconds(member.LastUpdated) < eventMember.StartTime) return;
+		
+		// Only weight event has an initialization step so far
+		if (eventMember is WeightEventMember weightEventMember) {
+			weightEventMember.Initialize(member);
+			await context.SaveChangesAsync();
+		}
+	}
+
+	private async Task<ActionResult<EventMember>> CreateWeightEventMember(Event weightEvent, CreateEventMemberDto eventMemberDto) {
+		var member = new WeightEventMember {
+			EventId = weightEvent.Id,
+			ProfileMemberId = eventMemberDto.ProfileMemberId,
+			UserId = eventMemberDto.UserId,
+			
+			Status = weightEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive,
+			Score = eventMemberDto.Score,
+			
+			LastUpdated = DateTimeOffset.UtcNow,
+			StartTime = eventMemberDto.StartTime,
+			EndTime = eventMemberDto.EndTime
+		}; 
+		
+		AddEventMember(member);
+		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await context.SaveChangesAsync();
+		
+		return member;
+	}
+	
+	private async Task<ActionResult<EventMember>> CreateMedalsEventMember(Event medalEvent, CreateEventMemberDto eventMemberDto) {
+		var member = new MedalEventMember {
+			EventId = medalEvent.Id,
+			ProfileMemberId = eventMemberDto.ProfileMemberId,
+			UserId = eventMemberDto.UserId,
+			
+			Status = medalEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive,
+			Score = eventMemberDto.Score,
+			
+			LastUpdated = DateTimeOffset.UtcNow,
+			StartTime = eventMemberDto.StartTime,
+			EndTime = eventMemberDto.EndTime
+		};
+		
+		AddEventMember(member);
+		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await context.SaveChangesAsync();
+		
+		return member;
 	}
 	
 	private ActionResult<Event> CreateWeightEvent(CreateEventDto eventDto, ulong guildId, ulong ownerId) {
@@ -208,6 +273,20 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 				break;
 			default:
 				context.Events.Add(@event);
+				break;
+		}
+	}
+	
+	private void AddEventMember(EventMember member) {
+		switch (member) {
+			case WeightEventMember weightEvent:
+				context.WeightEventMembers.Add(weightEvent);
+				break;
+			case MedalEventMember medalEvent:
+				context.MedalEventMembers.Add(medalEvent);
+				break;
+			default:
+				context.EventMembers.Add(member);
 				break;
 		}
 	}

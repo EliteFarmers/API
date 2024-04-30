@@ -95,6 +95,8 @@ public static class WeightEventProgressParser {
 	}
 
 	public static void Initialize(this WeightEventMember eventMember, ProfileMember member) {
+		if (eventMember.Data.InitialCollection.Count > 0) return;
+		
 		eventMember.Data = new EventMemberWeightData {
 			InitialCollection = member.ExtractCropCollections(true),
 			ToolStates = member.Farming.Inventory?.Tools.ExtractToolStates() ?? new Dictionary<string, EventToolState>()

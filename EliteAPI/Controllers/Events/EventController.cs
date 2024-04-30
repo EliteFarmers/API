@@ -129,13 +129,14 @@ public class EventController(
 
         return Ok(mapped);
     }
-    
+
     /// <summary>
     /// Join an event
     /// </summary>
     /// <param name="eventId"></param>
     /// <param name="playerUuid"></param>
     /// <param name="profileId"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <returns></returns>
     // POST <EventController>/12793764936498429/join
     [HttpPost("join")]
@@ -234,37 +235,24 @@ public class EventController(
         if (eventActive != eliteEvent.Active) {
             eliteEvent.Active = eventActive;
         }
-        
-        var newMember = member ?? new EventMember {
+
+        if (member is not null) {
+            member.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
+            context.Entry(member).State = EntityState.Modified;
+            // Init member if needed
+            await eventService.InitializeEventMember(member, profileMember);
+            return Ok();
+        }
+
+        await eventService.CreateEventMember(eliteEvent, new CreateEventMemberDto {
             EventId = eliteEvent.Id,
-            Type = eliteEvent.Type,
-            
             ProfileMemberId = profileMember.Id,
+            UserId = account.Id,
             Score = 0,
-            
-            LastUpdated = DateTimeOffset.UtcNow,
             StartTime = eliteEvent.StartTime,
             EndTime = eliteEvent.EndTime,
-            
-            UserId = account.Id
-        };
-
-        newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
-
-        if (eliteEvent is { Type: EventType.FarmingWeight, Active: true } && DateTimeOffset.FromUnixTimeSeconds(profileMember.LastUpdated) > eliteEvent.StartTime) {
-            // The event has already started, initialize the event member with the current data
-            ((WeightEventMember) newMember).Initialize(profileMember);
-        }
-        
-        profileMember.EventEntries ??= new List<EventMember>();
-        
-        if (member is null) {
-            profileMember.EventEntries.Add(newMember);
-            context.EventMembers.Add(newMember);
-        }
-        else {
-            context.Entry(newMember).State = EntityState.Modified;
-        }
+            ProfileMember = profileMember
+        });
         
         await context.SaveChangesAsync();
         
