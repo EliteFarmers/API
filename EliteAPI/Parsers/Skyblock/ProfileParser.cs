@@ -12,6 +12,7 @@ using EliteAPI.Parsers.Profiles;
 using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.CacheService;
+using EliteAPI.Services.EventService;
 using EliteAPI.Services.LeaderboardService;
 using Microsoft.Extensions.Options;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
@@ -24,20 +25,21 @@ public class ProfileParser(
     IBackgroundTaskQueue taskQueue,
     IOptions<ConfigLeaderboardSettings> lbOptions,
     ILogger<ProfileParser> logger,
-    ILeaderboardService leaderboardService) 
+    ILeaderboardService leaderboardService,
+    IEventService eventService) 
 {
     private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
     
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
-        EF.CompileAsyncQuery((DataContext context, string playerUuid, string profileUuid) =>            
-            context.ProfileMembers
+        EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>            
+            c.ProfileMembers
                 .Include(p => p.MinecraftAccount)
                 .Include(p => p.Profile)
                 .Include(p => p.Skills)
                 .Include(p => p.Farming)
                 .Include(p => p.JacobData)
                 .ThenInclude(j => j.Contests)
-                .ThenInclude(c => c.JacobContest)
+                .ThenInclude(p => p.JacobContest)
                 .Include(p => p.EventEntries)
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
@@ -260,14 +262,14 @@ public class ProfileParser(
                 if (real is null || @event is null) continue;
                 
                 real.LoadProgress(member, @event);
-                
-                real.EventMemberStartConditions = new EventMemberStartConditions {
-                    InitialCollection = real.EventMemberStartConditions.InitialCollection,
-                    IncreasedCollection = real.EventMemberStartConditions.IncreasedCollection,
-                    CountedCollection = real.EventMemberStartConditions.CountedCollection,
-                    ToolStates = real.EventMemberStartConditions.ToolStates,
-                    Tools = real.EventMemberStartConditions.Tools
-                };
+                //
+                // m.Data = new EventMemberWeightData {
+                //     InitialCollection = m.Data.InitialCollection,
+                //     IncreasedCollection = m.Data.IncreasedCollection,
+                //     CountedCollection = m.Data.CountedCollection,
+                //     ToolStates = m.Data.ToolStates,
+                //     Tools = m.Data.Tools
+                // };
             }
         }
 

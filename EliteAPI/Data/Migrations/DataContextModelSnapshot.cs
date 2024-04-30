@@ -203,13 +203,12 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Banner")
-                        .HasColumnType("text");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<string>("BlockedRole")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1024)
@@ -223,6 +222,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset>("JoinUntilTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -240,7 +242,8 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("RequiredRole")
-                        .HasColumnType("text");
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
 
                     b.Property<string>("Rules")
                         .HasMaxLength(1024)
@@ -249,11 +252,12 @@ namespace EliteAPI.Data.Migrations
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Target")
-                        .HasColumnType("text");
-
                     b.Property<string>("Thumbnail")
-                        .HasColumnType("text");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -262,6 +266,10 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Events");
+
+                    b.HasDiscriminator<int>("Type").HasValue(0);
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.EventMember", b =>
@@ -272,19 +280,11 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<double>("AmountGained")
-                        .HasColumnType("double precision");
-
                     b.Property<DateTimeOffset>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("EventId")
                         .HasColumnType("numeric(20,0)");
-
-                    b.Property<EventMemberStartConditions>("EventMemberStartConditions")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("StartConditions");
 
                     b.Property<DateTimeOffset>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
@@ -296,10 +296,16 @@ namespace EliteAPI.Data.Migrations
                     b.Property<Guid>("ProfileMemberId")
                         .HasColumnType("uuid");
 
+                    b.Property<double>("Score")
+                        .HasColumnType("double precision");
+
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("UserId")
@@ -314,6 +320,10 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EventMembers");
+
+                    b.HasDiscriminator<int>("Type").HasValue(0);
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Guild", b =>
@@ -819,6 +829,58 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("SkillExperiences");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Events.MedalEvent", b =>
+                {
+                    b.HasBaseType("EliteAPI.Models.Entities.Events.Event");
+
+                    b.Property<MedalEventData>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("Data");
+
+                    b.HasDiscriminator().HasValue(4);
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Events.WeightEvent", b =>
+                {
+                    b.HasBaseType("EliteAPI.Models.Entities.Events.Event");
+
+                    b.Property<WeightEventData>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("Data");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Events.MedalEventMember", b =>
+                {
+                    b.HasBaseType("EliteAPI.Models.Entities.Events.EventMember");
+
+                    b.Property<MedalEventMemberData>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("Data");
+
+                    b.HasDiscriminator().HasValue(4);
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Events.WeightEventMember", b =>
+                {
+                    b.HasBaseType("EliteAPI.Models.Entities.Events.EventMember");
+
+                    b.Property<EventMemberWeightData>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("Data");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "EliteAccount")
@@ -869,7 +931,7 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.EventMember", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Events.Event", "Event")
-                        .WithMany("Members")
+                        .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1191,11 +1253,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Badges");
 
                     b.Navigation("PlayerData");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
-                {
-                    b.Navigation("Members");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>

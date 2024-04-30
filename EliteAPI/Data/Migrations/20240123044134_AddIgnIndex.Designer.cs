@@ -217,7 +217,7 @@ namespace EliteAPI.Data.Migrations
                     b.Property<decimal>("EventId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<EventMemberStartConditions>("EventMemberStartConditions")
+                    b.Property<EventMemberWeightData>("EventMemberStartConditions")
                         .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("StartConditions");

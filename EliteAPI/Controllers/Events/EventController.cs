@@ -6,8 +6,8 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Parsers.Events;
-using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.EventService;
 using EliteAPI.Services.MemberService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,21 +17,19 @@ namespace EliteAPI.Controllers.Events;
 
 [Route("[controller]/{eventId}")]
 [ApiController]
-public class EventController : ControllerBase
+public class EventController(
+    DataContext context,
+    IMapper mapper,
+    IMemberService memberService,
+    IDiscordService discordService,
+    IEventService eventService)
+    : ControllerBase 
 {
-    private readonly DataContext _context;
-    private readonly IMapper _mapper;
-    private readonly IDiscordService _discordService;
-    private readonly IMemberService _memberService;
 
-    public EventController(DataContext context, IMapper mapper, IMemberService memberService, IDiscordService discordService)
-    {
-        _context = context;
-        _mapper = mapper;
-        _discordService = discordService;
-        _memberService = memberService;
-    }
-    
+    /// <summary>
+    /// Get all upcoming events
+    /// </summary>
+    /// <returns></returns>
     // GET <EventController>s/
     [Route("/[controller]s")]
     [HttpGet]
@@ -39,19 +37,18 @@ public class EventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<EventDetailsDto>>> GetUpcoming()
     {
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
+
+        var events = await eventService.GetUpcomingEvents();
         
-        var events = await _context.Events
-            .Where(e => e.EndTime > DateTimeOffset.UtcNow)
-            .OrderBy(e => e.StartTime)
-            .AsNoTracking()
-            .ToListAsync();
-        
-        var eventDetails = _mapper.Map<List<EventDetailsDto>>(events);
-        
-        return Ok(eventDetails);
+        return Ok(events);
     }
     
+    /// <summary>
+    /// Get an event by ID
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
     // GET <EventController>/12793764936498429
     [HttpGet]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
@@ -60,59 +57,53 @@ public class EventController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<EventDetailsDto>> GetEvent(ulong eventId)
     {
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events.AsNoTracking()
+        var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        return Ok(_mapper.Map<EventDetailsDto>(eliteEvent));
+        return Ok(mapper.Map<EventDetailsDto>(eliteEvent));
     }
     
+    /// <summary>
+    /// Get members of an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
     // GET <EventController>/12793764936498429
     [HttpGet("members")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<EventMemberDto>>> GetEventMembers(ulong eventId)
+    public async Task<ActionResult<List<EventMemberDetailsDto>>> GetEventMembers(ulong eventId)
     {
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
 
-        var eliteEvent = await _context.Events.AsNoTracking()
+        var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
-        
-        var members = await _context.EventMembers.AsNoTracking()
+
+        var members = await context.EventMembers.AsNoTracking()
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .AsNoTracking()
-            .Where(e => e.EventId == eventId && e.Status != EventMemberStatus.Disqualified && e.Status != EventMemberStatus.Left)
-            .OrderByDescending(e => e.AmountGained)
+            .Where(e => e.EventId == eventId 
+                        && e.Status != EventMemberStatus.Disqualified 
+                        && e.Status != EventMemberStatus.Left)
+            .OrderByDescending(e => e.Score)
             .ToListAsync();
 
-        foreach (var member in members) {
-            var changed = false;
-            
-            if (member.StartTime != eliteEvent.StartTime) {
-                member.StartTime = eliteEvent.StartTime;
-                changed = true;
-            }
-            
-            if (member.EndTime != eliteEvent.EndTime) {
-                member.EndTime = eliteEvent.EndTime;
-                changed = true;
-            }
-            
-            if (changed) _context.Entry(member).State = EntityState.Modified;
-        }
-        
-        await _context.SaveChangesAsync();
-        
-        var mapped = _mapper.Map<List<EventMemberDetailsDto>>(members);
-
+        var mapped = members.Select(mapper.Map<EventMemberDetailsDto>);
         return Ok(mapped);
     }
     
+    /// <summary>
+    /// Get a member of an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="playerUuid"></param>
+    /// <returns></returns>
     // GET <EventController>/12793764936498429
     [HttpGet("member/{playerUuid}")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
@@ -125,20 +116,28 @@ public class EventController : ControllerBase
         var uuid = playerUuid.Replace("-", "");
         if (uuid is not { Length: 32 }) return BadRequest("Invalid playerUuid");
         
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var member = await _context.EventMembers.AsNoTracking()
+        var member = await context.EventMembers.AsNoTracking()
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.EventId == eventId && e.ProfileMember.PlayerUuid == uuid);
         if (member is null) return NotFound("Event member not found.");
         
-        var mapped = _mapper.Map<EventMemberDto>(member);
+        var mapped = mapper.Map<EventMemberDto>(member);
 
         return Ok(mapped);
     }
-    
+
+    /// <summary>
+    /// Join an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileId"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <returns></returns>
     // POST <EventController>/12793764936498429/join
     [HttpPost("join")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
@@ -152,7 +151,7 @@ public class EventController : ControllerBase
             return Unauthorized("Account not found.");
         }
         
-        var account = await _context.Accounts
+        var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .FirstOrDefaultAsync(a => a.Id == authAccount.Id);
         
@@ -164,13 +163,17 @@ public class EventController : ControllerBase
             return BadRequest("Invalid playerUuid provided.");
         }
         
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events
+        var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var guilds = await _discordService.GetUsersGuilds(account.Id, token);
+        if (DateTimeOffset.UtcNow > eliteEvent.JoinUntilTime || DateTimeOffset.UtcNow > eliteEvent.EndTime) {
+            return BadRequest("You can no longer join this event.");
+        }
+        
+        var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
         if (userGuild is null) {
@@ -185,7 +188,7 @@ public class EventController : ControllerBase
             return NotFound("You need to have a linked Minecraft account in order to join!");
         }
         
-        var member = await _context.EventMembers.AsNoTracking()
+        var member = await context.EventMembers.AsNoTracking()
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .AsNoTracking()
@@ -195,7 +198,7 @@ public class EventController : ControllerBase
             return BadRequest("You are already a member of this event!");
         }
 
-        var updateQuery = await _memberService.ProfileMemberQuery(selectedAccount.Id);
+        var updateQuery = await memberService.ProfileMemberQuery(selectedAccount.Id);
 
         if (updateQuery is null) {
             return BadRequest("Profile member data not found, please try again later or ensure an existing profile is selected.");
@@ -218,55 +221,49 @@ public class EventController : ControllerBase
             return BadRequest("Collections API needs to be enabled in order to join this event.");
         }
 
-        if (!profileMember.Api.Inventories) {
-            return BadRequest("Inventories API needs to be enabled in order to join this event.");
-        }
-        
-        if (profileMember.Farming.Inventory?.Tools is null || profileMember.Farming.Inventory.Tools.Count == 0) {
-            return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
+        if (eliteEvent.Type == EventType.FarmingWeight) {
+            if (!profileMember.Api.Inventories) {
+                return BadRequest("Inventories API needs to be enabled in order to join this event.");
+            }
+            
+            if (profileMember.Farming.Inventory?.Tools is null || profileMember.Farming.Inventory.Tools.Count == 0) {
+                return BadRequest("You need to have at least one farming tool in your inventory in order to join this event.");
+            }
         }
         
         var eventActive = eliteEvent.StartTime < DateTimeOffset.UtcNow && eliteEvent.EndTime > DateTimeOffset.UtcNow;
         if (eventActive != eliteEvent.Active) {
             eliteEvent.Active = eventActive;
         }
-        
-        var newMember = member ?? new EventMember {
+
+        if (member is not null) {
+            member.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
+            context.Entry(member).State = EntityState.Modified;
+            // Init member if needed
+            await eventService.InitializeEventMember(member, profileMember);
+            return Ok();
+        }
+
+        await eventService.CreateEventMember(eliteEvent, new CreateEventMemberDto {
             EventId = eliteEvent.Id,
             ProfileMemberId = profileMember.Id,
-            AmountGained = 0,
-            
-            LastUpdated = DateTimeOffset.UtcNow,
+            UserId = account.Id,
+            Score = 0,
             StartTime = eliteEvent.StartTime,
             EndTime = eliteEvent.EndTime,
-            
-            UserId = account.Id
-        };
-
-        newMember.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
-
-        if (eliteEvent.Active && DateTimeOffset.FromUnixTimeSeconds(profileMember.LastUpdated) > eliteEvent.StartTime) {
-            // The event has already started, initialize the event member with the current data
-            newMember.Initialize(profileMember);
-        }
+            ProfileMember = profileMember
+        });
         
-        profileMember.EventEntries ??= new List<EventMember>();
-        
-        if (member is null) {
-            profileMember.EventEntries.Add(newMember);
-            eliteEvent.Members.Add(newMember);
-
-            _context.EventMembers.Add(newMember);
-        }
-        else {
-            _context.Entry(newMember).State = EntityState.Modified;
-        }
-        
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
         return Ok();
     }
     
+    /// <summary>
+    /// Leave an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
     // POST <EventController>/12793764936498429/leave
     [HttpPost("leave")]
     [ServiceFilter(typeof(DiscordAuthFilter))]
@@ -280,13 +277,13 @@ public class EventController : ControllerBase
             return Unauthorized("Account not found.");
         }
 
-        await _discordService.RefreshBotGuilds();
+        await discordService.RefreshBotGuilds();
         
-        var eliteEvent = await _context.Events.AsNoTracking()
+        var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
-        var members = await _context.EventMembers
+        var members = await context.EventMembers
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .Where(e => e.EventId == eventId && e.ProfileMember.MinecraftAccount.AccountId == account.Id)
@@ -295,13 +292,17 @@ public class EventController : ControllerBase
         if (members is not { Count: > 0 } ) {
             return BadRequest("You are not a member of this event!");
         }
+        
+        if (DateTimeOffset.UtcNow > eliteEvent.EndTime) {
+            return BadRequest("You can no longer leave this event as it has ended.");
+        }
 
         foreach (var member in members)
         {
             member.Status = EventMemberStatus.Left;
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         
         return Ok();
     }

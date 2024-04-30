@@ -44,6 +44,16 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
         modelBuilder.Entity<MinecraftAccount>().Navigation(e => e.Badges).AutoInclude();
         modelBuilder.Entity<UserBadge>().Navigation(e => e.Badge).AutoInclude();
+
+        modelBuilder.Entity<Event>().HasDiscriminator(e => e.Type)
+            .HasValue<Event>(EventType.None)
+            .HasValue<WeightEvent>(EventType.FarmingWeight)
+            .HasValue<MedalEvent>(EventType.Medals);
+
+        modelBuilder.Entity<EventMember>().HasDiscriminator(e => e.Type)
+            .HasValue<EventMember>(EventType.None)
+            .HasValue<WeightEventMember>(EventType.FarmingWeight)
+            .HasValue<MedalEventMember>(EventType.Medals);
     }
 
     public DbSet<EliteAccount> Accounts { get; set; } = null!;
@@ -64,7 +74,11 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;
+    public DbSet<WeightEvent> WeightEvents { get; set; } = null!;
+    public DbSet<MedalEvent> MedalEvents { get; set; } = null!;
     public DbSet<EventMember> EventMembers { get; set; } = null!;
+    public DbSet<WeightEventMember> WeightEventMembers { get; set; } = null!;
+    public DbSet<MedalEventMember> MedalEventMembers { get; set; } = null!;
 
     // Timescale HyperTables
     public DbSet<SkillExperience> SkillExperiences { get; set; } = null!;
