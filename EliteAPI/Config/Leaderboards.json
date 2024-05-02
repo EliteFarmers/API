@@ -94,47 +94,58 @@
     "SkillLeaderboards": {
       "combat": {
         "Id": "Combat",
-        "Title": "Combat"
+        "Title": "Combat",
+        "Limit": 5000
       },
       "mining": {
         "Id": "Mining",
-        "Title": "Mining"
+        "Title": "Mining",
+        "Limit": 5000
       },
       "farming": {
         "Id": "Farming",
-        "Title": "Farming"
+        "Title": "Farming",
+        "Limit": 5000
       },
       "foraging": {
         "Id": "Foraging",
-        "Title": "Foraging"
+        "Title": "Foraging",
+        "Limit": 5000
       },
       "fishing": {
         "Id": "Fishing",
-        "Title": "Fishing"
+        "Title": "Fishing",
+        "Limit": 5000
       },
       "enchanting": {
         "Id": "Enchanting",
-        "Title": "Enchanting"
+        "Title": "Enchanting",
+        "Limit": 5000
       },
       "alchemy": {
         "Id": "Alchemy",
-        "Title": "Alchemy"
+        "Title": "Alchemy",
+        "Limit": 5000
       },
       "taming": {
         "Id": "Taming",
-        "Title": "Taming"
+        "Title": "Taming",
+        "Limit": 5000
       },
       "social": {
         "Id": "Social",
-        "Title": "Social"
+        "Title": "Social",
+        "Limit": 5000
       },
       "runecrafting": {
         "Id": "Runecrafting",
-        "Title": "Runecrafting"
+        "Title": "Runecrafting",
+        "Limit": 5000
       },
       "carpentry": {
         "Id": "Carpentry",
-        "Title": "Carpentry"
+        "Title": "Carpentry",
+        "Limit": 5000
       }
     },
     "PestLeaderboards": {

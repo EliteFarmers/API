@@ -220,7 +220,7 @@ public class LeaderboardService(
             .ThenInclude(pm => pm!.MinecraftAccount)
             .Where(s => EF.Property<double>(s, lbSettings.Id) > 0 && s.ProfileMember != null && !s.ProfileMember.WasRemoved)
             .OrderByDescending(s => EF.Property<double>(s, lbSettings.Id))
-            .Take(1000)
+            .Take(lbSettings.Limit)
             .Select(s => new LeaderboardEntry {
                 MemberId = s.ProfileMemberId.ToString(),
                 Amount = EF.Property<double>(s, lbSettings.Id),
