@@ -8,7 +8,7 @@ public interface ILeaderboardService {
     public Task<List<LeaderboardEntryWithRank>> GetLeaderboardSliceAtScore(string leaderboardId, double score, int limit = 20, string? excludeMemberId = null);
     
     public Task<LeaderboardPositionsDto> GetLeaderboardPositions(string memberId);
-    public Task<int> GetLeaderboardPosition(string leaderboardId, string memberId);
+    public Task<(int rank, double score)> GetLeaderboardPositionAndScore(string leaderboardId, string memberId, bool includeScore = true);
     public void UpdateLeaderboardScore(string leaderboardId, string memberId, double score);
     public Task RemoveMemberFromAllLeaderboards(string memberId);
     public Task RemoveMemberFromLeaderboards(IEnumerable<string> leaderboardIds, string memberId);

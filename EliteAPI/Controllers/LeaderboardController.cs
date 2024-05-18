@@ -16,26 +16,26 @@ namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class LeaderboardController : ControllerBase
+public class LeaderboardController(
+    DataContext dataContext,
+    ILeaderboardService leaderboardService,
+    IOptions<ConfigLeaderboardSettings> lbSettings,
+    IMapper mapper,
+    IOptions<ConfigCooldownSettings> coolDowns,
+    IProfileService profileService)
+    : ControllerBase 
 {
-    private readonly DataContext _context;
-    private readonly ILeaderboardService _leaderboardService;
-    private readonly ConfigLeaderboardSettings _settings;
-    private readonly IMapper _mapper;
-    private readonly ConfigCooldownSettings _coolDowns;
-    private readonly IProfileService _profileService;
-
-    public LeaderboardController(DataContext dataContext, ILeaderboardService leaderboardService, IOptions<ConfigLeaderboardSettings> lbSettings, IMapper mapper, IOptions<ConfigCooldownSettings> coolDowns, IProfileService profileService)
-    {
-        _context = dataContext;
-        _leaderboardService = leaderboardService;
-        _profileService = profileService;
-        _settings = lbSettings.Value;
-        _coolDowns = coolDowns.Value;
-        _mapper = mapper;
-    }
+    private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
+    private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
     // GET: <LeaderboardController>/id
+    /// <summary>
+    /// Get a leaderboard by ID
+    /// </summary>
+    /// <param name="id">Any leaderboard ID</param>
+    /// <param name="offset">Starting offset for returned entries</param>
+    /// <param name="limit">Maximum amount of returned entries</param>
+    /// <returns>A leaderboard object with a list of entries</returns>
     [HttpGet("{id}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -44,11 +44,11 @@ public class LeaderboardController : ControllerBase
     {
         if (offset < 0 || limit <= 0) return BadRequest("Offset and limit must be positive integers");
 
-        if (!_leaderboardService.TryGetLeaderboardSettings(id, out var lb) || lb is null) {
+        if (!leaderboardService.TryGetLeaderboardSettings(id, out var lb) || lb is null) {
             return BadRequest("Leaderboard not found");
         }
 
-        var entries = await _leaderboardService.GetLeaderboardSlice(id, offset, limit);
+        var entries = await leaderboardService.GetLeaderboardSlice(id, offset, limit);
 
         var leaderboard = new LeaderboardDto {
             Id = id,
@@ -56,13 +56,20 @@ public class LeaderboardController : ControllerBase
             Limit = limit,
             Offset = offset,
             MaxEntries = lb.Limit,
-            Entries = _mapper.Map<List<LeaderboardEntryDto>>(entries)
+            Entries = mapper.Map<List<LeaderboardEntryDto>>(entries)
         };
         
         return Ok(leaderboard);
     }
 
     // GET <LeaderboardController>/skill/farming
+    /// <summary>
+    /// Get a skill leaderboard by name
+    /// </summary>
+    /// <param name="skillName">A skill name</param>
+    /// <param name="offset">Starting offset for returned entries</param>
+    /// <param name="limit">Maximum amount of returned entries</param>
+    /// <returns>A leaderboard object with a list of entries</returns>
     [HttpGet("skill/{skillName}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -92,7 +99,7 @@ public class LeaderboardController : ControllerBase
             return BadRequest("Invalid skill.");
         }
         
-        var entries = await _leaderboardService.GetLeaderboardSlice(skill, offset, limit);
+        var entries = await leaderboardService.GetLeaderboardSlice(skill, offset, limit);
 
         return Ok(new LeaderboardDto {
             Id = lb.Id,
@@ -100,11 +107,18 @@ public class LeaderboardController : ControllerBase
             Offset = offset,
             Limit = limit,
             MaxEntries = lb.Limit,
-            Entries = _mapper.Map<List<LeaderboardEntryDto>>(entries)
+            Entries = mapper.Map<List<LeaderboardEntryDto>>(entries)
         });
     }
     
     // GET <LeaderboardController>/collection/wheat
+    /// <summary>
+    /// Get a crop collection leaderboard by name
+    /// </summary>
+    /// <param name="collection">A crop collection name</param>
+    /// <param name="offset">Starting offset for returned entries</param>
+    /// <param name="limit">Maximum amount of returned entries</param>
+    /// <returns>A leaderboard object with a list of entries</returns>
     [HttpGet("collection/{collection}/")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -118,7 +132,7 @@ public class LeaderboardController : ControllerBase
             return BadRequest("Invalid collection.");
         }
         
-        var entries = await _leaderboardService.GetLeaderboardSlice(collection, offset, limit);
+        var entries = await leaderboardService.GetLeaderboardSlice(collection, offset, limit);
 
         return Ok(new LeaderboardDto {
             Id = lb.Id,
@@ -126,39 +140,54 @@ public class LeaderboardController : ControllerBase
             Offset = offset,
             Limit = limit,
             MaxEntries = lb.Limit,
-            Entries = _mapper.Map<List<LeaderboardEntryDto>>(entries)
+            Entries = mapper.Map<List<LeaderboardEntryDto>>(entries)
         });
     }
     
     // GET <LeaderboardController>/ranks/[player]/[profile]
+    /// <summary>
+    /// Get a player's leaderboard ranks
+    /// </summary>
+    /// <param name="playerUuid">Player Uuid (no hyphens)</param>
+    /// <param name="profileUuid">Profile Uuid (no hyphens)</param>
+    /// <returns></returns>
     [HttpGet("ranks/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardPositionsDto>> GetLeaderboardRanks(string playerUuid, string profileUuid) {
-        var memberId = await _context.ProfileMembers
+        var memberId = await dataContext.ProfileMembers
             .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
         
         if (memberId == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
         
-        var positions = await _leaderboardService.GetLeaderboardPositions(memberId.ToString());
+        var positions = await leaderboardService.GetLeaderboardPositions(memberId.ToString());
         
         return Ok(positions);
     }
     
     // GET <LeaderboardController>/rank/[lbId]/[player]/[profile]
+    /// <summary>
+    /// Get a player's rank in a leaderboard
+    /// </summary>
+    /// <param name="leaderboardId">Any leaderboard ID</param>
+    /// <param name="playerUuid">Player Uuid (no hyphens)</param>
+    /// <param name="profileUuid">Profile Uuid (no hyphens)</param>
+    /// <param name="includeUpcoming">Include upcoming players</param>
+    /// <param name="atRank">Starting rank for upcoming players</param>
+    /// <returns></returns>
     [HttpGet("rank/{leaderboardId}/{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardPositionDto>> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileUuid, [FromQuery] bool includeUpcoming = false, [FromQuery] int atRank = -1) {
-        if (!_leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
+        if (!leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
             return BadRequest("Invalid leaderboard ID.");
         }
 
-        var member = await _context.ProfileMembers
+        var member = await dataContext.ProfileMembers
             .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
             .FirstOrDefaultAsync();
@@ -167,28 +196,29 @@ public class LeaderboardController : ControllerBase
 
         // Update the profile if it's older than the cooldown
         if (member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
-            await _profileService.GetSelectedProfileMember(member.PlayerUuid);
+            await profileService.GetSelectedProfileMember(member.PlayerUuid);
         }
         
-        var position = await _leaderboardService.GetLeaderboardPosition(leaderboardId, member.Id.ToString());
+        var (position, score) = await leaderboardService.GetLeaderboardPositionAndScore(leaderboardId, member.Id.ToString());
         List<LeaderboardEntry>? upcomingPlayers = null;
         
         var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);
         rank = position != -1 ? Math.Min(position, rank) : rank;
 
         if (includeUpcoming && rank == -1) {
-            upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
+            upcomingPlayers = await leaderboardService.GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
         } else if (includeUpcoming && rank > 1) {
-            upcomingPlayers = await _leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
+            upcomingPlayers = await leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
                 Math.Min(rank - 1, 5));
         }
 
         // Reverse the list so that upcoming players are in ascending order
         upcomingPlayers?.Reverse();
-        var upcoming = _mapper.Map<List<LeaderboardEntryDto>>(upcomingPlayers);
+        var upcoming = mapper.Map<List<LeaderboardEntryDto>>(upcomingPlayers);
 
         var result = new LeaderboardPositionDto {
             Rank = position,
+            Amount = score,
             UpcomingRank = rank == -1 ? lb.Limit : rank - 1,
             UpcomingPlayers = upcoming
         };

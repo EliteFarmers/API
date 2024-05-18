@@ -31,14 +31,7 @@ public class LeaderboardPositionsDto {
 
 public class LeaderboardPositionDto {
     public int Rank { get; set; }
-    public int UpcomingRank { get; set; }
-    public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
-}
-
-public class LeaderboardPositionWithUpcomingDto {
-    public int Rank { get; set; }
     public double Amount { get; set; }
     public int UpcomingRank { get; set; }
-    public long LastUpdated { get; set; }
-    public List<LeaderboardEntryWithRankDto>? UpcomingPlayers { get; set; }
+    public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
 }

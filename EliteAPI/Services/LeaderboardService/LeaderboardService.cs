@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.Background;
+using NuGet.Protocol.Plugins;
 
 namespace EliteAPI.Services.LeaderboardService; 
 
@@ -50,7 +51,7 @@ public class LeaderboardService(
     public async Task<List<LeaderboardEntryWithRank>> GetLeaderboardSliceAtScore(string leaderboardId, double score, int limit = 5, string? excludeMemberId = null) {
         if (!LeaderboardExists(leaderboardId)) return new List<LeaderboardEntryWithRank>();
         
-        var memberRank = excludeMemberId is null ? -1 : await GetLeaderboardPosition(leaderboardId, excludeMemberId);
+        // var memberRank = excludeMemberId is null ? -1 : await GetLeaderboardPositionNoCheck(leaderboardId, excludeMemberId);
         
         var db = redis.GetDatabase();
         var exists = await db.KeyExistsAsync($"lb:{leaderboardId}");
@@ -118,9 +119,17 @@ public class LeaderboardService(
         return rank.HasValue ? (int) rank.Value + 1 : -1;
     }
 
-    public async Task<int> GetLeaderboardPosition(string leaderboardId, string memberId) {
-        if (!LeaderboardExists(leaderboardId)) return -1;
-        return await GetLeaderboardPositionNoCheck(leaderboardId, memberId);
+    public async Task<(int rank, double score)> GetLeaderboardPositionAndScore(string leaderboardId, string memberId, bool includeScore = true) {
+        if (!LeaderboardExists(leaderboardId)) return (-1, 0);
+        
+        var rank = await GetLeaderboardPositionNoCheck(leaderboardId, memberId);
+        
+        if (!includeScore) return (rank, 0);
+
+        var db = redis.GetDatabase();
+        var score = await db.SortedSetScoreAsync($"lb:{leaderboardId}", memberId) ?? 0;
+        
+        return (rank, score);
     }
     
     private async Task<List<LeaderboardEntry>> GetSlice(string leaderboardId, int offset = 0, int limit = 20) {
