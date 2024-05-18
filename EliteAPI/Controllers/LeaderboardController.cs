@@ -27,7 +27,18 @@ public class LeaderboardController(
 {
     private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
     private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
-
+    
+    /// <summary>
+    /// Get a list of leaderboards
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("/[controller]s")]
+    [ResponseCache(Duration = 60 * 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<ConfigLeaderboardSettings> GetLeaderboardSettings() {
+        return Ok(_settings);
+    }
+    
     // GET: <LeaderboardController>/id
     /// <summary>
     /// Get a leaderboard by ID
