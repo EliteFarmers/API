@@ -1,14 +1,18 @@
-﻿using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Data.Configurations;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
 using Npgsql;
 using Z.EntityFramework.Extensions;
 
 namespace EliteAPI.Data;
-public class DataContext(DbContextOptions<DataContext> options, IConfiguration config) : DbContext(options) 
+
+public class DataContext(DbContextOptions<DataContext> options, IConfiguration config) : IdentityDbContext<ApiUser>(options) 
 {
     private static NpgsqlDataSource? Source { get; set; }
     
@@ -37,6 +41,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfiguration(new RoleConfiguration());
+        
         modelBuilder.HasCollation("case_insensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
         
         modelBuilder.Entity<MinecraftAccount>().Property(c => c.Name)

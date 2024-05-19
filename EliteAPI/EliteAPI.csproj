@@ -16,6 +16,7 @@
 		<PackageReference Include="DotNetEnv" Version="3.0.0" />
 		<PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.5" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.5">
 		  <PrivateAssets>all</PrivateAssets>

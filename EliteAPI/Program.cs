@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.RegisterEliteConfigFiles();
 
 builder.Services.AddEliteServices();
+builder.Services.AddEliteAuthentication(builder.Configuration);
 builder.Services.AddEliteControllers();
 builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
