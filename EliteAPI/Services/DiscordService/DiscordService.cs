@@ -114,7 +114,7 @@ public class DiscordService(
         }
     }
 
-    private async Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken)
+    public async Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken)
     {
         var client = httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refreshToken);

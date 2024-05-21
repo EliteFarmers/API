@@ -1,64 +1,55 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using EliteAPI.Models.DTOs.Auth;
+using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class AuthController(IConfiguration configuration) : ControllerBase {
+public class AuthController(
+	IAuthService authService, 
+	UserManager<ApiUser> userManager) 
+	: ControllerBase 
+{
 	
-	// TODO: Implement authentication logic
 	[HttpPost]
-	public IActionResult Authenticate([FromBody] Credential credential) {
-		if (credential is { Username: "admin", Password: "password" }) {
-			var claims = new List<Claim> {
-				new Claim(ClaimTypes.Name, credential.Username),
-				new Claim(ClaimTypes.Email, "admin@elitebot.dev"),
-				new Claim("Admin", "true")
-			};
-			
-			var expiresAt = DateTime.UtcNow.AddMinutes(30);
-
-			return Ok(new {
-				access_token = CreateToken(claims, expiresAt),
-				expires_at = expiresAt
-			});
+	[Route("Login")]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> Authenticate([FromBody] DiscordLoginDto credential) {
+		var user = await authService.LoginAsync(credential);
+		
+		if (user is null) {
+			return Unauthorized();
 		}
+
+		return Ok(user);
+	}
+	
+	[HttpPost]
+	[Route("Refresh")]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> RefreshToken([FromBody] AuthResponseDto request) {
+		var response = await authService.VerifyRefreshToken(request);
 		
-		ModelState.AddModelError("Unauthorized", "Invalid credentials.");
-		return Unauthorized(ModelState);
+		if (response is null) {
+			return Unauthorized();
+		}
+
+		return Ok(response);
 	}
 
-	[Authorize]
+	[Authorize("Admin")]
 	[HttpGet("user")]
-	public IActionResult GetUser() {
-		return Ok("Hello, " + User.Identity?.Name);
-	}
-
-	/// <summary>
-	/// Generates a JWT token
-	/// </summary>
-	/// <param name="claims"></param>
-	/// <param name="expiresAt"></param>
-	/// <returns></returns>
-	private string CreateToken(IEnumerable<Claim> claims, DateTime expiresAt) {
-		var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
+	public async Task<IActionResult> GetUser() {
+		var user = await userManager.GetUserAsync(User);
+		if (user is null) return Unauthorized();
 		
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-		
-		var token = new JwtSecurityToken(
-			claims: claims,
-			notBefore: DateTime.UtcNow,
-			expires: expiresAt,
-			signingCredentials: credentials
-		);
-		
-		return new JwtSecurityTokenHandler().WriteToken(token);
+		return Ok("Hello, " + user.UserName);
 	}
 }
 

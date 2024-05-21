@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
@@ -59,6 +60,8 @@ public static class ServiceExtensions
 
         services.AddIdentityCore<ApiUser>()
             .AddRoles<IdentityRole>()
+            .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
+            .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<DataContext>();
         
         services.AddAuthentication(options => 
@@ -80,7 +83,11 @@ public static class ServiceExtensions
             });
         
         services.AddAuthorizationBuilder()
-            .AddPolicy("Admin", policy => policy.RequireClaim("Admin", "true"));
+            .AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"))
+            .AddPolicy("Moderator", policy => policy.RequireClaim(ClaimTypes.Role, "Moderator"))
+            .AddPolicy("Support", policy => policy.RequireClaim(ClaimTypes.Role, "Support"))
+            .AddPolicy("Wiki", policy => policy.RequireClaim(ClaimTypes.Role, "Wiki"))
+            .AddPolicy("User", policy => policy.RequireClaim(ClaimTypes.Role, "User"));
     }
 
     public static void AddEliteControllers(this IServiceCollection services)
