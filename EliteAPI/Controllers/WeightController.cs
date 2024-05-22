@@ -26,8 +26,12 @@ public class WeightController(
 ) : ControllerBase 
 {
     private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
-    private readonly IConnectionMultiplexer _redis = redis;
 
+    /// <summary>
+    /// Get farming weight for all profiles of a player
+    /// </summary>
+    /// <param name="playerUuid">Player UUID</param>
+    /// <returns></returns>
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -66,6 +70,11 @@ public class WeightController(
         return Ok(dto);
     }
 
+    /// <summary>
+    /// Get farming weight for the selected profile of a player
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <returns></returns>
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -89,6 +98,12 @@ public class WeightController(
         return Ok(mapper.Map<FarmingWeightDto>(weight));
     }
 
+    /// <summary>
+    /// Get farming weight for a specific profile of a player
+    /// </summary>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileUuid"></param>
+    /// <returns></returns>
     // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
@@ -113,6 +128,12 @@ public class WeightController(
         return Ok(mapper.Map<FarmingWeightDto>(weight));
     }
     
+    /// <summary>
+    /// Get crop weight constants
+    /// </summary>
+    /// <remarks>Use /weights/all instead</remarks>
+    /// <returns></returns>
+    [Obsolete("Use /weights/all instead")]
     [Route("/[controller]s")]
     [HttpGet]
     [DisableRateLimiting]
@@ -134,13 +155,17 @@ public class WeightController(
         return Ok(weights);
     }
     
+    /// <summary>
+    /// Get all farming weight constants
+    /// </summary>
+    /// <returns></returns>
     [Route("/[controller]s/All")]
     [HttpGet]
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<WeightsDto>> GetWeights() {
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var stored = await db.StringGetAsync("farming:weights");
         
         if (!stored.IsNullOrEmpty) {

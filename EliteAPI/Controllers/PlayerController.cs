@@ -12,36 +12,37 @@ namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class PlayerController : ControllerBase
+public class PlayerController(
+    DataContext context, 
+    IProfileService profileService, 
+    IMapper mapper)
+    : ControllerBase 
 {
-    private readonly DataContext _context;
-    private readonly IProfileService _profileService;
-    private readonly IMapper _mapper;
-
-    public PlayerController(DataContext context, IProfileService profileService, IMapper mapper)
-    {
-        _context = context;
-        _profileService = profileService;
-        _mapper = mapper;
-    }
-
-    // GET <ProfileController>
+    /// <summary>
+    /// Get player data by UUID or IGN
+    /// </summary>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
     [HttpGet("{playerUuidOrIgn}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<PlayerDataDto>> Get(string playerUuidOrIgn)
     {
-        var playerData = await _profileService.GetPlayerDataByUuidOrIgn(playerUuidOrIgn);
+        var playerData = await profileService.GetPlayerDataByUuidOrIgn(playerUuidOrIgn);
         if (playerData is null)
         {
             return NotFound("No player matching this UUID was found");
         }
 
-        var mapped = _mapper.Map<PlayerDataDto>(playerData);
+        var mapped = mapper.Map<PlayerDataDto>(playerData);
         return Ok(mapped);
     }
     
-    // POST <ProfileController>
+    /// <summary>
+    /// Get linked player data by Discord ID
+    /// </summary>
+    /// <param name="discordId"></param>
+    /// <returns></returns>
     [HttpGet("{discordId:long}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -53,10 +54,9 @@ public class PlayerController : ControllerBase
             return BadRequest("Invalid Discord ID");
         }
         
-        var account = await _context.Accounts
+        var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .FirstOrDefaultAsync(a => a.Id == (ulong) discordId);
-
         
         if (account is null)
         {
@@ -68,14 +68,14 @@ public class PlayerController : ControllerBase
         
         foreach (var minecraftAccount in minecraftAccounts)
         {
-            var data = await _profileService.GetPlayerData(minecraftAccount.Id);
+            var data = await profileService.GetPlayerData(minecraftAccount.Id);
             if (data is null) continue;
 
             if (minecraftAccount.Selected) {
                 dto.SelectedUuid = data.Uuid;
             }
             
-            dto.Players.Add(_mapper.Map<PlayerDataDto>(data));
+            dto.Players.Add(mapper.Map<PlayerDataDto>(data));
         }
         
         return Ok(dto);
