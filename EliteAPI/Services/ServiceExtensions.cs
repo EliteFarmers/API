@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Reflection;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
@@ -99,7 +98,7 @@ public static class ServiceExtensions
             opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
             {
                 In = ParameterLocation.Header,
-                Description = "Enter Discord Bearer Token",
+                Description = "Enter Bearer Token",
                 Name = "Authorization",
                 Type = SecuritySchemeType.Http,
                 BearerFormat = "JWT",
