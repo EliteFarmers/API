@@ -12,17 +12,16 @@ using StackExchange.Redis;
 namespace EliteAPI.Controllers; 
 
 [ApiController]
-[Authorize("Moderator")]
+[Authorize(ApiUserRoles.Moderator)]
 public class AdminController(
-    DataContext context, 
-    IMapper mapper, 
+    DataContext context,
     IConnectionMultiplexer redis,
     UserManager<ApiUser> userManager) 
     : ControllerBase
 {
     
     /// <summary>
-    /// Get list of members with permissions
+    /// Get list of members with roles
     /// </summary>
     /// <returns></returns>
     [HttpGet("Admins")]
@@ -30,12 +29,39 @@ public class AdminController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     public async Task<ActionResult<List<AccountWithPermsDto>>> GetAdmins() {
-        var members = await context.Accounts
-            .AsNoTracking()
-            .Where(a => a.Permissions != PermissionFlags.None)
-            .ToListAsync();
+        var members = new List<AccountWithPermsDto>();
+
+        await LoadUsers(ApiUserRoles.Admin);
+        await LoadUsers(ApiUserRoles.Moderator);
+        await LoadUsers(ApiUserRoles.Support);
+        await LoadUsers(ApiUserRoles.Wiki);
         
-        return Ok(mapper.Map<List<AccountWithPermsDto>>(members));
+        return members;
+
+        // Inefficient, but it works for now as the number of admins is low
+        async Task LoadUsers(string role) {
+            var users = await userManager.GetUsersInRoleAsync(ApiUserRoles.Admin);
+
+            foreach (var user in users) {
+                if (members?.Find(m => m.Id.Equals(user.Id)) is {} existingMember) {
+                    existingMember.Roles.Add(role);
+                    continue;
+                }
+            
+                await context.Entry(user).Reference(m => m.Account).LoadAsync();
+            
+                var member = new AccountWithPermsDto {
+                    Id = user.Id,
+                    DisplayName = user.Account.DisplayName,
+                    Username = user.UserName ?? user.Account.Username,
+                    Avatar = user.Account.Avatar,
+                    Discriminator = user.Account.Discriminator,
+                    Roles = [ role ]
+                };
+            
+                members?.Add(member);
+            }
+        } 
     }
     
     // POST <AdminController>/Permissions/12793764936498429/17
@@ -45,7 +71,7 @@ public class AdminController(
     /// <param name="memberId"></param>
     /// <param name="permission"></param>
     /// <returns></returns>
-    [Authorize("Admin")]
+    [Authorize(ApiUserRoles.Admin)]
     [HttpPost("[controller]/Permissions/{memberId:long}/{permission:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -79,7 +105,7 @@ public class AdminController(
     /// <param name="memberId"></param>
     /// <param name="permission"></param>
     /// <returns></returns>
-    [Authorize("Admin")]
+    [Authorize(ApiUserRoles.Admin)]
     [HttpDelete("[controller]/Permissions/{memberId:long}/{permission:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -128,7 +154,7 @@ public class AdminController(
     /// <param name="userId">Member id</param>
     /// <param name="role">Role name</param>
     /// <returns></returns>
-    [Authorize("Admin")]
+    [Authorize(ApiUserRoles.Admin)]
     [HttpPost("[controller]/User/{userId}/Roles/{role}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -165,7 +191,7 @@ public class AdminController(
     /// <param name="userId">Member id</param>
     /// <param name="role">Role name</param>
     /// <returns></returns>
-    [Authorize("Admin")]
+    [Authorize(ApiUserRoles.Admin)]
     [HttpDelete("[controller]/User/{userId}/Roles/{role}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
