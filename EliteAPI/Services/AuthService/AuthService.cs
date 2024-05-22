@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.DiscordService;
@@ -12,7 +13,8 @@ namespace EliteAPI.Services.AuthService;
 public class AuthService(
 	IDiscordService discordService, 
 	UserManager<ApiUser> userManager, 
-	IConfiguration configuration) 
+	IConfiguration configuration,
+	DataContext context) 
 	: IAuthService 
 {
 	
@@ -122,11 +124,19 @@ public class AuthService(
 		var expiresAt = configuration["Jwt:TokenExpirationInMinutes"] is { } expiration
 			? DateTimeOffset.UtcNow.AddMinutes(int.Parse(expiration))
 			: DateTimeOffset.UtcNow.AddMinutes(30);
+
+		// Load user accounts (and minecraft accounts)
+		await context.Entry(user).Reference(x => x.Account).LoadAsync();
+		
+		var primaryAccount = user.Account.MinecraftAccounts.FirstOrDefault(q => q.Selected)
+			?? user.Account.MinecraftAccounts.FirstOrDefault();
 		
 		var claims = new List<Claim> {
 			new(ClaimTypes.Name, user.UserName ?? string.Empty),
 			new(ClaimTypes.NameIdentifier, user.Id),
 			new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+			new(ApiUserClaims.Avatar, user.Account.Avatar ?? string.Empty),
+			new(ApiUserClaims.Ign, primaryAccount?.Name ?? string.Empty),
 		};
 		
 		// Add roles to the claims

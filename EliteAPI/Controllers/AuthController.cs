@@ -1,4 +1,6 @@
-﻿using EliteAPI.Models.DTOs.Auth;
+﻿using System.Collections.Immutable;
+using System.Security.Claims;
+using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +17,32 @@ public class AuthController(
 	: ControllerBase 
 {
 	
+	/// <summary>
+	/// Get logged in account
+	/// </summary>
+	/// <remarks>Used to get session information from the token</remarks>
+	/// <returns></returns>
+	[Authorize]
+	[HttpGet("me")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+	public ActionResult<AuthSessionDto> GetSelfOverview()
+	{
+		return Ok(new AuthSessionDto {
+			Id = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+			Username = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
+			Avatar = User.FindFirstValue(ApiUserClaims.Avatar) ?? string.Empty,
+			Ign = User.FindFirstValue(ApiUserClaims.Ign) ?? string.Empty,
+			Roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray()
+		});
+	}
+	
+	/// <summary>
+	/// Login with Discord credentials
+	/// </summary>
+	/// <remarks>Used for <see href="https://elitebot.dev/">the website</see> to login users with Discord</remarks>
+	/// <param name="credential"></param>
+	/// <returns></returns>
 	[HttpPost]
 	[Route("Login")]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -29,6 +57,12 @@ public class AuthController(
 		return Ok(user);
 	}
 	
+	/// <summary>
+	/// Refresh users tokens
+	/// </summary>
+	/// <remarks>Used for <see href="https://elitebot.dev/">the website</see> to refresh user logins</remarks>
+	/// <param name="request"></param>
+	/// <returns></returns>
 	[HttpPost]
 	[Route("Refresh")]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -41,14 +75,5 @@ public class AuthController(
 		}
 
 		return Ok(response);
-	}
-
-	[Authorize("Admin")]
-	[HttpGet("user")]
-	public async Task<IActionResult> GetUser() {
-		var user = await userManager.GetUserAsync(User);
-		if (user is null) return Unauthorized();
-		
-		return Ok("Hello, " + user.UserName);
 	}
 }

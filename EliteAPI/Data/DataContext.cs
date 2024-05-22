@@ -50,6 +50,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
         modelBuilder.Entity<MinecraftAccount>().Property(c => c.Name)
             .UseCollation("case_insensitive");
 
+        modelBuilder.Entity<EliteAccount>().Navigation(e => e.MinecraftAccounts).AutoInclude();
         modelBuilder.Entity<MinecraftAccount>().Navigation(e => e.Badges).AutoInclude();
         modelBuilder.Entity<UserBadge>().Navigation(e => e.Badge).AutoInclude();
 
