@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using AutoMapper;
-using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -8,6 +7,8 @@ using EliteAPI.Services.AccountService;
 using EliteAPI.Services.MemberService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,44 +18,61 @@ namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class AccountController(DataContext context, IProfileService profileService, IMemberService memberService,
-        IAccountService accountService, IMojangService mojangService, IMapper mapper)
+public partial class AccountController(
+    DataContext context, 
+    IProfileService profileService, 
+    IMemberService memberService,
+    IAccountService accountService, 
+    IMojangService mojangService, 
+    IMapper mapper,
+    UserManager<ApiUser> userManager)
     : ControllerBase
 {
-    // GET <ValuesController>
+    
+    /// <summary>
+    /// Get logged in Minecraft account
+    /// </summary>
+    /// <returns></returns>
+    [Authorize]
     [HttpGet]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult<AuthorizedAccountDto>> Get()
     {
-        if (HttpContext.Items["Account"] is not EliteAccount result)
-        {
-            return Unauthorized("Account not found.");
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return BadRequest("Linked account not found.");
         }
-
+        
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
-            .FirstOrDefaultAsync(a => a.Id.Equals(result.Id));
+            .FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId));
 
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
     }
     
     // GET <ValuesController>
+    /// <summary>
+    /// Search for Minecraft IGNs
+    /// </summary>
+    /// <param name="query">Query string</param>
+    /// <param name="start">Start of results for pagination</param>
+    /// <returns></returns>
     [HttpGet("Search")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<List<string>>> Search([FromQuery(Name = "q")] string query, [FromQuery] string? start = null)
     {
-        // Check that the query is a valid username or UUID with regex
-        if (!Regex.IsMatch(query, "^[a-zA-Z0-9_]{1,26}$"))
+        // Check that the query is a valid username with regex
+        if (!UserNameRegex().IsMatch(query))
         {
             return BadRequest("Invalid query.");
         }
         
-        // Check that the start param is a valid username or UUID with regex
-        if (start is not null && !Regex.IsMatch(start, "^[a-zA-Z0-9_]{1,26}$"))
+        // Check that the start param is a valid username with regex
+        if (start is not null && !UserNameRegex().IsMatch(start))
         {
             return BadRequest("Invalid query.");
         }
@@ -73,6 +91,11 @@ public class AccountController(DataContext context, IProfileService profileServi
     }
     
     // GET <ValuesController>/12793764936498429
+    /// <summary>
+    /// Get Minecraft account by Discord ID
+    /// </summary>
+    /// <param name="discordId"></param>
+    /// <returns></returns>
     [HttpGet("{discordId:long:minlength(17)}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -104,6 +127,11 @@ public class AccountController(DataContext context, IProfileService profileServi
     }
     
     // GET <ValuesController>/12793764936498429
+    /// <summary>
+    /// Get Minecraft account by IGN or UUID
+    /// </summary>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
     [HttpGet("{playerUuidOrIgn}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -136,45 +164,62 @@ public class AccountController(DataContext context, IProfileService profileServi
         return Ok(result);
     }
 
+    /// <summary>
+    /// Link a Minecraft account to a Discord account
+    /// </summary>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
+    [Authorize]
     [HttpPost("{playerUuidOrIgn}")]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> LinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not EliteAccount loggedInAccount)
-        {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
             return Unauthorized("Account not found.");
         }
-
-        return await accountService.LinkAccount(loggedInAccount.Id, playerUuidOrIgn);
+        
+        return await accountService.LinkAccount(user.AccountId.Value, playerUuidOrIgn);
     }
 
+    /// <summary>
+    /// Unlink a Minecraft account from a Discord account
+    /// </summary>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
     [HttpDelete("{playerUuidOrIgn}")]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> UnlinkAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not EliteAccount linkedAccount)
-        {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
             return Unauthorized("Account not found.");
         }
 
-        return await accountService.UnlinkAccount(linkedAccount.Id, playerUuidOrIgn);
+        return await accountService.UnlinkAccount(user.AccountId.Value, playerUuidOrIgn);
     }
     
+    /// <summary>
+    /// Mark a Minecraft account as primary
+    /// </summary>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
+    [Authorize]
     [HttpPost("primary/{playerUuidOrIgn}")]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> MakePrimaryAccount(string playerUuidOrIgn)
     {
-        if (HttpContext.Items["Account"] is not EliteAccount loggedInAccount)
-        {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
             return Unauthorized("Account not found.");
         }
 
-        return await accountService.MakePrimaryAccount(loggedInAccount.Id, playerUuidOrIgn);
+        return await accountService.MakePrimaryAccount(user.AccountId.Value, playerUuidOrIgn);
     }
+
+    [GeneratedRegex("^[a-zA-Z0-9_]{1,26}$")]
+    private static partial Regex UserNameRegex();
 }
