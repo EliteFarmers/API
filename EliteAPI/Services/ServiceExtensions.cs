@@ -83,11 +83,11 @@ public static class ServiceExtensions
             });
         
         services.AddAuthorizationBuilder()
-            .AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"))
-            .AddPolicy("Moderator", policy => policy.RequireClaim(ClaimTypes.Role, "Moderator"))
-            .AddPolicy("Support", policy => policy.RequireClaim(ClaimTypes.Role, "Support"))
-            .AddPolicy("Wiki", policy => policy.RequireClaim(ClaimTypes.Role, "Wiki"))
-            .AddPolicy("User", policy => policy.RequireClaim(ClaimTypes.Role, "User"));
+            .AddPolicy("Admin", policy => policy.RequireRole("Admin"))
+            .AddPolicy("Moderator", policy => policy.RequireRole("Moderator", "Admin"))
+            .AddPolicy("Support", policy => policy.RequireRole("Support", "Moderator", "Admin"))
+            .AddPolicy("Wiki", policy => policy.RequireRole("Wiki", "Support", "Moderator", "Admin"))
+            .AddPolicy("User", policy => policy.RequireRole("User"));
     }
 
     public static void AddEliteControllers(this IServiceCollection services)
