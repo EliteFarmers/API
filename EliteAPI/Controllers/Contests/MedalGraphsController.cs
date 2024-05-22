@@ -16,6 +16,11 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
         PropertyNameCaseInsensitive = true
     };
 
+    /// <summary>
+    /// Get current average medal brackets
+    /// </summary>
+    /// <param name="months">Amount of previous Skyblock months to include</param>
+    /// <returns></returns>
     [HttpGet("now")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -41,6 +46,13 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
         });
     }
     
+    /// <summary>
+    /// Get medal brackets for a specific month
+    /// </summary>
+    /// <param name="sbYear">Skyblock Year</param>
+    /// <param name="sbMonth">Skyblock Month</param>
+    /// <param name="months">Amount of previous Skyblock months to include</param>
+    /// <returns></returns>
     [HttpGet("{sbYear:int}/{sbMonth:int}")]
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -76,6 +88,13 @@ public class MedalGraphsController(DataContext context) : ControllerBase {
         });
     }
     
+    /// <summary>
+    /// Get medal brackets for multiple years
+    /// </summary>
+    /// <param name="sbYear">Starting Skyblock Year</param>
+    /// <param name="years">Amount of years to include</param>
+    /// <param name="months">Amount of previous Skyblock months to include for each year</param>
+    /// <returns></returns>
     [HttpGet("{sbYear:int}")]
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
