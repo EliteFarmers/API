@@ -147,7 +147,6 @@ public static class ServiceExtensions
         services.AddScoped<IEventService, EventService.EventService>();
 
         services.AddScoped<ProfileParser>();
-        services.AddScoped<DiscordAuthFilter>();
         services.AddScoped<DiscordBotOnlyFilter>();
     }
 
