@@ -40,7 +40,7 @@ public class BadgeController(
     /// <param name="playerUuid">Player UUID (no hyphens)</param>
     /// <param name="badgeId">Badge ID</param>
     /// <returns></returns>
-    [Authorize("Moderator")]
+    [Authorize(ApiUserRoles.Moderator)]
     [HttpPost("user/{playerUuid}/{badgeId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -56,7 +56,7 @@ public class BadgeController(
     /// <param name="playerUuid">Player UUID (no hyphens)</param>
     /// <param name="badgeId">Badge ID</param>
     /// <returns></returns>
-    [Authorize("Moderator")]
+    [Authorize(ApiUserRoles.Moderator)]
     [HttpDelete("user/{playerUuid}/{badgeId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -71,8 +71,8 @@ public class BadgeController(
     /// </summary>
     /// <param name="badge">Badge information</param>
     /// <returns></returns>
-    [Authorize("Admin")]
-    [HttpPost("[controller]/Badges")]
+    [Authorize(ApiUserRoles.Admin)]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -99,7 +99,7 @@ public class BadgeController(
     /// <param name="badgeId">Badge ID</param>
     /// <param name="badge">New values</param>
     /// <returns></returns>
-    [Authorize("Admin")]
+    [Authorize(ApiUserRoles.Admin)]
     [HttpPatch("{badgeId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -136,7 +136,7 @@ public class BadgeController(
     /// </summary>
     /// <param name="badgeId">Badge ID</param>
     /// <returns></returns>
-    [Authorize("Admin")]
+    [Authorize(ApiUserRoles.Admin)]
     [HttpDelete("{badgeId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]

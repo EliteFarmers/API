@@ -178,7 +178,7 @@ public class AuthService(
 	
 	private static void UpdateUserDiscordTokens(ApiUser user, DiscordLoginDto dto) {
 		var accessExpires = long.TryParse(dto.ExpiresIn, out var expiresIn)
-			? DateTimeOffset.FromUnixTimeSeconds(expiresIn)
+			? DateTimeOffset.UtcNow.AddMilliseconds(expiresIn)
 			: DateTimeOffset.UtcNow.AddMinutes(8);
 
 		user.DiscordAccessToken = dto.AccessToken;

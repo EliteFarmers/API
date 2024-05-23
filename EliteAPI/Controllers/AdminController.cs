@@ -29,39 +29,27 @@ public class AdminController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     public async Task<ActionResult<List<AccountWithPermsDto>>> GetAdmins() {
-        var members = new List<AccountWithPermsDto>();
-
-        await LoadUsers(ApiUserRoles.Admin);
-        await LoadUsers(ApiUserRoles.Moderator);
-        await LoadUsers(ApiUserRoles.Support);
-        await LoadUsers(ApiUserRoles.Wiki);
+        // I'm sure this query can be optimized further.
+        // Right now it's not expected to handle a large amount of users.
+        var users = from user in context.Users
+            join account in context.Accounts on user.AccountId equals account.Id
+            join userRole in context.UserRoles on user.Id equals userRole.UserId into userRoles
+            from userRole in userRoles.DefaultIfEmpty()
+            join role in context.Roles on userRole.RoleId equals role.Id into roles
+            from role in roles.DefaultIfEmpty()
+            where role == null || role.Name != ApiUserRoles.User
+            group new { user, account, role } by new { user.Id, user.UserName }
+            into g
+            select new AccountWithPermsDto {
+                Id = g.Key.Id,
+                DisplayName = g.Max(x => x.account.DisplayName),
+                Username = g.Key.UserName ?? g.Max(x => x.account.Username),
+                Avatar = g.Max(x => x.account.Avatar),
+                Discriminator = g.Max(x => x.account.Discriminator),
+                Roles = g.Where(x => x.role != null).Select(x => x.role.Name).ToList()
+            };
         
-        return members;
-
-        // Inefficient, but it works for now as the number of admins is low
-        async Task LoadUsers(string role) {
-            var users = await userManager.GetUsersInRoleAsync(ApiUserRoles.Admin);
-
-            foreach (var user in users) {
-                if (members?.Find(m => m.Id.Equals(user.Id)) is {} existingMember) {
-                    existingMember.Roles.Add(role);
-                    continue;
-                }
-            
-                await context.Entry(user).Reference(m => m.Account).LoadAsync();
-            
-                var member = new AccountWithPermsDto {
-                    Id = user.Id,
-                    DisplayName = user.Account.DisplayName,
-                    Username = user.UserName ?? user.Account.Username,
-                    Avatar = user.Account.Avatar,
-                    Discriminator = user.Account.Discriminator,
-                    Roles = [ role ]
-                };
-            
-                members?.Add(member);
-            }
-        } 
+        return await users.AsNoTracking().AsSplitQuery().ToListAsync();
     }
     
     // POST <AdminController>/Permissions/12793764936498429/17
@@ -170,7 +158,7 @@ public class AdminController(
         }
         
         var user = await userManager.FindByIdAsync(userId);
-        
+
         if (user is null) {
             return NotFound("User not found.");
         }

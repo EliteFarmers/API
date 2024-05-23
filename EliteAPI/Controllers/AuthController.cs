@@ -3,19 +3,14 @@ using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class AuthController(
-	IAuthService authService, 
-	UserManager<ApiUser> userManager) 
-	: ControllerBase 
+public class AuthController(IAuthService authService) : ControllerBase 
 {
-	
 	/// <summary>
 	/// Get logged in account
 	/// </summary>
@@ -46,7 +41,7 @@ public class AuthController(
 	[Route("Login")]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> Authenticate([FromBody] DiscordLoginDto credential) {
+	public async Task<ActionResult<AuthResponseDto>> Authenticate([FromBody] DiscordLoginDto credential) {
 		var user = await authService.LoginAsync(credential);
 		
 		if (user is null) {
@@ -66,7 +61,7 @@ public class AuthController(
 	[Route("Refresh")]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> RefreshToken([FromBody] AuthResponseDto request) {
+	public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] AuthResponseDto request) {
 		var response = await authService.VerifyRefreshToken(request);
 		
 		if (response is null) {
