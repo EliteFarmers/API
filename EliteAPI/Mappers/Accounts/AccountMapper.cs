@@ -14,10 +14,6 @@ public class AccountMapper : Profile
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
             .ForMember(a => a.Permissions, opt => opt.MapFrom(a => (int) a.Permissions))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
-
-        CreateMap<EliteAccount, AccountWithPermsDto>()
-            .ForMember(a => a.Permissions, opt => opt.MapFrom(a => (int) a.Permissions))
-            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
     }
 }
 

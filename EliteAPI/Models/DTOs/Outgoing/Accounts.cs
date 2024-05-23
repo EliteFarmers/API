@@ -102,8 +102,7 @@ public class AccountWithPermsDto {
     public required string Id { get; set; }
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
-
-    public int Permissions { get; set; } = 0;
+    public List<string> Roles { get; set; } = new();
 
     public string? Discriminator { get; set; }
     public string? Avatar { get; set; }

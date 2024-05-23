@@ -11,9 +11,12 @@ namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
 [ApiController]
-public class ProfileController(IProfileService profileService, IMapper mapper, DataContext context)
-    : ControllerBase {
-    
+public class ProfileController(
+    IProfileService profileService, 
+    IMapper mapper, 
+    DataContext context)
+    : ControllerBase 
+{
     /// <summary>
     /// Selected Profile Member
     /// </summary>

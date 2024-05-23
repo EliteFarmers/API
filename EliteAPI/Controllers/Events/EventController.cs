@@ -8,6 +8,8 @@ using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.EventService;
 using EliteAPI.Services.MemberService;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -21,7 +23,8 @@ public class EventController(
     IMapper mapper,
     IMemberService memberService,
     IDiscordService discordService,
-    IEventService eventService)
+    IEventService eventService,
+    UserManager<ApiUser> userManager)
     : ControllerBase 
 {
 
@@ -139,24 +142,27 @@ public class EventController(
     /// <returns></returns>
     // POST <EventController>/12793764936498429/join
     [HttpPost("join")]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
+    [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId, [FromQuery] string? playerUuid, [FromQuery] string? profileId)
-    {
-        if (HttpContext.Items["Account"] is not EliteAccount authAccount || HttpContext.Items["DiscordToken"] is not string token) {
-            return Unauthorized("Account not found.");
+    public async Task<ActionResult<EventDetailsDto>> JoinEvent(ulong eventId, [FromQuery] string? playerUuid, [FromQuery] string? profileId) {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return BadRequest("Linked account not found.");
         }
         
-        var account = await context.Accounts
-            .Include(a => a.MinecraftAccounts)
-            .FirstOrDefaultAsync(a => a.Id == authAccount.Id);
-        
-        if (account is null) {
-            return Unauthorized("Account not found.");
+        if (user.DiscordAccessToken is null) {
+            return BadRequest("Discord account not linked.");
         }
+        
+        if (user.AccountId is null) {
+            return BadRequest("Linked account not found.");
+        }
+        
+        await context.Entry(user).Reference(x => x.Account).LoadAsync();
+        var account = user.Account;
         
         if (playerUuid is not null && playerUuid.Length != 32) {
             return BadRequest("Invalid playerUuid provided.");
@@ -172,7 +178,7 @@ public class EventController(
             return BadRequest("You can no longer join this event.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(account.Id, token);
+        var guilds = await discordService.GetUsersGuilds(account.Id, user.DiscordAccessToken);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
         if (userGuild is null) {
@@ -265,17 +271,25 @@ public class EventController(
     /// <returns></returns>
     // POST <EventController>/12793764936498429/leave
     [HttpPost("leave")]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
+    [Authorize]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<EventDetailsDto>> LeaveEvent(ulong eventId)
     {
-        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string token) {
-            return Unauthorized("Account not found.");
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return BadRequest("Linked account not found.");
         }
 
+        if (user.AccountId is null) {
+            return BadRequest("Linked account not found.");
+        }
+        
+        await context.Entry(user).Reference(x => x.Account).LoadAsync();
+        var account = user.Account;
+        
         await discordService.RefreshBotGuilds();
         
         var eliteEvent = await context.Events.AsNoTracking()

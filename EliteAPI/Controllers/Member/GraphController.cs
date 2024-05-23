@@ -1,8 +1,8 @@
-﻿using EliteAPI.Authentication;
-using EliteAPI.Data;
+﻿using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.TimescaleService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +17,7 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     /// </summary>
     /// <param name="playerUuid"></param>
     /// <param name="profileUuid"></param>
-    /// <param name="days">Amount of days after the "from" time to include</param>
+    /// <param name="days">Amount of days after the "from" timestamp to include</param>
     /// <param name="from">Unix timestamp in seconds for the start of the data to return</param>
     /// <param name="perDay">Data points returned per 24 hour period</param>
     /// <response code="200">Returns the list of data points</response>
@@ -60,6 +60,7 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     /// <param name="playerUuid"></param>
     /// <param name="profileUuid"></param>
     /// <param name="from">Unix timestamp in seconds for the start of the data to return</param>
+    /// <param name="days">Amount of days after the "from" timestamp to include</param>
     /// <param name="perDay">Data points returned per 24 hour period</param>
     /// <response code="200">Returns the list of data points</response>
     /// <returns></returns>
@@ -69,7 +70,8 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetSkillExperiences(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0, [FromQuery] int perDay = 4) {
+    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetSkillExperiences(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0, [FromQuery] int perDay = 4) 
+    {
         var now = DateTimeOffset.UtcNow;
         var start = (from == 0) 
             ? now - TimeSpan.FromDays(days)
@@ -106,20 +108,13 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/crops
     [Route("/[controller]/Admin/{playerUuid:length(32)}/{profileUuid:length(32)}/crops")]
     [HttpGet]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
+    [Authorize(ApiUserRoles.Support)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetAllCropCollections(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0) {
-        if (!HttpContext.Items.TryGetValue("Account", out var accountItem) || accountItem is not EliteAccount account) {
-            return Unauthorized("You do not have permission to view this resource.");
-        }
-
-        if (account.Permissions < PermissionFlags.ViewGraphs) {
-            return Unauthorized("You do not have permission to view this resource.");
-        }
-        
+    public async Task<ActionResult<List<CropCollectionsDataPointDto>>> GetAllCropCollections(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0) 
+    {
         var now = DateTimeOffset.UtcNow;
         var start = (from == 0) 
             ? now - TimeSpan.FromDays(days)
@@ -154,20 +149,13 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/skills
     [Route("/[controller]/Admin/{playerUuid:length(32)}/{profileUuid:length(32)}/skills")]
     [HttpGet]
-    [ServiceFilter(typeof(DiscordAuthFilter))]
+    [Authorize(ApiUserRoles.Support)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<SkillsDataPointDto>>> GetAllSkillExperiences(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0) {
-        if (!HttpContext.Items.TryGetValue("Account", out var accountItem) || accountItem is not EliteAccount account) {
-            return Unauthorized("You do not have permission to view this resource.");
-        }
-
-        if (account.Permissions < PermissionFlags.ViewGraphs) {
-            return Unauthorized("You do not have permission to view this resource.");
-        }
-        
+    public async Task<ActionResult<List<SkillsDataPointDto>>> GetAllSkillExperiences(string playerUuid, string profileUuid, [FromQuery] int days = 7, [FromQuery] long from = 0) 
+    {
         var now = DateTimeOffset.UtcNow;
         var start = (from == 0) 
             ? now - TimeSpan.FromDays(days)

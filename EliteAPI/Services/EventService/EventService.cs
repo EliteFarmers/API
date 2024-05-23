@@ -249,12 +249,14 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		switch (eventDto.Type) {
 			case EventType.None:
 			case EventType.FarmingWeight:
-				if (@event is not WeightEvent weightEvent || eventDto is not CreateWeightEventDto weightDto) return false;
-				weightEvent.Data = weightDto.Data ?? weightEvent.Data;
+				if (@event is WeightEvent weightEvent) {
+                    weightEvent.Data = (eventDto is CreateWeightEventDto weightDto ? weightDto.Data : null) ?? weightEvent.Data;
+                }
 				break;
 			case EventType.Medals:
-				if (@event is not MedalEvent medalEvent || eventDto is not CreateMedalEventDto medalDto) return false;
-				medalEvent.Data = medalDto.Data ?? medalEvent.Data;
+				if (@event is MedalEvent medalEvent) {
+                    medalEvent.Data = (eventDto is CreateMedalEventDto medalDto ? medalDto.Data : null) ?? medalEvent.Data;
+                }
 				break;
 			default:
 				return false;

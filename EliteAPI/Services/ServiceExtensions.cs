@@ -1,13 +1,16 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Parsers.Skyblock;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services.AccountService;
+using EliteAPI.Services.AuthService;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.BadgeService;
 using EliteAPI.Services.CacheService;
@@ -21,7 +24,10 @@ using EliteAPI.Services.MessageService;
 using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using EliteAPI.Services.TimescaleService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 
@@ -47,6 +53,41 @@ public static class ServiceExtensions
 
         services.AddDbContext<DataContext>();
     }
+    
+    public static void AddEliteAuthentication(this IServiceCollection services, IConfiguration configuration) {
+        var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
+
+        services.AddIdentityCore<ApiUser>()
+            .AddRoles<IdentityRole>()
+            .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
+            .AddDefaultTokenProviders()
+            .AddEntityFrameworkStores<DataContext>();
+        
+        services.AddAuthentication(options => 
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+        
+        services.AddAuthorizationBuilder()
+            .AddPolicy("Admin", policy => policy.RequireRole("Admin"))
+            .AddPolicy("Moderator", policy => policy.RequireRole("Moderator", "Admin"))
+            .AddPolicy("Support", policy => policy.RequireRole("Support", "Moderator", "Admin"))
+            .AddPolicy("Wiki", policy => policy.RequireRole("Wiki", "Support", "Moderator", "Admin"))
+            .AddPolicy("User", policy => policy.RequireRole("User"));
+    }
 
     public static void AddEliteControllers(this IServiceCollection services)
     {
@@ -57,7 +98,7 @@ public static class ServiceExtensions
             opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
             {
                 In = ParameterLocation.Header,
-                Description = "Enter Discord Bearer Token",
+                Description = "Enter Bearer Token",
                 Name = "Authorization",
                 Type = SecuritySchemeType.Http,
                 BearerFormat = "JWT",
@@ -96,6 +137,7 @@ public static class ServiceExtensions
         services.AddScoped<IMemberService, MemberService.MemberService>();
         services.AddScoped<IAccountService, AccountService.AccountService>();
         services.AddScoped<IProfileService, ProfileService.ProfileService>();
+        services.AddScoped<IAuthService, AuthService.AuthService>();
         services.AddScoped<IDiscordService, DiscordService.DiscordService>();
         services.AddScoped<ILeaderboardService, LeaderboardService.LeaderboardService>();
         services.AddScoped<IGuildService, GuildService.GuildService>();
@@ -104,7 +146,6 @@ public static class ServiceExtensions
         services.AddScoped<IEventService, EventService.EventService>();
 
         services.AddScoped<ProfileParser>();
-        services.AddScoped<DiscordAuthFilter>();
         services.AddScoped<DiscordBotOnlyFilter>();
     }
 

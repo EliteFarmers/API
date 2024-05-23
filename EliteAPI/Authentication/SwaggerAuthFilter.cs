@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -11,10 +12,8 @@ public class SwaggerAuthFilter : IOperationFilter {
 	public void Apply(OpenApiOperation operation, OperationFilterContext context) {
 		var metadata = context.ApiDescription.ActionDescriptor.EndpointMetadata;
 		
-		// Check if the endpoint has the DiscordAuthFilter or DiscordBotOnlyFilter
-		if (!metadata.Any(x => x is ServiceFilterAttribute filter 
-		    && (filter.ServiceType == typeof(DiscordAuthFilter) 
-		        || filter.ServiceType == typeof(DiscordBotOnlyFilter)))) 
+		// Check if the endpoint has [Authorize] or the DiscordAuthFilter or DiscordBotOnlyFilter
+		if (!metadata.Any(x => x is AuthorizeAttribute || x is ServiceFilterAttribute filter && filter.ServiceType == typeof(DiscordBotOnlyFilter))) 
 		{
 			return;
 		}

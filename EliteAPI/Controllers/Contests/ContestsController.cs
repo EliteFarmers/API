@@ -18,13 +18,21 @@ namespace EliteAPI.Controllers.Contests;
 
 [Route("[controller]")]
 [ApiController]
-public class ContestsController(DataContext dataContext, IMapper mapper, IConnectionMultiplexer cache,
-        ILogger<ContestsController> logger)
-    : ControllerBase {
-    
+public class ContestsController(
+    DataContext dataContext, 
+    IMapper mapper, 
+    IConnectionMultiplexer cache,
+    ILogger<ContestsController> logger)
+    : ControllerBase 
+{
     private const int RequiredIdenticalContestSubmissions = 10;
     
-    // GET <ContestsController>/285
+    /// <summary>
+    /// Get all contests in a year
+    /// </summary>
+    /// <param name="year">Skyblock Year</param>
+    /// <param name="now">Use current year</param>
+    /// <returns></returns>
     [HttpGet("at/{year:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -130,7 +138,11 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         }
     }
     
-    // GET <ContestsController>/285
+    /// <summary>
+    /// Get contest records for a specific year
+    /// </summary>
+    /// <param name="year">Skyblock Year</param>
+    /// <returns></returns>
     [HttpGet("Records/{year:int}")]
     [ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -163,7 +175,14 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         return Ok(dto);
     }
     
-    // GET <ContestsController>/at/now
+    /// <summary>
+    /// Get upcoming contests for the current year
+    /// </summary>
+    /// <remarks>
+    /// Uses crowd-sourced data, may be inaccurate.
+    /// Data used and provided by <see href="https://github.com/hannibal002/SkyHanni/">SkyHanni</see> to display upcoming contests.
+    /// </remarks>
+    /// <returns></returns>
     [HttpGet("at/now")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -171,7 +190,13 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         return await GetAllContestsInOneYear(SkyblockDate.Now.Year + 1, true);
     }
     
-    // GET <ContestsController>/200/12/5
+    /// <summary>
+    /// Get all contests in a day
+    /// </summary>
+    /// <param name="year">Skyblock Year</param>
+    /// <param name="month">Skyblock Month</param>
+    /// <param name="day">Skyblock Day</param>
+    /// <returns></returns>
     [HttpGet("at/{year:int}/{month:int}/{day:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -184,7 +209,12 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         return await GetContestsAt(timestamp);
     }
 
-    // GET <ContestsController>/200/12
+    /// <summary>
+    /// Get all contests in a month
+    /// </summary>
+    /// <param name="year">Skyblock Year</param>
+    /// <param name="month">Skyblock Month</param>
+    /// <returns></returns>
     [HttpGet("at/{year:int}/{month:int}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -221,7 +251,11 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         return Ok(data);
     }
 
-    // GET <ContestsController>/1604957700
+    /// <summary>
+    /// Get the three contests for a specific skyblock day
+    /// </summary>
+    /// <param name="timestamp">Unix timestamp in seconds</param>
+    /// <returns></returns>
     [HttpGet("{timestamp:long}")]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -259,7 +293,12 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         return Ok(data);
     }
     
-    // GET /contest/285:2_11:CACTUS
+    /// <summary>
+    /// Get contest from Hypixel contest key
+    /// </summary>
+    /// <remarks>Example key: "285:2_11:CACTUS"</remarks>
+    /// <param name="contestKey"></param>
+    /// <returns></returns>
     [Route("/Contest/{contestKey}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 30, Location = ResponseCacheLocation.Any)]
@@ -293,7 +332,15 @@ public class ContestsController(DataContext dataContext, IMapper mapper, IConnec
         return Ok(data);
     }
     
-    // POST <ContestsController>/at/now
+    /// <summary>
+    /// Upload upcoming contests for the current year
+    /// </summary>
+    /// <remarks>
+    /// Submit this Skyblock year's contests to the API.
+    /// Used by <see href="https://github.com/hannibal002/SkyHanni/">SkyHanni</see> to crowd-source upcoming contests.
+    /// </remarks>
+    /// <param name="providedBody"></param>
+    /// <returns></returns>
     [HttpPost("at/now")]
     [RequestSizeLimit(16000)] // Leaves some room for error
     [ProducesResponseType(StatusCodes.Status200OK)]

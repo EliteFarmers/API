@@ -9,25 +9,23 @@ namespace EliteAPI.Controllers.Contests;
 
 [Route("/Contests/{playerUuid:length(32)}")]
 [ApiController]
-public class PlayerContestsController : ControllerBase
+public class PlayerContestsController(
+    DataContext dataContext, 
+    IMapper mapper) 
+    : ControllerBase 
 {
-    private readonly DataContext _context;
-    private readonly IMapper _mapper;
-    
-    public PlayerContestsController(DataContext dataContext, IMapper mapper)
-    {
-        _context = dataContext;
-        _mapper = mapper;
-    }
-    
-    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/
+    /// <summary>
+    /// Get all contests of a player
+    /// </summary>
+    /// <param name="playerUuid">Player UUID (no hyphens)</param>
+    /// <returns></returns>
     [HttpGet]
     [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllOfOnePlayersContests(string playerUuid)
     {
-        var profileMembers = await _context.ProfileMembers
+        var profileMembers = await dataContext.ProfileMembers
             .Where(p => p.PlayerUuid.Equals(playerUuid))
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)
@@ -41,19 +39,24 @@ public class PlayerContestsController : ControllerBase
 
         foreach (var profileMember in profileMembers)
         {
-            data.AddRange(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
+            data.AddRange(mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
         }
 
         return Ok(data);
     }
 
-    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
+    /// <summary>
+    /// Get all contests for a profile member
+    /// </summary>
+    /// <param name="playerUuid">Player UUID (no hyphens)</param>
+    /// <param name="profileUuid">Profile UUID (no hyphens)</param>
+    /// <returns></returns>
     [HttpGet("{profileUuid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfOneProfileMember(string playerUuid, string profileUuid)
     {
-        var profileMember = await _context.ProfileMembers
+        var profileMember = await dataContext.ProfileMembers
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.ProfileId.Equals(profileUuid))
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)
@@ -63,16 +66,20 @@ public class PlayerContestsController : ControllerBase
 
         if (profileMember is null) return NotFound("Player not found.");
 
-        return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
+        return Ok(mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
     }
 
-    // GET <ContestsController>/7da0c47581dc42b4962118f8049147b7/Selected
+    /// <summary>
+    /// Get all contests for a selected profile member
+    /// </summary>
+    /// <param name="playerUuid">Player UUID (no hyphens)</param>
+    /// <returns></returns>
     [HttpGet("Selected")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<ContestParticipationDto>>> GetAllContestsOfSelectedProfileMember(string playerUuid)
     {
-        var profileMember = await _context.ProfileMembers
+        var profileMember = await dataContext.ProfileMembers
             .Where(p => p.PlayerUuid.Equals(playerUuid) && p.IsSelected)
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)
@@ -82,6 +89,6 @@ public class PlayerContestsController : ControllerBase
 
         if (profileMember is null) return NotFound("Player not found.");
 
-        return Ok(_mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
+        return Ok(mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
     }
 }

@@ -17,10 +17,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.RegisterEliteConfigFiles();
 
 builder.Services.AddEliteServices();
+builder.Services.AddEliteAuthentication(builder.Configuration);
 builder.Services.AddEliteControllers();
 builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
+builder.Services.AddRouting(options => {
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
 
 builder.Services.AddResponseCompression(options =>
 {

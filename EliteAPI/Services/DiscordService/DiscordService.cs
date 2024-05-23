@@ -114,7 +114,7 @@ public class DiscordService(
         }
     }
 
-    private async Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken)
+    public async Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken)
     {
         var client = httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refreshToken);
@@ -126,7 +126,7 @@ public class DiscordService(
             { "client_secret", _clientSecret },
             { "grant_type", "refresh_token" },
             { "refresh_token", refreshToken },
-            { "scope", "identify guilds" },
+            { "scope", "identify guilds role_connections.write" },
         };
 
         var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
@@ -157,7 +157,7 @@ public class DiscordService(
             { "client_secret", _clientSecret },
             { "grant_type", "authorization_code" },
             { "code", accessToken },
-            { "scope", "identify guilds" },
+            { "scope", "identify guilds role_connections.write" },
         };
 
         var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
