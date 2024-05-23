@@ -39,7 +39,7 @@ public class UserController(
 
         return await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
     }
-    
+
     /// <summary>
     /// Get the user's guild
     /// </summary>
@@ -55,10 +55,21 @@ public class UserController(
         if (user?.AccountId is null || user.DiscordAccessToken is null) {
             return BadRequest("Linked account not found.");
         }
-        
+
+        var roles = await userManager.GetRolesAsync(user);
+        var isAdmin = roles.Contains(ApiUserRoles.Admin);
+
         var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
         var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
-        
+
+        if (isAdmin) {
+            userGuild = new UserGuildDto {
+                Id = guildId.ToString(),
+                Permissions = "8",
+                Name = string.Empty
+            };
+        }
+
         if (userGuild is null) {
             return NotFound("Guild not found.");
         }
