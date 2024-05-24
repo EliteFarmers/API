@@ -12,12 +12,42 @@ public class MedalEvent : Event {
 	}
 }
 
-public class MedalEventMember : EventMember {
+public class MedalEventMember : EventMember, IComparable<MedalEventMember> {
 	[Column("Data", TypeName = "jsonb")]
 	public MedalEventMemberData Data { get; set; } = new();
 
 	public MedalEventMember() {
 		Type = EventType.Medals;
+	}
+
+	public int CompareTo(MedalEventMember? other) {
+		if (other == null) return 1;
+		
+		if (!Score.Equals(other.Score)) {
+			return Score.CompareTo(other.Score);
+		}
+
+		// Compare earned medals
+		var medals = Data.EarnedMedals;
+		var otherMedals = other.Data.EarnedMedals;
+		
+		var difference = 0;
+		if (CompareMedals(ContestMedal.Diamond)) return difference;
+		if (CompareMedals(ContestMedal.Platinum)) return difference;
+		if (CompareMedals(ContestMedal.Gold)) return difference;
+		if (CompareMedals(ContestMedal.Silver)) return difference;
+		if (CompareMedals(ContestMedal.Bronze)) return difference;
+		
+		return Data.ContestParticipations.CompareTo(other.Data.ContestParticipations);
+		
+		bool CompareMedals(ContestMedal medal) {
+			if (medals.TryGetValue(medal, out var count) && otherMedals.TryGetValue(medal, out var otherCount)) {
+				difference = count.CompareTo(otherCount);
+				return difference != 0;
+			}
+
+			return false;
+		}
 	}
 }
 

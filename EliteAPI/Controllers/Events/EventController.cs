@@ -96,6 +96,10 @@ public class EventController(
             .OrderByDescending(e => e.Score)
             .ToListAsync();
 
+        if (eliteEvent.Type == EventType.Medals) {
+            members = members.OrderByDescending(e => e as MedalEventMember).ToList();
+        }
+
         var mapped = members.Select(mapper.Map<EventMemberDetailsDto>);
         return Ok(mapped);
     }
