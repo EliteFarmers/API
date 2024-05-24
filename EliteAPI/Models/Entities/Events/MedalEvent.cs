@@ -41,12 +41,11 @@ public class MedalEventMember : EventMember, IComparable<MedalEventMember> {
 		return Data.ContestParticipations.CompareTo(other.Data.ContestParticipations);
 		
 		bool CompareMedals(ContestMedal medal) {
-			if (medals.TryGetValue(medal, out var count) && otherMedals.TryGetValue(medal, out var otherCount)) {
-				difference = count.CompareTo(otherCount);
-				return difference != 0;
-			}
-
-			return false;
+			var count = medals.GetValueOrDefault(medal);
+			var otherCount = otherMedals.GetValueOrDefault(medal);
+			difference = count.CompareTo(otherCount);
+			
+			return difference != 0;
 		}
 	}
 }
