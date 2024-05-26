@@ -55,27 +55,11 @@ public class UserController(
         if (user?.AccountId is null || user.DiscordAccessToken is null) {
             return BadRequest("Linked account not found.");
         }
-
-        var roles = await userManager.GetRolesAsync(user);
-        var isAdmin = roles.Contains(ApiUserRoles.Admin);
-
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
-
-        if (isAdmin) {
-            userGuild = new UserGuildDto {
-                Id = guildId.ToString(),
-                Permissions = "8",
-                Name = string.Empty
-            };
-        }
+        
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -125,15 +109,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -173,15 +152,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -226,15 +200,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -276,15 +245,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -335,15 +299,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -391,15 +350,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -446,15 +400,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -500,15 +449,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         var fullGuild = await discordService.GetGuild(guildId);
@@ -564,15 +508,10 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
 
         if (userGuild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        if (!guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You do not have permission to access this guild.");
+            return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
         
         await discordService.GetGuild(guildId);

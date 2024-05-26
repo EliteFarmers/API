@@ -8,6 +8,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Background;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -19,10 +20,12 @@ public class DiscordService(
     DataContext context,
     ILogger<DiscordService> logger,
     IConnectionMultiplexer redis,
+    UserManager<ApiUser> userManager,
     IOptions<ConfigCooldownSettings> coolDowns,
     IMapper mapper,
     IBackgroundTaskQueue taskQueue)
-    : IDiscordService {
+    : IDiscordService 
+{
     
     private const string ClientName = "EliteAPI";
     private readonly string _clientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID") 
@@ -236,6 +239,30 @@ public class DiscordService(
         }
     }
 
+    public async Task<UserGuildDto?> GetUserGuildIfManagable(ApiUser user, ulong guildId) {
+        if (!user.AccountId.HasValue || user.DiscordAccessToken is null) return null;
+        
+        var roles = await userManager.GetRolesAsync(user);
+        var isAdmin = roles.Contains(ApiUserRoles.Admin);
+
+        var guilds = await GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
+        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
+
+        if (isAdmin) {
+            return new UserGuildDto {
+                Id = guildId.ToString(),
+                Permissions = "8",
+                Name = string.Empty
+            };
+        }
+
+        if (userGuild is null || !userGuild.HasGuildAdminPermissions()) {
+            return null;
+        }
+
+        return userGuild;
+    }
+
     public async Task<FullDiscordGuild?> GetGuild(ulong guildId) {
         await RefreshBotGuilds();
         var db = redis.GetDatabase();
@@ -427,4 +454,21 @@ public class DiscordUpdateResponse
     public required string RefreshToken { get; set; }
     public DateTimeOffset? RefreshTokenExpires { get; set; }
     public EliteAccount? Account { get; set; }
+}
+
+public static class DiscordExtensions 
+{
+    public static bool HasGuildAdminPermissions(this UserGuildDto guild) {
+        var permissions = guild.Permissions;
+        
+        if (!ulong.TryParse(permissions, out var bits)) {
+            return false;
+        }
+        
+        const ulong admin = 0x8;
+        const ulong manageGuild = 0x20;
+
+        // Check if the user has the manage guild or admin permission
+        return (bits & admin) == admin || (bits & manageGuild) == manageGuild;
+    }
 }
