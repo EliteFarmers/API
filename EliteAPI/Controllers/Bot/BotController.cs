@@ -100,7 +100,7 @@ public class BotController(
         
         return Accepted();
     }
-    
+
     /// <summary>
     /// Get list of guilds with Contest Pings enabled
     /// </summary>
@@ -108,22 +108,23 @@ public class BotController(
     // GET <BotController>/ContestPings
     [HttpGet("ContestPings")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ContestPingsFeatureDto>))]
-    public async Task<ActionResult<List<ContestPingsFeatureDto>>> GetContestPingServers()
-    {
+    public async Task<ActionResult<List<ContestPingsFeatureDto>>> GetContestPingServers() {
         var guilds = await context.Guilds
             .Where(g => g.Features.ContestPingsEnabled == true
-                        && g.Features.ContestPings != null 
-                        && g.Features.ContestPings.Enabled)
+                        && g.Features.ContestPings != null
+                        && g.Features.ContestPings.Enabled
+                        && g.Features.ContestPings.ChannelId != null)
+            .Select(g => new { g.Id, g.Features.ContestPings })
             .ToListAsync();
-        
+
         return Ok(guilds.Select(g => new ContestPingsFeatureDto {
             GuildId = g.Id.ToString(),
-            ChannelId = g.Features.ContestPings?.ChannelId ?? "",
-            AlwaysPingRole = g.Features.ContestPings?.AlwaysPingRole ?? "",
-            CropPingRoles = g.Features.ContestPings?.CropPingRoles ?? new CropSettings<string>(),
-            DelaySeconds = g.Features.ContestPings?.DelaySeconds ?? 0,
-            DisabledReason = g.Features.ContestPings?.DisabledReason ?? "",
-            Enabled = g.Features.ContestPings?.Enabled ?? false
+            ChannelId = g.ContestPings?.ChannelId ?? string.Empty,
+            AlwaysPingRole = g.ContestPings?.AlwaysPingRole ?? string.Empty,
+            CropPingRoles = g.ContestPings?.CropPingRoles ?? new CropSettings<string>(),
+            DelaySeconds = g.ContestPings?.DelaySeconds ?? 0,
+            DisabledReason = g.ContestPings?.DisabledReason ?? string.Empty,
+            Enabled = g.ContestPings?.Enabled ?? false
         }));
     }
     
