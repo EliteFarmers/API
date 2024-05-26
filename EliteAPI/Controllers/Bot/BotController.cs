@@ -112,19 +112,20 @@ public class BotController(
         var guilds = await context.Guilds
             .Where(g => g.Features.ContestPingsEnabled == true
                         && g.Features.ContestPings != null
-                        && g.Features.ContestPings.Enabled
-                        && g.Features.ContestPings.ChannelId != null)
+                        && g.Features.ContestPings.Enabled)
             .ToListAsync();
 
-        return Ok(guilds.Select(g => new ContestPingsFeatureDto {
-            GuildId = g.Id.ToString(),
-            ChannelId = g.Features.ContestPings?.ChannelId ?? string.Empty,
-            AlwaysPingRole = g.Features.ContestPings?.AlwaysPingRole ?? string.Empty,
-            CropPingRoles = g.Features.ContestPings?.CropPingRoles ?? new CropSettings<string>(),
-            DelaySeconds = g.Features.ContestPings?.DelaySeconds ?? 0,
-            DisabledReason = g.Features.ContestPings?.DisabledReason ?? string.Empty,
-            Enabled = g.Features.ContestPings?.Enabled ?? false
-        }));
+        return Ok(guilds
+            .Where(g => !string.IsNullOrWhiteSpace(g.Features.ContestPings!.ChannelId))
+            .Select(g => new ContestPingsFeatureDto {
+                GuildId = g.Id.ToString(),
+                ChannelId = g.Features.ContestPings?.ChannelId ?? string.Empty,
+                AlwaysPingRole = g.Features.ContestPings?.AlwaysPingRole ?? string.Empty,
+                CropPingRoles = g.Features.ContestPings?.CropPingRoles ?? new CropSettings<string>(),
+                DelaySeconds = g.Features.ContestPings?.DelaySeconds ?? 0,
+                DisabledReason = g.Features.ContestPings?.DisabledReason ?? string.Empty,
+                Enabled = g.Features.ContestPings?.Enabled ?? false
+            }));
     }
     
     /// <summary>
