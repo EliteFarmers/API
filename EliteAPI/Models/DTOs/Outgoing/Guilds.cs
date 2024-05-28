@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 

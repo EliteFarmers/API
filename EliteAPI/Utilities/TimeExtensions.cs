@@ -10,6 +10,11 @@ public static class TimeExtensions
         return correctMinute && new SkyblockDate(unixTimeSeconds).Year == fromYear;
     }
     
+    public static bool OlderThanSeconds(this DateTimeOffset dateTime, int seconds)
+    {
+        return dateTime.UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);
+    }
+    
     public static bool OlderThanSeconds(this long unixTimeSeconds, int seconds)
     {
         return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);

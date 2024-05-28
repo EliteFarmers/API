@@ -18,7 +18,7 @@ public class GuildService(
             return new NotFoundObjectResult("Guild not found.");
         }
         
-        var channel = guild.Channels.FirstOrDefault(x => x.Id == channelId);
+        var channel = guild.Channels.FirstOrDefault(x => x.Id.ToString() == channelId);
         
         if (channel is null) {
             return new NotFoundObjectResult("Channel not found.");

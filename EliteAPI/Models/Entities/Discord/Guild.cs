@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.DTOs.Outgoing;
 
-namespace EliteAPI.Models.Entities.Events; 
+namespace EliteAPI.Models.Entities.Discord; 
 
 public class Guild {
     [Key]
@@ -25,9 +25,17 @@ public class Guild {
     public string? BotPermissionsNew { get; set; }
 
     [Column(TypeName = "jsonb")]
-    public List<string> DiscordFeatures { get; set; } = new();
+    public List<string> DiscordFeatures { get; set; } = [];
     
     public int MemberCount { get; set; }
+    public bool HasBot { get; set; }
+    public bool IsPublic { get; set; } = false;
+    
+    public List<GuildChannel> Channels { get; set; } = [];
+    public List<GuildRole> Roles { get; set; } = [];
+    public List<GuildMember> PrivledgedMembers { get; set; } = [];
+    
+    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public class GuildFeatures {

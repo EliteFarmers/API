@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
