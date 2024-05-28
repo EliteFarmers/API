@@ -10,6 +10,7 @@ using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -18,9 +19,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240527230859_AddMoreDiscordGuildEntities")]
+    partial class AddMoreDiscordGuildEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -579,46 +582,6 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("FarmingWeights");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ChocolateFactory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<long>("Chocolate")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ChocolateSincePrestige")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("ChocolateSpent")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("LastViewedChocolateFactory")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Prestige")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("ProfileMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("TotalChocolate")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("UnlockedZorro")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProfileMemberId")
-                        .IsUnique();
-
-                    b.ToTable("ChocolateFactories");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
                 {
                     b.Property<int>("Id")
@@ -672,9 +635,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<int>("Diamond")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("Finnegan")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("Gold")
                         .HasColumnType("integer");
@@ -1432,91 +1392,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ChocolateFactory", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
-                        .WithOne("ChocolateFactory")
-                        .HasForeignKey("EliteAPI.Models.Entities.Hypixel.ChocolateFactory", "ProfileMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.ChocolateFactoryRabbits", "TotalRabbits", b1 =>
-                        {
-                            b1.Property<int>("ChocolateFactoryId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Common")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Divine")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Epic")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Legendary")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Mythic")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Rare")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Uncommon")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("ChocolateFactoryId");
-
-                            b1.ToTable("ChocolateFactories");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ChocolateFactoryId");
-                        });
-
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.ChocolateFactoryRabbits", "UniqueRabbits", b1 =>
-                        {
-                            b1.Property<int>("ChocolateFactoryId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Common")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Divine")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Epic")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Legendary")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Mythic")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Rare")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Uncommon")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("ChocolateFactoryId");
-
-                            b1.ToTable("ChocolateFactories");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ChocolateFactoryId");
-                        });
-
-                    b.Navigation("ProfileMember");
-
-                    b.Navigation("TotalRabbits")
-                        .IsRequired();
-
-                    b.Navigation("UniqueRabbits")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.JacobContest", "JacobContest")
@@ -1832,9 +1707,6 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
-                    b.Navigation("ChocolateFactory")
-                        .IsRequired();
-
                     b.Navigation("EventEntries");
 
                     b.Navigation("Farming")

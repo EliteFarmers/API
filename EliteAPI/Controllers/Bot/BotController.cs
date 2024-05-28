@@ -4,6 +4,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.BadgeService;
@@ -192,6 +193,78 @@ public class BotController(
         }
         
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
+    }
+    
+    /// <summary>
+    /// Request Discord Guild Update
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("guild/{guildId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RefreshGuild(ulong guildId) {
+        await discordService.RefreshDiscordGuild(guildId);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Update Discord Guild
+    /// </summary>
+    /// <returns></returns>
+    [HttpPatch("guild/{guildId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<IActionResult> UpdateGuild(ulong guildId, [FromBody] IncomingGuildDto incoming) {
+        var guild = await context.Guilds.FindAsync(guildId);
+
+        if (guild is null) {
+            await discordService.RefreshDiscordGuild(guildId);
+            return Ok();
+        }
+
+        guild.Name = incoming.Name;
+        guild.Icon = incoming.Icon ?? guild.Icon;
+        guild.Banner = incoming.Banner ?? guild.Banner;
+
+        if (incoming.Permissions is not null && ulong.TryParse(incoming.Permissions, out var botGuildPerms)) {
+            guild.BotPermissions = botGuildPerms;
+        }
+
+        if (incoming.Channels is { Count: > 0 }) {
+            foreach (var channel in incoming.Channels) {
+                if (!ulong.TryParse(channel.Id, out var channelId)) continue;
+                if (string.IsNullOrWhiteSpace(channel.Name)) continue;
+                ulong.TryParse(channel.Permissions, out var channelPerms);
+                
+                var guildChannel = await context.GuildChannels.FindAsync(channelId);
+                
+                if (guildChannel is null) {
+                    guildChannel = new GuildChannel {
+                        Id = channelId,
+                        Name = guildChannel?.Name ?? "Unknown Channel",
+                        Position = guildChannel?.Position ?? 0,
+                        Type = guildChannel?.Type ?? 0,
+                        BotPermissions = channelPerms,
+                        GuildId = guildId
+                    };
+                    
+                    context.GuildChannels.Add(guildChannel);
+                    
+                    continue;
+                }
+
+                guildChannel.Name = guildChannel.Name;
+                guildChannel.Position = guildChannel.Position;
+                guildChannel.Type = guildChannel.Type;
+                guildChannel.BotPermissions = channel.Permissions is not null ? channelPerms : guildChannel.BotPermissions;
+                
+                context.GuildChannels.Update(guildChannel);
+            }
+        }
+        
+        context.Guilds.Update(guild);
+        await context.SaveChangesAsync();
+
+        return Ok();
     }
     
     /// <summary>

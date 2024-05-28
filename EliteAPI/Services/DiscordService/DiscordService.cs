@@ -6,8 +6,10 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Background;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -261,21 +263,18 @@ public class DiscordService(
         return userGuild;
     }
 
-    public async Task<FullDiscordGuild?> GetGuild(ulong guildId) {
-        var db = redis.GetDatabase();
-        var key = $"full:guild:{guildId}";
-
-        if (db.KeyExists(key)) {
-            var guild = await db.StringGetAsync(key);
-
-            if (!guild.IsNullOrEmpty) {
-                try {
-                    var data = JsonSerializer.Deserialize<FullDiscordGuild>(guild!);
-                    if (data is not null) return data;
-                } catch (Exception e) {
-                    logger.LogError(e, "Failed to parse guild from Redis");
-                }
-            }
+    public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false) {
+        if (!skipCache) {
+            await RefreshBotGuilds();
+        }
+        
+        var existing = await context.Guilds
+            .Include(g => g.Channels)
+            .Include(g => g.Roles)
+            .FirstOrDefaultAsync(g => g.Id == guildId);
+        
+        if (existing is not null && !existing.LastUpdated.OlderThanSeconds(_coolDowns.DiscordGuildsCooldown)) {
+            return existing;
         }
         
         var client = httpClientFactory.CreateClient(ClientName);
@@ -285,48 +284,103 @@ public class DiscordService(
         
         if (!response.IsSuccessStatusCode) {
             logger.LogWarning("Failed to fetch guild from Discord");
-            return null;
+            return existing;
         }
         
         try {
             var guild = await response.Content.ReadFromJsonAsync<FullDiscordGuild>();
-            if (guild is null) return null;
+            if (guild is null) return existing;
             
-            var channels = await client.GetAsync(DiscordBaseUrl + $"/guilds/{guildId}/channels");
-            if (channels.IsSuccessStatusCode) {
-                var channelList = await channels.Content.ReadFromJsonAsync<List<DiscordChannel>>();
-                
-                if (channelList is not null) {
-                    guild.Channels = channelList;
-                }
-            }
-            
-            await db.StringSetAsync(key, JsonSerializer.Serialize(guild), TimeSpan.FromSeconds(_coolDowns.UserGuildsCooldown));
-
-            var existingGuild = await context.Guilds.FindAsync(ulong.Parse(guild.Id));
-            if (existingGuild is not null) {
-                existingGuild.Name = guild.Name;
-                existingGuild.Icon = guild.Icon;
-                existingGuild.DiscordFeatures = guild.Features;
-                existingGuild.InviteCode = guild.VanityUrlCode ?? existingGuild.InviteCode;
-                existingGuild.Banner = guild.Splash;
-                existingGuild.MemberCount = guild.MemberCount;
-                
-                if (existingGuild.Features.JacobLeaderboardEnabled) {
-                    existingGuild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
-                }
-                
-                if (existingGuild.Features.VerifiedRoleEnabled) {
-                    existingGuild.Features.VerifiedRole ??= new VerifiedRoleFeature();
-                }
-            }
-            
-            await context.SaveChangesAsync();
-
-            return guild;
+            return await UpdateDiscordGuild(guild);
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse guild from Discord");
-            return null;
+            return existing;
+        }
+    }
+
+    public async Task RefreshDiscordGuild(ulong guildId) {
+        await GetGuild(guildId, true);
+    }
+
+    private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true) {
+        if (incoming is null) return null;
+        if (!ulong.TryParse(incoming.Id, out var guildId)) return null;
+        
+        var guild = await context.Guilds.FindAsync(guildId);
+        
+        if (guild is null) {
+            context.Guilds.Add(new Guild {
+                Id = guildId,
+                Name = incoming.Name,
+                Icon = incoming.Icon,
+                DiscordFeatures = incoming.Features,
+                MemberCount = incoming.MemberCount
+            });
+        } else {
+            guild.Name = incoming.Name;
+            guild.Icon = incoming.Icon;
+            guild.DiscordFeatures = incoming.Features;
+            guild.InviteCode = incoming.VanityUrlCode ?? guild.InviteCode;
+            guild.Banner = incoming.Splash;
+            guild.MemberCount = incoming.MemberCount;
+            guild.LastUpdated = DateTimeOffset.UtcNow;
+            
+            if (guild.Features.JacobLeaderboardEnabled) {
+                guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
+            }
+                
+            if (guild.Features.VerifiedRoleEnabled) {
+                guild.Features.VerifiedRole ??= new VerifiedRoleFeature();
+            }
+        }
+        
+        await context.SaveChangesAsync();
+
+        if (!fetchChannels || guild is null) return guild;
+        
+        var client = httpClientFactory.CreateClient(ClientName);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+
+        var channels = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/channels");
+        if (!channels.IsSuccessStatusCode) return guild;
+        
+        var channelList = await channels.Content.ReadFromJsonAsync<List<DiscordChannel>>();
+        if (channelList is null) return guild;
+        
+        foreach (var channel in channelList) {
+            await UpdateDiscordChannel(guild, channel, false);
+        }
+
+        await context.SaveChangesAsync();
+        
+        return guild;
+    }
+
+    private async Task UpdateDiscordChannel(Guild guild, DiscordChannel channel, bool save = true) {
+        if (!ulong.TryParse(channel.Id, out var channelId)) return;
+        
+        var existingChannel = guild.Channels.FirstOrDefault(c => c.Id == channelId);
+        
+        if (existingChannel is null) {
+            var newChannel = new GuildChannel {
+                GuildId = guild.Id,
+                
+                Id = channelId,
+                Name = channel.Name,
+                Position = channel.Position,
+                Type = (int) channel.Type
+            };
+            
+            guild.Channels.Add(newChannel);
+            context.GuildChannels.Add(newChannel);
+        } else {
+            existingChannel.Name = channel.Name;
+            existingChannel.Position = channel.Position;
+            existingChannel.Type = (int) channel.Type;
+        }
+
+        if (save) {
+            await context.SaveChangesAsync();
         }
     }
 

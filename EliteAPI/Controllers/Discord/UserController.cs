@@ -3,7 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.GuildService;
 using Microsoft.AspNetCore.Authorization;
