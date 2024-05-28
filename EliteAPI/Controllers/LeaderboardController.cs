@@ -167,7 +167,7 @@ public class LeaderboardController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardPositionsDto>> GetLeaderboardRanks(string playerUuid, string profileUuid) {
-        var memberId = await dataContext.ProfileMembers
+        var memberId = await dataContext.ProfileMembers.AsNoTracking()
             .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
             .Select(p => p.Id)
             .FirstOrDefaultAsync();

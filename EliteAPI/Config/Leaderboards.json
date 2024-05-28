@@ -1,6 +1,6 @@
 ﻿{
   "LeaderboardSettings": {
-    "CompleteRefreshInterval": 1800,
+    "CompleteRefreshInterval": 3600,
     "CollectionLeaderboards": {
       "cactus": {
         "Id": "CACTUS",
