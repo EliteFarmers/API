@@ -1,6 +1,6 @@
 ﻿using System.Net.Mime;
+using System.Text.Json;
 using AutoMapper;
-using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Events; 
 
@@ -24,6 +25,7 @@ public class EventController(
     IMemberService memberService,
     IDiscordService discordService,
     IEventService eventService,
+    IConnectionMultiplexer redis,
     UserManager<ApiUser> userManager)
     : ControllerBase 
 {
@@ -80,7 +82,14 @@ public class EventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventMemberDetailsDto>>> GetEventMembers(ulong eventId)
     {
-        await discordService.RefreshBotGuilds();
+        var db = redis.GetDatabase();
+        var key = $"event:{eventId}:members";
+        var cached = await db.StringGetAsync(key);
+        
+        if (cached is { IsNullOrEmpty: false, HasValue: true }) {
+            var cachedMembers = JsonSerializer.Deserialize<List<EventMemberDetailsDto>>(cached!);
+            return Ok(cachedMembers);
+        }
 
         var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
@@ -94,6 +103,7 @@ public class EventController(
                         && e.Status != EventMemberStatus.Disqualified 
                         && e.Status != EventMemberStatus.Left)
             .OrderByDescending(e => e.Score)
+            .AsSplitQuery()
             .ToListAsync();
 
         if (eliteEvent.Type == EventType.Medals) {
@@ -101,6 +111,10 @@ public class EventController(
         }
 
         var mapped = members.Select(mapper.Map<EventMemberDetailsDto>);
+        
+        var expiry = eliteEvent.Active ? TimeSpan.FromMinutes(2) : TimeSpan.FromMinutes(10);
+        await db.StringSetAsync(key, JsonSerializer.Serialize(mapped), expiry);
+        
         return Ok(mapped);
     }
     
