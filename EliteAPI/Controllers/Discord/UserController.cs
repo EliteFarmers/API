@@ -86,7 +86,6 @@ public class UserController(
         return Ok(new AuthorizedGuildDto {
             Id = guildId.ToString(),
             Permissions = userGuild.Permissions,
-            DiscordGuild = fullGuild,
             Guild = mapper.Map<GuildDto>(guild)
         });
     }

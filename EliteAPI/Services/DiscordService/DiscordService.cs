@@ -252,7 +252,7 @@ public class DiscordService(
             return new UserGuildDto {
                 Id = guildId.ToString(),
                 Permissions = "8",
-                Name = string.Empty
+                Name = userGuild?.Name ?? string.Empty
             };
         }
 
