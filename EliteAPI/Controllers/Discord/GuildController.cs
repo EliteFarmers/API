@@ -57,8 +57,6 @@ public class GuildController(
     public async Task<ActionResult<PublicGuildDto>> GetGuildById(long guildId) {
         if (guildId <= 0) return BadRequest("Invalid guild ID.");
 
-        await discordService.RefreshBotGuilds();
-        
         var guild = await context.Guilds.FindAsync((ulong) guildId);
         if (guild is null) return NotFound("Guild not found.");
         
@@ -77,8 +75,6 @@ public class GuildController(
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<List<EventDetailsDto>>> GetGuildEvents(long guildId) {
         if (guildId <= 0) return BadRequest("Invalid guild ID.");
-
-        await discordService.RefreshBotGuilds();
         
         var guild = await context.Guilds.FindAsync((ulong) guildId);
         if (guild is null) return NotFound("Guild not found.");

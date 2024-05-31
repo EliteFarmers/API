@@ -14,5 +14,4 @@ public interface IDiscordService
     Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken);
     Task<UserGuildDto?> GetUserGuildIfManagable(ApiUser user, ulong guildId);
     Task<FullDiscordGuild?> GetGuild(ulong guildId);
-    Task RefreshBotGuilds();
 }

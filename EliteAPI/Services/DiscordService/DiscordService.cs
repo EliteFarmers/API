@@ -192,8 +192,6 @@ public class DiscordService(
     }
     
     public async Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken) {
-        await RefreshBotGuilds();
-        
         var url = DiscordBaseUrl + "/users/@me/guilds";
         var key = $"user:guilds:{userId}";
         
@@ -264,7 +262,6 @@ public class DiscordService(
     }
 
     public async Task<FullDiscordGuild?> GetGuild(ulong guildId) {
-        await RefreshBotGuilds();
         var db = redis.GetDatabase();
         var key = $"full:guild:{guildId}";
 
@@ -307,9 +304,7 @@ public class DiscordService(
             await db.StringSetAsync(key, JsonSerializer.Serialize(guild), TimeSpan.FromSeconds(_coolDowns.UserGuildsCooldown));
 
             var existingGuild = await context.Guilds.FindAsync(ulong.Parse(guild.Id));
-            if (existingGuild is null) {
-                await RefreshBotGuilds();
-            } else {
+            if (existingGuild is not null) {
                 existingGuild.Name = guild.Name;
                 existingGuild.Icon = guild.Icon;
                 existingGuild.DiscordFeatures = guild.Features;
@@ -333,10 +328,6 @@ public class DiscordService(
             logger.LogError(e, "Failed to parse guild from Discord");
             return null;
         }
-    }
-
-    public Task RefreshBotGuilds() {
-        return Task.CompletedTask;
     }
 
     private DiscordUpdateResponse? ProcessResponse(RefreshTokenResponse? tokenResponse)

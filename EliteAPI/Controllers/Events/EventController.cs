@@ -41,8 +41,6 @@ public class EventController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<EventDetailsDto>>> GetUpcoming()
     {
-        await discordService.RefreshBotGuilds();
-
         var events = await eventService.GetUpcomingEvents();
         
         return Ok(events);
@@ -61,8 +59,6 @@ public class EventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<EventDetailsDto>> GetEvent(ulong eventId)
     {
-        await discordService.RefreshBotGuilds();
-        
         var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
@@ -141,8 +137,6 @@ public class EventController(
         var uuid = playerUuid.Replace("-", "");
         if (uuid is not { Length: 32 }) return BadRequest("Invalid playerUuid");
         
-        await discordService.RefreshBotGuilds();
-        
         var member = await context.EventMembers.AsNoTracking()
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
@@ -190,8 +184,6 @@ public class EventController(
         if (playerUuid is not null && playerUuid.Length != 32) {
             return BadRequest("Invalid playerUuid provided.");
         }
-        
-        await discordService.RefreshBotGuilds();
         
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
@@ -312,8 +304,6 @@ public class EventController(
         
         await context.Entry(user).Reference(x => x.Account).LoadAsync();
         var account = user.Account;
-        
-        await discordService.RefreshBotGuilds();
         
         var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);

@@ -128,8 +128,6 @@ public class AdminEventController(
             return BadRequest("Invalid guild ID.");
         }
         
-        await discordService.RefreshBotGuilds();
-        
         var guilds = await discordService.GetUsersGuilds(account.Id, token);
         var userGuild = guilds.FirstOrDefault(g => g.Id == incoming.GuildId);
 
@@ -188,8 +186,6 @@ public class AdminEventController(
         
         await context.Entry(user).Reference(x => x.Account).LoadAsync();
         var account = user.Account;
-        
-        await discordService.RefreshBotGuilds();
         
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
@@ -266,8 +262,6 @@ public class AdminEventController(
         await context.Entry(user).Reference(x => x.Account).LoadAsync();
         var account = user.Account;
         
-        await discordService.RefreshBotGuilds();
-        
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
@@ -328,8 +322,6 @@ public class AdminEventController(
             return BadRequest("Invalid reason.");
         }
         
-        await discordService.RefreshBotGuilds();
-        
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
@@ -387,8 +379,6 @@ public class AdminEventController(
         await context.Entry(user).Reference(x => x.Account).LoadAsync();
         var account = user.Account;
 
-        await discordService.RefreshBotGuilds();
-        
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");

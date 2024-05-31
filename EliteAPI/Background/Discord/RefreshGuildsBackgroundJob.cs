@@ -53,7 +53,6 @@ public class RefreshGuildsBackgroundJob(
         var db = redis.GetDatabase();
         if (db.KeyExists("bot:guilds")) {
             logger.LogInformation("Guilds are still on cooldown");
-            throw new Exception("Guilds are still on cooldown");
             return;
         }
         await db.StringSetAsync("bot:guilds", "1", TimeSpan.FromSeconds(_coolDowns.DiscordGuildsCooldown));
