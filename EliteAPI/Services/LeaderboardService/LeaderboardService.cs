@@ -348,6 +348,18 @@ public class LeaderboardService(
                         Amount = farmingWeight.TotalWeight,
                         MemberId = member.Id.ToString()
                     }).Take(lb.Limit);
+            
+            case "chocolate":
+                return (from member in query
+                    join chocolateFactory in dataContext.ChocolateFactories on member.Id equals chocolateFactory.ProfileMemberId
+                    where chocolateFactory.TotalChocolate > 0 && !member.WasRemoved
+                    orderby chocolateFactory.TotalChocolate descending
+                    select new LeaderboardEntry {
+                        Ign = member.MinecraftAccount.Name,
+                        Profile = member.ProfileName ?? member.Profile.ProfileName,
+                        Amount = chocolateFactory.TotalChocolate,
+                        MemberId = member.Id.ToString()
+                    }).Take(lb.Limit);
 
             case "diamondmedals" or "platinummedals" or "goldmedals" or "silvermedals" or "bronzemedals": 
                 var medal = leaderboardId.Replace("medals", "");

@@ -181,11 +181,16 @@ public static class ServiceExtensions
         {
             Path = "Config/Farming.json",
         });
+        builder.Configuration.Sources.Add(new JsonConfigurationSource()
+        {
+            Path = "Config/ChocolateFactory.json",
+        });
         
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
         builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
         builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("Farming"));
+        builder.Services.Configure<ChocolateFactorySettings>(builder.Configuration.GetSection("ChocolateFactory"));
 
         builder.Services.Configure<ConfigApiRateLimitSettings>(
             builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));

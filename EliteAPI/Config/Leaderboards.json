@@ -89,6 +89,10 @@
       "skyblockxp": {
         "Title": "Skyblock XP",
         "Limit": 5000
+      },
+      "chocolate": {
+        "Title": "All-Time Chocolate",
+        "Limit": 5000
       }
     },
     "SkillLeaderboards": {
