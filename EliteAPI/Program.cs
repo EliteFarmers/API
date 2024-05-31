@@ -1,5 +1,6 @@
 using System.Net;
 using EliteAPI.Authentication;
+using EliteAPI.Background;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services;
@@ -22,6 +23,8 @@ builder.Services.AddEliteControllers();
 builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
+builder.Services.AddEliteBackgroundJobs();
+
 builder.Services.AddRouting(options => {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
