@@ -38,6 +38,7 @@ namespace EliteAPI.Data.Migrations
                     TotalRabbits_Legendary = table.Column<int>(type: "integer", nullable: false),
                     TotalRabbits_Mythic = table.Column<int>(type: "integer", nullable: false),
                     TotalRabbits_Divine = table.Column<int>(type: "integer", nullable: false),
+                    UnlockedZorro = table.Column<bool>(type: "boolean", nullable: false),
                     ProfileMemberId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>

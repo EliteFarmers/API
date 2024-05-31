@@ -18,7 +18,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240531000842_AddChocolateFactoryData")]
+    [Migration("20240531002855_AddChocolateFactoryData")]
     partial class AddChocolateFactoryData
     {
         /// <inheritdoc />
@@ -528,6 +528,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<long>("TotalChocolate")
                         .HasColumnType("bigint");
+
+                    b.Property<bool>("UnlockedZorro")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

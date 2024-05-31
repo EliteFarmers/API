@@ -526,6 +526,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("TotalChocolate")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("UnlockedZorro")
+                        .HasColumnType("boolean");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProfileMemberId")

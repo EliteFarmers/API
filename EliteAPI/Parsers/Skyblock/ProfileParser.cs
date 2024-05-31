@@ -319,6 +319,9 @@ public class ProfileParser(
         leaderboardService.UpdateLeaderboardScore("rat", memberId, member.Farming.Pests.Rat);
         leaderboardService.UpdateLeaderboardScore("mosquito", memberId, member.Farming.Pests.Mosquito);
         leaderboardService.UpdateLeaderboardScore("fly", memberId, member.Farming.Pests.Fly);
+        
+        // Update chocolate factory leaderboards
+        leaderboardService.UpdateLeaderboardScore("chocolate", memberId, member.ChocolateFactory.TotalChocolate);
     }
 
     private void ParseJacobContests(Guid memberId, RawMemberData incomingData) {

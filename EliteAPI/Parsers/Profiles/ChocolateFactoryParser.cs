@@ -27,6 +27,10 @@ public static class ChocolateFactoryParser {
 		(factory.UniqueRabbits.Legendary, factory.TotalRabbits.Legendary) = CountRabbits(incoming, settings.Rabbits.Legendary.Rabbits);
 		(factory.UniqueRabbits.Mythic, factory.TotalRabbits.Mythic) = CountRabbits(incoming, settings.Rabbits.Mythic.Rabbits);
 		(factory.UniqueRabbits.Divine, factory.TotalRabbits.Divine) = CountRabbits(incoming, settings.Rabbits.Divine.Rabbits);
+
+		if (!factory.UnlockedZorro) {
+			factory.UnlockedZorro = incoming.Rabbits.ContainsKey("zorro");
+		}
 	}
 
 	private static (int uniques, int total) CountRabbits(RawMemberEasterEvent incoming, List<string> rabbits) {

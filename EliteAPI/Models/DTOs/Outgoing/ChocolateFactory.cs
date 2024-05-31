@@ -8,8 +8,10 @@ public class ChocolateFactoryDto {
 	public int Prestige { get; set; }
 	public long LastViewed { get; set; }
 	
-	public ChocolateFactoryRabbitsDto UniqueRabbits { get; set; } = new();	
+	public ChocolateFactoryRabbitsDto UniqueRabbits { get; set; } = new();
 	public ChocolateFactoryRabbitsDto TotalRabbits { get; set; } = new();
+	
+	public bool UnlockedZorro { get; set; }
 }
 
 public class ChocolateFactoryRabbitsDto {

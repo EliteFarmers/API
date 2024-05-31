@@ -19,6 +19,8 @@ public class ChocolateFactory {
 	public ChocolateFactoryRabbits UniqueRabbits { get; set; } = new();
 	public ChocolateFactoryRabbits TotalRabbits { get; set; } = new();
 	
+	public bool UnlockedZorro { get; set; }
+	
 	[ForeignKey("ProfileMember")]
 	public Guid ProfileMemberId { get; set; }
 	public ProfileMember? ProfileMember { get; set; }
