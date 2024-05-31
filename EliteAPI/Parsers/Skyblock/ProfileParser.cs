@@ -24,11 +24,13 @@ public class ProfileParser(
     IMojangService mojangService, 
     IBackgroundTaskQueue taskQueue,
     IOptions<ConfigLeaderboardSettings> lbOptions,
+    IOptions<ChocolateFactorySettings> cfOptions,
     ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService,
     IEventService eventService) 
 {
     private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
+    private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
     
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>            
@@ -41,6 +43,7 @@ public class ProfileParser(
                 .ThenInclude(j => j.Contests)
                 .ThenInclude(p => p.JacobContest)
                 .Include(p => p.EventEntries)
+                .Include(p => p.ChocolateFactory)
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
@@ -242,6 +245,11 @@ public class ProfileParser(
         
         member.ParseSkills(incomingData);
         member.ParseCollectionTiers(incomingData.PlayerData?.UnlockedCollTiers);
+        
+        if (incomingData.Events?.Easter is not null) {
+            member.ParseChocolateFactory(incomingData.Events.Easter, _cfSettings);
+            context.ChocolateFactories.Update(member.ChocolateFactory);
+        }
 
         await AddTimeScaleRecords(member);
         // Runs on background service

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using EliteAPI.Mappers.Converters;
 using Pet = EliteAPI.Models.Entities.Hypixel.Pet;
 
 namespace EliteAPI.Models.DTOs.Incoming;
@@ -42,6 +43,8 @@ public class RawMemberData
     public RawMemberPetsData? PetsData { get; set; }
     
     public RawMemberProfileData? Profile { get; set; }
+    
+    public RawMemberEvents? Events { get; set; }
     
     [JsonPropertyName("jacobs_contest")]
     public RawJacobData? Jacob { get; set; }
@@ -96,6 +99,38 @@ public class RawMemberData
     // public int? Soulflow { get; set; }
     // public JsonObject? Quests { get; set; }
     //
+}
+
+public class RawMemberEvents {
+    public RawMemberEasterEvent? Easter { get; set; }
+}
+
+public class RawMemberEasterEvent {
+    public long Chocolate { get; set; }
+    [JsonPropertyName("total_chocolate")]
+    public long TotalChocolate { get; set; }
+    [JsonPropertyName("chocolate_since_prestige")]
+    public long ChocolateSincePrestige { get; set; }
+    
+    [JsonPropertyName("last_viewed_chocolate_factory")]
+    public long LastViewedChocolateFactory { get; set; }
+    [JsonPropertyName("chocolate_level")]
+    public int Prestige { get; set; }
+    
+    public RawMemberEasterEventShop Shop { get; set; } = new();
+    
+    [JsonPropertyName("rabbit_barn_capacity_level")]
+    public int RabbitBarnCapacityLevel { get; set; }
+    [JsonPropertyName("chocolate_multiplier_upgrades")]
+    public int ChocolateLevel { get; set; }
+    
+    [JsonConverter(typeof(RabbitDictionaryConverter))]
+    public Dictionary<string, int> Rabbits { get; set; } = new();
+}
+
+public class RawMemberEasterEventShop {
+    [JsonPropertyName("chocolate_spent")]
+    public long ChocolateSpent { get; set; }
 }
 
 public class RawMemberPlayerData {

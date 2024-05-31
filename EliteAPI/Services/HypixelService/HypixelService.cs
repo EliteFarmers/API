@@ -4,28 +4,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.HypixelService;
 
-public class HypixelService : IHypixelService
+public class HypixelService(
+    IHttpClientFactory httpClientFactory,
+    HypixelRequestLimiter limiter,
+    ILogger<HypixelService> logger)
+    : IHypixelService 
 {
     public static readonly string HttpClientName = "EliteDev";
     private readonly string _hypixelApiKey = Environment.GetEnvironmentVariable("HYPIXEL_API_KEY") 
                                              ?? throw new Exception("HYPIXEL_API_KEY env variable is not set.");
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<HypixelService> _logger;
-    private readonly HypixelRequestLimiter _limiter;
-
-    public HypixelService(IHttpClientFactory httpClientFactory, HypixelRequestLimiter limiter, ILogger<HypixelService> logger)
-    {
-        _httpClientFactory = httpClientFactory;
-        _logger = logger;
-        _limiter = limiter;
-    }
 
     public async Task<ActionResult<RawProfilesResponse>> FetchProfiles(string uuid) 
     {
         if (uuid.Length is not (32 or 36)) return new BadRequestResult();
-        await _limiter.AcquireAsync(1);
+        await limiter.AcquireAsync(1);
 
-        var client = _httpClientFactory.CreateClient(HttpClientName);
+        var client = httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/v2/skyblock/profiles?uuid={uuid}");
@@ -37,12 +31,12 @@ public class HypixelService : IHypixelService
                 response.Headers.TryGetValues("ratelimit-limit", out var limit);
                 
                 if (limit is not null) {
-                    _logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
+                    logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
                 }
-                else _logger.LogWarning("Hypixel API rate limit exceeded!");
+                else logger.LogWarning("Hypixel API rate limit exceeded!");
             }
             else {
-                _logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
+                logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
             }
             
             return new BadRequestResult();
@@ -60,7 +54,7 @@ public class HypixelService : IHypixelService
             return data;
         } catch (Exception e)
         {
-            _logger.LogError(e, "Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, e);
+            logger.LogError(e, "Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, e);
         }
 
         return new BadRequestResult();
@@ -69,9 +63,9 @@ public class HypixelService : IHypixelService
     public async Task<ActionResult<RawPlayerResponse>> FetchPlayer(string uuid)
     {
         if (uuid.Length is not (32 or 36)) return new BadRequestResult();
-        await _limiter.AcquireAsync(1);
+        await limiter.AcquireAsync(1);
 
-        var client = _httpClientFactory.CreateClient(HttpClientName);
+        var client = httpClientFactory.CreateClient(HttpClientName);
         client.DefaultRequestHeaders.Add("API-Key", _hypixelApiKey);
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.hypixel.net/v2/player?uuid={uuid}");
@@ -83,12 +77,12 @@ public class HypixelService : IHypixelService
                 response.Headers.TryGetValues("ratelimit-limit", out var limit);
 
                 if (limit is not null) {
-                    _logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
+                    logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
                 }
-                else _logger.LogWarning("Hypixel API rate limit exceeded!");
+                else logger.LogWarning("Hypixel API rate limit exceeded!");
             }
             else {
-                _logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
+                logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
             }
             
             return new BadRequestResult();
@@ -106,7 +100,7 @@ public class HypixelService : IHypixelService
             return data;
         } catch (Exception e)
         {
-            _logger.LogError(e, "Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, e);
+            logger.LogError(e, "Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, e);
         }
 
         return new BadRequestResult();

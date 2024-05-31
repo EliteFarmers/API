@@ -52,6 +52,7 @@ public class ProfileMemberDto
     public required JacobDataDto Jacob { get; set; }
     public required FarmingWeightDto FarmingWeight { get; set; }
     public SkillsDto Skills { get; set; } = new();
+    public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
 
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; }

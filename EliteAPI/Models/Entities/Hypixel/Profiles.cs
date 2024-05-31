@@ -37,6 +37,7 @@ public class ProfileMember : IDisposable
     public JacobData JacobData { get; set; } = new();
     public Skills Skills { get; set; } = new();
     public Farming.Farming Farming { get; set; } = new();
+    public ChocolateFactory ChocolateFactory { get; set; } = new();
     // public Inventories Inventories { get; set; } = new(); // Likely to be added in the future
 
     public bool IsSelected { get; set; } = false;

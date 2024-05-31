@@ -6,7 +6,6 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.General;
 using Npgsql;
 using Z.EntityFramework.Extensions;
 
@@ -77,6 +76,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<ContestParticipation> ContestParticipations { get; set; } = null!;
     public DbSet<Skills> Skills { get; set; } = null!;
     public DbSet<Farming> Farming { get; set; } = null!;
+    public DbSet<ChocolateFactory> ChocolateFactories { get; set; } = null!;
 
     // Discord
     public DbSet<Guild> Guilds { get; set; } = null!;
