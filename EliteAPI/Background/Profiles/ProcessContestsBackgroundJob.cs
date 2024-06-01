@@ -58,6 +58,10 @@ public class ProcessContestsBackgroundJob(
         var incomingContests = incoming?.Contests;
         if (incomingContests is null || incomingContests.Count == 0) return;
         
+        // If the last update was 0, we need to do a full refresh
+        // This can be triggered manually to correct for errors overtime
+        var fullRefresh = jacob.ContestsLastUpdated == 0;
+        
         await using var transaction = await context.Database.BeginTransactionAsync();
         
         // Existing contests on the profile
@@ -68,11 +72,13 @@ public class ProcessContestsBackgroundJob(
         // List of keys to fetch
         var contestsToFetch = incomingContests
             .Where(c => {
-                var actualKey = FormatUtils.GetTimeFromContestKey(c.Key) + (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0);
+                if (c.Value.Collected < 100) return false; // Contests with less than 100 crops collected aren't counted in game
+                if (fullRefresh) return true;
                 
+                var actualKey = FormatUtils.GetTimeFromContestKey(c.Key) + (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0);
                 // If the contest is new, add it to the list
                 if (!existingContests.TryGetValue(actualKey, out var existing)) return true;
-
+                
                 // Add if it hasn't been claimed
                 return existing.Position <= 0;
             }).ToList();
@@ -89,7 +95,7 @@ public class ProcessContestsBackgroundJob(
                 .Where(j => keys.Contains(j.Id))
                 .ToDictionaryAsync(j => j.Id);
         } catch (Exception e) {
-            Console.Error.WriteLine(e);
+            logger.LogError(e, "Failed to fetch contests from database");
         }
         
         var newParticipations = new List<ContestParticipation>();
@@ -110,13 +116,15 @@ public class ProcessContestsBackgroundJob(
                     Id = actualKey,
                     Crop = crop.GetValueOrDefault(),
                     Timestamp = FormatUtils.GetTimeFromContestKey(key),
-                    Participants = contest.Participants ?? -1
+                    Participants = contest.Participants ?? -1,
+                    Finnegan = contest.Medal is not null // Only Finnegan contests have a medal set
                 };
 
                 try {
                     context.JacobContests.Add(newContest);
                 } catch (Exception e) {
-                    Console.WriteLine(e);
+                    logger.LogError(e, "Failed to add new contest to database");
+                    continue;
                 }
                 
                 fetchedContests.Add(actualKey, newContest);
@@ -178,6 +186,8 @@ public class ProcessContestsBackgroundJob(
         jacob.FirstPlaceScores = jacob.Contests.Count(c => c.Position == 0);
         
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        
+        context.JacobData.Update(jacob);
         
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
