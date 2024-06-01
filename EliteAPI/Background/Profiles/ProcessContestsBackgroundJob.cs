@@ -26,7 +26,7 @@ public class ProcessContestsBackgroundJob(
         var memberId = executionContext.MergedJobDataMap.GetGuidValue("MemberId");
         var incomingJacob = executionContext.MergedJobDataMap.Get("Jacob") as RawJacobData;
         
-        logger.LogInformation("Processing {Count} Jacob contests for {AccountId} - {ProfileId}", incomingJacob?.Contests.Count ?? 0, accountId, profileId);
+        // logger.LogInformation("Processing {Count} Jacob contests for {AccountId} - {ProfileId}", incomingJacob?.Contests.Count ?? 0, accountId, profileId);
         
         if (executionContext.RefireCount > 1) {
             messageService.SendErrorMessage("Process Contests Background Job", 
@@ -154,10 +154,17 @@ public class ProcessContestsBackgroundJob(
                 
                 fetched.UpdateMedalBracket(newParticipation);
                 newParticipations.Add(newParticipation);
-            } else {
-                existing.Collected = contest.Collected;
-                existing.Position = contest.Position ?? -1;
-                existing.MedalEarned = medal;
+            } else if (
+                existing.Collected != contest.Collected 
+                || (contest.Position is not null && existing.Position != contest.Position) 
+                || existing.MedalEarned != medal) 
+            {
+                await context.ContestParticipations
+                    .Where(p => p.ProfileMemberId == memberId && p.JacobContestId == actualKey)
+                    .ExecuteUpdateAsync(p => p
+                        .SetProperty(c => c.Collected, contest.Collected)
+                        .SetProperty(c => c.Position, contest.Position ?? -1)
+                        .SetProperty(c => c.MedalEarned, medal));
                 
                 fetched.UpdateMedalBracket(existing);
             }
