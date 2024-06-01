@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Background.Discord;
+using EliteAPI.Background.Profiles;
 using Quartz;
 
 namespace EliteAPI.Background;
@@ -11,6 +12,7 @@ public static class QuartzExtensions {
 			options.WaitForJobsToComplete = true;
 		});
 
-		services.ConfigureOptions<DiscordJobConfiguration>();
+		services.ConfigureOptions<DiscordJobsConfiguration>();
+		services.ConfigureOptions<HypixelJobsConfiguration>();
 	}
 }

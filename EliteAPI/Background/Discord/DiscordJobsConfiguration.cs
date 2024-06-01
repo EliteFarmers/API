@@ -4,7 +4,7 @@ using Quartz;
 
 namespace EliteAPI.Background.Discord;
 
-public class DiscordJobConfiguration(IOptions<ConfigCooldownSettings> cooldowns) : IConfigureOptions<QuartzOptions> {
+public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns) : IConfigureOptions<QuartzOptions> {
 	private readonly ConfigCooldownSettings _cooldowns = cooldowns.Value;
 	
 	public void Configure(QuartzOptions options)

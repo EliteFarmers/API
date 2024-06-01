@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using EliteAPI.Background.Profiles;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Services.MojangService;
@@ -15,6 +16,7 @@ using EliteAPI.Services.CacheService;
 using EliteAPI.Services.EventService;
 using EliteAPI.Services.LeaderboardService;
 using Microsoft.Extensions.Options;
+using Quartz;
 using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Parsers.Skyblock;
@@ -27,6 +29,7 @@ public class ProfileParser(
     IOptions<ChocolateFactorySettings> cfOptions,
     ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService,
+    ISchedulerFactory schedulerFactory,
     IEventService eventService) 
 {
     private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
@@ -253,7 +256,7 @@ public class ProfileParser(
 
         await AddTimeScaleRecords(member);
         // Runs on background service
-        ParseJacobContests(member.Id, incomingData);
+        await ParseJacobContests(member.PlayerUuid, member.ProfileId, member.Id, incomingData.Jacob);
         
         profile.CombineMinions(incomingData.PlayerData?.CraftedGenerators);
         
@@ -324,33 +327,17 @@ public class ProfileParser(
         leaderboardService.UpdateLeaderboardScore("chocolate", memberId, member.ChocolateFactory.TotalChocolate);
     }
 
-    private void ParseJacobContests(Guid memberId, RawMemberData incomingData) {
-        // Defer jacob contest parsing to the background task queue
-        taskQueue.EnqueueAsync(async (scope, ct) => {
-            await using var ctx = scope.ServiceProvider.GetRequiredService<DataContext>();
-            var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
-            var lbService = scope.ServiceProvider.GetRequiredService<ILeaderboardService>();
-        
-            var member = await ctx.ProfileMembers
-                .Include(p => p.JacobData)
-                .ThenInclude(j => j.Contests)
-                .ThenInclude(c => c.JacobContest)
-                .FirstOrDefaultAsync(p => p.Id == memberId, cancellationToken: ct);
-            if (member is null) return;
+    private async Task ParseJacobContests(string playerUuid, string profileUuid, Guid memberId, RawJacobData? incomingData) 
+    {
+        var data = new JobDataMap {
+            { "AccountId", playerUuid },
+            { "ProfileId", profileUuid },
+            { "MemberId", memberId },
+            { "Jacob", incomingData ?? new RawJacobData() }
+        };
 
-            await member.ParseJacobContests(incomingData.Jacob, ctx, cache);
-
-            // Update leaderboard positions
-            var mId = memberId.ToString();
-            lbService.UpdateLeaderboardScore("participations", mId, member.JacobData.Participations);
-            lbService.UpdateLeaderboardScore("firstplace", mId, member.JacobData.FirstPlaceScores);
-            
-            lbService.UpdateLeaderboardScore("diamondmedals", mId, member.JacobData.EarnedMedals.Diamond);
-            lbService.UpdateLeaderboardScore("platinummedals", mId, member.JacobData.EarnedMedals.Platinum);
-            lbService.UpdateLeaderboardScore("goldmedals", mId, member.JacobData.EarnedMedals.Gold);
-            lbService.UpdateLeaderboardScore("silvermedals", mId, member.JacobData.EarnedMedals.Silver);
-            lbService.UpdateLeaderboardScore("bronzemedals", mId, member.JacobData.EarnedMedals.Bronze);
-        });
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.TriggerJob(ProcessContestsBackgroundJob.Key, data);
     }
 
     private async Task AddTimeScaleRecords(ProfileMember member) {
