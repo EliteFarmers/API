@@ -66,6 +66,7 @@ public class JacobContest
     public Crop Crop { get; set; }
     public long Timestamp { get; set; }
     public int Participants { get; set; }
+    public bool Finnegan { get; set; }
     
     public int Bronze { get; set; }
     public int Silver { get; set; }

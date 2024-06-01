@@ -35,7 +35,6 @@ public class BotController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<GuildDto>> Get(ulong guildId)
     {
-        await discordService.RefreshBotGuilds();
         var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
         
@@ -53,7 +52,6 @@ public class BotController(
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<GuildJacobLeaderboardFeature>> GetJacobFeature(ulong guildId)
     {
-        await discordService.RefreshBotGuilds();
         var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
         
@@ -84,8 +82,6 @@ public class BotController(
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult> PutJacobFeature(ulong guildId, [FromBody] GuildJacobLeaderboardFeature data)
     {
-        await discordService.RefreshBotGuilds();
-        
         var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
 

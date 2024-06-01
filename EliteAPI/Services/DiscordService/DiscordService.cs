@@ -192,8 +192,6 @@ public class DiscordService(
     }
     
     public async Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken) {
-        await RefreshBotGuilds();
-        
         var url = DiscordBaseUrl + "/users/@me/guilds";
         var key = $"user:guilds:{userId}";
         
@@ -264,7 +262,6 @@ public class DiscordService(
     }
 
     public async Task<FullDiscordGuild?> GetGuild(ulong guildId) {
-        await RefreshBotGuilds();
         var db = redis.GetDatabase();
         var key = $"full:guild:{guildId}";
 
@@ -307,9 +304,7 @@ public class DiscordService(
             await db.StringSetAsync(key, JsonSerializer.Serialize(guild), TimeSpan.FromSeconds(_coolDowns.UserGuildsCooldown));
 
             var existingGuild = await context.Guilds.FindAsync(ulong.Parse(guild.Id));
-            if (existingGuild is null) {
-                await RefreshBotGuilds();
-            } else {
+            if (existingGuild is not null) {
                 existingGuild.Name = guild.Name;
                 existingGuild.Icon = guild.Icon;
                 existingGuild.DiscordFeatures = guild.Features;
@@ -332,100 +327,6 @@ public class DiscordService(
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse guild from Discord");
             return null;
-        }
-    }
-
-    public async Task RefreshBotGuilds() {
-        var db = redis.GetDatabase();
-        if (db.KeyExists("bot:guilds")) return;
-        
-        await taskQueue.EnqueueAsync(RefreshBotGuildsTask);
-    }
-
-    private async ValueTask RefreshBotGuildsTask(IServiceScope scope, CancellationToken ct) {
-        var scopedRedis = scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
-        var scopedLogger = scope.ServiceProvider.GetRequiredService<ILogger<DiscordService>>();
-        var scopedContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-        var scopedHttpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
-
-        var db = scopedRedis.GetDatabase();
-        if (db.KeyExists("bot:guilds")) return;
-        await db.StringSetAsync("bot:guilds", "1", TimeSpan.FromSeconds(_coolDowns.DiscordGuildsCooldown));
-        
-        var guilds = await FetchBotGuildsRecursive(null);
-        
-        scopedLogger.LogInformation("Fetched {GuildCount} guilds from Discord", guilds.Count);
-
-        // Allow retry sooner if no guilds were found
-        if (guilds.Count == 0) {
-            await db.StringGetSetExpiryAsync("bot:guilds", TimeSpan.FromSeconds(60));
-        }
-        
-        var existing = await scopedContext.Guilds.ToListAsync(cancellationToken: ct);
-        
-        foreach (var guild in guilds) {
-            var existingGuild = existing.FirstOrDefault(g => g.Id == guild.Id);
-            if (existingGuild is null) {
-                scopedContext.Guilds.Add(new Guild {
-                    Id = guild.Id,
-                    Name = guild.Name,
-                    Icon = guild.Icon,
-                    BotPermissions = guild.Permissions,
-                    BotPermissionsNew = guild.PermissionsNew,
-                    DiscordFeatures = guild.Features,
-                    MemberCount = guild.MemberCount
-                });
-            } else {
-                existingGuild.Name = guild.Name;
-                existingGuild.Icon = guild.Icon;
-                existingGuild.BotPermissions = guild.Permissions;
-                existingGuild.BotPermissionsNew = guild.PermissionsNew;
-                existingGuild.DiscordFeatures = guild.Features;
-                existingGuild.MemberCount = guild.MemberCount;
-            }
-            
-            await db.StringSetAsync($"bot:guild:{guild.Id}", guild.Permissions, TimeSpan.FromSeconds(_coolDowns.DiscordGuildsCooldown), When.Always);
-        }
-        
-        await scopedContext.SaveChangesAsync(ct);
-        return;
-        
-        async Task<List<DiscordGuild>> FetchBotGuildsRecursive(string? guildId, List<DiscordGuild>? guildList = null) {
-            var url = DiscordBaseUrl + "/users/@me/guilds?with_counts=true";
-        
-            if (guildId is not null) {
-                url += "&after=" + guildId;
-            }
-            guildList ??= [];
-        
-            var client = scopedHttpClientFactory.CreateClient(ClientName);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
-        
-            var response = await client.GetAsync(url, ct);
-
-            if (!response.IsSuccessStatusCode) {
-                scopedLogger.LogWarning("Failed to fetch bot guilds from Discord");
-                return guildList;
-            }
-
-            try {
-                var list = await response.Content.ReadFromJsonAsync<List<DiscordGuild>>(cancellationToken: ct);
-
-                if (list is null || list.Count == 0) {
-                    if (guildList.Count == 0) {
-                        scopedLogger.LogWarning("Bot is not in any guilds");
-                    }
-                    return guildList;
-                }
-            
-                guildList.AddRange(list);
-            
-                return await FetchBotGuildsRecursive(list.Last().Id.ToString(), guildList);
-            } catch (Exception e) {
-                scopedLogger.LogError(e, "Failed to parse bot guilds from Discord");
-            }
-
-            return guildList;
         }
     }
 
