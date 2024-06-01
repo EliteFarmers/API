@@ -44,13 +44,16 @@ public class ProcessContestsBackgroundJob(
 	}
 	
 	private async Task ProcessContests(Guid memberId, RawJacobData? incoming) {
-        if (incoming is null) return;
-        
-        var jacob = await context.JacobData
-            .Include(j => j.Contests)
+        var member = await context.ProfileMembers
+            .Include(m => m.JacobData)
+            .ThenInclude(j => j.Contests)
             .ThenInclude(p => p.JacobContest)
-            .FirstOrDefaultAsync(p => p.ProfileMemberId == memberId);
-        if (jacob is null) return;
+            .FirstOrDefaultAsync(p => p.Id == memberId);
+
+        if (incoming is null) return;
+
+        var jacob = member?.JacobData;
+        if (jacob is null || member is null) return;
         
         var incomingContests = incoming?.Contests;
         if (incomingContests is null || incomingContests.Count == 0) return;
@@ -137,6 +140,7 @@ public class ProcessContestsBackgroundJob(
                     MedalEarned = medal,
 
                     ProfileMemberId = memberId,
+                    ProfileMember = member,
                     JacobContestId = actualKey
                 };
                 
