@@ -134,10 +134,15 @@ public class ProcessContestsBackgroundJob(
             // Update the number of participants if it's not set
             // Should happen infrequently
             if (fetched.Participants == -1 && contest.Participants > 0) {
+                if (contest.Medal is not null) {
+                    fetched.Finnegan = true;
+                }
+                
                 await context.JacobContests
                     .Where(j => j.Id == actualKey)
                     .ExecuteUpdateAsync(j => 
-                        j.SetProperty(c => c.Participants, contest.Participants ?? -1));
+                        j.SetProperty(c => c.Participants, contest.Participants ?? -1)
+                        .SetProperty(c => c.Finnegan, fetched.Finnegan));
             }
 
             if (!existingContests.TryGetValue(actualKey, out var existing)) {
