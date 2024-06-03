@@ -22,7 +22,6 @@ public class Guild {
     
     public string? Icon { get; set; }
     public ulong BotPermissions { get; set; }
-    public string? BotPermissionsNew { get; set; }
 
     [Column(TypeName = "jsonb")]
     public List<string> DiscordFeatures { get; set; } = [];
@@ -33,7 +32,6 @@ public class Guild {
     
     public List<GuildChannel> Channels { get; set; } = [];
     public List<GuildRole> Roles { get; set; } = [];
-    public List<GuildMember> PrivledgedMembers { get; set; } = [];
     
     public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }

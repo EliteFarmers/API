@@ -2,6 +2,7 @@
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.MessageService;
@@ -66,17 +67,16 @@ public class RefreshGuildsBackgroundJob(
             await db.StringGetSetExpiryAsync("bot:guilds", TimeSpan.FromSeconds(60));
         }
         
-        var existing = await context.Guilds.ToListAsync(cancellationToken: ct);
-        
         foreach (var guild in guilds) {
-            var existingGuild = existing.FirstOrDefault(g => g.Id == guild.Id);
+            var existingGuild = await context.Guilds.FirstOrDefaultAsync(g => g.Id == guild.Id, cancellationToken: ct);
+            
             if (existingGuild is null) {
                 context.Guilds.Add(new Guild {
                     Id = guild.Id,
                     Name = guild.Name,
                     Icon = guild.Icon,
                     BotPermissions = guild.Permissions,
-                    BotPermissionsNew = guild.PermissionsNew,
+                    HasBot = true,
                     DiscordFeatures = guild.Features,
                     MemberCount = guild.MemberCount
                 });
@@ -84,15 +84,19 @@ public class RefreshGuildsBackgroundJob(
                 existingGuild.Name = guild.Name;
                 existingGuild.Icon = guild.Icon;
                 existingGuild.BotPermissions = guild.Permissions;
-                existingGuild.BotPermissionsNew = guild.PermissionsNew;
                 existingGuild.DiscordFeatures = guild.Features;
                 existingGuild.MemberCount = guild.MemberCount;
+                existingGuild.HasBot = true;
+                
+                existingGuild.LastUpdated = DateTimeOffset.UtcNow;
             }
-            
-            await db.StringSetAsync($"bot:guild:{guild.Id}", guild.Permissions, TimeSpan.FromSeconds(_coolDowns.DiscordGuildsCooldown), When.Always);
         }
         
         await context.SaveChangesAsync(ct);
+        
+        // Flag guilds that the bot is no longer in
+        await context.Guilds.Where(g => g.HasBot && g.LastUpdated < DateTimeOffset.UtcNow.AddHours(-1))
+            .ForEachAsync(g => g.HasBot = false, ct);
     }
     
     private async Task<List<DiscordGuild>> FetchBotGuildsRecursive(string? guildId, CancellationToken ct, List<DiscordGuild>? guildList = null) {
@@ -109,7 +113,7 @@ public class RefreshGuildsBackgroundJob(
         var response = await client.GetAsync(url, ct);
 
         if (!response.IsSuccessStatusCode) {
-            logger.LogWarning("Failed to fetch bot guilds from Discord");
+            logger.LogWarning("Failed to fetch bot guilds from Discord: {Reason}", response.ReasonPhrase);
             return guildList;
         }
 
@@ -124,6 +128,9 @@ public class RefreshGuildsBackgroundJob(
             }
             
             guildList.AddRange(list);
+            
+            // Wait for 10 seconds to avoid rate limiting
+            await Task.Delay(10000, ct);
             
             return await FetchBotGuildsRecursive(list.Last().Id.ToString(), ct, guildList);
         } catch (Exception e) {

@@ -106,14 +106,6 @@ public class BadgeController(
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> EditBadge(int badgeId, [FromBody] EditBadgeDto badge) {
-        if (HttpContext.Items["Account"] is not EliteAccount account || HttpContext.Items["DiscordToken"] is not string) {
-            return Unauthorized("Account not found.");
-        }
-        
-        if (!account.Permissions.HasFlag(PermissionFlags.Admin)) {
-            return Unauthorized("You do not have permission to do this!");
-        }
-        
         var existingBadge = await context.Badges
             .FirstOrDefaultAsync(b => b.Id == badgeId);
         

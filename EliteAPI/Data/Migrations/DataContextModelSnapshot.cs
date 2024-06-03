@@ -66,6 +66,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTimeOffset>("GuildsLastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -277,6 +280,174 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("UserBadges");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.Guild", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("AdminRole")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Banner")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("BotPermissions")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<List<string>>("DiscordFeatures")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<GuildFeatures>("Features")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<bool>("HasBot")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("text");
+
+                    b.Property<string>("InviteCode")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MemberCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Guilds");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildChannel", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("BotPermissions")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuildId");
+
+                    b.ToTable("GuildChannels");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMember", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Permissions")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("GuildId");
+
+                    b.ToTable("GuildMembers");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMemberRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MemberId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("RoleId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("GuildMemberRoles");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildRole", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<decimal>("Permissions")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuildId");
+
+                    b.ToTable("GuildRoles");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
                 {
                     b.Property<decimal>("Id")
@@ -408,135 +579,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasDiscriminator<int>("Type").HasValue(0);
 
                     b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.Guild", b =>
-                {
-                    b.Property<decimal>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal>("AdminRole")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<string>("Banner")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("BotPermissions")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<string>("BotPermissionsNew")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
-
-                    b.Property<List<string>>("DiscordFeatures")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<GuildFeatures>("Features")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Icon")
-                        .HasColumnType("text");
-
-                    b.Property<string>("InviteCode")
-                        .HasColumnType("text");
-
-                    b.Property<int>("MemberCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Guilds");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.GuildChannel", b =>
-                {
-                    b.Property<decimal>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal>("BotPermissions")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildId");
-
-                    b.ToTable("GuildChannels");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.GuildMember", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AccountId")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal>("Permissions")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("GuildId");
-
-                    b.ToTable("GuildMembers");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.GuildRole", b =>
-                {
-                    b.Property<decimal>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<decimal>("GuildId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<decimal>("Permissions")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildId");
-
-                    b.ToTable("GuildRoles");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Farming.Farming", b =>
@@ -1290,9 +1332,59 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("MinecraftAccount");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildChannel", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
+                        .WithMany("Channels")
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guild");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMember", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.ApiUser", "Account")
+                        .WithMany("GuildMemberships")
+                        .HasForeignKey("AccountId");
+
+                    b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
+                        .WithMany()
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Guild");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMemberRole", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Discord.GuildMember", "Member")
+                        .WithMany("Roles")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildRole", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
+                        .WithMany("Roles")
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guild");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
                 {
-                    b.HasOne("EliteAPI.Models.Entities.Events.Guild", "Guild")
+                    b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
                         .WithMany()
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1334,45 +1426,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.GuildChannel", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Events.Guild", "Guild")
-                        .WithMany("Channels")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.GuildMember", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Accounts.ApiUser", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId");
-
-                    b.HasOne("EliteAPI.Models.Entities.Events.Guild", "Guild")
-                        .WithMany("PrivledgedMembers")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Guild");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.GuildRole", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Events.Guild", "Guild")
-                        .WithMany("Roles")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Farming.Farming", b =>
@@ -1799,6 +1852,11 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.ApiUser", b =>
+                {
+                    b.Navigation("GuildMemberships");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.EliteAccount", b =>
                 {
                     b.Navigation("MinecraftAccounts");
@@ -1811,12 +1869,15 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("PlayerData");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Events.Guild", b =>
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.Guild", b =>
                 {
                     b.Navigation("Channels");
 
-                    b.Navigation("PrivledgedMembers");
+                    b.Navigation("Roles");
+                });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMember", b =>
+                {
                     b.Navigation("Roles");
                 });
 

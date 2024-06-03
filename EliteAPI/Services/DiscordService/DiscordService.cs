@@ -194,21 +194,24 @@ public class DiscordService(
     }
     
     public async Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken) {
-        var url = DiscordBaseUrl + "/users/@me/guilds";
-        var key = $"user:guilds:{userId}";
-        
-        var db = redis.GetDatabase();
-        if (db.KeyExists(key)) {
-            var guilds = await db.StringGetAsync(key);
-            
-            if (guilds.IsNullOrEmpty) return new List<UserGuildDto>();
+        const string url = DiscordBaseUrl + "/users/@me/guilds";
 
-            try {
-                var list = JsonSerializer.Deserialize<List<UserGuildDto>>(guilds!);
-                if (list is not null) return list;
-            } catch (Exception e) {
-                logger.LogError(e, "Failed to parse guilds from Redis");
-            }
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return [];
+        
+        var existing = await context.GuildMembers
+            .Include(gm => gm.Guild)
+            .Where(gm => gm.AccountId == userId.ToString())
+            .ToListAsync();
+        
+        if (existing.Count > 0 && !user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
+            return existing.Select(gm => new UserGuildDto {
+                Name = gm.Guild.Name,
+                Id = gm.GuildId.ToString(),
+                Permissions = gm.Permissions.ToString(),
+                HasBot = gm.Guild.HasBot,
+                Icon = gm.Guild.Icon
+            }).ToList();
         }
         
         var client = httpClientFactory.CreateClient(ClientName);
@@ -218,25 +221,56 @@ public class DiscordService(
         
         if (!response.IsSuccessStatusCode) {
             logger.LogWarning("Failed to fetch guilds from Discord");
-            return new List<UserGuildDto>();
+            return [];
         }
         
         try {
             var list = await response.Content.ReadFromJsonAsync<List<DiscordGuild>>();
-            if (list is null) return new List<UserGuildDto>();
-            
-            var guilds = mapper.Map<List<UserGuildDto>>(list);
+            if (list is null) return [];
 
-            foreach (var guild in guilds) {
-                guild.HasBot = await db.KeyExistsAsync($"bot:guild:{guild.Id}");
+            foreach (var guild in list) {
+                await UpdateGuildMember(userId, guild);
             }
-
-            await db.StringSetAsync(key, JsonSerializer.Serialize(guilds), TimeSpan.FromSeconds(_coolDowns.UserGuildsCooldown));
-            return guilds;
+            
+            // Delete old guild member entries
+            await context.GuildMembers
+                .Where(gm => gm.AccountId == userId.ToString() && gm.LastUpdated < DateTimeOffset.UtcNow.AddHours(-1))
+                .DeleteFromQueryAsync();
+            
+            user.GuildsLastUpdated = DateTimeOffset.UtcNow;
+            await userManager.UpdateAsync(user);
+            
+            return mapper.Map<List<UserGuildDto>>(list);
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse guilds from Discord");
-            return new List<UserGuildDto>();
+            return [];
         }
+    }
+    
+    private async Task UpdateGuildMember(ulong userId, DiscordGuild guild) {
+        var accountId = userId.ToString();
+        
+        var existingGuild = await context.Guilds.FindAsync(guild.Id);
+        if (existingGuild is null) {
+            return; // We only care about guilds the bot is in
+        }
+        
+        var existing = await context.GuildMembers
+            .FirstOrDefaultAsync(gm => gm.GuildId == guild.Id && gm.AccountId == accountId);
+        
+        if (existing is null) {
+            context.GuildMembers.Add(new GuildMember {
+                GuildId = guild.Id,
+                Guild = existingGuild,
+                AccountId = accountId,
+                Permissions = guild.Permissions
+            });
+        } else {
+            existing.Permissions = guild.Permissions;
+            existing.LastUpdated = DateTimeOffset.UtcNow;
+        }
+        
+        await context.SaveChangesAsync();
     }
 
     public async Task<UserGuildDto?> GetUserGuildIfManagable(ApiUser user, ulong guildId) {
@@ -264,16 +298,12 @@ public class DiscordService(
     }
 
     public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false) {
-        if (!skipCache) {
-            await RefreshBotGuilds();
-        }
-        
         var existing = await context.Guilds
             .Include(g => g.Channels)
             .Include(g => g.Roles)
             .FirstOrDefaultAsync(g => g.Id == guildId);
         
-        if (existing is not null && !existing.LastUpdated.OlderThanSeconds(_coolDowns.DiscordGuildsCooldown)) {
+        if (!skipCache && existing is not null && !existing.LastUpdated.OlderThanSeconds(_coolDowns.DiscordGuildsCooldown)) {
             return existing;
         }
         

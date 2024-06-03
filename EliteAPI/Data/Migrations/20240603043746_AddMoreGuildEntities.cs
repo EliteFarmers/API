@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -6,20 +7,54 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class AddMoreDiscordGuildEntities : Migration
+    public partial class AddMoreGuildEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "BotPermissionsNew",
+                table: "Guilds");
+
+            migrationBuilder.AddColumn<bool>(
+                name: "HasBot",
+                table: "Guilds",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "IsPublic",
+                table: "Guilds",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "LastUpdated",
+                table: "Guilds",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
+
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "GuildsLastUpdated",
+                table: "AspNetUsers",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
+
             migrationBuilder.CreateTable(
                 name: "GuildChannels",
                 columns: table => new
                 {
                     Id = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    Position = table.Column<int>(type: "integer", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     BotPermissions = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    LastUpdated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,7 +75,8 @@ namespace EliteAPI.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AccountId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
                     Permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    LastUpdated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -66,7 +102,8 @@ namespace EliteAPI.Data.Migrations
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Position = table.Column<int>(type: "integer", nullable: false),
                     Permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    LastUpdated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -79,10 +116,35 @@ namespace EliteAPI.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "GuildMemberRoles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    MemberId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GuildMemberRoles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GuildMemberRoles_GuildMembers_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "GuildMembers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_GuildChannels_GuildId",
                 table: "GuildChannels",
                 column: "GuildId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GuildMemberRoles_MemberId",
+                table: "GuildMemberRoles",
+                column: "MemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GuildMembers_AccountId",
@@ -107,10 +169,35 @@ namespace EliteAPI.Data.Migrations
                 name: "GuildChannels");
 
             migrationBuilder.DropTable(
-                name: "GuildMembers");
+                name: "GuildMemberRoles");
 
             migrationBuilder.DropTable(
                 name: "GuildRoles");
+
+            migrationBuilder.DropTable(
+                name: "GuildMembers");
+
+            migrationBuilder.DropColumn(
+                name: "HasBot",
+                table: "Guilds");
+
+            migrationBuilder.DropColumn(
+                name: "IsPublic",
+                table: "Guilds");
+
+            migrationBuilder.DropColumn(
+                name: "LastUpdated",
+                table: "Guilds");
+
+            migrationBuilder.DropColumn(
+                name: "GuildsLastUpdated",
+                table: "AspNetUsers");
+
+            migrationBuilder.AddColumn<string>(
+                name: "BotPermissionsNew",
+                table: "Guilds",
+                type: "text",
+                nullable: true);
         }
     }
 }

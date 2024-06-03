@@ -16,4 +16,6 @@ public class GuildChannel {
 	[ForeignKey("Guild")]
 	public ulong GuildId { get; set; }
 	public Guild Guild { get; set; } = null!;
+	
+	public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }

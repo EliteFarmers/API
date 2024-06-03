@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Discord;
 using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Models.Entities.Accounts;
@@ -12,6 +13,9 @@ public class ApiUser : IdentityUser {
 	[MaxLength(256)]
 	public string? DiscordRefreshToken { get; set; }
 	public DateTimeOffset DiscordRefreshTokenExpires { get; set; }
+	
+	public List<GuildMember> GuildMemberships { get; set; } = [];
+	public DateTimeOffset GuildsLastUpdated { get; set; } = DateTimeOffset.UtcNow;
 	
 	[ForeignKey("Account")]
 	public ulong? AccountId { get; set; }
