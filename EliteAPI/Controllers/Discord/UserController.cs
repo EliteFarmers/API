@@ -64,7 +64,12 @@ public class UserController(
         
         var fullGuild = await discordService.GetGuild(guildId);
         var guild = await context.Guilds.FindAsync(guildId);
-
+        
+        var member = await context.GuildMembers.FirstOrDefaultAsync(g => g.GuildId == guildId && g.AccountId == user.Id);
+        if (member is not null) {
+            await discordService.FetchUserRoles(member);
+        }
+        
         if (fullGuild is null || guild is null) {
             return NotFound("Guild not found.");
         }

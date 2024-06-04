@@ -13,22 +13,11 @@ public class GuildMember {
 	public ApiUser? Account { get; set; }
     
 	public ulong Permissions { get; set; }
-	public List<GuildMemberRole> Roles { get; set; } = [];
+	public List<ulong> Roles { get; set; } = [];
 	
 	[ForeignKey("Guild")]
 	public ulong GuildId { get; set; }
 	public Guild Guild { get; set; } = null!;
 	
 	public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
-}
-
-public class GuildMemberRole {
-	[Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-	public int Id { get; set; }
-	
-	public ulong RoleId { get; set; }
-	
-	[ForeignKey("Role")]
-	public int MemberId { get; set; }
-	public GuildMember Member { get; set; } = null!;
 }

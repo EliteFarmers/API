@@ -113,6 +113,7 @@ public class UserGuildDto {
     public string? Icon { get; set; }
     public bool HasBot { get; set; }
     public required string Permissions { get; set; }
+    public List<string> Roles { get; set; } = [];
 }
 
 public class AuthorizedGuildDto {

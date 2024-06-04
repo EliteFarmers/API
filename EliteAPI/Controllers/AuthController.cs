@@ -61,7 +61,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 	[Route("Refresh")]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] AuthResponseDto request) {
+	public async Task<ActionResult<AuthResponseDto>> RefreshToken([FromBody] AuthRefreshDto request) {
 		var response = await authService.VerifyRefreshToken(request);
 		
 		if (response is null) {

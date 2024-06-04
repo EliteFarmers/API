@@ -19,7 +19,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240603043746_AddMoreGuildEntities")]
+    [Migration("20240604043931_AddMoreGuildEntities")]
     partial class AddMoreGuildEntities
     {
         /// <inheritdoc />
@@ -391,6 +391,10 @@ namespace EliteAPI.Data.Migrations
                     b.Property<decimal>("Permissions")
                         .HasColumnType("numeric(20,0)");
 
+                    b.Property<decimal[]>("Roles")
+                        .IsRequired()
+                        .HasColumnType("numeric(20,0)[]");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
@@ -398,27 +402,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("GuildId");
 
                     b.ToTable("GuildMembers");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMemberRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("MemberId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("RoleId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("GuildMemberRoles");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildRole", b =>
@@ -1363,17 +1346,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Guild");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMemberRole", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Discord.GuildMember", "Member")
-                        .WithMany("Roles")
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Member");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildRole", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
@@ -1876,11 +1848,6 @@ namespace EliteAPI.Data.Migrations
                 {
                     b.Navigation("Channels");
 
-                    b.Navigation("Roles");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMember", b =>
-                {
                     b.Navigation("Roles");
                 });
 

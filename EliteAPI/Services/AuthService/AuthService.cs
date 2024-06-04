@@ -77,19 +77,23 @@ public class AuthService(
 
 		return newRefreshToken;
 	}
-	
-	public async Task<AuthResponseDto?> VerifyRefreshToken(AuthResponseDto authResponse) {
+
+	public async Task<AuthResponseDto?> VerifyRefreshToken(AuthRefreshDto dto) {
 		var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(authResponse.AccessToken);
+		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(dto.AccessToken);
 		
 		var userId = tokenContent.Claims.ToList()
 			.FirstOrDefault(q => q.Type == ClaimTypes.NameIdentifier)?.Value;
 		if (userId is null) return null;
-		
+
+		return await VerifyRefreshToken(userId, dto.RefreshToken);
+	}
+
+	public async Task<AuthResponseDto?> VerifyRefreshToken(string userId, string refreshToken) {
 		var user = await userManager.FindByIdAsync(userId);
 		if (user is null) return null;
 		
-		var isValid = await userManager.VerifyUserTokenAsync(user, LoginProvider, RefreshToken, authResponse.RefreshToken);
+		var isValid = await userManager.VerifyUserTokenAsync(user, LoginProvider, RefreshToken, refreshToken);
 
 		if (!isValid) {
 			// Invalidate user tokens

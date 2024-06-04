@@ -84,7 +84,6 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<GuildChannel> GuildChannels { get; set; } = null!;
     public DbSet<GuildRole> GuildRoles { get; set; } = null!;
     public DbSet<GuildMember> GuildMembers { get; set; } = null!;
-    public DbSet<GuildMemberRole> GuildMemberRoles { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;

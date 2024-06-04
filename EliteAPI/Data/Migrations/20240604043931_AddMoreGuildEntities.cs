@@ -75,6 +75,7 @@ namespace EliteAPI.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AccountId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
                     Permissions = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    Roles = table.Column<decimal[]>(type: "numeric(20,0)[]", nullable: false),
                     GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
                     LastUpdated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -116,35 +117,10 @@ namespace EliteAPI.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "GuildMemberRoles",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    MemberId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GuildMemberRoles", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GuildMemberRoles_GuildMembers_MemberId",
-                        column: x => x.MemberId,
-                        principalTable: "GuildMembers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_GuildChannels_GuildId",
                 table: "GuildChannels",
                 column: "GuildId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GuildMemberRoles_MemberId",
-                table: "GuildMemberRoles",
-                column: "MemberId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GuildMembers_AccountId",
@@ -169,13 +145,10 @@ namespace EliteAPI.Data.Migrations
                 name: "GuildChannels");
 
             migrationBuilder.DropTable(
-                name: "GuildMemberRoles");
+                name: "GuildMembers");
 
             migrationBuilder.DropTable(
                 name: "GuildRoles");
-
-            migrationBuilder.DropTable(
-                name: "GuildMembers");
 
             migrationBuilder.DropColumn(
                 name: "HasBot",

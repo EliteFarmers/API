@@ -6,5 +6,6 @@ namespace EliteAPI.Services.AuthService;
 public interface IAuthService {
 	Task<AuthResponseDto?> LoginAsync(DiscordLoginDto dto);
 	Task<(string token, DateTimeOffset expiry)> GenerateJwtToken(ApiUser user);
-	Task<AuthResponseDto?> VerifyRefreshToken(AuthResponseDto dto);
+	Task<AuthResponseDto?> VerifyRefreshToken(AuthRefreshDto dto);
+	Task<AuthResponseDto?> VerifyRefreshToken(string userId, string refreshToken);
 }

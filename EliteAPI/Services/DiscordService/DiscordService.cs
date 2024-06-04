@@ -296,6 +296,34 @@ public class DiscordService(
 
         return userGuild;
     }
+    
+    public async Task FetchUserRoles(GuildMember member) {
+        var url = DiscordBaseUrl + $"/guilds/{member.GuildId}/members/{member.AccountId}";
+
+        var client = httpClientFactory.CreateClient(ClientName);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+        
+        var response = await client.GetAsync(url);
+        
+        if (!response.IsSuccessStatusCode) {
+            logger.LogWarning("Failed to fetch user roles from Discord");
+            return;
+        }
+        
+        try {
+            var incoming = await response.Content.ReadFromJsonAsync<DiscordGuildMember>();
+            if (incoming is null) return;
+            
+            var roles = incoming.Roles;
+            var roleIds = roles.Select(ulong.Parse).ToList();
+            
+            member.Roles = roleIds;
+            
+            await context.SaveChangesAsync();
+        } catch (Exception e) {
+            logger.LogError(e, "Failed to parse user roles from Discord");
+        }
+    }
 
     public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false) {
         var existing = await context.Guilds
