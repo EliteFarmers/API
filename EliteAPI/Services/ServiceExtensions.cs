@@ -25,6 +25,7 @@ using EliteAPI.Services.MojangService;
 using EliteAPI.Services.ProfileService;
 using EliteAPI.Services.TimescaleService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.IdentityModel.Tokens;
@@ -57,6 +58,8 @@ public static class ServiceExtensions
     public static void AddEliteAuthentication(this IServiceCollection services, IConfiguration configuration) {
         var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
 
+        services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
+        
         services.AddIdentityCore<ApiUser>()
             .AddRoles<IdentityRole>()
             .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
@@ -80,13 +83,17 @@ public static class ServiceExtensions
                     ClockSkew = TimeSpan.Zero
                 };
             });
-        
+
         services.AddAuthorizationBuilder()
             .AddPolicy("Admin", policy => policy.RequireRole("Admin"))
             .AddPolicy("Moderator", policy => policy.RequireRole("Moderator", "Admin"))
             .AddPolicy("Support", policy => policy.RequireRole("Support", "Moderator", "Admin"))
             .AddPolicy("Wiki", policy => policy.RequireRole("Wiki", "Support", "Moderator", "Admin"))
-            .AddPolicy("User", policy => policy.RequireRole("User"));
+            .AddPolicy("User", policy => policy.RequireRole("User"))
+            .AddPolicy("GuildAdmin", policy => {
+                policy.RequireAuthenticatedUser();
+                policy.Requirements.Add(new GuildAdminRequirement());
+            });
     }
 
     public static void AddEliteControllers(this IServiceCollection services)

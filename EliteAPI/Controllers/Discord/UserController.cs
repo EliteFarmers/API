@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -56,22 +57,17 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var guildMember = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
-        if (userGuild is null) {
+        if (guildMember is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
+
+        var guild = guildMember.Guild;
         
         var member = await context.GuildMembers.FirstOrDefaultAsync(g => g.GuildId == guildId && g.AccountId == user.Id);
         if (member is not null) {
             await discordService.FetchUserRoles(member);
-        }
-        
-        if (fullGuild is null || guild is null) {
-            return NotFound("Guild not found.");
         }
         
         if (guild.Features is { JacobLeaderboardEnabled: true, JacobLeaderboard: null }) {
@@ -90,7 +86,7 @@ public class UserController(
         
         return Ok(new AuthorizedGuildDto {
             Id = guildId.ToString(),
-            Permissions = userGuild.Permissions,
+            Permissions = guildMember.Permissions.ToString(),
             Guild = mapper.Map<GuildDto>(guild)
         });
     }
@@ -113,7 +109,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -140,6 +136,32 @@ public class UserController(
     }
     
     /// <summary>
+    /// Set the guild's public visibility
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="enable"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost("guild/{guildId}/public")]
+    [RequestSizeLimit(512)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<ActionResult> SetGuildVisibility(ulong guildId, [FromQuery] bool enable = true) {
+        var guild = await context.Guilds.FindAsync(guildId);
+        
+        if (guild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        guild.IsPublic = enable;
+        await context.SaveChangesAsync();
+
+        return Ok();
+    }
+    
+    /// <summary>
     /// Update the guild's Jacob Leaderboard feature
     /// </summary>
     /// <param name="guildId"></param>
@@ -156,7 +178,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -204,7 +226,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -249,7 +271,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -303,7 +325,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -354,7 +376,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -404,7 +426,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -453,7 +475,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");
@@ -512,7 +534,7 @@ public class UserController(
             return BadRequest("Linked account not found.");
         }
         
-        var userGuild = await discordService.GetUserGuildIfManagable(user, guildId);
+        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
 
         if (userGuild is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");

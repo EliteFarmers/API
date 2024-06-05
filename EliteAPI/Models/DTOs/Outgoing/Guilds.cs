@@ -116,6 +116,19 @@ public class UserGuildDto {
     public List<string> Roles { get; set; } = [];
 }
 
+public static class UserGuildDtoExtensions {
+    public static UserGuildDto ToUserGuildDto(this GuildMember member) {
+        return new UserGuildDto {
+            Id = member.GuildId.ToString(),
+            Name = member.Guild.Name,
+            Icon = member.Guild.Icon,
+            HasBot = member.Guild.HasBot,
+            Permissions = member.Permissions.ToString(),
+            Roles = member.Roles.Select(r => r.ToString()).ToList()
+        };
+    }
+}
+
 public class AuthorizedGuildDto {
     public required string Id { get; set; }
     public required string Permissions { get; init; }
