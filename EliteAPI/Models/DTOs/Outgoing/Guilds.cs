@@ -106,7 +106,7 @@ public class GuildDetailsDto {
     public int MemberCount { get; set; }
 }
 
-public class UserGuildDto {
+public class GuildMemberDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
 
@@ -116,9 +116,9 @@ public class UserGuildDto {
     public List<string> Roles { get; set; } = [];
 }
 
-public static class UserGuildDtoExtensions {
-    public static UserGuildDto ToUserGuildDto(this GuildMember member) {
-        return new UserGuildDto {
+public static class GuildMemberDtoExtensions {
+    public static GuildMemberDto ToDto(this GuildMember member) {
+        return new GuildMemberDto {
             Id = member.GuildId.ToString(),
             Name = member.Guild.Name,
             Icon = member.Guild.Icon,
@@ -134,5 +134,5 @@ public class AuthorizedGuildDto {
     public required string Permissions { get; init; }
 
     public GuildDto? Guild { get; set; }
-    public FullDiscordGuild? DiscordGuild { get; set; }
+    public GuildMemberDto? Member { get; set; }
 }

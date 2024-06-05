@@ -16,7 +16,7 @@ public class GuildMapper : Profile {
         CreateMap<Guild, PublicGuildDto>()
             .ForMember(g => g.Features, opt => opt.MapFrom(g => g.Features));
 
-        CreateMap<DiscordGuild, UserGuildDto>()
+        CreateMap<DiscordGuild, GuildMemberDto>()
             .ForMember(g => g.Permissions, opt => opt.MapFrom(g => g.Permissions.ToString()));
     }
 }

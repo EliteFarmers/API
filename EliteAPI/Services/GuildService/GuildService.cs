@@ -17,7 +17,7 @@ public class GuildService(
     IMessageService messageService)
     : IGuildService 
 {
-    public async Task<ActionResult> SendLeaderboardPanel(ulong guildId, string channelId, ulong authorId, string lbId) {
+    public async Task<ActionResult> SendLeaderboardPanel(ulong guildId, string channelId, string authorId, string lbId) {
         var guild = await discordService.GetGuild(guildId);
 
         if (guild is null) {
@@ -33,7 +33,7 @@ public class GuildService(
         var message = new MessageDto {
             Name = "leaderboardInit",
             GuildId = guildId.ToString(),
-            AuthorId = authorId.ToString(),
+            AuthorId = authorId,
             Data = $$"""
                  {
                      "channelId": "{{channelId}}",
@@ -47,8 +47,8 @@ public class GuildService(
         return new OkResult();
     }
 
-    public bool HasGuildAdminPermissions(UserGuildDto guild) {
-        return guild.HasGuildAdminPermissions();
+    public bool HasGuildAdminPermissions(GuildMemberDto guildMember) {
+        return guildMember.HasGuildAdminPermissions();
     }
 
     public async Task UpdateGuildData(ulong guildId, IncomingGuildDto guild) {
@@ -148,7 +148,7 @@ public class GuildService(
         await context.SaveChangesAsync();
     }
 
-    public async Task<UserGuildDto?> GetUserGuild(string userId, ulong guildId) {
+    public async Task<GuildMemberDto?> GetUserGuild(string userId, ulong guildId) {
         var guildMember = await context.GuildMembers
             .Include(u => u.Guild)
             .FirstOrDefaultAsync(u => u.AccountId == userId && u.GuildId == guildId);
@@ -157,7 +157,7 @@ public class GuildService(
             return null;
         }
         
-        return new UserGuildDto {
+        return new GuildMemberDto {
             Id = guildMember.GuildId.ToString(),
             Name = guildMember.Guild.Name,
             Permissions = guildMember.Permissions.ToString(),
@@ -166,7 +166,7 @@ public class GuildService(
         };
     }
 
-    public async Task<UserGuildDto?> GetUserGuild(ApiUser user, ulong guildId) {
+    public async Task<GuildMemberDto?> GetUserGuild(ApiUser user, ulong guildId) {
         return await GetUserGuild(user.Id, guildId);
     }
 }

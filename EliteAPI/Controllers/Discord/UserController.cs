@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
@@ -32,7 +33,7 @@ public class UserController(
     [HttpGet("Guilds")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-    public async Task<ActionResult<IEnumerable<UserGuildDto>>> Get() {
+    public async Task<ActionResult<IEnumerable<GuildMemberDto>>> Get() {
         var user = await userManager.GetUserAsync(User);
         if (user?.AccountId is null || user.DiscordAccessToken is null) {
             return BadRequest("Linked account not found.");
@@ -46,6 +47,7 @@ public class UserController(
     /// </summary>
     /// <param name="guildId"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpGet("Guild/{guildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -65,11 +67,6 @@ public class UserController(
 
         var guild = guildMember.Guild;
         
-        var member = await context.GuildMembers.FirstOrDefaultAsync(g => g.GuildId == guildId && g.AccountId == user.Id);
-        if (member is not null) {
-            await discordService.FetchUserRoles(member);
-        }
-        
         if (guild.Features is { JacobLeaderboardEnabled: true, JacobLeaderboard: null }) {
             guild.Features.JacobLeaderboard = new GuildJacobLeaderboardFeature();
             
@@ -87,7 +84,8 @@ public class UserController(
         return Ok(new AuthorizedGuildDto {
             Id = guildId.ToString(),
             Permissions = guildMember.Permissions.ToString(),
-            Guild = mapper.Map<GuildDto>(guild)
+            Guild = mapper.Map<GuildDto>(guild),
+            Member = guildMember.ToDto()
         });
     }
     
@@ -97,6 +95,7 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="inviteCode"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpPut("Guild/{guildId}/Invite")]
     [RequestSizeLimit(512)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -104,21 +103,8 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> PutGuildInvite(ulong guildId, [FromBody] string inviteCode) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
         
@@ -167,27 +153,15 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="settings"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpPatch("Guild/{guildId}/Jacob")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> UpdateGuildJacobFeature(ulong guildId, [FromBody] GuildJacobLeaderboardFeature settings) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
         
@@ -215,27 +189,15 @@ public class UserController(
     /// </summary>
     /// <param name="guildId"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpGet("Guild/{guildId}/Jacob")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    public async Task<ActionResult<GuildJacobLeaderboardFeature>> UpdateGuildJacobFeature(ulong guildId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+    public async Task<ActionResult<GuildJacobLeaderboardFeature>> GetGuildJacobFeature(ulong guildId) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
         
@@ -259,6 +221,7 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="leaderboard"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpPost("Guild/{guildId}/Jacob/Leaderboard")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -266,21 +229,8 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> AddGuildLeaderboard(ulong guildId, [FromBody] GuildJacobLeaderboard leaderboard) 
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
 
@@ -313,6 +263,7 @@ public class UserController(
     /// <param name="lbId"></param>
     /// <param name="leaderboard"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpPut("Guild/{guildId}/Jacob/{lbId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -320,21 +271,8 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult<GuildJacobLeaderboardFeature>> UpdateGuildLeaderboard(ulong guildId, string lbId, [FromBody] GuildJacobLeaderboard leaderboard) 
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
 
@@ -359,11 +297,59 @@ public class UserController(
     }
     
     /// <summary>
+    /// Update a guild Jacob Leaderboard
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="lbId"></param>
+    /// <param name="incoming"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPatch("Guild/{guildId}/Jacob/{lbId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<ActionResult<GuildJacobLeaderboardFeature>> PatchGuildLeaderboard(ulong guildId, string lbId, [FromBody] UpdateGuildJacobLeaderboardDto incoming) 
+    {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
+            return NotFound("Guild not found.");
+        }
+
+        if (!guild.Features.JacobLeaderboardEnabled || guild.Features.JacobLeaderboard is null) {
+            return Unauthorized("Jacob Leaderboard feature is not enabled for this guild.");
+        }
+        
+        var feature = guild.Features.JacobLeaderboard;
+        var existing = feature.Leaderboards.FirstOrDefault(lb => lb.Id.Equals(lbId));
+        
+        if (existing is null) {
+            return NotFound("Leaderboard not found.");
+        }
+
+        existing.EndCutoff = incoming.EndCutoff ?? existing.EndCutoff;
+        existing.StartCutoff = incoming.StartCutoff ?? existing.StartCutoff;
+        existing.ChannelId = incoming.ChannelId ?? existing.ChannelId;
+        existing.Title = incoming.Title ?? existing.Title;
+        existing.PingForSmallImprovements = incoming.PingForSmallImprovements ?? existing.PingForSmallImprovements;
+        existing.RequiredRole = incoming.RequiredRole ?? existing.RequiredRole;
+        existing.BlockedRole = incoming.BlockedRole ?? existing.BlockedRole;
+        existing.UpdateChannelId = incoming.UpdateChannelId ?? existing.UpdateChannelId;
+        existing.UpdateRoleId = incoming.UpdateRoleId ?? existing.UpdateRoleId;
+    
+        context.Guilds.Update(guild);
+        await context.SaveChangesAsync();
+        
+        return Ok(feature);
+    }
+    
+    /// <summary>
     /// Delete a guild Jacob Leaderboard
     /// </summary>
     /// <param name="guildId"></param>
     /// <param name="lbId"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpDelete("Guild/{guildId}/Jacob/{lbId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -371,21 +357,8 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> RemoveGuildLeaderboard(ulong guildId, string lbId) 
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
 
@@ -414,6 +387,7 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="lbId"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpPost("Guild/{guildId}/Jacob/{lbId}/Send")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -421,21 +395,8 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> SendGuildLeaderboard(ulong guildId, string lbId) 
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
             return NotFound("Guild not found.");
         }
 
@@ -455,7 +416,8 @@ public class UserController(
             return BadRequest("Leaderboard channel not set.");
         }
 
-        return await guildService.SendLeaderboardPanel(guildId, channelId, user.AccountId.Value, lbId);
+        var authorId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+        return await guildService.SendLeaderboardPanel(guildId, channelId, authorId, lbId);
     }
     
     /// <summary>
@@ -464,27 +426,15 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="feature"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpPut("Guild/{guildId}/ContestPings")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult> PutGuildContestPings(ulong guildId, [FromBody] ContestPingsFeatureDto feature) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
-
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        var fullGuild = await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (fullGuild is null || guild is null) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null || !guild.HasBot) {
             if (guild?.Features.ContestPings?.Enabled is true) {
                 guild.Features.ContestPings.Enabled = false;
                 guild.Features.ContestPings.DisabledReason = "Guild no longer found.";
@@ -522,6 +472,7 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="reason"></param>
     /// <returns></returns>
+    [GuildAdminAuthorize]
     [HttpDelete("Guild/{guildId}/ContestPings")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -529,21 +480,9 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult> DeleteGuildContestPings(ulong guildId, string reason) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        var userGuild = await discordService.GetGuildMemberIfAdmin(user, guildId);
+        var guild = await discordService.GetGuild(guildId);
 
-        if (userGuild is null) {
-            return NotFound("Guild not found, or you do not have permission to access this guild.");
-        }
-        
-        await discordService.GetGuild(guildId);
-        var guild = await context.Guilds.FindAsync(guildId);
-
-        if (guild is null) {
+        if (guild is null || !guild.HasBot) {
             if (guild?.Features.ContestPings?.Enabled is true) {
                 guild.Features.ContestPings.Enabled = false;
                 guild.Features.ContestPings.DisabledReason = "Guild no longer found.";

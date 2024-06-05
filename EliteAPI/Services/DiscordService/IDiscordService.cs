@@ -12,7 +12,7 @@ public interface IDiscordService
     Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken);
     Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken);
     Task<string> GetGuildMemberPermissions(ulong guildId, ulong userId, string accessToken);
-    Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken);
+    Task<List<GuildMemberDto>> GetUsersGuilds(ulong userId, string accessToken);
     Task<GuildMember?> GetGuildMember(ApiUser user, ulong guildId);
     Task<GuildMember?> GetGuildMemberIfAdmin(ApiUser user, ulong guildId);
     Task FetchUserRoles(GuildMember member);

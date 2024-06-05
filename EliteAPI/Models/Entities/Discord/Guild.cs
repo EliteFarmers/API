@@ -106,6 +106,23 @@ public class GuildJacobLeaderboard {
     public CropRecords Crops { get; set; } = new();
 }
 
+public class UpdateGuildJacobLeaderboardDto {
+    public string? ChannelId { get; set; }
+
+    public long? StartCutoff { get; set; }
+    public long? EndCutoff { get; set; }
+
+    [MaxLength(64)] 
+    public string? Title { get; set; }
+
+    public string? RequiredRole { get; set; }
+    public string? BlockedRole { get; set; }
+
+    public string? UpdateChannelId { get; set; }
+    public string? UpdateRoleId { get; set; }
+    public bool? PingForSmallImprovements { get; set; }
+}
+
 public class CropSettings<T> {
     public T? Cactus { get; set; }
     public T? Carrot { get; set; }

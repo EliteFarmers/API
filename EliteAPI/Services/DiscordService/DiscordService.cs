@@ -236,7 +236,7 @@ public class DiscordService(
         }
     }
     
-    public async Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken) {
+    public async Task<List<GuildMemberDto>> GetUsersGuilds(ulong userId, string accessToken) {
 
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null) return [];
@@ -247,12 +247,12 @@ public class DiscordService(
             .ToListAsync();
         
         if (existing.Count > 0 && !user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
-            return existing.Select(gm => gm.ToUserGuildDto()).ToList();
+            return existing.Select(gm => gm.ToDto()).ToList();
         }
         
         var members = await FetchUserGuilds(user, accessToken);
         
-        return members.Select(gm => gm.ToUserGuildDto()).ToList();
+        return members.Select(gm => gm.ToDto()).ToList();
     }
     
     private async Task<GuildMember?> UpdateGuildMember(ulong userId, DiscordGuild guild) {
@@ -508,8 +508,8 @@ public class DiscordUpdateResponse
 
 public static class DiscordExtensions 
 {
-    public static bool HasGuildAdminPermissions(this UserGuildDto guild) {
-        var permissions = guild.Permissions;
+    public static bool HasGuildAdminPermissions(this GuildMemberDto guildMember) {
+        var permissions = guildMember.Permissions;
         
         if (!ulong.TryParse(permissions, out var bits)) {
             return false;

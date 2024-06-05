@@ -1,10 +1,7 @@
-﻿using System.Net;
-using System.Security.Claims;
-using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace EliteAPI.Authentication;
 
