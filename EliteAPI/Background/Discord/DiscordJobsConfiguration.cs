@@ -4,13 +4,14 @@ using Quartz;
 
 namespace EliteAPI.Background.Discord;
 
-public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns) : IConfigureOptions<QuartzOptions> {
+public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns) : IConfigureOptions<QuartzOptions> 
+{
 	private readonly ConfigCooldownSettings _cooldowns = cooldowns.Value;
 	
 	public void Configure(QuartzOptions options)
 	{
 		// Refresh Bot Guilds
-		var key = JobKey.Create(nameof(RefreshGuildsBackgroundJob));
+		var key = RefreshGuildsBackgroundJob.Key;
 		options.AddJob<RefreshGuildsBackgroundJob>(builder => builder.WithIdentity(key))
 			.AddTrigger(trigger => {
 				trigger.ForJob(key);

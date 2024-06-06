@@ -12,7 +12,7 @@ using StackExchange.Redis;
 namespace EliteAPI.Controllers; 
 
 [ApiController]
-[Authorize(ApiUserRoles.Moderator)]
+[Authorize(ApiUserPolicies.Moderator)]
 public class AdminController(
     DataContext context,
     IConnectionMultiplexer redis,
@@ -37,7 +37,7 @@ public class AdminController(
             from userRole in userRoles.DefaultIfEmpty()
             join role in context.Roles on userRole.RoleId equals role.Id into roles
             from role in roles.DefaultIfEmpty()
-            where role == null || role.Name != ApiUserRoles.User
+            where role == null || role.Name != ApiUserPolicies.User
             group new { user, account, role } by new { user.Id, user.UserName }
             into g
             select new AccountWithPermsDto {
@@ -59,7 +59,8 @@ public class AdminController(
     /// <param name="memberId"></param>
     /// <param name="permission"></param>
     /// <returns></returns>
-    [Authorize(ApiUserRoles.Admin)]
+    [Obsolete("Use AddRoleToUser instead.")]
+    [Authorize(ApiUserPolicies.Admin)]
     [HttpPost("[controller]/Permissions/{memberId:long}/{permission:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -93,7 +94,8 @@ public class AdminController(
     /// <param name="memberId"></param>
     /// <param name="permission"></param>
     /// <returns></returns>
-    [Authorize(ApiUserRoles.Admin)]
+    [Obsolete("Use RemoveRoleFromUser instead.")]
+    [Authorize(ApiUserPolicies.Admin)]
     [HttpDelete("[controller]/Permissions/{memberId:long}/{permission:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -142,7 +144,7 @@ public class AdminController(
     /// <param name="userId">Member id</param>
     /// <param name="role">Role name</param>
     /// <returns></returns>
-    [Authorize(ApiUserRoles.Admin)]
+    [Authorize(ApiUserPolicies.Admin)]
     [HttpPost("[controller]/User/{userId}/Roles/{role}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -179,7 +181,7 @@ public class AdminController(
     /// <param name="userId">Member id</param>
     /// <param name="role">Role name</param>
     /// <returns></returns>
-    [Authorize(ApiUserRoles.Admin)]
+    [Authorize(ApiUserPolicies.Admin)]
     [HttpDelete("[controller]/User/{userId}/Roles/{role}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -215,6 +217,7 @@ public class AdminController(
     /// </summary>
     /// <returns></returns>
     // DELETE <AdminController>/UpcomingContests
+    [Authorize(ApiUserPolicies.Admin)]
     [HttpDelete("[controller]/UpcomingContests")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]

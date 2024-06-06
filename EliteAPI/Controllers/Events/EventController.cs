@@ -66,7 +66,7 @@ public class EventController(
         return Ok(mapper.Map<EventDetailsDto>(eliteEvent));
     }
 
-    private static readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions {
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true
     };
@@ -88,7 +88,7 @@ public class EventController(
         var cached = await db.StringGetAsync(key);
         
         if (cached is { IsNullOrEmpty: false, HasValue: true }) {
-            var cachedMembers = JsonSerializer.Deserialize<List<EventMemberDetailsDto>>(cached!, jsonOptions);
+            var cachedMembers = JsonSerializer.Deserialize<List<EventMemberDetailsDto>>(cached!, JsonOptions);
             return Ok(cachedMembers);
         }
 
@@ -114,7 +114,7 @@ public class EventController(
         var mapped = members.Select(mapper.Map<EventMemberDetailsDto>);
         
         var expiry = eliteEvent.Active ? TimeSpan.FromMinutes(2) : TimeSpan.FromMinutes(10);
-        await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, jsonOptions), expiry);
+        await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), expiry);
         
         return Ok(mapped);
     }

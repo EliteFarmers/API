@@ -22,7 +22,7 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
         return mapper.Map<List<EventDetailsDto>>(events);
 	}
 
-	public async Task<ActionResult<Event>> CreateEvent(CreateEventDto eventDto, ulong guildId, ulong ownerId) {
+	public async Task<ActionResult<Event>> CreateEvent(CreateEventDto eventDto, ulong guildId) {
 		var guild = context.Guilds
 			.FirstOrDefault(g => g.Id == guildId);
 		
@@ -58,8 +58,8 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		}
 
 		var eliteEvent = eventDto.Type switch {
-			EventType.FarmingWeight => CreateWeightEvent(eventDto, guildId, ownerId),
-			EventType.Medals => CreateMedalsEvent(eventDto, guildId, ownerId),
+			EventType.FarmingWeight => CreateWeightEvent(eventDto, guildId),
+			EventType.Medals => CreateMedalsEvent(eventDto, guildId),
 			_ => null
 		};
 
@@ -146,7 +146,7 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		return member;
 	}
 	
-	private ActionResult<Event> CreateWeightEvent(CreateEventDto eventDto, ulong guildId, ulong ownerId) {
+	private ActionResult<Event> CreateWeightEvent(CreateEventDto eventDto, ulong guildId) {
 		var startTime = eventDto.StartTime is not null 
 			? DateTimeOffset.FromUnixTimeSeconds(eventDto.StartTime.Value)
 			: (DateTimeOffset?) null;
@@ -184,7 +184,6 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			RequiredRole = eventDto.RequiredRole,
 			BlockedRole = eventDto.BlockedRole,
 			
-			OwnerId = ownerId,
 			GuildId = guildId,
 		};
 
@@ -196,7 +195,7 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 		return eliteEvent;
 	} 
 	
-	private ActionResult<Event> CreateMedalsEvent(CreateEventDto eventDto, ulong guildId, ulong ownerId) {
+	private ActionResult<Event> CreateMedalsEvent(CreateEventDto eventDto, ulong guildId) {
 		var startTime = eventDto.StartTime is not null 
 			? DateTimeOffset.FromUnixTimeSeconds(eventDto.StartTime.Value)
 			: (DateTimeOffset?) null;
@@ -234,7 +233,6 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			RequiredRole = eventDto.RequiredRole,
 			BlockedRole = eventDto.BlockedRole,
 			
-			OwnerId = ownerId,
 			GuildId = guildId,
 		};
 

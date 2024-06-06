@@ -7,7 +7,6 @@ namespace EliteAPI.Services.GuildService;
 
 public interface IGuildService {
     Task<ActionResult> SendLeaderboardPanel(ulong guildId, string channelId, string authorId, string lbId);
-    bool HasGuildAdminPermissions(GuildMemberDto guildMember);
     Task UpdateGuildData(ulong guildId, IncomingGuildDto guild);
     Task UpdateGuildChannelData(ulong guildId, IncomingGuildChannelDto channel);
     Task UpdateGuildRoleData(ulong guildId, IncomingGuildRoleDto role);

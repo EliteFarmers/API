@@ -5,9 +5,10 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
-public class GuildDto {
+public class PrivateGuildDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
+    public bool Public { get; set; }
     
     public GuildFeatures Features { get; set; } = new();
 
@@ -25,6 +26,9 @@ public class GuildDto {
     public List<string> DiscordFeatures { get; set; } = new();
     
     public int MemberCount { get; set; }
+    
+    public List<GuildChannelDto> Channels { get; set; } = new();
+    public List<GuildRoleDto> Roles { get; set; } = new();
 }
 
 public class PublicGuildDto {
@@ -37,8 +41,21 @@ public class PublicGuildDto {
     
     public string? Description { get; set; }
     public int MemberCount { get; set; }
-
+    
     public PublicGuildFeaturesDto Features { get; set; } = new();
+}
+
+public class GuildChannelDto {
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public int Type { get; set; }
+    public int Position { get; set; }
+}
+
+public class GuildRoleDto {
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public int Position { get; set; }
 }
 
 public class PublicGuildFeaturesDto {
@@ -133,6 +150,6 @@ public class AuthorizedGuildDto {
     public required string Id { get; set; }
     public required string Permissions { get; init; }
 
-    public GuildDto? Guild { get; set; }
+    public PrivateGuildDto? Guild { get; set; }
     public GuildMemberDto? Member { get; set; }
 }

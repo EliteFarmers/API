@@ -19,7 +19,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240604043931_AddMoreGuildEntities")]
+    [Migration("20240606020045_AddMoreGuildEntities")]
     partial class AddMoreGuildEntities
     {
         /// <inheritdoc />
@@ -472,9 +472,6 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<decimal>("OwnerId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<string>("PrizeInfo")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
@@ -503,8 +500,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GuildId");
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Events");
 
@@ -1365,15 +1360,7 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Guild");
-
-                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.EventMember", b =>

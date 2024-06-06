@@ -2,10 +2,33 @@
 
 namespace EliteAPI.Authentication;
 
+public enum GuildPermission {
+	Admin,
+	Manager,
+	Role,
+}
+
 public class GuildAdminAuthorizeAttribute : AuthorizeAttribute 
 {
-	public GuildAdminAuthorizeAttribute() 
-	{
-		Policy = "GuildAdmin";
+	public static readonly string PolicyPrefix = "GuildAdmin";
+	public GuildPermission Permission { get; }
+	
+	public GuildAdminAuthorizeAttribute(GuildPermission permission = GuildPermission.Role) {
+		Permission = permission;
+		Policy = $"{PolicyPrefix}{Enum.GetName(permission)}";
+	}
+}
+
+public static class GuildAdminPolicies 
+{
+	public static AuthorizationBuilder AddGuildAdminPolicies(this AuthorizationBuilder builder) {
+		foreach (GuildPermission permission in Enum.GetValues(typeof(GuildPermission))) {
+			builder.AddPolicy($"{GuildAdminAuthorizeAttribute.PolicyPrefix}{Enum.GetName(permission)}", policy => {
+				policy.RequireAuthenticatedUser();
+				policy.Requirements.Add(new GuildAdminRequirement(permission));
+			});
+		}
+
+		return builder;
 	}
 }

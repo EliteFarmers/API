@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
+﻿using EliteAPI.Authentication;
+using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
@@ -14,7 +15,7 @@ public interface IDiscordService
     Task<string> GetGuildMemberPermissions(ulong guildId, ulong userId, string accessToken);
     Task<List<GuildMemberDto>> GetUsersGuilds(ulong userId, string accessToken);
     Task<GuildMember?> GetGuildMember(ApiUser user, ulong guildId);
-    Task<GuildMember?> GetGuildMemberIfAdmin(ApiUser user, ulong guildId);
+    Task<GuildMember?> GetGuildMemberIfAdmin(ApiUser user, ulong guildId, GuildPermission permission = GuildPermission.Role);
     Task FetchUserRoles(GuildMember member);
     Task<Guild?> GetGuild(ulong guildId, bool skipCache = false);
     Task RefreshDiscordGuild(ulong guildId);

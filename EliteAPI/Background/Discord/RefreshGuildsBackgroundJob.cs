@@ -15,7 +15,6 @@ namespace EliteAPI.Background.Discord;
 
 [DisallowConcurrentExecution]
 public class RefreshGuildsBackgroundJob(
-	IDiscordService discordService,
     IConnectionMultiplexer redis,
     ILogger<RefreshGuildsBackgroundJob> logger,
     DataContext context,
@@ -24,7 +23,7 @@ public class RefreshGuildsBackgroundJob(
     IMessageService messageService
 	) : IJob
 {
-    public readonly JobKey Key = new(nameof(RefreshGuildsBackgroundJob));
+    public static readonly JobKey Key = new(nameof(RefreshGuildsBackgroundJob));
     private const string ClientName = "EliteAPI";
     private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") 
                                         ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");

@@ -36,12 +36,12 @@ public class BotController(
     [HttpGet("{guildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<GuildDto>> Get(ulong guildId)
+    public async Task<ActionResult<PrivateGuildDto>> Get(ulong guildId)
     {
         var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
         
-        return Ok(mapper.Map<GuildDto>(guild));
+        return Ok(mapper.Map<PrivateGuildDto>(guild));
     }
     
     /// <summary>

@@ -47,10 +47,6 @@ public class Event {
     [MaxLength(24)]
     public string? BlockedRole { get; set; }
     
-    [ForeignKey("Owner")]
-    public ulong OwnerId { get; set; }
-    public EliteAccount Owner { get; set; } = null!;
-    
     [ForeignKey("Guild")]
     public ulong GuildId { get; set; }
     public Guild Guild { get; set; } = null!;

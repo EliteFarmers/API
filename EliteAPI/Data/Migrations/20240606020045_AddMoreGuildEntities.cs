@@ -12,9 +12,21 @@ namespace EliteAPI.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Events_Accounts_OwnerId",
+                table: "Events");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Events_OwnerId",
+                table: "Events");
+
             migrationBuilder.DropColumn(
                 name: "BotPermissionsNew",
                 table: "Guilds");
+
+            migrationBuilder.DropColumn(
+                name: "OwnerId",
+                table: "Events");
 
             migrationBuilder.AddColumn<bool>(
                 name: "HasBot",
@@ -171,6 +183,26 @@ namespace EliteAPI.Data.Migrations
                 table: "Guilds",
                 type: "text",
                 nullable: true);
+
+            migrationBuilder.AddColumn<decimal>(
+                name: "OwnerId",
+                table: "Events",
+                type: "numeric(20,0)",
+                nullable: false,
+                defaultValue: 0m);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Events_OwnerId",
+                table: "Events",
+                column: "OwnerId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Events_Accounts_OwnerId",
+                table: "Events",
+                column: "OwnerId",
+                principalTable: "Accounts",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
     }
 }

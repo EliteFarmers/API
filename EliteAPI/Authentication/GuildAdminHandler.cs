@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Authentication;
 
-public class GuildAdminRequirement : IAuthorizationRequirement;
+public class GuildAdminRequirement(GuildPermission permission) : IAuthorizationRequirement {
+	public GuildPermission Permission { get; } = permission;
+	public GuildAdminRequirement() : this(GuildPermission.Role) { }
+}
 
 public class GuildAdminHandler(
 	IDiscordService discordService,
@@ -21,7 +24,7 @@ public class GuildAdminHandler(
 		var user = await userManager.GetUserAsync(httpContext.User);
 		if (user is null) return;
 
-		var member = await discordService.GetGuildMemberIfAdmin(user, guildId);
+		var member = await discordService.GetGuildMemberIfAdmin(user, guildId, requirement.Permission);
 		if (member is null) return;
 
 		context.Succeed(requirement);

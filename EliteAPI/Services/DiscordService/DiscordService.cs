@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using AutoMapper;
+using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
@@ -285,16 +286,16 @@ public class DiscordService(
         return existing;
     }
     
-    public async Task<GuildMember?> GetGuildMemberIfAdmin(ApiUser user, ulong guildId) {
+    public async Task<GuildMember?> GetGuildMemberIfAdmin(ApiUser user, ulong guildId, GuildPermission permission = GuildPermission.Role) {
         if (!user.AccountId.HasValue || user.DiscordAccessToken is null) return null;
         
         var roles = await userManager.GetRolesAsync(user);
-        var isAdmin = roles.Contains(ApiUserRoles.Admin);
+        var isAdmin = roles.Contains(ApiUserPolicies.Admin);
 
         var member = await GetGuildMember(user, guildId);
         
         // Use fallback admin permissions if the user is an admin but doesn't have the correct permissions
-        if (isAdmin && (member is null || !member.HasGuildAdminPermissions())) {
+        if (isAdmin && (member is null || !member.HasGuildAdminPermissions(permission))) {
             member ??= new GuildMember {
                 AccountId = user.AccountId.ToString(),
                 GuildId = guildId
@@ -304,7 +305,7 @@ public class DiscordService(
             return member;
         }
 
-        if (member is null || !member.HasGuildAdminPermissions()) {
+        if (member is null || !member.HasGuildAdminPermissions(permission)) {
             return null;
         }
 
@@ -325,7 +326,7 @@ public class DiscordService(
         if (member is null) {
             return null;
         }
-        
+
         if (member.LastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
             await FetchUserRoles(member);
         }
@@ -356,6 +357,7 @@ public class DiscordService(
             member.Roles = roleIds;
             member.LastUpdated = DateTimeOffset.UtcNow;
             
+            context.GuildMembers.Update(member);
             await context.SaveChangesAsync();
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse user roles from Discord");
@@ -445,6 +447,16 @@ public class DiscordService(
         foreach (var channel in channelList) {
             await UpdateDiscordChannel(guild, channel, false);
         }
+        
+        var roles = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/roles");
+        if (!roles.IsSuccessStatusCode) return guild;
+        
+        var roleList = await roles.Content.ReadFromJsonAsync<List<DiscordRole>>();
+        if (roleList is null) return guild;
+        
+        foreach (var role in roleList) {
+            await UpdateDiscordRole(guild, role, false);
+        }
 
         await context.SaveChangesAsync();
         
@@ -478,12 +490,42 @@ public class DiscordService(
             await context.SaveChangesAsync();
         }
     }
+    
+    private async Task UpdateDiscordRole(Guild guild, DiscordRole role, bool save = true) {
+        if (!ulong.TryParse(role.Id, out var roleId)) return;
+        
+        var existing = guild.Roles.FirstOrDefault(c => c.Id == roleId);
+        
+        if (existing is null) {
+            var newRole = new GuildRole {
+                GuildId = guild.Id,
+                
+                Id = roleId,
+                Name = role.Name,
+                Position = role.Position,
+                Permissions = role.Permissions
+            };
+            
+            guild.Roles.Add(newRole);
+            context.GuildRoles.Add(newRole);
+        } else {
+            existing.Name = role.Name;
+            existing.Position = role.Position;
+            existing.Permissions = role.Permissions;
+        }
+
+        if (save) {
+            await context.SaveChangesAsync();
+        }
+    }
 
     private DiscordUpdateResponse? ProcessResponse(RefreshTokenResponse? tokenResponse)
     {
         if (tokenResponse?.AccessToken is null || tokenResponse.RefreshToken is null || tokenResponse.Error is not null) return null;
 
-        DateTimeOffset? accessTokenExpires = tokenResponse.ExpiresIn > 0 ? DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn) : null;
+        DateTimeOffset? accessTokenExpires = tokenResponse.ExpiresIn > 0 
+            ? DateTimeOffset.UtcNow.AddMilliseconds(tokenResponse.ExpiresIn) 
+            : DateTimeOffset.UtcNow.AddMinutes(8);
         var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);
 
         return new DiscordUpdateResponse()
@@ -508,32 +550,24 @@ public class DiscordUpdateResponse
 
 public static class DiscordExtensions 
 {
-    public static bool HasGuildAdminPermissions(this GuildMemberDto guildMember) {
-        var permissions = guildMember.Permissions;
-        
-        if (!ulong.TryParse(permissions, out var bits)) {
-            return false;
-        }
-        
-        const ulong admin = 0x8;
-        const ulong manageGuild = 0x20;
-
-        // Check if the user has the manage guild or admin permission
-        return (bits & admin) == admin || (bits & manageGuild) == manageGuild;
-    }
+    private const ulong Admin = 0x8;
+    private const ulong ManageGuild = 0x20;
     
-    public static bool HasGuildAdminPermissions(this GuildMember member) {
+    public static bool HasGuildAdminPermissions(this GuildMember member, GuildPermission permission) {
         var adminRole = member.Guild.AdminRole;
-        if (adminRole != 0 && member.Roles.Contains(adminRole)) {
+        // Accept admin role as admin if permission is set to role
+        if (permission == GuildPermission.Role && adminRole != 0 && member.Roles.Contains(adminRole)) {
             return true;
         }
         
         var bits = member.Permissions;
 
-        const ulong admin = 0x8;
-        const ulong manageGuild = 0x20;
-
-        // Check if the user has the manage guild or admin permission
-        return (bits & admin) == admin || (bits & manageGuild) == manageGuild;
+        if (permission == GuildPermission.Manager) {
+            // Accept manage guild as admin if permission is set to manager
+            return (bits & Admin) == Admin || (bits & ManageGuild) == ManageGuild;
+        }
+        
+        // Check if the user has the admin permission
+        return (bits & Admin) == Admin;
     }
 }

@@ -65,26 +65,15 @@ public class UserController(
             return NotFound("Guild not found, or you do not have permission to access this guild.");
         }
 
-        var guild = guildMember.Guild;
-        
-        if (guild.Features is { JacobLeaderboardEnabled: true, JacobLeaderboard: null }) {
-            guild.Features.JacobLeaderboard = new GuildJacobLeaderboardFeature();
-            
-            context.Guilds.Update(guild);
-            await context.SaveChangesAsync();
-        }
-
-        if (guild.Features is { VerifiedRoleEnabled: true, VerifiedRole: null }) {
-            guild.Features.VerifiedRole = new VerifiedRoleFeature();
-            
-            context.Guilds.Update(guild);
-            await context.SaveChangesAsync();
-        }
+        var guild = await context.Guilds
+            .Include(g => g.Roles)
+            .Include(g => g.Channels).AsNoTracking()
+            .FirstOrDefaultAsync(g => g.Id == guildId);
         
         return Ok(new AuthorizedGuildDto {
             Id = guildId.ToString(),
             Permissions = guildMember.Permissions.ToString(),
-            Guild = mapper.Map<GuildDto>(guild),
+            Guild = mapper.Map<PrivateGuildDto>(guild),
             Member = guildMember.ToDto()
         });
     }
@@ -95,8 +84,8 @@ public class UserController(
     /// <param name="guildId"></param>
     /// <param name="inviteCode"></param>
     /// <returns></returns>
-    [GuildAdminAuthorize]
-    [HttpPut("Guild/{guildId}/Invite")]
+    [GuildAdminAuthorize(GuildPermission.Admin)]
+    [HttpPut("guild/{guildId}/invite")]
     [RequestSizeLimit(512)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -116,32 +105,6 @@ public class UserController(
         guild.InviteCode = inviteCode;
         
         context.Guilds.Update(guild);
-        await context.SaveChangesAsync();
-
-        return Ok();
-    }
-    
-    /// <summary>
-    /// Set the guild's public visibility
-    /// </summary>
-    /// <param name="guildId"></param>
-    /// <param name="enable"></param>
-    /// <returns></returns>
-    [GuildAdminAuthorize]
-    [HttpPost("guild/{guildId}/public")]
-    [RequestSizeLimit(512)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    public async Task<ActionResult> SetGuildVisibility(ulong guildId, [FromQuery] bool enable = true) {
-        var guild = await context.Guilds.FindAsync(guildId);
-        
-        if (guild is null) {
-            return NotFound("Guild not found.");
-        }
-        
-        guild.IsPublic = enable;
         await context.SaveChangesAsync();
 
         return Ok();
@@ -504,6 +467,35 @@ public class UserController(
         context.Entry(guild).Property(g => g.Features).IsModified = true;
 
         await context.SaveChangesAsync();
+        return Ok();
+    }
+
+    /// <summary>
+    /// Set a guild's admin role
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="roleId">Discord role ID</param>
+    /// <returns></returns>
+    [GuildAdminAuthorize(GuildPermission.Admin)]
+    [HttpPut("guild/{guildId}/adminrole")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<IActionResult> SetGuildAdminRole(ulong guildId, [FromBody] string roleId) 
+    {
+        if (string.IsNullOrWhiteSpace(roleId) || !ulong.TryParse(roleId, out var role)) {
+            return BadRequest("Role ID cannot be empty.");
+        }
+        
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        guild.AdminRole = role;
+        await context.SaveChangesAsync();
+        
         return Ok();
     }
     

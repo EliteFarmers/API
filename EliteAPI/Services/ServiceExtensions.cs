@@ -90,10 +90,7 @@ public static class ServiceExtensions
             .AddPolicy("Support", policy => policy.RequireRole("Support", "Moderator", "Admin"))
             .AddPolicy("Wiki", policy => policy.RequireRole("Wiki", "Support", "Moderator", "Admin"))
             .AddPolicy("User", policy => policy.RequireRole("User"))
-            .AddPolicy("GuildAdmin", policy => {
-                policy.RequireAuthenticatedUser();
-                policy.Requirements.Add(new GuildAdminRequirement());
-            });
+            .AddGuildAdminPolicies();
     }
 
     public static void AddEliteControllers(this IServiceCollection services)

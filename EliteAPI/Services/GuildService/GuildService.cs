@@ -47,10 +47,6 @@ public class GuildService(
         return new OkResult();
     }
 
-    public bool HasGuildAdminPermissions(GuildMemberDto guildMember) {
-        return guildMember.HasGuildAdminPermissions();
-    }
-
     public async Task UpdateGuildData(ulong guildId, IncomingGuildDto guild) {
         var dbGuild = await context.Guilds
             .Include(g => g.Channels)

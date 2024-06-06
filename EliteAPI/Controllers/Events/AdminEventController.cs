@@ -4,6 +4,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.DiscordService;
 using EliteAPI.Services.EventService;
@@ -15,9 +16,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Events; 
 
-[Route("/Event")]
 [Authorize]
 [ApiController]
+[Route("/event")]
 public class AdminEventController(
     DataContext context,
     IMapper mapper,
@@ -25,122 +26,75 @@ public class AdminEventController(
     IGuildService guildService,
     IEventService eventService,
     UserManager<ApiUser> userManager)
-    : ControllerBase 
+    : ControllerBase
 {
     /// <summary>
     /// Create a Farming Weight Event
     /// </summary>
+    /// <param name="guildId"></param>
     /// <param name="incoming"></param>
     /// <returns></returns>
-    // POST <EventController>/12793764936498429/create
-    [Route("/Event/Create")]
-    [HttpPost]
+    [GuildAdminAuthorize]
+    [HttpPost, Route("/guild/{guildId}/events/weight")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> CreateEvent([FromBody] CreateWeightEventDto incoming) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        if (user.DiscordAccessToken is null) {
-            return BadRequest("Discord account not linked.");
-        }
-        
-        if (user.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        await context.Entry(user).Reference(x => x.Account).LoadAsync();
-        var account = user.Account;
-        
-        if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
-            return BadRequest("Invalid guild ID.");
-        }
-
-        var canCreate = await CanCreateEvent(incoming, account, user.DiscordAccessToken);
-        if (canCreate is not OkResult) {
-            return canCreate;
-        }
-
-        var result = await eventService.CreateEvent(incoming, guildId, account.Id);
-
-        if (result.Value is null) {
-            return BadRequest(result.Result);
-        }
-
-        return Ok(mapper.Map<EventDetailsDto>(result.Value));
-    }
-    
-    /// <summary>
-    /// Create a Medal Collection Event
-    /// </summary>
-    /// <param name="incoming"></param>
-    /// <returns></returns>
-    // POST <EventController>/12793764936498429/create
-    [Route("/Event/Create/Medals")]
-    [HttpPost]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> CreateMedalEvent([FromBody] CreateMedalEventDto incoming) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        if (user.DiscordAccessToken is null) {
-            return BadRequest("Discord account not linked.");
-        }
-        
-        if (user.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        await context.Entry(user).Reference(x => x.Account).LoadAsync();
-        var account = user.Account;
-        
-        if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
-            return BadRequest("Invalid guild ID.");
-        }
-
-        var canCreate = await CanCreateEvent(incoming, account, user.DiscordAccessToken);
-        if (canCreate is not OkResult) {
-            return canCreate;
-        }
-
-        var result = await eventService.CreateEvent(incoming, guildId, account.Id);
-
-        if (result.Value is null) {
-            return BadRequest(result.Result);
-        }
-
-        return Ok(mapper.Map<EventDetailsDto>(result.Value));
-    }
-
-    private async Task<ActionResult> CanCreateEvent(CreateEventDto incoming, EliteAccount account, string token) {
-        if (!ulong.TryParse(incoming.GuildId, out var guildId)) {
-            return BadRequest("Invalid guild ID.");
-        }
-        
-        var guilds = await discordService.GetUsersGuilds(account.Id, token);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == incoming.GuildId);
-
-        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
-        }
-
-        var guild = await context.Guilds.AsNoTracking().FirstOrDefaultAsync(g => g.Id == guildId);
-        
+    public async Task<ActionResult<EventDetailsDto>> CreateEvent(ulong guildId, [FromBody] CreateWeightEventDto incoming) {
+        var guild = await discordService.GetGuild(guildId);
         if (guild is null) {
             return NotFound("Guild not found.");
         }
         
+        var canCreate = CanCreateEvent(guild);
+        if (canCreate is not OkResult) {
+            return canCreate;
+        }
+
+        var result = await eventService.CreateEvent(incoming, guildId);
+
+        if (result.Value is null) {
+            return BadRequest(result.Result);
+        }
+
+        return Ok(mapper.Map<EventDetailsDto>(result.Value));
+    }
+
+    /// <summary>
+    /// Create a Medal Collection Event
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="incoming"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost, Route("/guild/{guildId}/events/medals")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<EventDetailsDto>> CreateMedalEvent(ulong guildId, [FromBody] CreateMedalEventDto incoming) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        var canCreate = CanCreateEvent(guild);
+        if (canCreate is not OkResult) {
+            return canCreate;
+        }
+        
+        var result = await eventService.CreateEvent(incoming, guildId);
+
+        if (result.Value is null) {
+            return BadRequest(result.Result);
+        }
+
+        return Ok(mapper.Map<EventDetailsDto>(result.Value));
+    }
+
+    private ActionResult CanCreateEvent(Guild guild) {
         if (!guild.Features.EventsEnabled) {
             return BadRequest("This guild does not have access to make events!");
         }
@@ -160,43 +114,21 @@ public class AdminEventController(
     /// <summary>
     /// Edit an Event
     /// </summary>
+    /// <param name="guildId"></param>
     /// <param name="eventId"></param>
     /// <param name="incoming"></param>
     /// <returns></returns>
-    // POST <EventController>/12793764936498429/edit
-    [HttpPost("{eventId}/Edit")]
+    [GuildAdminAuthorize]
+    [HttpPatch, Route("/guild/{guildId}/events/{eventId}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> EditEvent(ulong eventId, [FromBody] EditEventDto incoming)
+    public async Task<ActionResult<EventDetailsDto>> EditEvent(ulong guildId, ulong eventId, [FromBody] EditEventDto incoming)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        if (user.DiscordAccessToken is null) {
-            return BadRequest("Discord account not linked.");
-        }
-        
-        if (user.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        await context.Entry(user).Reference(x => x.Account).LoadAsync();
-        var account = user.Account;
-        
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
-        
-        var guilds = await discordService.GetUsersGuilds(account.Id, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
-
-        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You need to have admin permissions in the event's Discord server in order to edit it!");
-        }
 
         var startTime = incoming.StartTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.StartTime.Value) : (DateTimeOffset?)null;
         var endTime = incoming.EndTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.EndTime.Value) : (DateTimeOffset?)null;
@@ -233,46 +165,44 @@ public class AdminEventController(
         
         return Ok(eliteEvent);
     }
+
+    /// <summary>
+    /// Delete an Event
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpDelete, Route("/guild/{guildId}/events/{eventId}")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<EventDetailsDto>> DeleteEvent(ulong guildId, ulong eventId)
+    {
+        var eliteEvent = await context.Events
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
+        context.Events.Remove(eliteEvent);
+        await context.SaveChangesAsync();
+        
+        return Ok(eliteEvent);
+    }
     
     /// <summary>
     /// Get banned members from an event
     /// </summary>
+    /// <param name="guildId"></param>
     /// <param name="eventId"></param>
     /// <returns></returns>
-    // GET <EventController>/12793764936498429/bans
-    [HttpGet("{eventId}/bans")]
+    [GuildAdminAuthorize]
+    [HttpGet, Route("/guild/{guildId}/events/{eventId}/bans")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<EventMemberBannedDto>>> GetBannedMembers(ulong eventId)
+    public async Task<ActionResult<List<EventMemberBannedDto>>> GetBannedMembers(ulong guildId, ulong eventId)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        if (user.DiscordAccessToken is null) {
-            return BadRequest("Discord account not linked.");
-        }
-        
-        if (user.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        await context.Entry(user).Reference(x => x.Account).LoadAsync();
-        var account = user.Account;
-        
-        var eliteEvent = await context.Events
-            .FirstOrDefaultAsync(e => e.Id == eventId);
-        if (eliteEvent is null) return NotFound("Event not found.");
-        
-        var guilds = await discordService.GetUsersGuilds(account.Id, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
-
-        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You need to have admin permissions in the event's Discord server!");
-        }
-        
         var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
@@ -283,37 +213,22 @@ public class AdminEventController(
         
         return Ok(mapped);
     }
-    
+
     /// <summary>
     /// Ban a member from an event
     /// </summary>
+    /// <param name="guildId"></param>
     /// <param name="eventId"></param>
     /// <param name="playerUuid"></param>
     /// <param name="reason"></param>
     /// <returns></returns>
-    // POST <EventController>/12793764936498429/bans/12345678901234567890123456789012
-    [HttpPost("{eventId}/bans/{playerUuid}")]
+    [GuildAdminAuthorize]
+    [HttpPost, Route("/guild/{guildId}/events/{eventId}/bans/{playerUuid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<EventMemberBannedDto>>> BanMember(ulong eventId, string playerUuid, [FromBody] string reason)
+    public async Task<ActionResult<List<EventMemberBannedDto>>> BanMember(ulong guildId, ulong eventId, string playerUuid, [FromBody] string reason)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        if (user.DiscordAccessToken is null) {
-            return BadRequest("Discord account not linked.");
-        }
-        
-        if (user.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        await context.Entry(user).Reference(x => x.Account).LoadAsync();
-        var account = user.Account;
-        
         if (playerUuid.Length != 32) {
             return BadRequest("Invalid player UUID.");
         }
@@ -325,13 +240,6 @@ public class AdminEventController(
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
-        
-        var guilds = await discordService.GetUsersGuilds(account.Id, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
-
-        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You need to have admin permissions in the event's Discord server!");
-        }
         
         var member = await context.EventMembers
             .Include(m => m.ProfileMember)
@@ -349,46 +257,24 @@ public class AdminEventController(
         
         return Ok(mapper.Map<EventMemberBannedDto>(member));
     }
-    
+
     /// <summary>
     /// Unban a member from an event
     /// </summary>
+    /// <param name="guildId"></param>
     /// <param name="eventId"></param>
     /// <param name="playerUuid"></param>
     /// <returns></returns>
-    // DELETE <EventController>/12793764936498429/bans
-    [HttpDelete("{eventId}/bans/{playerUuid:length(32)}")]
+    [GuildAdminAuthorize]
+    [HttpDelete, Route("/guild/{guildId}/events/{eventId}/bans/{playerUuid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> UnbanMember(ulong eventId, string playerUuid)
+    public async Task<ActionResult> UnbanMember(ulong guildId, ulong eventId, string playerUuid)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        if (user.DiscordAccessToken is null) {
-            return BadRequest("Discord account not linked.");
-        }
-        
-        if (user.AccountId is null) {
-            return BadRequest("Linked account not found.");
-        }
-        
-        await context.Entry(user).Reference(x => x.Account).LoadAsync();
-        var account = user.Account;
-
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
-        
-        var guilds = await discordService.GetUsersGuilds(account.Id, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
-
-        if (userGuild is null || !guildService.HasGuildAdminPermissions(userGuild)) {
-            return Unauthorized("You need to have admin permissions in the event's Discord server!");
-        }
         
         var member = await context.EventMembers
             .Include(m => m.ProfileMember)
@@ -402,7 +288,6 @@ public class AdminEventController(
         member.Status = EventMemberStatus.Active;
  
         await context.SaveChangesAsync();
-        
         return Ok();
     }
 }

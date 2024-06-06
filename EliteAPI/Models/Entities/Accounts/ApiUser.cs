@@ -27,7 +27,7 @@ public static class ApiUserClaims {
 	public const string Ign = "Ign";
 }
 
-public static class ApiUserRoles {
+public static class ApiUserPolicies {
 	public const string Admin = "Admin";
 	public const string Moderator = "Moderator";
 	public const string Support = "Support";

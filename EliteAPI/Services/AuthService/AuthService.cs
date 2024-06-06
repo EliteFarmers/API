@@ -17,7 +17,6 @@ public class AuthService(
 	DataContext context) 
 	: IAuthService 
 {
-	
 	private const string LoginProvider = "EliteAPI";
 	private const string RefreshToken = "RefreshToken";
 	

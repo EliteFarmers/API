@@ -469,9 +469,6 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<decimal>("OwnerId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<string>("PrizeInfo")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
@@ -500,8 +497,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GuildId");
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Events");
 
@@ -1362,15 +1357,7 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "Owner")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Guild");
-
-                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.EventMember", b =>

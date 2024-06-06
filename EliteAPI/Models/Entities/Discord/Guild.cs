@@ -180,8 +180,10 @@ public class UserIdentification {
 }
 
 public class DiscordRole {
-    public required string Name { get; set; }
     public required string Id { get; set; }
+    public required string Name { get; set; }
+    public int Position { get; set; }
+    public ulong Permissions { get; set; }
 }
 
 public class BlockedUser {
