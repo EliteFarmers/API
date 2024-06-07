@@ -145,7 +145,7 @@ public class DiscordService(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, "Failed to parse refresh token response from Discord");
             return null;
         }
     }
@@ -176,7 +176,7 @@ public class DiscordService(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, "Failed to parse refresh token response from Discord");
             return null;
         }
     }
@@ -327,7 +327,7 @@ public class DiscordService(
             return null;
         }
 
-        if (member.LastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
+        if (member.LastUpdated.OlderThanSeconds(_coolDowns.UserRolesCooldown)) {
             await FetchUserRoles(member);
         }
         
@@ -523,7 +523,7 @@ public class DiscordService(
     {
         if (tokenResponse?.AccessToken is null || tokenResponse.RefreshToken is null || tokenResponse.Error is not null) return null;
 
-        DateTimeOffset? accessTokenExpires = tokenResponse.ExpiresIn > 0 
+        var accessTokenExpires = tokenResponse.ExpiresIn > 0 
             ? DateTimeOffset.UtcNow.AddMilliseconds(tokenResponse.ExpiresIn) 
             : DateTimeOffset.UtcNow.AddMinutes(8);
         var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);
@@ -542,9 +542,9 @@ public class DiscordService(
 public class DiscordUpdateResponse
 {
     public required string AccessToken { get; set; }
-    public DateTimeOffset? AccessTokenExpires { get; set; }
+    public DateTimeOffset AccessTokenExpires { get; set; } = DateTimeOffset.UtcNow.AddMinutes(9);
     public required string RefreshToken { get; set; }
-    public DateTimeOffset? RefreshTokenExpires { get; set; }
+    public DateTimeOffset RefreshTokenExpires { get; set; } = DateTimeOffset.UtcNow.AddDays(30);
     public EliteAccount? Account { get; set; }
 }
 

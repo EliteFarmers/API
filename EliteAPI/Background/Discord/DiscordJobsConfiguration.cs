@@ -21,5 +21,10 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 					schedule.RepeatForever();
 				});
 			});
+		
+		options.AddJob<RefreshAuthTokenBackgroundTask>(builder => {
+			builder.WithIdentity(RefreshAuthTokenBackgroundTask.Key);
+			builder.StoreDurably();
+		});
 	}
 }

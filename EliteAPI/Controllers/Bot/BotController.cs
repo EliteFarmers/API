@@ -234,10 +234,39 @@ public class BotController(
     /// Update Discord Guild
     /// </summary>
     /// <returns></returns>
-    [HttpPatch("guild/{guildId}/roles")]
+    [HttpPost("guild/{guildId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateGuildRole(ulong guildId, [FromBody] IncomingGuildRoleDto incoming) {
         await guildService.UpdateGuildRoleData(guildId, incoming);
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Update Guild Memeber Roles
+    /// </summary>
+    /// <returns></returns>
+    [HttpPut("guild/{guildId}/members/{userId}/roles")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<IActionResult> UpdateGuildMemberRoles(ulong guildId, string userId, [FromBody] List<string> incoming) {
+        var member = await context.GuildMembers
+            .FirstOrDefaultAsync(m => m.GuildId == guildId && m.AccountId == userId);
+        
+        if (member is null) {
+            return NotFound("Member not found");
+        }
+
+        try {
+            member.Roles = incoming.Select(ulong.Parse).ToList();
+            member.LastUpdated = DateTimeOffset.UtcNow;
+        } catch (Exception e) {
+            logger.LogWarning("Failed to update member roles: {Error}", e);
+            return BadRequest("Failed to update member roles");
+        }
+        
+        context.GuildMembers.Update(member);
+        await context.SaveChangesAsync();
         return Ok();
     }
     

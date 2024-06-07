@@ -20,8 +20,14 @@ public class AuthController(IAuthService authService) : ControllerBase
 	[HttpGet("me")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-	public ActionResult<AuthSessionDto> GetSelfOverview()
+	public async Task<ActionResult<AuthSessionDto>> GetSelfOverview()
 	{
+		var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		
+		if (id is not null && User.AccessTokenExpired()) {
+			await authService.TriggerAuthTokenRefresh(id!);
+		}
+		
 		return Ok(new AuthSessionDto {
 			Id = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
 			Username = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
