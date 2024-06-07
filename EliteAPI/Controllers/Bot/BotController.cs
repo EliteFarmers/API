@@ -4,10 +4,12 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.AccountService;
 using EliteAPI.Services.BadgeService;
 using EliteAPI.Services.DiscordService;
+using EliteAPI.Services.GuildService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +22,7 @@ public class BotController(
     DataContext context, 
     IMapper mapper,
     IDiscordService discordService,
+    IGuildService guildService,
     IAccountService accountService, 
     ILogger<BotController> logger, 
     IBadgeService badgeService)
@@ -33,12 +36,12 @@ public class BotController(
     [HttpGet("{guildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<GuildDto>> Get(ulong guildId)
+    public async Task<ActionResult<PrivateGuildDto>> Get(ulong guildId)
     {
         var guild = await context.Guilds.FindAsync(guildId);
         if (guild is null) return NotFound("Guild not found");
         
-        return Ok(mapper.Map<GuildDto>(guild));
+        return Ok(mapper.Map<PrivateGuildDto>(guild));
     }
     
     /// <summary>
@@ -192,6 +195,79 @@ public class BotController(
         }
         
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
+    }
+    
+    /// <summary>
+    /// Request Discord Guild Update
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("guild/{guildId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RefreshGuild(ulong guildId) {
+        await discordService.RefreshDiscordGuild(guildId);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Update Discord Guild
+    /// </summary>
+    /// <returns></returns>
+    [HttpPatch("guild/{guildId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateGuild(ulong guildId, [FromBody] IncomingGuildDto incoming) {
+        await guildService.UpdateGuildData(guildId, incoming);
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Update Discord Guild
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("guild/{guildId}/channels")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateGuildChannel(ulong guildId, [FromBody] IncomingGuildChannelDto incoming) {
+        await guildService.UpdateGuildChannelData(guildId, incoming);
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Update Discord Guild
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("guild/{guildId}/roles")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateGuildRole(ulong guildId, [FromBody] IncomingGuildRoleDto incoming) {
+        await guildService.UpdateGuildRoleData(guildId, incoming);
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Update Guild Memeber Roles
+    /// </summary>
+    /// <returns></returns>
+    [HttpPut("guild/{guildId}/members/{userId}/roles")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<IActionResult> UpdateGuildMemberRoles(ulong guildId, string userId, [FromBody] List<string> incoming) {
+        var member = await context.GuildMembers
+            .FirstOrDefaultAsync(m => m.GuildId == guildId && m.AccountId == userId);
+        
+        if (member is null) {
+            return NotFound("Member not found");
+        }
+
+        try {
+            member.Roles = incoming.Select(ulong.Parse).ToList();
+            member.LastUpdated = DateTimeOffset.UtcNow;
+        } catch (Exception e) {
+            logger.LogWarning("Failed to update member roles: {Error}", e);
+            return BadRequest("Failed to update member roles");
+        }
+        
+        context.GuildMembers.Update(member);
+        await context.SaveChangesAsync();
+        return Ok();
     }
     
     /// <summary>

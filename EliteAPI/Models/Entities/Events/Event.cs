@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.Entities.Events;
@@ -45,10 +46,6 @@ public class Event {
     public string? RequiredRole { get; set; }
     [MaxLength(24)]
     public string? BlockedRole { get; set; }
-    
-    [ForeignKey("Owner")]
-    public ulong OwnerId { get; set; }
-    public EliteAccount Owner { get; set; } = null!;
     
     [ForeignKey("Guild")]
     public ulong GuildId { get; set; }

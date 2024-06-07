@@ -95,6 +95,10 @@ public class DiscordRoleData
     public int Color { get; set; }
 }
 
+public class DiscordGuildMember {
+    public List<string> Roles { get; set; } = [];
+}
+
 public class DiscordChannel
 {
     public required string Id { get; set; }

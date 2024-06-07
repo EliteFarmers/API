@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Data.Configurations;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
@@ -80,6 +81,9 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
     // Discord
     public DbSet<Guild> Guilds { get; set; } = null!;
+    public DbSet<GuildChannel> GuildChannels { get; set; } = null!;
+    public DbSet<GuildRole> GuildRoles { get; set; } = null!;
+    public DbSet<GuildMember> GuildMembers { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;

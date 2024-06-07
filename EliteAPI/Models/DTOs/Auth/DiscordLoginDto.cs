@@ -43,6 +43,20 @@ public class AuthResponseDto {
 	public required string RefreshToken { get; set; }
 }
 
+public class AuthRefreshDto {
+	/// <summary>
+	/// User ID
+	/// </summary>
+	[JsonPropertyName("access_token")]
+	public required string AccessToken { get; set; }
+	
+	/// <summary>
+	/// Refresh token for the user
+	/// </summary>
+	[JsonPropertyName("refresh_token")]
+	public required string RefreshToken { get; set; }
+}
+
 public class AuthSessionDto {
 	/// <summary>
 	/// Discord user ID

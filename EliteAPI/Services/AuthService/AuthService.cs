@@ -1,12 +1,14 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using EliteAPI.Background.Discord;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.DiscordService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
 
 namespace EliteAPI.Services.AuthService;
 
@@ -14,10 +16,10 @@ public class AuthService(
 	IDiscordService discordService, 
 	UserManager<ApiUser> userManager, 
 	IConfiguration configuration,
+	ISchedulerFactory schedulerFactory,
 	DataContext context) 
 	: IAuthService 
 {
-	
 	private const string LoginProvider = "EliteAPI";
 	private const string RefreshToken = "RefreshToken";
 	
@@ -77,19 +79,23 @@ public class AuthService(
 
 		return newRefreshToken;
 	}
-	
-	public async Task<AuthResponseDto?> VerifyRefreshToken(AuthResponseDto authResponse) {
+
+	public async Task<AuthResponseDto?> VerifyRefreshToken(AuthRefreshDto dto) {
 		var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(authResponse.AccessToken);
+		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(dto.AccessToken);
 		
 		var userId = tokenContent.Claims.ToList()
 			.FirstOrDefault(q => q.Type == ClaimTypes.NameIdentifier)?.Value;
 		if (userId is null) return null;
-		
+
+		return await VerifyRefreshToken(userId, dto.RefreshToken);
+	}
+
+	public async Task<AuthResponseDto?> VerifyRefreshToken(string userId, string refreshToken) {
 		var user = await userManager.FindByIdAsync(userId);
 		if (user is null) return null;
 		
-		var isValid = await userManager.VerifyUserTokenAsync(user, LoginProvider, RefreshToken, authResponse.RefreshToken);
+		var isValid = await userManager.VerifyUserTokenAsync(user, LoginProvider, RefreshToken, refreshToken);
 
 		if (!isValid) {
 			// Invalidate user tokens
@@ -103,7 +109,7 @@ public class AuthService(
 			
 			if (response is not null) {
 				user.DiscordAccessToken = response.AccessToken;
-				user.DiscordAccessTokenExpires = response.AccessTokenExpires ?? DateTimeOffset.UtcNow.AddMinutes(8);
+				user.DiscordAccessTokenExpires = response.AccessTokenExpires;
 				user.DiscordRefreshToken = response.RefreshToken;
 				user.DiscordRefreshTokenExpires = user.DiscordAccessTokenExpires.AddDays(20);
 				
@@ -137,6 +143,7 @@ public class AuthService(
 			new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new(ApiUserClaims.Avatar, user.Account.Avatar ?? string.Empty),
 			new(ApiUserClaims.Ign, primaryAccount?.Name ?? string.Empty),
+			new(ApiUserClaims.DiscordAccessExpires, user.DiscordAccessTokenExpires.ToUnixTimeSeconds().ToString())
 		};
 		
 		// Add roles to the claims
@@ -185,5 +192,11 @@ public class AuthService(
 		user.DiscordAccessTokenExpires = accessExpires;
 		user.DiscordRefreshToken = dto.RefreshToken;
 		user.DiscordAccessTokenExpires = accessExpires.AddDays(20);
+	}
+	
+	public async Task TriggerAuthTokenRefresh(string userId) {
+		var data = new JobDataMap { { "AccountId", userId } };
+		var scheduler = await schedulerFactory.GetScheduler();
+		await scheduler.TriggerJob(RefreshAuthTokenBackgroundTask.Key, data);
 	}
 }

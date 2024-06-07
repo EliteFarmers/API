@@ -7,7 +7,7 @@ namespace EliteAPI.Services.EventService;
 
 public interface IEventService {
 	public Task<List<EventDetailsDto>> GetUpcomingEvents();
-	public Task<ActionResult<Event>> CreateEvent(CreateEventDto eventDto, ulong guildId, ulong ownerId);
+	public Task<ActionResult<Event>> CreateEvent(CreateEventDto eventDto, ulong guildId);
 	public Task<ActionResult<EventMember>> CreateEventMember(Event @event, CreateEventMemberDto eventMemberDto);
 	
 	/// <summary>

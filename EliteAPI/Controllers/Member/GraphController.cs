@@ -108,7 +108,7 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/crops
     [Route("/[controller]/Admin/{playerUuid:length(32)}/{profileUuid:length(32)}/crops")]
     [HttpGet]
-    [Authorize(ApiUserRoles.Support)]
+    [Authorize(ApiUserPolicies.Support)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -149,7 +149,7 @@ public class GraphController(DataContext context, ITimescaleService timescaleSer
     // GET <GraphController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7/skills
     [Route("/[controller]/Admin/{playerUuid:length(32)}/{profileUuid:length(32)}/skills")]
     [HttpGet]
-    [Authorize(ApiUserRoles.Support)]
+    [Authorize(ApiUserPolicies.Support)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]

@@ -1,12 +1,14 @@
 ﻿using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
-public class GuildDto {
+public class PrivateGuildDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
+    public bool Public { get; set; }
     
     public GuildFeatures Features { get; set; } = new();
 
@@ -24,6 +26,9 @@ public class GuildDto {
     public List<string> DiscordFeatures { get; set; } = new();
     
     public int MemberCount { get; set; }
+    
+    public List<GuildChannelDto> Channels { get; set; } = new();
+    public List<GuildRoleDto> Roles { get; set; } = new();
 }
 
 public class PublicGuildDto {
@@ -36,8 +41,21 @@ public class PublicGuildDto {
     
     public string? Description { get; set; }
     public int MemberCount { get; set; }
-
+    
     public PublicGuildFeaturesDto Features { get; set; } = new();
+}
+
+public class GuildChannelDto {
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public int Type { get; set; }
+    public int Position { get; set; }
+}
+
+public class GuildRoleDto {
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public int Position { get; set; }
 }
 
 public class PublicGuildFeaturesDto {
@@ -105,19 +123,33 @@ public class GuildDetailsDto {
     public int MemberCount { get; set; }
 }
 
-public class UserGuildDto {
+public class GuildMemberDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
 
     public string? Icon { get; set; }
     public bool HasBot { get; set; }
     public required string Permissions { get; set; }
+    public List<string> Roles { get; set; } = [];
+}
+
+public static class GuildMemberDtoExtensions {
+    public static GuildMemberDto ToDto(this GuildMember member) {
+        return new GuildMemberDto {
+            Id = member.GuildId.ToString(),
+            Name = member.Guild.Name,
+            Icon = member.Guild.Icon,
+            HasBot = member.Guild.HasBot,
+            Permissions = member.Permissions.ToString(),
+            Roles = member.Roles.Select(r => r.ToString()).ToList()
+        };
+    }
 }
 
 public class AuthorizedGuildDto {
     public required string Id { get; set; }
     public required string Permissions { get; init; }
 
-    public GuildDto? Guild { get; set; }
-    public FullDiscordGuild? DiscordGuild { get; set; }
+    public PrivateGuildDto? Guild { get; set; }
+    public GuildMemberDto? Member { get; set; }
 }

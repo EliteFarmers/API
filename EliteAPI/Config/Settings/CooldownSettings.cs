@@ -8,4 +8,5 @@ public class ConfigCooldownSettings
     public int MinecraftAccountCooldown { get; set; }
     public int DiscordGuildsCooldown { get; set; }
     public int UserGuildsCooldown { get; set; }
+    public int UserRolesCooldown { get; set; }
 }

@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.DTOs.Outgoing;
 
-namespace EliteAPI.Models.Entities.Events; 
+namespace EliteAPI.Models.Entities.Discord; 
 
 public class Guild {
     [Key]
@@ -22,12 +22,18 @@ public class Guild {
     
     public string? Icon { get; set; }
     public ulong BotPermissions { get; set; }
-    public string? BotPermissionsNew { get; set; }
 
     [Column(TypeName = "jsonb")]
-    public List<string> DiscordFeatures { get; set; } = new();
+    public List<string> DiscordFeatures { get; set; } = [];
     
     public int MemberCount { get; set; }
+    public bool HasBot { get; set; }
+    public bool IsPublic { get; set; } = false;
+    
+    public List<GuildChannel> Channels { get; set; } = [];
+    public List<GuildRole> Roles { get; set; } = [];
+    
+    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public class GuildFeatures {
@@ -100,6 +106,23 @@ public class GuildJacobLeaderboard {
     public CropRecords Crops { get; set; } = new();
 }
 
+public class UpdateGuildJacobLeaderboardDto {
+    public string? ChannelId { get; set; }
+
+    public long? StartCutoff { get; set; }
+    public long? EndCutoff { get; set; }
+
+    [MaxLength(64)] 
+    public string? Title { get; set; }
+
+    public string? RequiredRole { get; set; }
+    public string? BlockedRole { get; set; }
+
+    public string? UpdateChannelId { get; set; }
+    public string? UpdateRoleId { get; set; }
+    public bool? PingForSmallImprovements { get; set; }
+}
+
 public class CropSettings<T> {
     public T? Cactus { get; set; }
     public T? Carrot { get; set; }
@@ -157,8 +180,10 @@ public class UserIdentification {
 }
 
 public class DiscordRole {
-    public required string Name { get; set; }
     public required string Id { get; set; }
+    public required string Name { get; set; }
+    public int Position { get; set; }
+    public ulong Permissions { get; set; }
 }
 
 public class BlockedUser {

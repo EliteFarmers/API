@@ -1,13 +1,14 @@
 ﻿using System.Net.Http.Headers;
-using System.Text.Json;
 using AutoMapper;
+using EliteAPI.Authentication;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Models.Entities.Events;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Background;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -28,17 +29,18 @@ public class DiscordService(
 {
     
     private const string ClientName = "EliteAPI";
+    private const string Scopes = "identify guilds role_connections.write";
+    private const string DiscordBaseUrl = "https://discord.com/api/v10";
+
     private readonly string _clientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID") 
                                         ?? throw new Exception("DISCORD_CLIENT_ID env variable is not set.");
     private readonly string _clientSecret = Environment.GetEnvironmentVariable("DISCORD_CLIENT_SECRET") 
                                             ?? throw new Exception("DISCORD_CLIENT_SECRET env variable is not set.");
     private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") 
                                         ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");
-
+    
     private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
     
-    private const string DiscordBaseUrl = "https://discord.com/api/v10";
-
     public async Task<DiscordUpdateResponse?> GetDiscordUser(string? accessToken, string? refreshToken)
     {
         if (accessToken is null && refreshToken is null) return null;
@@ -129,7 +131,7 @@ public class DiscordService(
             { "client_secret", _clientSecret },
             { "grant_type", "refresh_token" },
             { "refresh_token", refreshToken },
-            { "scope", "identify guilds role_connections.write" },
+            { "scope", Scopes },
         };
 
         var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
@@ -143,7 +145,7 @@ public class DiscordService(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, "Failed to parse refresh token response from Discord");
             return null;
         }
     }
@@ -160,7 +162,7 @@ public class DiscordService(
             { "client_secret", _clientSecret },
             { "grant_type", "authorization_code" },
             { "code", accessToken },
-            { "scope", "identify guilds role_connections.write" },
+            { "scope", Scopes },
         };
 
         var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
@@ -174,7 +176,7 @@ public class DiscordService(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            logger.LogError(e, "Failed to parse refresh token response from Discord");
             return null;
         }
     }
@@ -190,92 +192,186 @@ public class DiscordService(
 
         return guild?.Permissions ?? "0";
     }
-    
-    public async Task<List<UserGuildDto>> GetUsersGuilds(ulong userId, string accessToken) {
-        var url = DiscordBaseUrl + "/users/@me/guilds";
-        var key = $"user:guilds:{userId}";
-        
-        var db = redis.GetDatabase();
-        if (db.KeyExists(key)) {
-            var guilds = await db.StringGetAsync(key);
-            
-            if (guilds.IsNullOrEmpty) return new List<UserGuildDto>();
 
-            try {
-                var list = JsonSerializer.Deserialize<List<UserGuildDto>>(guilds!);
-                if (list is not null) return list;
-            } catch (Exception e) {
-                logger.LogError(e, "Failed to parse guilds from Redis");
-            }
-        }
-        
+    private async Task<List<GuildMember>> FetchUserGuilds(ApiUser user, string accessToken) {
+        const string url = DiscordBaseUrl + "/users/@me/guilds";
+
         var client = httpClientFactory.CreateClient(ClientName);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         
         var response = await client.GetAsync(url);
         
         if (!response.IsSuccessStatusCode) {
-            logger.LogWarning("Failed to fetch guilds from Discord");
-            return new List<UserGuildDto>();
+            logger.LogWarning("Failed to fetch User's ({User}) guilds from Discord", user.Id);
+            return [];
         }
         
         try {
             var list = await response.Content.ReadFromJsonAsync<List<DiscordGuild>>();
-            if (list is null) return new List<UserGuildDto>();
+            if (list is null) return [];
+
+            var memberList = new List<GuildMember>();
             
-            var guilds = mapper.Map<List<UserGuildDto>>(list);
-
-            foreach (var guild in guilds) {
-                guild.HasBot = await db.KeyExistsAsync($"bot:guild:{guild.Id}");
+            foreach (var guild in list) {
+                if (!ulong.TryParse(user.Id, out var id)) continue;
+                var member = await UpdateGuildMember(id, guild);
+                
+                if (member is not null) {
+                    memberList.Add(member);
+                }
             }
+            
+            // Delete old guild member entries
+            var old = DateTimeOffset.UtcNow.AddSeconds(-_coolDowns.UserGuildsCooldown);
+            await context.GuildMembers
+                .Where(gm => gm.AccountId == user.Id && gm.LastUpdated < old)
+                .DeleteFromQueryAsync();
+            
+            user.GuildsLastUpdated = DateTimeOffset.UtcNow;
+            await userManager.UpdateAsync(user);
 
-            await db.StringSetAsync(key, JsonSerializer.Serialize(guilds), TimeSpan.FromSeconds(_coolDowns.UserGuildsCooldown));
-            return guilds;
+            return memberList;
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse guilds from Discord");
-            return new List<UserGuildDto>();
+            return [];
         }
     }
+    
+    public async Task<List<GuildMemberDto>> GetUsersGuilds(ulong userId, string accessToken) {
 
-    public async Task<UserGuildDto?> GetUserGuildIfManagable(ApiUser user, ulong guildId) {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return [];
+        
+        var existing = await context.GuildMembers
+            .Include(gm => gm.Guild)
+            .Where(gm => gm.AccountId == userId.ToString())
+            .ToListAsync();
+        
+        if (existing.Count > 0 && !user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
+            return existing.Select(gm => gm.ToDto()).ToList();
+        }
+        
+        var members = await FetchUserGuilds(user, accessToken);
+        
+        return members.Select(gm => gm.ToDto()).ToList();
+    }
+    
+    private async Task<GuildMember?> UpdateGuildMember(ulong userId, DiscordGuild guild) {
+        var accountId = userId.ToString();
+        
+        var existingGuild = await context.Guilds.FindAsync(guild.Id);
+        if (existingGuild is null) {
+            return null; // We only care about guilds the bot is in
+        }
+        
+        var existing = await context.GuildMembers
+            .FirstOrDefaultAsync(gm => gm.GuildId == guild.Id && gm.AccountId == accountId);
+        
+        if (existing is null) {
+            existing = new GuildMember {
+                GuildId = guild.Id,
+                Guild = existingGuild,
+                AccountId = accountId,
+                Permissions = guild.Permissions
+            };
+            
+            context.GuildMembers.Add(existing);
+        } else {
+            existing.Permissions = guild.Permissions;
+            existing.LastUpdated = DateTimeOffset.UtcNow;
+        }
+        
+        await context.SaveChangesAsync();
+
+        return existing;
+    }
+    
+    public async Task<GuildMember?> GetGuildMemberIfAdmin(ApiUser user, ulong guildId, GuildPermission permission = GuildPermission.Role) {
         if (!user.AccountId.HasValue || user.DiscordAccessToken is null) return null;
         
         var roles = await userManager.GetRolesAsync(user);
-        var isAdmin = roles.Contains(ApiUserRoles.Admin);
+        var isAdmin = roles.Contains(ApiUserPolicies.Admin);
 
-        var guilds = await GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
-        var userGuild = guilds.FirstOrDefault(g => g.Id == guildId.ToString());
-
-        if (isAdmin) {
-            return new UserGuildDto {
-                Id = guildId.ToString(),
-                Permissions = "8",
-                Name = string.Empty
+        var member = await GetGuildMember(user, guildId);
+        
+        // Use fallback admin permissions if the user is an admin but doesn't have the correct permissions
+        if (isAdmin && (member is null || !member.HasGuildAdminPermissions(permission))) {
+            member ??= new GuildMember {
+                AccountId = user.AccountId.ToString(),
+                GuildId = guildId
             };
+            
+            member.Permissions = 8; // Discord admin permission
+            return member;
         }
 
-        if (userGuild is null || !userGuild.HasGuildAdminPermissions()) {
+        if (member is null || !member.HasGuildAdminPermissions(permission)) {
             return null;
         }
 
-        return userGuild;
+        return member;
     }
 
-    public async Task<FullDiscordGuild?> GetGuild(ulong guildId) {
-        var db = redis.GetDatabase();
-        var key = $"full:guild:{guildId}";
+    public async Task<GuildMember?> GetGuildMember(ApiUser user, ulong guildId) {
+        if (!user.AccountId.HasValue || user.DiscordAccessToken is null) return null;
+        
+        if (user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
+            await GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
+        }
+  
+        var member = await context.GuildMembers
+            .Include(gm => gm.Guild)
+            .FirstOrDefaultAsync(gm => gm.AccountId == user.AccountId.ToString() && gm.GuildId == guildId);
+        
+        if (member is null) {
+            return null;
+        }
 
-        if (db.KeyExists(key)) {
-            var guild = await db.StringGetAsync(key);
+        if (member.LastUpdated.OlderThanSeconds(_coolDowns.UserRolesCooldown)) {
+            await FetchUserRoles(member);
+        }
+        
+        return member;
+    }
+    
+    public async Task FetchUserRoles(GuildMember member) {
+        var url = DiscordBaseUrl + $"/guilds/{member.GuildId}/members/{member.AccountId}";
 
-            if (!guild.IsNullOrEmpty) {
-                try {
-                    var data = JsonSerializer.Deserialize<FullDiscordGuild>(guild!);
-                    if (data is not null) return data;
-                } catch (Exception e) {
-                    logger.LogError(e, "Failed to parse guild from Redis");
-                }
-            }
+        var client = httpClientFactory.CreateClient(ClientName);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+        
+        var response = await client.GetAsync(url);
+        
+        if (!response.IsSuccessStatusCode) {
+            logger.LogWarning("Failed to fetch user roles from Discord");
+            return;
+        }
+        
+        try {
+            var incoming = await response.Content.ReadFromJsonAsync<DiscordGuildMember>();
+            if (incoming is null) return;
+            
+            var roles = incoming.Roles;
+            var roleIds = roles.Select(ulong.Parse).ToList();
+            
+            member.Roles = roleIds;
+            member.LastUpdated = DateTimeOffset.UtcNow;
+            
+            context.GuildMembers.Update(member);
+            await context.SaveChangesAsync();
+        } catch (Exception e) {
+            logger.LogError(e, "Failed to parse user roles from Discord");
+        }
+    }
+
+    public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false) {
+        var existing = await context.Guilds
+            .Include(g => g.Channels)
+            .Include(g => g.Roles)
+            .FirstOrDefaultAsync(g => g.Id == guildId);
+        
+        if (!skipCache && existing is not null && !existing.LastUpdated.OlderThanSeconds(_coolDowns.DiscordGuildsCooldown)) {
+            return existing;
         }
         
         var client = httpClientFactory.CreateClient(ClientName);
@@ -285,48 +381,141 @@ public class DiscordService(
         
         if (!response.IsSuccessStatusCode) {
             logger.LogWarning("Failed to fetch guild from Discord");
-            return null;
+            return existing;
         }
         
         try {
             var guild = await response.Content.ReadFromJsonAsync<FullDiscordGuild>();
-            if (guild is null) return null;
+            if (guild is null) return existing;
             
-            var channels = await client.GetAsync(DiscordBaseUrl + $"/guilds/{guildId}/channels");
-            if (channels.IsSuccessStatusCode) {
-                var channelList = await channels.Content.ReadFromJsonAsync<List<DiscordChannel>>();
-                
-                if (channelList is not null) {
-                    guild.Channels = channelList;
-                }
-            }
-            
-            await db.StringSetAsync(key, JsonSerializer.Serialize(guild), TimeSpan.FromSeconds(_coolDowns.UserGuildsCooldown));
-
-            var existingGuild = await context.Guilds.FindAsync(ulong.Parse(guild.Id));
-            if (existingGuild is not null) {
-                existingGuild.Name = guild.Name;
-                existingGuild.Icon = guild.Icon;
-                existingGuild.DiscordFeatures = guild.Features;
-                existingGuild.InviteCode = guild.VanityUrlCode ?? existingGuild.InviteCode;
-                existingGuild.Banner = guild.Splash;
-                existingGuild.MemberCount = guild.MemberCount;
-                
-                if (existingGuild.Features.JacobLeaderboardEnabled) {
-                    existingGuild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
-                }
-                
-                if (existingGuild.Features.VerifiedRoleEnabled) {
-                    existingGuild.Features.VerifiedRole ??= new VerifiedRoleFeature();
-                }
-            }
-            
-            await context.SaveChangesAsync();
-
-            return guild;
+            return await UpdateDiscordGuild(guild);
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse guild from Discord");
-            return null;
+            return existing;
+        }
+    }
+
+    public async Task RefreshDiscordGuild(ulong guildId) {
+        await GetGuild(guildId, true);
+    }
+
+    private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true) {
+        if (incoming is null) return null;
+        if (!ulong.TryParse(incoming.Id, out var guildId)) return null;
+        
+        var guild = await context.Guilds.FindAsync(guildId);
+        
+        if (guild is null) {
+            context.Guilds.Add(new Guild {
+                Id = guildId,
+                Name = incoming.Name,
+                Icon = incoming.Icon,
+                DiscordFeatures = incoming.Features,
+                MemberCount = incoming.MemberCount
+            });
+        } else {
+            guild.Name = incoming.Name;
+            guild.Icon = incoming.Icon;
+            guild.DiscordFeatures = incoming.Features;
+            guild.InviteCode = incoming.VanityUrlCode ?? guild.InviteCode;
+            guild.Banner = incoming.Splash;
+            guild.MemberCount = incoming.MemberCount;
+            guild.LastUpdated = DateTimeOffset.UtcNow;
+            
+            if (guild.Features.JacobLeaderboardEnabled) {
+                guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
+            }
+                
+            if (guild.Features.VerifiedRoleEnabled) {
+                guild.Features.VerifiedRole ??= new VerifiedRoleFeature();
+            }
+        }
+        
+        await context.SaveChangesAsync();
+
+        if (!fetchChannels || guild is null) return guild;
+        
+        var client = httpClientFactory.CreateClient(ClientName);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+
+        var channels = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/channels");
+        if (!channels.IsSuccessStatusCode) return guild;
+        
+        var channelList = await channels.Content.ReadFromJsonAsync<List<DiscordChannel>>();
+        if (channelList is null) return guild;
+        
+        foreach (var channel in channelList) {
+            await UpdateDiscordChannel(guild, channel, false);
+        }
+        
+        var roles = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/roles");
+        if (!roles.IsSuccessStatusCode) return guild;
+        
+        var roleList = await roles.Content.ReadFromJsonAsync<List<DiscordRole>>();
+        if (roleList is null) return guild;
+        
+        foreach (var role in roleList) {
+            await UpdateDiscordRole(guild, role, false);
+        }
+
+        await context.SaveChangesAsync();
+        
+        return guild;
+    }
+
+    private async Task UpdateDiscordChannel(Guild guild, DiscordChannel channel, bool save = true) {
+        if (!ulong.TryParse(channel.Id, out var channelId)) return;
+        
+        var existingChannel = guild.Channels.FirstOrDefault(c => c.Id == channelId);
+        
+        if (existingChannel is null) {
+            var newChannel = new GuildChannel {
+                GuildId = guild.Id,
+                
+                Id = channelId,
+                Name = channel.Name,
+                Position = channel.Position,
+                Type = (int) channel.Type
+            };
+            
+            guild.Channels.Add(newChannel);
+            context.GuildChannels.Add(newChannel);
+        } else {
+            existingChannel.Name = channel.Name;
+            existingChannel.Position = channel.Position;
+            existingChannel.Type = (int) channel.Type;
+        }
+
+        if (save) {
+            await context.SaveChangesAsync();
+        }
+    }
+    
+    private async Task UpdateDiscordRole(Guild guild, DiscordRole role, bool save = true) {
+        if (!ulong.TryParse(role.Id, out var roleId)) return;
+        
+        var existing = guild.Roles.FirstOrDefault(c => c.Id == roleId);
+        
+        if (existing is null) {
+            var newRole = new GuildRole {
+                GuildId = guild.Id,
+                
+                Id = roleId,
+                Name = role.Name,
+                Position = role.Position,
+                Permissions = role.Permissions
+            };
+            
+            guild.Roles.Add(newRole);
+            context.GuildRoles.Add(newRole);
+        } else {
+            existing.Name = role.Name;
+            existing.Position = role.Position;
+            existing.Permissions = role.Permissions;
+        }
+
+        if (save) {
+            await context.SaveChangesAsync();
         }
     }
 
@@ -334,7 +523,9 @@ public class DiscordService(
     {
         if (tokenResponse?.AccessToken is null || tokenResponse.RefreshToken is null || tokenResponse.Error is not null) return null;
 
-        DateTimeOffset? accessTokenExpires = tokenResponse.ExpiresIn > 0 ? DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn) : null;
+        var accessTokenExpires = tokenResponse.ExpiresIn > 0 
+            ? DateTimeOffset.UtcNow.AddMilliseconds(tokenResponse.ExpiresIn) 
+            : DateTimeOffset.UtcNow.AddMinutes(8);
         var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);
 
         return new DiscordUpdateResponse()
@@ -351,25 +542,32 @@ public class DiscordService(
 public class DiscordUpdateResponse
 {
     public required string AccessToken { get; set; }
-    public DateTimeOffset? AccessTokenExpires { get; set; }
+    public DateTimeOffset AccessTokenExpires { get; set; } = DateTimeOffset.UtcNow.AddMinutes(9);
     public required string RefreshToken { get; set; }
-    public DateTimeOffset? RefreshTokenExpires { get; set; }
+    public DateTimeOffset RefreshTokenExpires { get; set; } = DateTimeOffset.UtcNow.AddDays(30);
     public EliteAccount? Account { get; set; }
 }
 
 public static class DiscordExtensions 
 {
-    public static bool HasGuildAdminPermissions(this UserGuildDto guild) {
-        var permissions = guild.Permissions;
-        
-        if (!ulong.TryParse(permissions, out var bits)) {
-            return false;
+    private const ulong Admin = 0x8;
+    private const ulong ManageGuild = 0x20;
+    
+    public static bool HasGuildAdminPermissions(this GuildMember member, GuildPermission permission) {
+        var adminRole = member.Guild.AdminRole;
+        // Accept admin role as admin if permission is set to role
+        if (permission == GuildPermission.Role && adminRole != 0 && member.Roles.Contains(adminRole)) {
+            return true;
         }
         
-        const ulong admin = 0x8;
-        const ulong manageGuild = 0x20;
+        var bits = member.Permissions;
 
-        // Check if the user has the manage guild or admin permission
-        return (bits & admin) == admin || (bits & manageGuild) == manageGuild;
+        if (permission == GuildPermission.Manager) {
+            // Accept manage guild as admin if permission is set to manager
+            return (bits & Admin) == Admin || (bits & ManageGuild) == ManageGuild;
+        }
+        
+        // Check if the user has the admin permission
+        return (bits & Admin) == Admin;
     }
 }
