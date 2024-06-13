@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Config.Settings; 
+namespace EliteAPI.Configuration.Settings; 
 
 public class FarmingItemsConfig {
     public static FarmingItemsSettings Settings { get; set; } = new();

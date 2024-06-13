@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Asp.Versioning;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
@@ -7,8 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Controllers;
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]")]
 public class AuthController(IAuthService authService) : ControllerBase 
 {
 	/// <summary>

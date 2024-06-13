@@ -1,5 +1,5 @@
 ﻿using System.Threading.RateLimiting;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 

@@ -1,4 +1,4 @@
-﻿using EliteAPI.Config.Settings;
+﻿using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
 
 namespace EliteAPI.Services.Interfaces; 

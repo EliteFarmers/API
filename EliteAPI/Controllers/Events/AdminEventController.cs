@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
@@ -15,8 +16,9 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Controllers.Events; 
 
 [Authorize]
-[ApiController]
+[ApiController, ApiVersion(1.0)]
 [Route("/event")]
+[Route("/v{version:apiVersion}/event")]
 public class AdminEventController(
     DataContext context,
     IMapper mapper,

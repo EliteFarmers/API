@@ -1,4 +1,5 @@
-﻿using EliteAPI.Data;
+﻿using Asp.Versioning;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
@@ -8,8 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Member; 
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]/{playerUuid:length(32)}")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]/{playerUuid:length(32)}")]
 public class GraphController(DataContext context, ITimescaleService timescaleService) : ControllerBase {
     
     /// <summary>

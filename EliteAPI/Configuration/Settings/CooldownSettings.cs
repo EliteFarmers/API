@@ -1,4 +1,4 @@
-﻿namespace EliteAPI.Config.Settings;
+﻿namespace EliteAPI.Configuration.Settings;
 
 public class ConfigCooldownSettings
 {

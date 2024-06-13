@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
+using Asp.Versioning;
 using AutoMapper;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.Interfaces;
@@ -11,19 +12,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace EliteAPI.Controllers;
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]")]
 public class WeightController(
     DataContext context,
     IMapper mapper,
     IConnectionMultiplexer redis,
     IOptions<ConfigFarmingWeightSettings> weightSettings,
-    IMemberService memberService
-) : ControllerBase 
+    IMemberService memberService) 
+    : ControllerBase 
 {
     private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
 
@@ -32,7 +32,6 @@ public class WeightController(
     /// </summary>
     /// <param name="playerUuid">Player UUID</param>
     /// <returns></returns>
-    // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -75,7 +74,6 @@ public class WeightController(
     /// </summary>
     /// <param name="playerUuid"></param>
     /// <returns></returns>
-    // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/Selected
     [HttpGet("{playerUuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -104,7 +102,6 @@ public class WeightController(
     /// <param name="playerUuid"></param>
     /// <param name="profileUuid"></param>
     /// <returns></returns>
-    // GET <WeightController>/7da0c47581dc42b4962118f8049147b7/7da0c47581dc42b4962118f8049147b7
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -134,8 +131,9 @@ public class WeightController(
     /// <remarks>Use /weights/all instead</remarks>
     /// <returns></returns>
     [Obsolete("Use /weights/all instead")]
-    [Route("/[controller]s")]
     [HttpGet]
+    [Route("[controller]s")]
+    [Route("/v{version:apiVersion}/[controller]s")]
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -159,8 +157,9 @@ public class WeightController(
     /// Get all farming weight constants
     /// </summary>
     /// <returns></returns>
-    [Route("/[controller]s/All")]
     [HttpGet]
+    [Route("[controller]s/all")]
+    [Route("/v{version:apiVersion}/[controller]s/all")]
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]

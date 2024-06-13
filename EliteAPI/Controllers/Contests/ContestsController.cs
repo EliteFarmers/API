@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -16,8 +17,9 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Contests;
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]")]
 public class ContestsController(
     DataContext dataContext, 
     IMapper mapper, 

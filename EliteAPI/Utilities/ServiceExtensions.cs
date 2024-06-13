@@ -1,25 +1,29 @@
 ﻿using System.Globalization;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
+using Asp.Versioning;
 using EliteAPI.Authentication;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
+using EliteAPI.Configuration.Swagger;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Parsers.Skyblock;
 using EliteAPI.RateLimiting;
+using EliteAPI.Services;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using NuGet.Packaging;
 using StackExchange.Redis;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Utilities;
 
 public static class ServiceExtensions
 {
@@ -83,42 +87,19 @@ public static class ServiceExtensions
     public static void AddEliteControllers(this IServiceCollection services)
     {
         services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        services.AddEndpointsApiExplorer(); 
-        services.AddSwaggerGen(opt => {
-            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
-            {
-                In = ParameterLocation.Header,
-                Description = "Enter Bearer Token",
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                BearerFormat = "JWT",
-                Scheme = "Bearer"
-            });
-            
-            opt.OperationFilter<SwaggerAuthFilter>();
-            
-            opt.SwaggerDoc("v1", new OpenApiInfo {
-                Version = "v1",
-                Title = "EliteAPI",
-                Description = "A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. Use of this API requires following the TOS. This API is not affiliated with Hypixel or Mojang.",
-                Contact = new OpenApiContact
-                {
-                    Name = "- GitHub",
-                    Url = new Uri("https://github.com/EliteFarmers/API")
-                },
-                License = new OpenApiLicense
-                {
-                    Name = "GPL-3.0",
-                    Url = new Uri("https://github.com/EliteFarmers/API/blob/master/LICENSE.txt")
-                },
-                TermsOfService = new Uri("https://elitebot.dev/apiterms")
-            });
 
-            opt.SupportNonNullableReferenceTypes();
-            opt.EnableAnnotations();
-            opt.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+        services.AddApiVersioning(options => {
+            options.ReportApiVersions = true;
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ApiVersionReader = new UrlSegmentApiVersionReader();
+        }).AddApiExplorer(options => {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
         });
+        
+        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+        services.AddTransient<IDocumentFilter, DefaultApiVersionFilter>();
+        services.AddSwaggerGen();
     }
 
     public static void AddEliteScopedServices(this IServiceCollection services) {
@@ -156,27 +137,15 @@ public static class ServiceExtensions
 
     public static void RegisterEliteConfigFiles(this WebApplicationBuilder builder)
     {
-        builder.Configuration.Sources.Add(new JsonConfigurationSource()
+        builder.Configuration.Sources.AddRange(new List<JsonConfigurationSource>
         {
-            Path = "Config/Weight.json",
+            new() { Path = "Configuration/Weight.json" },
+            new() { Path = "Configuration/Cooldown.json" },
+            new() { Path = "Configuration/Leaderboards.json" },
+            new() { Path = "Configuration/Farming.json" },
+            new() { Path = "Configuration/ChocolateFactory.json" }
         });
-        builder.Configuration.Sources.Add(new JsonConfigurationSource()
-        {
-            Path = "Config/Cooldown.json",
-        });
-        builder.Configuration.Sources.Add(new JsonConfigurationSource()
-        {
-            Path = "Config/Leaderboards.json",
-        });
-        builder.Configuration.Sources.Add(new JsonConfigurationSource()
-        {
-            Path = "Config/Farming.json",
-        });
-        builder.Configuration.Sources.Add(new JsonConfigurationSource()
-        {
-            Path = "Config/ChocolateFactory.json",
-        });
-        
+
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
         builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));

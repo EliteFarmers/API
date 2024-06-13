@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;

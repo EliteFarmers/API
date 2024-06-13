@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing.Messaging;
 using EliteAPI.Services.Interfaces;
 using Microsoft.Extensions.Options;

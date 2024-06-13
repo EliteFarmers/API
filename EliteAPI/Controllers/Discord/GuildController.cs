@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -10,8 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Discord; 
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]/{guildId}")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]/{guildId}")]
 public class GuildController(
     DataContext context, 
     IMapper mapper, 

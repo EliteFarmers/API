@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
@@ -14,9 +15,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Discord; 
 
-[Route("[controller]")]
-[ApiController]
 [Authorize]
+[ApiController, ApiVersion(1.0)]
+[Route("[controller]")]
+[Route("/v{version:apiVersion}/[controller]")]
 public class UserController(
     DataContext context,
     IMapper mapper,

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Bot; 
 
-[Route("[controller]")]
 [ServiceFilter(typeof(DiscordBotOnlyFilter))]
-[ApiController]
+[ApiController, ApiVersion(1.0)]
+[Route("[controller]")]
+[Route("/v{version:apiVersion}/[controller]")]
 public class BotController(
     DataContext context, 
     IMapper mapper,

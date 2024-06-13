@@ -1,4 +1,4 @@
-﻿using EliteAPI.Config.Settings;
+﻿using EliteAPI.Configuration.Settings;
 using EliteAPI.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;

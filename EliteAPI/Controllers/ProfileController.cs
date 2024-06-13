@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
-[ApiController]
+[ApiController, ApiVersion(1.0)]
 public class ProfileController(
     IProfileService profileService, 
     IMapper mapper, 

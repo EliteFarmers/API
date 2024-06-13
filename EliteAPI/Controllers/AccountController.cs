@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -9,12 +10,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace EliteAPI.Controllers;
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]")]
 public partial class AccountController(
     DataContext context, 
     IProfileService profileService, 

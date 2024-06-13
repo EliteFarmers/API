@@ -1,4 +1,4 @@
-﻿using EliteAPI.Config.Settings;
+﻿using EliteAPI.Configuration.Settings;
 using Microsoft.Extensions.Options;
 using Quartz;
 

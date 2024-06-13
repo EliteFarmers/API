@@ -1,4 +1,4 @@
-﻿using EliteAPI.Services;
+﻿using EliteAPI.Utilities;
 
 namespace EliteAPI.Authentication; 
 

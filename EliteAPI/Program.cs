@@ -1,9 +1,9 @@
 using System.Net;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
-using EliteAPI.Services;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;

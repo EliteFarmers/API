@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using EliteAPI.Background.Profiles;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;

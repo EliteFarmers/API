@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Inventories;

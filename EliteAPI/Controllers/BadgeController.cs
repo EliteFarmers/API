@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Accounts;
@@ -9,21 +10,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers;
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]")]
 public class BadgeController(
     DataContext context,
     IBadgeService badgeService,
     IMapper mapper)
-: ControllerBase
+    : ControllerBase
 {
     
     /// <summary>
     /// Get all badges
     /// </summary>
     /// <returns></returns>
-    [Route("/[controller]s")]
     [HttpGet]
+    [Route("/[controller]s")]
+    [Route("/v{version:apiVersion}/[controller]s")]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<List<BadgeDto>> GetBadges() {

@@ -1,4 +1,4 @@
-﻿using EliteAPI.Config.Settings;
+﻿using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
 

@@ -1,4 +1,5 @@
-﻿using EliteAPI.Data;
+﻿using Asp.Versioning;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Utilities;
@@ -10,8 +11,10 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Controllers; 
 
-[ApiController]
 [Authorize(ApiUserPolicies.Moderator)]
+[ApiController, ApiVersion(1.0)]
+[Route("[controller]")]
+[Route("/v{version:apiVersion}/[controller]")]
 public class AdminController(
     DataContext context,
     IConnectionMultiplexer redis,
@@ -23,7 +26,9 @@ public class AdminController(
     /// Get admin list
     /// </summary>
     /// <response code="200">List of admins</response>
-    [HttpGet("Admins")]
+    [HttpGet]
+    [Route("[controller]s")]
+    [Route("/v{version:apiVersion}/[controller]s")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -59,7 +64,7 @@ public class AdminController(
     /// <returns></returns>
     [Obsolete("Use AddRoleToUser instead.")]
     [Authorize(ApiUserPolicies.Admin)]
-    [HttpPost("[controller]/Permissions/{memberId:long}/{permission:int}")]
+    [HttpPost("permissions/{memberId:long}/{permission:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -85,7 +90,6 @@ public class AdminController(
         return Ok();
     }
     
-    // DELETE <AdminController>/Permissions/12793764936498429/17
     /// <summary>
     /// Remove member permissions
     /// </summary>
@@ -94,7 +98,7 @@ public class AdminController(
     /// <returns></returns>
     [Obsolete("Use RemoveRoleFromUser instead.")]
     [Authorize(ApiUserPolicies.Admin)]
-    [HttpDelete("[controller]/Permissions/{memberId:long}/{permission:int}")]
+    [HttpDelete("permissions/{memberId:long}/{permission:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -125,7 +129,9 @@ public class AdminController(
     /// Get list of roles
     /// </summary>
     /// <returns></returns>
-    [HttpGet("roles")]
+    [HttpGet]
+    [Route("/roles")]
+    [Route("/v{version:apiVersion}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -143,7 +149,7 @@ public class AdminController(
     /// <param name="role">Role name</param>
     /// <returns></returns>
     [Authorize(ApiUserPolicies.Admin)]
-    [HttpPost("[controller]/User/{userId}/Roles/{role}")]
+    [HttpPost("user/{userId}/Roles/{role}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -180,7 +186,7 @@ public class AdminController(
     /// <param name="role">Role name</param>
     /// <returns></returns>
     [Authorize(ApiUserPolicies.Admin)]
-    [HttpDelete("[controller]/User/{userId}/Roles/{role}")]
+    [HttpDelete("user/{userId}/Roles/{role}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -216,7 +222,7 @@ public class AdminController(
     /// <returns></returns>
     // DELETE <AdminController>/UpcomingContests
     [Authorize(ApiUserPolicies.Admin)]
-    [HttpDelete("[controller]/UpcomingContests")]
+    [HttpDelete("upcomingcontests")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]

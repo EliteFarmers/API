@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Contests; 
 
-[Route("/Contests/{playerUuid:length(32)}")]
-[ApiController]
+[ApiController, ApiVersion(1.0)]
+[Route("/contests/{playerUuid:length(32)}")]
+[Route("/v{version:apiVersion}/contests/{playerUuid:length(32)}")]
 public class PlayerContestsController(
     DataContext dataContext, 
     IMapper mapper) 

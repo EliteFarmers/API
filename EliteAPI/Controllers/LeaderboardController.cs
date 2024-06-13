@@ -1,5 +1,6 @@
+using Asp.Versioning;
 using AutoMapper;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
@@ -14,8 +15,9 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Controllers;
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]")]
 public class LeaderboardController(
     DataContext dataContext,
     ILeaderboardService leaderboardService,
@@ -32,7 +34,9 @@ public class LeaderboardController(
     /// Get a list of leaderboards
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/[controller]s")]
+    [HttpGet]
+    [Route("[controller]s")]
+    [Route("/v{version:apiVersion}/[controller]s")]
     [ResponseCache(Duration = 60 * 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public ActionResult<ConfigLeaderboardSettings> GetLeaderboardSettings() {

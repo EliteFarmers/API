@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using AutoMapper;
 using EliteAPI.Authentication;
-using EliteAPI.Config.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;

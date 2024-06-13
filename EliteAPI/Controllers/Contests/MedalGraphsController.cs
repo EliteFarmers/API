@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Asp.Versioning;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
@@ -9,8 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Controllers.Contests; 
 
-[Route("/Graph/Medals")]
-[ApiController]
+[ApiController, ApiVersion(1.0)]
+[Route("/graph/medals")]
+[Route("/v{version:apiVersion}/graph/medals")]
 public class MedalGraphsController(DataContext context) : ControllerBase {
     private static readonly JsonSerializerOptions Options = new() {
         PropertyNameCaseInsensitive = true

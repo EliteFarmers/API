@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Text.Json;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -15,8 +16,9 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Events; 
 
+[ApiController, ApiVersion(1.0)]
 [Route("[controller]/{eventId}")]
-[ApiController]
+[Route("/v{version:apiVersion}/[controller]/{eventId}")]
 public class EventController(
     DataContext context,
     IMapper mapper,
