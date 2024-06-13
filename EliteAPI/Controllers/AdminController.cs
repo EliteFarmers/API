@@ -20,9 +20,9 @@ public class AdminController(
 {
     
     /// <summary>
-    /// Get list of members with roles
+    /// Get admin list
     /// </summary>
-    /// <returns></returns>
+    /// <response code="200">List of admins</response>
     [HttpGet("Admins")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -51,7 +51,6 @@ public class AdminController(
         return await users.AsNoTracking().AsSplitQuery().ToListAsync();
     }
     
-    // POST <AdminController>/Permissions/12793764936498429/17
     /// <summary>
     /// Add member permissions
     /// </summary>
