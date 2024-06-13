@@ -3,7 +3,7 @@ using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Services.MemberService;
+using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;

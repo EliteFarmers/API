@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Services.Background; 
+﻿using EliteAPI.Services.Interfaces;
+
+namespace EliteAPI.Services.Background; 
 
 public class BackgroundQueueWorker(
     IBackgroundTaskQueue queue, 

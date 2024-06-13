@@ -1,5 +1,4 @@
-﻿using EliteAPI.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace EliteAPI.Authentication;

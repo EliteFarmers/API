@@ -1,13 +1,9 @@
-﻿using EliteAPI.Background.Discord;
-using EliteAPI.Config.Settings;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace EliteAPI.Background.Profiles;
 
-public class HypixelJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns) : IConfigureOptions<QuartzOptions> {
-	private readonly ConfigCooldownSettings _cooldowns = cooldowns.Value;
-
+public class HypixelJobsConfiguration : IConfigureOptions<QuartzOptions> {
 	public void Configure(QuartzOptions options)
 	{
 		// Process Contests

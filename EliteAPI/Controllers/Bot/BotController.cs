@@ -5,11 +5,7 @@ using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
-using EliteAPI.Models.Entities.Events;
-using EliteAPI.Services.AccountService;
-using EliteAPI.Services.BadgeService;
-using EliteAPI.Services.DiscordService;
-using EliteAPI.Services.GuildService;
+using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

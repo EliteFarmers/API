@@ -1,6 +1,5 @@
 ﻿using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Services.DiscordService;
-using EliteAPI.Services.MessageService;
+using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Quartz;
 

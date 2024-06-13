@@ -2,7 +2,6 @@
 using EliteAPI.Background.Profiles;
 using EliteAPI.Config.Settings;
 using EliteAPI.Data;
-using EliteAPI.Services.MojangService;
 using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
@@ -10,9 +9,7 @@ using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Parsers.Events;
-using EliteAPI.Services.Background;
-using EliteAPI.Services.EventService;
-using EliteAPI.Services.LeaderboardService;
+using EliteAPI.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Quartz;
 

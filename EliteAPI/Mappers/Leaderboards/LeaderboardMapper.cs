@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using EliteAPI.Config.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Services.LeaderboardService;
+using EliteAPI.Services;
 
 namespace EliteAPI.Mappers.Leaderboards; 
 

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using EliteAPI.Data;
+﻿using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Utilities;

@@ -1,11 +1,7 @@
 ﻿using System.Collections.Frozen;
-using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Services.CacheService;
-using EliteAPI.Utilities;
-using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Parsers.Profiles;
 

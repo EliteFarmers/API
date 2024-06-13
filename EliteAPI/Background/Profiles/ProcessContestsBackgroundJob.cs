@@ -2,8 +2,7 @@
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Profiles;
-using EliteAPI.Services.LeaderboardService;
-using EliteAPI.Services.MessageService;
+using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Quartz;

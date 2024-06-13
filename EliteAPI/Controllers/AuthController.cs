@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Services.AuthService;
+using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

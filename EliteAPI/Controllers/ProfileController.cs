@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using EliteAPI.Services.ProfileService;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860

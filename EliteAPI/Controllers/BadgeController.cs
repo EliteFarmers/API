@@ -2,7 +2,7 @@
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Services.BadgeService;
+using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
