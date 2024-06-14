@@ -9,15 +9,7 @@
     <ItemGroup>
       <PackageReference Include="Refit" Version="7.0.0" />
       <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
+      <PackageReference Include="System.Threading.RateLimiting" Version="8.0.0" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.1\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-      </Reference>
-      <Reference Include="System.Threading.RateLimiting">
-        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.1\System.Threading.RateLimiting.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
+    
 </Project>
