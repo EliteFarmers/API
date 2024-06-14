@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
-using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
@@ -69,7 +69,7 @@ public static class PestParser {
         return totalDrops;
     }
     
-    public static void ParsePests(this ProfileMember member, RawMemberData memberData) {
+    public static void ParsePests(this ProfileMember member, ProfileMemberResponse memberData) {
         if (memberData.Bestiary is null) return;
         
         memberData.Bestiary.TryGetPropertyValue("kills", out var kills);

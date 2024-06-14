@@ -1,11 +1,11 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
-using EliteAPI.Models.DTOs.Outgoing;
+﻿using EliteAPI.Models.DTOs.Outgoing;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Inventories; 
 
 public static class InventoryParser {
     
-    public static void ParseInventory(this Models.Entities.Hypixel.Inventories inventories, RawMemberData memberData) {
+    public static void ParseInventory(this Models.Entities.Hypixel.Inventories inventories, ProfileMemberResponse memberData) {
         inventories.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var incoming = memberData.Inventories;
         

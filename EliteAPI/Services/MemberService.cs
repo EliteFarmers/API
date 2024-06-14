@@ -12,32 +12,26 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Services; 
 
-public class MemberService : IMemberService {
+public class MemberService(
+    DataContext context,
+    IServiceScopeFactory provider,
+    IMojangService mojangService,
+    IOptions<ConfigCooldownSettings> coolDowns,
+    IConnectionMultiplexer redis)
+    : IMemberService {
     
-    private readonly DataContext _context;
-    private readonly IMojangService _mojangService;
-    private readonly ConfigCooldownSettings _coolDowns;
-    private readonly IServiceScopeFactory _provider;
-    private readonly IConnectionMultiplexer _redis;
+    private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
-    public MemberService(DataContext context, IServiceScopeFactory provider, IMojangService mojangService, IOptions<ConfigCooldownSettings> coolDowns, IConnectionMultiplexer redis) {
-        _context = context;
-        _provider = provider;
-        _mojangService = mojangService;
-        _coolDowns = coolDowns.Value;
-        _redis = redis;
-    }
-    
     public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {
         await UpdatePlayerIfNeeded(playerUuid);
 
-        return _context.ProfileMembers.Where(p => p.PlayerUuid == playerUuid);
+        return context.ProfileMembers.Where(p => p.PlayerUuid == playerUuid);
     }
     
     public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid) {
         await UpdatePlayerIfNeeded(playerUuid);
 
-        return _context.ProfileMembers
+        return context.ProfileMembers
             .AsNoTracking()
             .Where(p => p.PlayerUuid == playerUuid)
             .Include(p => p.MinecraftAccount).AsNoTracking()
@@ -53,7 +47,7 @@ public class MemberService : IMemberService {
     }
 
     public async Task<IQueryable<ProfileMember>?> ProfileMemberIgnQuery(string playerName) {
-        var uuid = await _mojangService.GetUuidFromUsername(playerName);
+        var uuid = await mojangService.GetUuidFromUsername(playerName);
         
         if (uuid is null) return null;
         
@@ -61,7 +55,7 @@ public class MemberService : IMemberService {
     }
 
     public async Task UpdatePlayerIfNeeded(string playerUuid) {
-        var account = await _mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
+        var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
         if (account is null) return;
         
         var lastUpdated = new LastUpdatedDto {
@@ -74,7 +68,7 @@ public class MemberService : IMemberService {
     }  
     
     public async Task UpdateProfileMemberIfNeeded(Guid memberId) {
-        var lastUpdated = await _context.ProfileMembers
+        var lastUpdated = await context.ProfileMembers
             .AsNoTracking()
             .Where(a => a.Id == memberId)
             .Include(a => a.MinecraftAccount)
@@ -88,7 +82,7 @@ public class MemberService : IMemberService {
         
         if (lastUpdated?.PlayerUuid is null) return;
         
-        var account = await _mojangService.GetMinecraftAccountByUuid(lastUpdated.PlayerUuid);
+        var account = await mojangService.GetMinecraftAccountByUuid(lastUpdated.PlayerUuid);
         if (account is null) return;
         
         await RefreshNeededData(lastUpdated, account);
@@ -96,7 +90,7 @@ public class MemberService : IMemberService {
     
     private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account) {
         var playerUuid = lastUpdated.PlayerUuid;
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         
         var updatePlayer = false;
         var updateProfiles = false;
@@ -125,7 +119,7 @@ public class MemberService : IMemberService {
     }
 
     public async Task RefreshProfiles(string playerUuid) {
-        using var scope = _provider.CreateScope();
+        using var scope = provider.CreateScope();
         var parser = scope.ServiceProvider.GetRequiredService<ProfileParser>();
         var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
         
@@ -146,7 +140,7 @@ public class MemberService : IMemberService {
     }
     
     public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {
-        using var scope = _provider.CreateScope();
+        using var scope = provider.CreateScope();
         await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
         
         var mojangService = scope.ServiceProvider.GetRequiredService<IMojangService>();

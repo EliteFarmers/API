@@ -1,6 +1,6 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
-using EliteAPI.Models.Entities.Hypixel;
+﻿using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 

@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Nodes;
+using AutoMapper;
 using EliteAPI.Background.Profiles;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
-using EliteAPI.Models.DTOs.Incoming;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
@@ -10,21 +10,22 @@ using EliteAPI.Parsers.Farming;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Interfaces;
+using HypixelAPI.DTOs;
 using Microsoft.Extensions.Options;
 using Quartz;
+using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
 namespace EliteAPI.Parsers.Skyblock;
 
 public class ProfileParser(
     DataContext context, 
-    IMojangService mojangService, 
-    IBackgroundTaskQueue taskQueue,
+    IMojangService mojangService,
     IOptions<ConfigLeaderboardSettings> lbOptions,
     IOptions<ChocolateFactorySettings> cfOptions,
     ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService,
     ISchedulerFactory schedulerFactory,
-    IEventService eventService) 
+    IMapper mapper) 
 {
     private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
     private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
@@ -45,7 +46,7 @@ public class ProfileParser(
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
     
-    public async Task TransformProfilesResponse(RawProfilesResponse data, string? playerUuid) {
+    public async Task TransformProfilesResponse(ProfilesResponse data, string? playerUuid) {
         if (!data.Success) {
             logger.LogWarning("Received unsuccessful profiles response from {PlayerUuid}", playerUuid);
             return;
@@ -84,7 +85,7 @@ public class ProfileParser(
         await context.SaveChangesAsync();
     }
 
-    private async Task TransformSingleProfile(RawProfileData profile, string? playerUuid)
+    private async Task TransformSingleProfile(ProfileResponse profile, string? playerUuid)
     {
         var members = profile.Members;
         if (members.Count == 0) return;
@@ -97,7 +98,7 @@ public class ProfileParser(
             ProfileId = profileId,
             ProfileName = profile.CuteName,
             GameMode = profile.GameMode,
-            Members = new List<ProfileMember>(),
+            Members = [],
             IsDeleted = false
         };
 
@@ -141,7 +142,7 @@ public class ProfileParser(
         }
     }
 
-    private async Task TransformMemberResponse(string playerId, RawMemberData memberData, Profile profile, bool selected, string requesterUuid)
+    private async Task TransformMemberResponse(string playerId, ProfileMemberResponse memberData, Profile profile, bool selected, string requesterUuid)
     {
         var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
         
@@ -215,7 +216,7 @@ public class ProfileParser(
         }
     }
 
-    private async Task UpdateProfileMember(Profile profile, ProfileMember member, RawMemberData incomingData) {
+    private async Task UpdateProfileMember(Profile profile, ProfileMember member, ProfileMemberResponse incomingData) {
         var previousApi = new ApiAccess {
             Collections = member.Api.Collections,
             Inventories = member.Api.Inventories,
@@ -227,12 +228,12 @@ public class ProfileParser(
         
         member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
         member.Purse = incomingData.Currencies?.CoinPurse ?? 0;
-        member.Pets = incomingData.PetsData?.Pets?.ToList() ?? new List<Pet>();
+        member.Pets = mapper.Map<List<Pet>>(incomingData.PetsData?.Pets?.ToList() ?? []);
         
         member.Unparsed = new UnparsedApiData
         {
             Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
-            TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? new List<TempStatBuff>(),
+            TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
             AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
             Bestiary = incomingData.Bestiary ?? new JsonObject()
         };
@@ -258,23 +259,13 @@ public class ProfileParser(
 
         // Load progress for all active events (if any)
         if (member.EventEntries is { Count: > 0 }) {
-            foreach (var entry in member.EventEntries) {
-                if (!entry.IsEventRunning()) continue;
-                
+            foreach (var entry in member.EventEntries.Where(entry => entry.IsEventRunning())) {
                 var real = await context.EventMembers.FirstOrDefaultAsync(e => e.Id == entry.Id);
                 var @event = await context.Events.FindAsync(entry.EventId);
                 
                 if (real is null || @event is null) continue;
                 
                 real.LoadProgress(member, @event);
-                //
-                // m.Data = new EventMemberWeightData {
-                //     InitialCollection = m.Data.InitialCollection,
-                //     IncreasedCollection = m.Data.IncreasedCollection,
-                //     CountedCollection = m.Data.CountedCollection,
-                //     ToolStates = m.Data.ToolStates,
-                //     Tools = m.Data.Tools
-                // };
             }
         }
 

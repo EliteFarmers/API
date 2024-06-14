@@ -1,11 +1,11 @@
 ﻿using EliteAPI.Configuration.Settings;
-using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 
 public static class ChocolateFactoryParser {
-	public static void ParseChocolateFactory(this ProfileMember member, RawMemberEasterEvent incoming, ChocolateFactorySettings settings) {
+	public static void ParseChocolateFactory(this ProfileMember member, EasterEventDataResponse incoming, ChocolateFactorySettings settings) {
 		member.ChocolateFactory ??= new ChocolateFactory();
 		
 		var factory = member.ChocolateFactory;
@@ -33,7 +33,7 @@ public static class ChocolateFactoryParser {
 		}
 	}
 
-	private static (int uniques, int total) CountRabbits(RawMemberEasterEvent incoming, List<string> rabbits) {
+	private static (int uniques, int total) CountRabbits(EasterEventDataResponse incoming, List<string> rabbits) {
 		var uniques = 0;
 		var total = 0;
 		

@@ -1,12 +1,12 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
-using EliteAPI.Models.Entities.Hypixel;
+﻿using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 
 public static class SkillParser
 {
-    public static void ParseSkills(this ProfileMember member, RawMemberData memberData)
+    public static void ParseSkills(this ProfileMember member, ProfileMemberResponse memberData)
     {
         var skills = member.Skills;
         var incoming = memberData.PlayerData?.Experience;

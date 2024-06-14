@@ -1,15 +1,15 @@
 ﻿using System.Text.Json;
 using EliteAPI.Configuration.Settings;
-using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Inventories;
 using EliteAPI.Utilities;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
 public static class FarmingWeightParser
 {
-    public static async Task ParseFarmingWeight(this ProfileMember member, Dictionary<string, int> craftedMinions, RawMemberData memberData)
+    public static async Task ParseFarmingWeight(this ProfileMember member, Dictionary<string, int> craftedMinions, ProfileMemberResponse memberData)
     {
         member.Farming.ProfileMemberId = member.Id;
         member.Farming.ProfileMember = member;

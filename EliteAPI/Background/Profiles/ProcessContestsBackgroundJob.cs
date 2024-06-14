@@ -1,9 +1,9 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 

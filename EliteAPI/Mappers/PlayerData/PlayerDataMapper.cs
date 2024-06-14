@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
-using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
+using HypixelAPI.DTOs;
 using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.PlayerData;
@@ -12,7 +12,7 @@ public class PlayerDataMapper : Profile
         CreateMap<Models.Entities.Hypixel.PlayerData, Models.Entities.Hypixel.PlayerData>()
             .ForMember(x => x.Id, opt => opt.Ignore());
         
-        CreateMap<RawPlayerData, Models.Entities.Hypixel.PlayerData>()
+        CreateMap<PlayerDataResponse, Models.Entities.Hypixel.PlayerData>()
             .ForMember(p => p.Karma, opt => opt.MapFrom(x => Convert.ToInt64(x.Karma, CultureInfo.InvariantCulture)))
             .ForMember(p => p.SocialMedia, opt => opt.MapFrom(
                 x => x.SocialMedia != null && x.SocialMedia.Links != null

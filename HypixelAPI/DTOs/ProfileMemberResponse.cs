@@ -10,9 +10,9 @@ public class ProfileMemberResponse
 	public RawMemberPlayerData? PlayerData { get; set; }
     
 	[JsonPropertyName("pets_data")]
-	public RawMemberPetsData? PetsData { get; set; }
+	public MemberPetsResponse? PetsData { get; set; }
     
-	public RawMemberProfileData? Profile { get; set; }
+	public MemberProfileDataResponse? Profile { get; set; }
     
 	public RawMemberEvents? Events { get; set; }
     
@@ -27,8 +27,8 @@ public class ProfileMemberResponse
     
 	public RawLeveling? Leveling { get; set; }
     
-	public RawMemberCurrencies? Currencies { get; set; }
+	public MemberCurrenciesResponse? Currencies { get; set; }
     
 	[JsonPropertyName("inventory")]
-	public RawMemberInventories? Inventories { get; set; }
+	public MemberInventoriesResponse? Inventories { get; set; }
 }

@@ -1,12 +1,12 @@
 ﻿using EliteAPI.Configuration.Settings;
-using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
+using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Inventories; 
 
 public static class FarmingInventoryParser {
-    public static async Task<FarmingInventory> ExtractFarmingItems(this RawMemberData memberData, ProfileMember member) {
+    public static async Task<FarmingInventory> ExtractFarmingItems(this ProfileMemberResponse memberData, ProfileMember member) {
         var farming = new FarmingInventory();
         var incoming = memberData.Inventories;
 

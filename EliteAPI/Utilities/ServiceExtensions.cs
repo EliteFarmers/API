@@ -32,7 +32,6 @@ public static class ServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         // Add services to the container.
-        services.AddSingleton<HypixelRequestLimiter>();
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -117,6 +116,7 @@ public static class ServiceExtensions
         services.AddScoped<IBadgeService, BadgeService>();
         services.AddScoped<IEventService, EventService>();
 
+        services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordBotOnlyFilter>();
     }

@@ -4,6 +4,7 @@ using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Utilities;
+using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
 
+builder.Services.AddHypixelApi(DotNetEnv.Env.GetString("HYPIXEL_API_KEY"), "EliteAPI");
+
 builder.Services.AddRouting(options => {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
@@ -35,7 +38,6 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
 });
 
-builder.Services.AddScoped<LocalOnlyMiddleware>();
 builder.Services.AddOpenTelemetry()
     .WithMetrics(x =>
     {

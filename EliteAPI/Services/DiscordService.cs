@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
@@ -12,7 +11,6 @@ using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 
 namespace EliteAPI.Services;
 
@@ -20,11 +18,8 @@ public class DiscordService(
     IHttpClientFactory httpClientFactory,
     DataContext context,
     ILogger<DiscordService> logger,
-    IConnectionMultiplexer redis,
     UserManager<ApiUser> userManager,
-    IOptions<ConfigCooldownSettings> coolDowns,
-    IMapper mapper,
-    IBackgroundTaskQueue taskQueue)
+    IOptions<ConfigCooldownSettings> coolDowns)
     : IDiscordService 
 {
     

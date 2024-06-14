@@ -43,4 +43,8 @@
 		<Folder Include="Data\Prometheus\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\HypixelAPI\HypixelAPI.csproj" />
+	</ItemGroup>
+
 </Project>

@@ -1,10 +1,10 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
+﻿using HypixelAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.Interfaces;
 
 public interface IHypixelService
 {
-    public Task<ActionResult<RawProfilesResponse>> FetchProfiles(string uuid);
-    public Task<ActionResult<RawPlayerResponse>> FetchPlayer(string uuid);
+    public Task<ActionResult<ProfilesResponse>> FetchProfiles(string uuid);
+    public Task<ActionResult<PlayerResponse>> FetchPlayer(string uuid);
 }
