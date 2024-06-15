@@ -64,6 +64,16 @@ public class EventDetailsDto {
     public bool Active { get; set; }
     
     /// <summary>
+    /// Max amount of teams allowed in the event, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeams { get; set; }
+    
+    /// <summary>
+    /// Max amount of members allowed in a team, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeamMembers { get; set; }
+    
+    /// <summary>
     /// Discord role id required to participate in the event
     /// </summary>
     public string? RequiredRole { get; set; }
@@ -79,6 +89,24 @@ public class EventDetailsDto {
     /// Data specific to the event
     /// </summary>
     public object? Data { get; set; }
+    
+    public List<EventTeamDto> Teams { get; set; }
+}
+
+public class EventTeamDto {
+    public string? EventId { get; set; }
+    public string? Name { get; set; }
+    public string? Color { get; set; }
+    public string? Score { get; set; }
+    public int OwnerId { get; set; }
+}
+
+public class EventTeamWithMembersDto : EventTeamDto {
+    public List<EventMemberDto> Members { get; set; }
+}
+
+public class EventTeamOwnerDto : EventTeamWithMembersDto {
+    public string? JoinCode { get; set; }
 }
 
 public class EventMemberDto {
