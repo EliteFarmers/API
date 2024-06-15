@@ -461,7 +461,8 @@ public class DiscordService(
     private async Task UpdateDiscordChannel(Guild guild, DiscordChannel channel, bool save = true) {
         if (!ulong.TryParse(channel.Id, out var channelId)) return;
         
-        var existingChannel = guild.Channels.FirstOrDefault(c => c.Id == channelId);
+        var existingChannel = await context.GuildChannels
+            .FirstOrDefaultAsync(c => c.Id == channelId && c.GuildId == guild.Id);
         
         if (existingChannel is null) {
             var newChannel = new GuildChannel {
