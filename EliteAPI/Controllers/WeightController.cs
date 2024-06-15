@@ -132,7 +132,7 @@ public class WeightController(
     /// <returns></returns>
     [Obsolete("Use /weights/all instead")]
     [HttpGet]
-    [Route("[controller]s")]
+    [Route("/[controller]s")]
     [Route("/v{version:apiVersion}/[controller]s")]
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
@@ -158,7 +158,7 @@ public class WeightController(
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    [Route("[controller]s/all")]
+    [Route("/[controller]s/all")]
     [Route("/v{version:apiVersion}/[controller]s/all")]
     [DisableRateLimiting]
     [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
