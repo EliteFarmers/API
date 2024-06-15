@@ -12,6 +12,15 @@ public static class EventProgressParser {
         return member.StartTime < currentTime && member.EndTime > currentTime;
     }
     
+    /// <summary>
+    /// Determines if the event is a custom team event
+    /// </summary>
+    /// <param name="event"></param>
+    /// <returns></returns>
+    public static bool IsCustomTeamEvent(this Event @event) {
+        return @event.MaxTeamMembers != 0;
+    }
+    
     public static void LoadProgress(this EventMember eventMember, ProfileMember member, Event @event) {
         var currentTime = DateTimeOffset.UtcNow;
 

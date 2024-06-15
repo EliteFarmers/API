@@ -9,6 +9,7 @@ public interface IEventService {
 	public Task<List<EventDetailsDto>> GetUpcomingEvents();
 	public Task<ActionResult<Event>> CreateEvent(CreateEventDto eventDto, ulong guildId);
 	public Task<ActionResult<EventMember>> CreateEventMember(Event @event, CreateEventMemberDto eventMemberDto);
+	public Task<EventMember?> GetEventMemberAsync(string playerUuidOrIgn, ulong eventId);
 	
 	/// <summary>
 	/// Initializes the event member with default values if needed

@@ -11,7 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services;
 
-public class EventService(DataContext context, IMapper mapper) : IEventService 
+public class EventService(
+	DataContext context, 
+	IMapper mapper,
+	IMojangService mojangService) 
+	: IEventService 
 {
 	public async Task<List<EventDetailsDto>> GetUpcomingEvents() {
 		var events = await context.Events
@@ -92,6 +96,20 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 				return await CreateMedalsEventMember(medalEvent, eventMemberDto);
 		}
 		return new BadRequestObjectResult("Invalid event type");
+	}
+
+	public async Task<EventMember?> GetEventMemberAsync(string playerUuidOrIgn, ulong eventId) {
+		var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuidOrIgn);
+		
+		var userId = account?.AccountId;
+		if (userId is null) {
+			return null;
+		}
+
+		var member = await context.EventMembers.AsNoTracking()
+			.FirstOrDefaultAsync(m => m.UserId == userId && m.EventId == eventId);
+
+		return member;
 	}
 
 	public async Task InitializeEventMember(EventMember eventMember, ProfileMember member) {

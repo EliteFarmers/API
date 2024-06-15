@@ -115,6 +115,7 @@ public static class ServiceExtensions
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.AddScoped<IBadgeService, BadgeService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventTeamService, EventTeamService>();
 
         services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();
