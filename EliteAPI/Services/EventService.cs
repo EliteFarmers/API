@@ -98,16 +98,11 @@ public class EventService(
 		return new BadRequestObjectResult("Invalid event type");
 	}
 
-	public async Task<EventMember?> GetEventMemberAsync(string playerUuidOrIgn, ulong eventId) {
-		var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuidOrIgn);
+	public async Task<EventMember?> GetEventMemberAsync(string userId, ulong eventId) {
+		if (!ulong.TryParse(userId, out var userIdLong)) return null;
 		
-		var userId = account?.AccountId;
-		if (userId is null) {
-			return null;
-		}
-
 		var member = await context.EventMembers.AsNoTracking()
-			.FirstOrDefaultAsync(m => m.UserId == userId && m.EventId == eventId);
+			.FirstOrDefaultAsync(m => m.UserId == userIdLong && m.EventId == eventId);
 
 		return member;
 	}

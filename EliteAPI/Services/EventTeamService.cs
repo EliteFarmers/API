@@ -13,12 +13,12 @@ public class EventTeamService(
 	DataContext context) 
 	: IEventTeamService 
 {
-	public async Task<ActionResult<EventTeam>> CreateTeamAsync(CreateEventTeamDto team) {
+	public async Task<ActionResult<EventTeam>> CreateTeamAsync(CreateEventTeamDto team, string userId) {
 		if (!ulong.TryParse(team.EventId, out var eventId)) {
 			return new BadRequestObjectResult("Invalid event id");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(team.Owner, eventId);
+		var member = await eventService.GetEventMemberAsync(userId, eventId);
 		if (member is null) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}
@@ -32,7 +32,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("This event does not support custom teams");
 		}
 
-		var existing = await GetTeamAsync(team.Owner, eventId);
+		var existing = await GetTeamAsync(member.Id, eventId);
 		if (existing is not null) {
 			return new BadRequestObjectResult("You already have a team in this event");
 		}
@@ -81,10 +81,14 @@ public class EventTeamService(
 			.ToListAsync();
 	}
 
-	public async Task<ActionResult> JoinTeamAsync(int teamId, string playerUuidOrIgn) {
+	public async Task<ActionResult> JoinTeamAsync(int teamId, string userId, string code) {
 		var team = await GetTeamAsync(teamId);
 		if (team is null) {
 			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		if (team.JoinCode != code) {
+			return new BadRequestObjectResult("Invalid join code");
 		}
 		
 		if (team.Members.Count >= team.Event.MaxTeamMembers && team.Event.MaxTeamMembers != -1) {
@@ -95,7 +99,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event join time has expired");
 		}
 
-		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
+		var member = await eventService.GetEventMemberAsync(userId, team.EventId);
 		if (member is null) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}
@@ -112,7 +116,7 @@ public class EventTeamService(
 		return new OkResult();
 	}
 
-	public async Task<ActionResult> LeaveTeamAsync(int teamId, string playerUuidOrIgn) {
+	public async Task<ActionResult> LeaveTeamAsync(int teamId, string userId) {
 		var team = await GetTeamAsync(teamId);
 		if (team is null) {
 			return new BadRequestObjectResult("Invalid team id");
@@ -122,7 +126,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event join time has expired");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
+		var member = await eventService.GetEventMemberAsync(userId, team.EventId);
 		if (member?.TeamId != teamId) {
 			return new BadRequestObjectResult("You are not in this team");
 		}
@@ -171,19 +175,19 @@ public class EventTeamService(
 		return new OkResult();
 	}
 
-	public async Task<ActionResult> UpdateTeamAsync(UpdateEventTeamDto team) {
+	public async Task<ActionResult> UpdateTeamAsync(int id, UpdateEventTeamDto team, string userId) {
+		var existing = await GetTeamAsync(id);
+		if (existing is null) {
+			return new BadRequestObjectResult("Invalid team");
+		}
+		
 		if (!ulong.TryParse(team.EventId, out var eventId)) {
 			return new BadRequestObjectResult("Invalid event id");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(team.Owner, eventId);
-		if (member?.TeamId is null) {
+		var member = await eventService.GetEventMemberAsync(userId, eventId);
+		if (member?.TeamId is null || member.TeamId != id) {
 			return new BadRequestObjectResult("You are not a member of this event");
-		}
-		
-		var existing = await GetTeamAsync(member.TeamId.Value);
-		if (existing is null) {
-			return new BadRequestObjectResult("Invalid team");
 		}
 		
 		if (existing.OwnerId != member.Id) {

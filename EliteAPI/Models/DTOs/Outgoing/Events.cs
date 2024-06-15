@@ -115,10 +115,6 @@ public class CreateEventTeamDto {
     public string? Name { get; set; }
     [MaxLength(7)]
     public string? Color { get; set; }
-    /// <summary>
-    /// Player UUID or IGN of the team owner
-    /// </summary>
-    public required string Owner { get; set; }
 }
 
 public class UpdateEventTeamDto {
@@ -127,10 +123,6 @@ public class UpdateEventTeamDto {
     public string? Name { get; set; }
     [MaxLength(7)]
     public string? Color { get; set; }
-    /// <summary>
-    /// Player UUID or IGN of the team owner
-    /// </summary>
-    public required string Owner { get; set; }
 }
 
 public class EventMemberDto {
