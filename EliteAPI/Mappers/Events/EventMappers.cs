@@ -37,14 +37,12 @@ public class EventTeamMappers : Profile {
     public EventTeamMappers() {
         CreateMap<EventTeam, EventTeamDto>()
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.OwnerId, opt => opt.MapFrom(e => e.UserId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture)));
         
         CreateMap<EventTeam, EventTeamWithMembersDto>()
-            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
-            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture)))
-            .ForMember(e => e.Members, opt => opt.MapFrom(e => e.Members));
-        
-        CreateMap<EventTeam, EventTeamOwnerDto>()
+            .ForMember(e => e.JoinCode, opt => opt.Ignore())
+            .ForMember(e => e.OwnerId, opt => opt.MapFrom(e => e.UserId.ToString()))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Members, opt => opt.MapFrom(e => e.Members));

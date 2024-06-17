@@ -9,14 +9,15 @@ public class EventTeam {
 	
 	[MaxLength(32)]
 	public required string Name { get; set; }
-	[MaxLength(7)]
+	[MaxLength(6)]
 	public string? Color { get; set; }
 	[MaxLength(6)]
 	public string JoinCode { get; set; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6];
 
 	public List<EventMember> Members { get; set; } = [];
 	
-	public int OwnerId { get; set; }
+	[MaxLength(18)]
+	public required string UserId { get; set; }
 	
 	[ForeignKey("Event")]
 	public ulong EventId { get; set; }

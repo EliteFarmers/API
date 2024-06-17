@@ -18,8 +18,8 @@ public class MemberService(
     IMojangService mojangService,
     IOptions<ConfigCooldownSettings> coolDowns,
     IConnectionMultiplexer redis)
-    : IMemberService {
-    
+    : IMemberService 
+{
     private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
     public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {

@@ -94,23 +94,23 @@ public class EventDetailsDto {
 }
 
 public class EventTeamDto {
+    public int Id { get; set; }
     public string? EventId { get; set; }
     public string? Name { get; set; }
     public string? Color { get; set; }
     public string? Score { get; set; }
-    public int OwnerId { get; set; }
+    public string? OwnerId { get; set; }
 }
 
 public class EventTeamWithMembersDto : EventTeamDto {
-    public List<EventMemberDto> Members { get; set; }
-}
-
-public class EventTeamOwnerDto : EventTeamWithMembersDto {
+    public List<EventMemberDto> Members { get; set; } = [];
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? JoinCode { get; set; }
 }
 
+
 public class CreateEventTeamDto {
-    public string? EventId { get; set; }
     [MaxLength(32)]
     public string? Name { get; set; }
     [MaxLength(7)]
@@ -118,7 +118,6 @@ public class CreateEventTeamDto {
 }
 
 public class UpdateEventTeamDto {
-    public string? EventId { get; set; }
     [MaxLength(32)]
     public string? Name { get; set; }
     [MaxLength(7)]
@@ -136,12 +135,12 @@ public class EventMemberDto {
     
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
-
     public object? Data { get; set; }
     public string? LastUpdated { get; set; }
     
     public bool Disqualified { get; set; }
-    [MaxLength(128)]
+    
+    [MaxLength(128)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Notes { get; set; }
 }
 

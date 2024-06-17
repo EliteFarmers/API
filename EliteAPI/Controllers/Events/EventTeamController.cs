@@ -1,26 +1,32 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using Asp.Versioning;
 using AutoMapper;
+using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Events;
 
 [ApiController, ApiVersion(1.0)]
-[Route("[controller]/{eventId}")]
-[Route("/v{version:apiVersion}/[controller]/{eventId}")]
+[Route("event/{eventId}")]
+[Route("/v{version:apiVersion}/event/{eventId}")]
 public class EventTeamController(
 	DataContext context,
 	IMapper mapper,
-	UserManager<ApiUser> userManager,
+	IConnectionMultiplexer redis,
 	IEventTeamService teamService)
 	: ControllerBase 
 {
+	private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions {
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		PropertyNameCaseInsensitive = true
+	};
+	
 	/// <summary>
 	/// Get all teams in an event
 	/// </summary>
@@ -29,8 +35,24 @@ public class EventTeamController(
 	[HttpGet("teams")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<EventTeamWithMembersDto>>> GetEventTeams(ulong eventId) {
+		var db = redis.GetDatabase();
+		var key = $"event:{eventId}:teams";
+		var cached = await db.StringGetAsync(key);
+        
+		if (cached is { IsNullOrEmpty: false, HasValue: true }) {
+			var cachedTeams = JsonSerializer.Deserialize<List<EventTeamWithMembersDto>>(cached!, JsonOptions);
+			return Ok(cachedTeams);
+		}
+
+		var eliteEvent = await context.Events.FindAsync(eventId);
+		
 		var teams = await teamService.GetEventTeamsAsync(eventId);
-		return mapper.Map<List<EventTeamWithMembersDto>>(teams);
+		var mapped = mapper.Map<List<EventTeamWithMembersDto>>(teams);
+        
+		var expiry = eliteEvent?.Active is true ? TimeSpan.FromMinutes(2) : TimeSpan.FromMinutes(10);
+		await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), expiry);
+        
+		return Ok(mapped);
 	}
 	
 	/// <summary>
@@ -38,16 +60,27 @@ public class EventTeamController(
 	/// </summary>
 	/// <param name="eventId"></param>
 	/// <returns></returns>
+	[OptionalAuthorize]
 	[HttpGet("team/{teamId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<ActionResult<EventTeamWithMembersDto>> GetEventTeams(ulong eventId, int teamId) {
+	public async Task<ActionResult<EventTeamWithMembersDto>> GetEventTeam(ulong eventId, int teamId) {
+		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		
 		var team = await teamService.GetTeamAsync(teamId);
 		if (team is null) {
 			return NotFound("Team not found");
 		}
 		
-		return mapper.Map<EventTeamWithMembersDto>(team);
+		var mapped = mapper.Map<EventTeamWithMembersDto>(team);
+		
+		if (userId is not null && team.UserId == userId) {
+			// If the user is the owner of the team, return the join code
+			mapped.JoinCode = team.JoinCode;
+			return mapped;
+		}
+
+		return mapped;
 	}
 	
 	/// <summary>
@@ -66,14 +99,7 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 		
-		team.EventId = eventId.ToString();
-		
-		var result = await teamService.CreateTeamAsync(team, userId);
-
-		return result.Result switch {
-			BadRequestObjectResult => BadRequest(result.Value),
-			_ => Ok()
-		};
+		return await teamService.CreateTeamAsync(eventId, team, userId);
 	}
 
 	/// <summary>
@@ -92,9 +118,7 @@ public class EventTeamController(
 		if (userId is null) {
 			return Unauthorized();
 		}
-		
-		team.EventId = eventId.ToString();
-		
+
 		return await teamService.UpdateTeamAsync(teamId, team, userId);
 	}
 	
@@ -119,11 +143,11 @@ public class EventTeamController(
 			return BadRequest("Invalid team id");
 		}
 		
-		if (team.OwnerId.ToString() != userId) {
+		if (team.UserId != userId) {
 			return Unauthorized("You are not the team owner");
 		}
 		
-		return await teamService.DeleteTeamAsync(teamId);
+		return await teamService.DeleteTeamValidateAsync(teamId);
 	}
 
 	/// <summary>

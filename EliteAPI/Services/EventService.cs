@@ -13,8 +13,7 @@ namespace EliteAPI.Services;
 
 public class EventService(
 	DataContext context, 
-	IMapper mapper,
-	IMojangService mojangService) 
+	IMapper mapper) 
 	: IEventService 
 {
 	public async Task<List<EventDetailsDto>> GetUpcomingEvents() {

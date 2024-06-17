@@ -13,11 +13,7 @@ public class EventTeamService(
 	DataContext context) 
 	: IEventTeamService 
 {
-	public async Task<ActionResult<EventTeam>> CreateTeamAsync(CreateEventTeamDto team, string userId) {
-		if (!ulong.TryParse(team.EventId, out var eventId)) {
-			return new BadRequestObjectResult("Invalid event id");
-		}
-		
+	public async Task<ActionResult> CreateTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
 		var member = await eventService.GetEventMemberAsync(userId, eventId);
 		if (member is null) {
 			return new BadRequestObjectResult("You are not a member of this event");
@@ -32,7 +28,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("This event does not support custom teams");
 		}
 
-		var existing = await GetTeamAsync(member.Id, eventId);
+		var existing = await GetTeamAsync(member.UserId.ToString(), eventId);
 		if (existing is not null) {
 			return new BadRequestObjectResult("You already have a team in this event");
 		}
@@ -40,44 +36,71 @@ public class EventTeamService(
 		member.Team = new EventTeam {
 			Name = team.Name ?? "Unnamed Team",
 			Color = team.Color,
-			OwnerId = member.Id,
+			UserId = userId,
 			EventId = eventId
 		};
-		
+
+		context.EventMembers.Update(member);
 		await context.SaveChangesAsync();
 
-		return member.Team;
+		return new OkResult();
+	}
+	
+	public async Task<ActionResult> DeleteTeamValidateAsync(int id) {
+		var team = await GetTeamAsync(id);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		if (team.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
+			return new BadRequestObjectResult("Event has already started");
+		}
+		
+		context.EventTeams.Remove(team);
+		await context.SaveChangesAsync();
+
+		return new OkResult();
+	}
+
+	public async Task<ActionResult> DeleteTeamAsync(int id) {
+		var team = await GetTeamAsync(id);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		context.EventTeams.Remove(team);
+		await context.SaveChangesAsync();
+
+		return new OkResult();
 	}
 
 	public async Task<EventTeam?> GetTeamAsync(int id) {
 		return await context.EventTeams
 			.Include(t => t.Event)
 			.Include(t => t.Members)
-			.AsNoTracking()
+			.ThenInclude(m => m.ProfileMember)
+			.ThenInclude(p => p.MinecraftAccount)
+			.AsNoTracking().AsSplitQuery()
 			.FirstOrDefaultAsync(t => t.Id == id);
 	}
 
-	public async Task<EventTeam?> GetTeamAsync(int memberId, ulong eventId) {
+	public async Task<EventTeam?> GetTeamAsync(string userId, ulong eventId) {
 		return await context.EventTeams
 			.Include(t => t.Event)
 			.Include(t => t.Members)
-			.AsNoTracking()
-			.FirstOrDefaultAsync(t => t.OwnerId == memberId && t.EventId == eventId);
-	}
-
-	public async Task<EventTeam?> GetTeamAsync(string playerUuidOrIgn, ulong eventId) {
-		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, eventId);
-		if (member?.TeamId is null) return null;
-
-		await context.Entry(member).Reference(m => m.Team).LoadAsync();
-
-		return member.Team;
+			.ThenInclude(m => m.ProfileMember)
+			.ThenInclude(p => p.MinecraftAccount)
+			.AsNoTracking().AsSplitQuery()
+			.FirstOrDefaultAsync(t => t.UserId == userId && t.EventId == eventId);
 	}
 
 	public async Task<List<EventTeam>> GetEventTeamsAsync(ulong eventId) {
-		return await context.EventTeams.AsNoTracking()
+		return await context.EventTeams
 			.Include(t => t.Members)
+			.ThenInclude(m => m.ProfileMember)
+			.ThenInclude(p => p.MinecraftAccount)
 			.Where(t => t.EventId == eventId)
+			.AsNoTracking().AsSplitQuery()
 			.ToListAsync();
 	}
 
@@ -109,7 +132,7 @@ public class EventTeamService(
 		}
 
 		member.TeamId = teamId;
-		context.EventMembers.Update(member);
+		context.Entry(member).State = EntityState.Modified;
 		
 		await context.SaveChangesAsync();
 
@@ -132,14 +155,22 @@ public class EventTeamService(
 		}
 
 		member.TeamId = null;
-		context.EventMembers.Update(member);
+		context.Entry(member).State = EntityState.Modified;
+		
+		if (team.UserId == userId) {
+			if (team.Members.Count > 1) {
+				return new BadRequestObjectResult("You cannot leave the team as the owner with members still in it");
+			}
+			
+			context.EventTeams.Remove(team);
+		}
 		
 		await context.SaveChangesAsync();
 
 		return new OkResult();
 	}
 
-	public async Task<ActionResult> KickMemberAsync(int teamId, string requester, string playerUuidOrIgn) {
+	public async Task<ActionResult> KickMemberValidateAsync(int teamId, string requester, string playerUuidOrIgn) {
 		var team = await GetTeamAsync(teamId);
 		if (team is null) {
 			return new BadRequestObjectResult("Invalid team id");
@@ -154,7 +185,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("You are not in this team");
 		}
 		
-		if (requesterMember.Id != team.OwnerId) {
+		if (requesterMember.UserId.ToString() != team.UserId) {
 			return new BadRequestObjectResult("You are not the team owner");
 		}
 		
@@ -163,12 +194,31 @@ public class EventTeamService(
 			return new BadRequestObjectResult("This player is not in this team");
 		}
 		
-		if (member.Id == team.OwnerId) {
+		if (member.UserId.ToString() == team.UserId) {
 			return new BadRequestObjectResult("You cannot kick the team owner");
 		}
 		
 		member.TeamId = null;
-		context.EventMembers.Update(member);
+		context.Entry(member).State = EntityState.Modified;
+		
+		await context.SaveChangesAsync();
+		
+		return new OkResult();
+	}
+
+	public async Task<ActionResult> KickMemberAsync(int teamId, string playerUuidOrIgn) {
+		var team = await GetTeamAsync(teamId);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
+		if (member?.TeamId != teamId) {
+			return new BadRequestObjectResult("This player is not in this team");
+		}
+
+		member.TeamId = null;
+		context.Entry(member).State = EntityState.Modified;
 		
 		await context.SaveChangesAsync();
 		
@@ -181,39 +231,23 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Invalid team");
 		}
 		
-		if (!ulong.TryParse(team.EventId, out var eventId)) {
-			return new BadRequestObjectResult("Invalid event id");
+		if (existing.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
+			return new BadRequestObjectResult("Event has already started");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(userId, eventId);
+		var member = await eventService.GetEventMemberAsync(userId, existing.EventId);
 		if (member?.TeamId is null || member.TeamId != id) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}
 		
-		if (existing.OwnerId != member.Id) {
+		if (existing.UserId != member.UserId.ToString()) {
 			return new BadRequestObjectResult("You are not the team owner");
 		}
 		
 		existing.Name = team.Name ?? existing.Name;
 		existing.Color = team.Color ?? existing.Color;
 		
-		context.EventTeams.Update(existing);
-		await context.SaveChangesAsync();
-
-		return new OkResult();
-	}
-
-	public async Task<ActionResult> DeleteTeamAsync(int id) {
-		var team = await GetTeamAsync(id);
-		if (team is null) {
-			return new BadRequestObjectResult("Invalid team id");
-		}
-		
-		if (team.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
-			return new BadRequestObjectResult("Event has already started");
-		}
-		
-		context.EventTeams.Remove(team);
+		context.Entry(existing).State = EntityState.Modified;
 		await context.SaveChangesAsync();
 
 		return new OkResult();
