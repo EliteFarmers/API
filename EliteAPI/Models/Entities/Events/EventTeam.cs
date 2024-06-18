@@ -15,6 +15,7 @@ public class EventTeam {
 	public string JoinCode { get; set; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6];
 
 	public List<EventMember> Members { get; set; } = [];
+	public double Score => Members.Sum(m => m.Score);
 	
 	[MaxLength(18)]
 	public required string UserId { get; set; }

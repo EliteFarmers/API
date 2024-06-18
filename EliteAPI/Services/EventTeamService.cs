@@ -95,13 +95,15 @@ public class EventTeamService(
 	}
 
 	public async Task<List<EventTeam>> GetEventTeamsAsync(ulong eventId) {
-		return await context.EventTeams
+		var teams = await context.EventTeams
 			.Include(t => t.Members)
 			.ThenInclude(m => m.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)
 			.Where(t => t.EventId == eventId)
 			.AsNoTracking().AsSplitQuery()
 			.ToListAsync();
+
+		return teams.OrderByDescending(t => t.Score).ToList();
 	}
 
 	public async Task<ActionResult> JoinTeamAsync(int teamId, string userId, string code) {

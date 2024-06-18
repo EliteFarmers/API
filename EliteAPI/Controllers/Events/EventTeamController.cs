@@ -5,6 +5,7 @@ using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +67,7 @@ public class EventTeamController(
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
 	public async Task<ActionResult<EventTeamWithMembersDto>> GetEventTeam(ulong eventId, int teamId) {
 		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var isAdmin = User.IsInRole(ApiUserPolicies.Admin);
 		
 		var team = await teamService.GetTeamAsync(teamId);
 		if (team is null) {
@@ -74,7 +76,7 @@ public class EventTeamController(
 		
 		var mapped = mapper.Map<EventTeamWithMembersDto>(team);
 		
-		if (userId is not null && team.UserId == userId) {
+		if (userId is not null && (team.UserId == userId || isAdmin)) {
 			// If the user is the owner of the team, return the join code
 			mapped.JoinCode = team.JoinCode;
 			return mapped;
