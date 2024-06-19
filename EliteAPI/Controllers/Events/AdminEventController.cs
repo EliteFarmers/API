@@ -251,6 +251,8 @@ public class AdminEventController(
         }
         
         member.Status = EventMemberStatus.Disqualified;
+        member.TeamId = null;
+        member.Team = null;
         member.Notes = reason;
         
         await context.SaveChangesAsync();
@@ -286,6 +288,8 @@ public class AdminEventController(
         }
         
         member.Status = EventMemberStatus.Active;
+        member.TeamId = null;
+        member.Team = null;
  
         await context.SaveChangesAsync();
         return Ok();

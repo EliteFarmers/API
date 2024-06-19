@@ -44,7 +44,7 @@ public class ProfileMemberDto
     public Dictionary<string, long> Collections { get; set; } = new();
     public Dictionary<string, int> CollectionTiers { get; set; } = new();
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
-    public List<PetDto> Pets { get; set; } = new();
+    public List<PetDto> Pets { get; set; } = [];
     
     // public InventoriesDto Inventories { get; set; } = new();
     public UnparsedApiDataDto Unparsed { get; set; } = new();
@@ -53,6 +53,7 @@ public class ProfileMemberDto
     public required FarmingWeightDto FarmingWeight { get; set; }
     public SkillsDto Skills { get; set; } = new();
     public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
+    public List<EventMemberDto> Events { get; set; } = [];
 
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; }

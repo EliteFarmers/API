@@ -144,7 +144,8 @@ public static class ServiceExtensions
             new() { Path = "Configuration/Cooldown.json" },
             new() { Path = "Configuration/Leaderboards.json" },
             new() { Path = "Configuration/Farming.json" },
-            new() { Path = "Configuration/ChocolateFactory.json" }
+            new() { Path = "Configuration/ChocolateFactory.json" },
+            new() { Path = "Configuration/Events.json" }
         });
 
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
@@ -153,6 +154,7 @@ public static class ServiceExtensions
         builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("Farming"));
         builder.Services.Configure<ChocolateFactorySettings>(builder.Configuration.GetSection("ChocolateFactory"));
         builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
+        builder.Services.Configure<ConfigEventSettings>(builder.Configuration.GetSection("Events"));
 
         builder.Services.Configure<ConfigApiRateLimitSettings>(
             builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));

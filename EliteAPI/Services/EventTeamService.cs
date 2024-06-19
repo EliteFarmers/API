@@ -1,18 +1,28 @@
-﻿using EliteAPI.Data;
+﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Configuration.Settings;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Services;
 
 public class EventTeamService(
 	IEventService eventService,
+	IOptions<ConfigEventSettings> config,
 	DataContext context) 
 	: IEventTeamService 
 {
+	private readonly ImmutableList<string> _eventTeamWordList = 
+		ImmutableList.CreateRange(config.Value.TeamsWordList.Adjectives
+			.Concat(config.Value.TeamsWordList.Nouns)
+			.Concat(config.Value.TeamsWordList.Verbs));
+	
 	public async Task<ActionResult> CreateTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
 		var member = await eventService.GetEventMemberAsync(userId, eventId);
 		if (member is null) {
@@ -32,9 +42,13 @@ public class EventTeamService(
 		if (existing is not null) {
 			return new BadRequestObjectResult("You already have a team in this event");
 		}
+
+		if (!IsValidTeamName(team.Name)) {
+			team.Name = GetRandomTeamName();
+		}
 		
 		member.Team = new EventTeam {
-			Name = team.Name ?? "Unnamed Team",
+			Name = team.Name,
 			Color = team.Color,
 			UserId = userId,
 			EventId = eventId
@@ -199,6 +213,10 @@ public class EventTeamService(
 		if (member.UserId.ToString() == team.UserId) {
 			return new BadRequestObjectResult("You cannot kick the team owner");
 		}
+
+		if (team.Members.Count <= 1) {
+			context.EventTeams.Remove(team);
+		}
 		
 		member.TeamId = null;
 		context.Entry(member).State = EntityState.Modified;
@@ -217,6 +235,10 @@ public class EventTeamService(
 		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
 		if (member?.TeamId != teamId) {
 			return new BadRequestObjectResult("This player is not in this team");
+		}
+		
+		if (team.Members.Count <= 1) {
+			context.EventTeams.Remove(team);
 		}
 
 		member.TeamId = null;
@@ -246,6 +268,10 @@ public class EventTeamService(
 			return new BadRequestObjectResult("You are not the team owner");
 		}
 		
+		if (!IsValidTeamName(team.Name)) {
+			team.Name = null;
+		}
+		
 		existing.Name = team.Name ?? existing.Name;
 		existing.Color = team.Color ?? existing.Color;
 		
@@ -253,5 +279,30 @@ public class EventTeamService(
 		await context.SaveChangesAsync();
 
 		return new OkResult();
+	}
+	
+	public EventTeamsWordListDto GetEventTeamNameWords() {
+		return config.Value.TeamsWordList;
+	}
+
+	public bool IsValidTeamName([NotNullWhen(true)] string? name) {
+		if (string.IsNullOrWhiteSpace(name)) {
+			return false;
+		}
+		
+		var words = name.Split(' ');
+		if (words.Length is > 3 or < 2) {
+			return false;
+		}
+		
+		return words.All(w => _eventTeamWordList.Contains(w));
+	}
+
+	public string GetRandomTeamName() {
+		var random = new Random();
+		var adjective = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
+		var noun = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
+		var verb = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
+		return $"{adjective} {noun} {verb}";
 	}
 }

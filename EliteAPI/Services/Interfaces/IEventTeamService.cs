@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.DTOs.Outgoing;
+﻿using EliteAPI.Configuration.Settings;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,4 +18,7 @@ public interface IEventTeamService {
 	Task<ActionResult> LeaveTeamAsync(int teamId, string userId);
 	Task<ActionResult> KickMemberValidateAsync(int teamId, string requester, string playerUuidOrIgn);
 	Task<ActionResult> KickMemberAsync(int teamId, string playerUuidOrIgn);
+
+	EventTeamsWordListDto GetEventTeamNameWords();
+	bool IsValidTeamName(string name);
 }

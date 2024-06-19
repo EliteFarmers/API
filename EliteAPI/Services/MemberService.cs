@@ -2,6 +2,7 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Services.Interfaces;
@@ -31,13 +32,18 @@ public class MemberService(
     public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid) {
         await UpdatePlayerIfNeeded(playerUuid);
 
+        var now = DateTimeOffset.UtcNow;
         return context.ProfileMembers
             .AsNoTracking()
             .Where(p => p.PlayerUuid == playerUuid)
-            .Include(p => p.MinecraftAccount).AsNoTracking()
-            .Include(p => p.Profile).AsNoTracking()
-            .Include(p => p.Skills).AsNoTracking()
-            .Include(p => p.Farming).AsNoTracking()
+            .Include(p => p.MinecraftAccount)
+            .Include(p => p.Profile)
+            .Include(p => p.Skills)
+            .Include(p => p.Farming)
+            .Include(p => p.EventEntries!
+                .Where(e => 
+                    (e.Status == EventMemberStatus.Active || e.Status == EventMemberStatus.Inactive) 
+                    && e.EndTime > now && e.StartTime <= now))
             .Include(p => p.ChocolateFactory).AsNoTracking()
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)

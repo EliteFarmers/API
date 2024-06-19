@@ -3,6 +3,7 @@ using System.Text.Json;
 using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Authentication;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -14,8 +15,8 @@ using StackExchange.Redis;
 namespace EliteAPI.Controllers.Events;
 
 [ApiController, ApiVersion(1.0)]
-[Route("event/{eventId}")]
-[Route("/v{version:apiVersion}/event/{eventId}")]
+[Route("event")]
+[Route("/v{version:apiVersion}/event")]
 public class EventTeamController(
 	DataContext context,
 	IMapper mapper,
@@ -33,7 +34,7 @@ public class EventTeamController(
 	/// </summary>
 	/// <param name="eventId"></param>
 	/// <returns></returns>
-	[HttpGet("teams")]
+	[HttpGet("{eventId}/teams")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<EventTeamWithMembersDto>>> GetEventTeams(ulong eventId) {
 		var db = redis.GetDatabase();
@@ -56,13 +57,14 @@ public class EventTeamController(
 		return Ok(mapped);
 	}
 	
+	
 	/// <summary>
 	/// Get one team in an event
 	/// </summary>
 	/// <param name="eventId"></param>
 	/// <returns></returns>
 	[OptionalAuthorize]
-	[HttpGet("team/{teamId:int}")]
+	[HttpGet("{eventId}/team/{teamId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
 	public async Task<ActionResult<EventTeamWithMembersDto>> GetEventTeam(ulong eventId, int teamId) {
@@ -92,7 +94,7 @@ public class EventTeamController(
 	/// <param name="team"></param>
 	/// <returns></returns>
 	[Authorize]
-	[HttpPost("teams")]
+	[HttpPost("{eventId}/teams")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> CreateTeam(ulong eventId, CreateEventTeamDto team) {
@@ -112,7 +114,7 @@ public class EventTeamController(
 	/// <param name="team"></param>
 	/// <returns></returns>
 	[Authorize]
-	[HttpPatch("team/{teamId:int}")]
+	[HttpPatch("{eventId}/team/{teamId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> UpdateTeam(ulong eventId, int teamId, UpdateEventTeamDto team) {
@@ -131,7 +133,7 @@ public class EventTeamController(
 	/// <param name="teamId"></param>
 	/// <returns></returns>
 	[Authorize]
-	[HttpDelete("team/{teamId:int}")]
+	[HttpDelete("{eventId}/team/{teamId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> DeleteTeam(ulong eventId, int teamId) {
@@ -160,7 +162,7 @@ public class EventTeamController(
 	/// <param name="joinCode"></param>
 	/// <returns></returns>
 	[Authorize]
-	[HttpPost("team/{teamId:int}/join")]
+	[HttpPost("{eventId}/team/{teamId:int}/join")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> JoinTeam(ulong eventId, int teamId, [FromBody] string joinCode) {
@@ -179,7 +181,7 @@ public class EventTeamController(
 	/// <param name="teamId"></param>
 	/// <returns></returns>
 	[Authorize]
-	[HttpPost("team/{teamId:int}/leave")]
+	[HttpPost("{eventId}/team/{teamId:int}/leave")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> JoinTeam(ulong eventId, int teamId) {
@@ -191,4 +193,14 @@ public class EventTeamController(
 		return await teamService.LeaveTeamAsync(teamId, userId);
 	}
 	
+	/// <summary>
+	/// Get team name words
+	/// </summary>
+	/// <returns></returns>
+	[HttpGet("teams/words")]
+	[ResponseCache(Duration = 60 * 60, Location = ResponseCacheLocation.Any)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public ActionResult<EventTeamsWordListDto> GetEventTeamWordList() {
+		return teamService.GetEventTeamNameWords();
+	}
 }

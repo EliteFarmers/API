@@ -6,10 +6,10 @@ using EliteAPI.Models.Entities.Hypixel;
 namespace EliteAPI.Models.Entities.Events;
 
 public enum EventMemberStatus {
-	Inactive,
-	Active,
-	Left,
-	Disqualified
+	Inactive = 0,
+	Active = 1,
+	Left = 2,
+	Disqualified = 3,
 }
 
 public class EventMember {
