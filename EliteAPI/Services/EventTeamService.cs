@@ -23,8 +23,8 @@ public class EventTeamService(
 			.Concat(config.Value.TeamsWordList.Nouns)
 			.Concat(config.Value.TeamsWordList.Verbs));
 	
-	public async Task<ActionResult> CreateTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
-		var member = await eventService.GetEventMemberAsync(userId, eventId);
+	public async Task<ActionResult> CreateUserTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
+		var member = await eventService.GetEventMemberByIdAsync(userId, eventId);
 		if (member is null) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}
@@ -59,7 +59,30 @@ public class EventTeamService(
 
 		return new OkResult();
 	}
-	
+
+	public async Task<ActionResult> CreateAdminTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
+		var @event = await context.Events.FindAsync(eventId);
+		if (@event is null) {
+			return new BadRequestObjectResult("Invalid event id");
+		}
+		
+		if (!IsValidTeamName(team.Name)) {
+			team.Name = GetRandomTeamName();
+		}
+		
+		var newTeam = new EventTeam {
+			Name = team.Name,
+			Color = team.Color,
+			UserId = "admin",
+			EventId = eventId
+		};
+
+		context.EventTeams.Add(newTeam);
+		await context.SaveChangesAsync();
+
+		return new OkResult();
+	}
+
 	public async Task<ActionResult> DeleteTeamValidateAsync(int id) {
 		var team = await GetTeamAsync(id);
 		if (team is null) {
@@ -120,7 +143,7 @@ public class EventTeamService(
 		return teams.OrderByDescending(t => t.Score).ToList();
 	}
 
-	public async Task<ActionResult> JoinTeamAsync(int teamId, string userId, string code) {
+	public async Task<ActionResult> JoinTeamValidateAsync(int teamId, string userId, string code) {
 		var team = await GetTeamAsync(teamId);
 		if (team is null) {
 			return new BadRequestObjectResult("Invalid team id");
@@ -138,7 +161,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event join time has expired");
 		}
 
-		var member = await eventService.GetEventMemberAsync(userId, team.EventId);
+		var member = await eventService.GetEventMemberByIdAsync(userId, team.EventId);
 		if (member is null) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}
@@ -147,6 +170,25 @@ public class EventTeamService(
 			return new BadRequestObjectResult("You are already in a team");
 		}
 
+		member.TeamId = teamId;
+		context.Entry(member).State = EntityState.Modified;
+		
+		await context.SaveChangesAsync();
+
+		return new OkResult();
+	}
+
+	public async Task<ActionResult> AddMemberToTeamAsync(int teamId, string playerUuidOrIgn) {
+		var team = await GetTeamAsync(teamId);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
+		if (member is null) {
+			return new BadRequestObjectResult("You are not a member of this event");
+		}
+		
 		member.TeamId = teamId;
 		context.Entry(member).State = EntityState.Modified;
 		
@@ -165,7 +207,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event join time has expired");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(userId, team.EventId);
+		var member = await eventService.GetEventMemberByIdAsync(userId, team.EventId);
 		if (member?.TeamId != teamId) {
 			return new BadRequestObjectResult("You are not in this team");
 		}
@@ -196,7 +238,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event has already started");
 		}
 		
-		var requesterMember = await eventService.GetEventMemberAsync(requester, team.EventId);
+		var requesterMember = await eventService.GetEventMemberByIdAsync(requester, team.EventId);
 		if (requesterMember?.TeamId != teamId) {
 			return new BadRequestObjectResult("You are not in this team");
 		}
@@ -205,17 +247,12 @@ public class EventTeamService(
 			return new BadRequestObjectResult("You are not the team owner");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
-		if (member?.TeamId != teamId) {
-			return new BadRequestObjectResult("This player is not in this team");
-		}
+		var member = team.Members.FirstOrDefault(m => 
+			m.ProfileMember.MinecraftAccount.Id == playerUuidOrIgn 
+			|| m.ProfileMember.MinecraftAccount.Name.Equals(playerUuidOrIgn, StringComparison.InvariantCultureIgnoreCase));
 		
-		if (member.UserId.ToString() == team.UserId) {
-			return new BadRequestObjectResult("You cannot kick the team owner");
-		}
-
-		if (team.Members.Count <= 1) {
-			context.EventTeams.Remove(team);
+		if (member is null) {
+			return new BadRequestObjectResult("This player is not in this team");
 		}
 		
 		member.TeamId = null;
@@ -232,7 +269,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Invalid team id");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
+		var member = await eventService.GetEventMemberByIdAsync(playerUuidOrIgn, team.EventId);
 		if (member?.TeamId != teamId) {
 			return new BadRequestObjectResult("This player is not in this team");
 		}
@@ -259,7 +296,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event has already started");
 		}
 		
-		var member = await eventService.GetEventMemberAsync(userId, existing.EventId);
+		var member = await eventService.GetEventMemberByIdAsync(userId, existing.EventId);
 		if (member?.TeamId is null || member.TeamId != id) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}

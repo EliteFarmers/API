@@ -103,7 +103,7 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 		
-		return await teamService.CreateTeamAsync(eventId, team, userId);
+		return await teamService.CreateUserTeamAsync(eventId, team, userId);
 	}
 
 	/// <summary>
@@ -171,7 +171,7 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 		
-		return await teamService.JoinTeamAsync(teamId, userId, joinCode);
+		return await teamService.JoinTeamValidateAsync(teamId, userId, joinCode);
 	}
 	
 	/// <summary>

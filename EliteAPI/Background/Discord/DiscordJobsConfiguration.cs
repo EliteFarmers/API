@@ -11,8 +11,8 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 	public void Configure(QuartzOptions options)
 	{
 		// Refresh Bot Guilds
-		var key = RefreshGuildsBackgroundJob.Key;
-		options.AddJob<RefreshGuildsBackgroundJob>(builder => builder.WithIdentity(key))
+		var key = RefreshBotGuildsBackgroundJob.Key;
+		options.AddJob<RefreshBotGuildsBackgroundJob>(builder => builder.WithIdentity(key))
 			.AddTrigger(trigger => {
 				trigger.ForJob(key);
 				trigger.StartNow();
@@ -24,6 +24,11 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 		
 		options.AddJob<RefreshAuthTokenBackgroundTask>(builder => {
 			builder.WithIdentity(RefreshAuthTokenBackgroundTask.Key);
+			builder.StoreDurably();
+		});
+		
+		options.AddJob<RefreshUserGuildsBackgroundJob>(builder => {
+			builder.WithIdentity(RefreshUserGuildsBackgroundJob.Key);
 			builder.StoreDurably();
 		});
 	}
