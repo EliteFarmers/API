@@ -3,6 +3,7 @@ using Asp.Versioning;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,10 +23,8 @@ public class AuthController(IAuthService authService) : ControllerBase
 	[HttpGet("me")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-	public async Task<ActionResult<AuthSessionDto>> GetSelfOverview()
-	{
-		var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-		
+	public async Task<ActionResult<AuthSessionDto>> GetSelfOverview() {
+		var id = User.GetId();
 		if (id is not null && User.AccessTokenExpired()) {
 			await authService.TriggerAuthTokenRefresh(id!);
 		}
@@ -35,6 +34,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 			Username = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
 			Avatar = User.FindFirstValue(ApiUserClaims.Avatar) ?? string.Empty,
 			Ign = User.FindFirstValue(ApiUserClaims.Ign) ?? string.Empty,
+			Uuid = User.FindFirstValue(ApiUserClaims.Uuid) ?? string.Empty,
 			Roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray()
 		});
 	}

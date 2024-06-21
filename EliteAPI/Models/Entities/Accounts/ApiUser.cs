@@ -26,6 +26,7 @@ public class ApiUser : IdentityUser {
 public static class ApiUserClaims {
 	public const string Avatar = "Avatar";
 	public const string Ign = "Ign";
+	public const string Uuid = "Uuid";
 	public const string DiscordAccessExpires = "Dexp";
 }
 
