@@ -13,7 +13,7 @@ public class EventMappers : Profile {
             .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
-            .ForMember(e => e.Teams, opt => opt.MapFrom(e => e.Teams));
+            .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
         
         CreateMap<WeightEvent, EventDetailsDto>()
             .ForMember(e => e.Id, opt => opt.MapFrom(e => e.Id.ToString()))
@@ -21,7 +21,8 @@ public class EventMappers : Profile {
             .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
-            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
+            .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
         
         CreateMap<MedalEvent, EventDetailsDto>()
             .ForMember(e => e.Id, opt => opt.MapFrom(e => e.Id.ToString()))
@@ -29,7 +30,8 @@ public class EventMappers : Profile {
             .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
-            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
+            .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
     }
 }
 
@@ -57,6 +59,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
 
         CreateMap<WeightEventMember, EventMemberDto>()
@@ -65,6 +68,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
         
@@ -74,6 +78,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
 
@@ -83,6 +88,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
         
         CreateMap<MedalEventMember, EventMemberDetailsDto>()
@@ -91,12 +97,14 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
-        
+
         CreateMap<EventMember, EventMemberBannedDto>()
             .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
-            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
+            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()));
     }
 }

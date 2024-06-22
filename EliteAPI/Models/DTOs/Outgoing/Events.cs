@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Models.DTOs.Outgoing; 
+namespace EliteAPI.Models.DTOs.Outgoing;
 
 public class EventDetailsDto {
     /// <summary>
@@ -18,6 +18,10 @@ public class EventDetailsDto {
     /// Type of the event
     /// </summary>
     public EventType Type { get; set; }
+    /// <summary>
+    /// Team mode of the event
+    /// </summary>
+    public string? Mode { get; set; } = EventTeamMode.Solo;
     
     /// <summary>
     /// Event description
@@ -89,8 +93,6 @@ public class EventDetailsDto {
     /// Data specific to the event
     /// </summary>
     public object? Data { get; set; }
-    
-    public List<EventTeamDto> Teams { get; set; }
 }
 
 public class EventTeamDto {
@@ -131,7 +133,7 @@ public class EventMemberDto {
     public required string EventId { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? TeamId { get; set; }
+    public string? TeamId { get; set; }
     
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
@@ -150,6 +152,9 @@ public class EventMemberDetailsDto {
     public string? PlayerName { get; set; }
     public required string EventId { get; set; }
     
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TeamId { get; set; }
+    
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
     public string? LastUpdated { get; set; }
@@ -162,6 +167,8 @@ public class EventMemberBannedDto {
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
     
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TeamId { get; set; }
     public string? Score { get; set; }
     public string? Notes { get; set; }
     

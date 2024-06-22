@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Authentication;
@@ -8,6 +7,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
@@ -68,7 +68,7 @@ public class EventTeamController(
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
 	public async Task<ActionResult<EventTeamWithMembersDto>> GetEventTeam(ulong eventId, int teamId) {
-		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var userId = User.GetId();
 		var isAdmin = User.IsInRole(ApiUserPolicies.Admin);
 		
 		var team = await teamService.GetTeamAsync(teamId);
@@ -98,7 +98,7 @@ public class EventTeamController(
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> CreateTeam(ulong eventId, CreateEventTeamDto team) {
-		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var userId = User.GetId();
 		if (userId is null) {
 			return Unauthorized();
 		}
@@ -118,7 +118,7 @@ public class EventTeamController(
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> UpdateTeam(ulong eventId, int teamId, UpdateEventTeamDto team) {
-		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var userId = User.GetId();
 		if (userId is null) {
 			return Unauthorized();
 		}
@@ -137,7 +137,7 @@ public class EventTeamController(
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> DeleteTeam(ulong eventId, int teamId) {
-		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var userId = User.GetId();
 		if (userId is null) {
 			return Unauthorized();
 		}
@@ -166,7 +166,7 @@ public class EventTeamController(
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
 	public async Task<IActionResult> JoinTeam(ulong eventId, int teamId, [FromBody] string joinCode) {
-		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		var userId = User.GetId();
 		if (userId is null) {
 			return Unauthorized();
 		}
@@ -184,8 +184,8 @@ public class EventTeamController(
 	[HttpPost("{eventId}/team/{teamId:int}/leave")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-	public async Task<IActionResult> JoinTeam(ulong eventId, int teamId) {
-		var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+	public async Task<IActionResult> LeaveTeam(ulong eventId, int teamId) {
+		var userId = User.GetId();
 		if (userId is null) {
 			return Unauthorized();
 		}

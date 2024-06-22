@@ -54,3 +54,15 @@ public class Event
     public ulong GuildId { get; set; }
     public Guild Guild { get; set; } = null!;
 }
+
+public static class EventTeamMode {
+    public const string Solo = "solo";
+    public const string Teams = "teams";
+    public const string CustomTeams = "custom";
+    
+    public static string GetMode(this Event @event) {
+        if (@event.MaxTeams != 0) return Teams;
+        if (@event.MaxTeamMembers != 0) return CustomTeams;
+        return Solo;
+    }
+}
