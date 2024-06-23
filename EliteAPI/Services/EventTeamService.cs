@@ -336,7 +336,7 @@ public class EventTeamService(
 		return words.All(w => _eventTeamWordList.Contains(w));
 	}
 
-	public string GetRandomTeamName() {
+	private string GetRandomTeamName() {
 		var random = new Random();
 		var adjective = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
 		var noun = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];

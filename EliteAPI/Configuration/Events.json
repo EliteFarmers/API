@@ -58,7 +58,7 @@
 		"Lethargic",
 		"Absurd",
 		"Feeble",
-		"Drab"
+		"Drab",
 		"Immoral",
 		"Indsidious",
 		"Zealous",
@@ -206,7 +206,6 @@
 		"Moisture",
 		"Rain",
 		"Minion"
-		
       ],
       "Verbs": [
         "Farmers",
