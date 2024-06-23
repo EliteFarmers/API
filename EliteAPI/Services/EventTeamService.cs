@@ -211,8 +211,9 @@ public class EventTeamService(
 		if (member?.TeamId != teamId) {
 			return new BadRequestObjectResult("You are not in this team");
 		}
-
+		
 		member.TeamId = null;
+		member.Team = null;
 		context.Entry(member).State = EntityState.Modified;
 		
 		if (team.UserId == userId) {
@@ -220,7 +221,7 @@ public class EventTeamService(
 				return new BadRequestObjectResult("You cannot leave the team as the owner with members still in it");
 			}
 			
-			context.EventTeams.Remove(team);
+			context.Entry(team).State = EntityState.Deleted;
 		}
 		
 		await context.SaveChangesAsync();

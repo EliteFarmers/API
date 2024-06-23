@@ -192,6 +192,26 @@ public class EventTeamController(
 		
 		return await teamService.LeaveTeamAsync(teamId, userId);
 	}
+
+	/// <summary>
+	/// Kick a team member
+	/// </summary>
+	/// <param name="eventId"></param>
+	/// <param name="teamId"></param>
+	/// <param name="playerUuidOrIgn"></param>
+	/// <returns></returns>
+	[Authorize]
+	[HttpDelete("{eventId}/team/{teamId:int}/member/{playerUuidOrIgn}")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+	public async Task<IActionResult> KickTeamMember(ulong eventId, int teamId, string playerUuidOrIgn) {
+		var userId = User.GetId();
+		if (userId is null) {
+			return Unauthorized();
+		}
+
+		return await teamService.KickMemberValidateAsync(teamId, userId, playerUuidOrIgn);
+	}
 	
 	/// <summary>
 	/// Get team name words
