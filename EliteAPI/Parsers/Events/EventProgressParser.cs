@@ -1,5 +1,7 @@
-﻿using EliteAPI.Models.Entities.Events;
+﻿using EliteAPI.Data;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Parsers.Events; 
 
@@ -21,7 +23,7 @@ public static class EventProgressParser {
         return @event.MaxTeamMembers != 0;
     }
     
-    public static void LoadProgress(this EventMember eventMember, ProfileMember member, Event @event) {
+    public static void LoadProgress(this EventMember eventMember, DataContext context, ProfileMember member, Event @event) {
         var currentTime = DateTimeOffset.UtcNow;
 
         // Skip if the member is already disqualified or the event hasn't started yet
@@ -62,5 +64,7 @@ public static class EventProgressParser {
             default:
                 throw new ArgumentOutOfRangeException();
         }
+        
+        context.Entry(eventMember).State = EntityState.Modified;
     }
 }

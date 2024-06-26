@@ -265,7 +265,7 @@ public class ProfileParser(
                 
                 if (real is null || @event is null) continue;
                 
-                real.LoadProgress(member, @event);
+                real.LoadProgress(context, member, @event);
             }
         }
 
