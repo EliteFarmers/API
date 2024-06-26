@@ -6,6 +6,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -52,7 +53,7 @@ public class EventTeamController(
 		var mapped = mapper.Map<List<EventTeamWithMembersDto>>(teams);
         
 		var now = DateTime.UtcNow;
-		var expiry = eliteEvent?.StartTime < now && eliteEvent.EndTime > now 
+		var expiry = eliteEvent?.Active is true || (eliteEvent?.EndTime > now && eliteEvent.IsCustomTeamEvent()) 
 			? TimeSpan.FromMinutes(2) 
 			: TimeSpan.FromMinutes(10);
 		await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), expiry);
@@ -181,7 +182,15 @@ public class EventTeamController(
 			return Unauthorized("You are not the team owner");
 		}
 		
-		return await teamService.DeleteTeamValidateAsync(teamId);
+		var response = await teamService.DeleteTeamValidateAsync(teamId);
+
+		if (response is OkResult) {
+			// Invalidate teams cache
+			var db = redis.GetDatabase();
+			db.KeyDelete($"event:{eventId}:teams");
+		}
+
+		return response;
 	}
 
 	/// <summary>
@@ -201,7 +210,15 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 		
-		return await teamService.JoinTeamValidateAsync(teamId, userId, joinCode);
+		var response = await teamService.JoinTeamValidateAsync(teamId, userId, joinCode);
+
+		if (response is OkResult) {
+			// Invalidate teams cache
+			var db = redis.GetDatabase();
+			db.KeyDelete($"event:{eventId}:teams");
+		}
+
+		return response;
 	}
 	
 	/// <summary>
@@ -220,7 +237,15 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 		
-		return await teamService.LeaveTeamAsync(teamId, userId);
+		var response = await teamService.LeaveTeamAsync(teamId, userId);
+		
+		if (response is OkResult) {
+			// Invalidate teams cache
+			var db = redis.GetDatabase();
+			db.KeyDelete($"event:{eventId}:teams");
+		}
+
+		return response;
 	}
 
 	/// <summary>
@@ -239,8 +264,16 @@ public class EventTeamController(
 		if (userId is null) {
 			return Unauthorized();
 		}
+		
+		var response = await teamService.KickMemberValidateAsync(teamId, userId, playerUuidOrIgn);
 
-		return await teamService.KickMemberValidateAsync(teamId, userId, playerUuidOrIgn);
+		if (response is OkResult) {
+			// Invalidate teams cache
+			var db = redis.GetDatabase();
+			db.KeyDelete($"event:{eventId}:teams");
+		}
+
+		return response;
 	}
 	
 	/// <summary>
