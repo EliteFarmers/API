@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Text.Json;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -8,6 +9,7 @@ using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Discord; 
 
@@ -16,7 +18,8 @@ namespace EliteAPI.Controllers.Discord;
 [Route("/v{version:apiVersion}/[controller]/{guildId}")]
 public class GuildController(
     DataContext context, 
-    IMapper mapper, 
+    IMapper mapper,
+    IConnectionMultiplexer redis,
     IDiscordService discordService)
     : Controller 
 {
@@ -45,6 +48,11 @@ public class GuildController(
         return Ok(guilds);
     }
     
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+    
     /// <summary>
     /// Get guild by ID
     /// </summary>
@@ -58,11 +66,23 @@ public class GuildController(
     public async Task<ActionResult<PublicGuildDto>> GetGuildById(ulong guildId) {
         if (guildId <= 0) return BadRequest("Invalid guild ID.");
 
+        var db = redis.GetDatabase();
+        var key = $"guild:dto:{guildId}";
+        var cached = await db.StringGetAsync(key);
+        
+        if (cached is { IsNullOrEmpty: false, HasValue: true }) {
+            var cachedGuild = JsonSerializer.Deserialize<PublicGuildDto>(cached!, JsonOptions);
+            return Ok(cachedGuild);
+        }
+
         var guild = await discordService.GetGuild(guildId);
         if (guild is null) return NotFound("Guild not found.");
         if (!guild.IsPublic) return NotFound("Guild is not public.");
         
-        return Ok(mapper.Map<PublicGuildDto>(guild));
+        var mapped = mapper.Map<PublicGuildDto>(guild);
+        await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), TimeSpan.FromMinutes(2));
+        
+        return Ok(mapped);
     }
     
     /// <summary>
@@ -81,13 +101,25 @@ public class GuildController(
         var guild = await discordService.GetGuild(guildId);
         if (guild is null) return NotFound("Guild not found.");
         
+        var db = redis.GetDatabase();
+        var key = $"guild:events:{guildId}";
+        var cached = await db.StringGetAsync(key);
+
+        if (cached is { IsNullOrEmpty: false, HasValue: true }) {
+            var cachedEvents = JsonSerializer.Deserialize<List<EventDetailsDto>>(cached!, JsonOptions);
+            return Ok(cachedEvents);
+        }
+        
         var events = await context.Events
             .Where(e => e.GuildId == guild.Id)
             .OrderBy(e => e.StartTime)
             .AsNoTracking()
             .ToListAsync();
-        
-        return Ok(mapper.Map<List<EventDetailsDto>>(events) ?? []);
+
+        var mapped = mapper.Map<List<EventDetailsDto>>(events) ?? [];
+        await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), TimeSpan.FromMinutes(2));
+
+        return Ok(mapped);
     }
     
     /// <summary>

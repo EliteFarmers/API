@@ -111,9 +111,9 @@
         "Holy",
         "Cool",
         "Stingy",
-        "Opulent"
-	"Dark"
-	"Light"
+        "Opulent",
+        "Dark",
+        "Light"
       ],
       "Second": [
         "Wheat",
@@ -297,7 +297,7 @@
         "Shears",
         "Fence",
         "Gates",
-	"Lords",
+        "Lords",
         "Sheds",
         "Chickens",
         "Cows",
@@ -309,7 +309,7 @@
         "Horses",
         "Tractors",
         "Boxes",
-	"Exterminators"
+        "Exterminators"
       ]
     }
   }
