@@ -138,8 +138,6 @@ public class AdminEventController(
         
         eliteEvent.Name = incoming.Name ?? eliteEvent.Name;
         eliteEvent.Description = incoming.Description ?? eliteEvent.Description;
-        eliteEvent.StartTime = startTime ?? eliteEvent.StartTime;
-        eliteEvent.EndTime = endTime ?? eliteEvent.EndTime;
         eliteEvent.JoinUntilTime = joinTime ?? eliteEvent.JoinUntilTime;
         eliteEvent.DynamicStartTime = incoming.DynamicStartTime ?? eliteEvent.DynamicStartTime;
         eliteEvent.Active = incoming.Active ?? eliteEvent.Active;
@@ -149,13 +147,15 @@ public class AdminEventController(
         eliteEvent.Thumbnail = incoming.Thumbnail ?? eliteEvent.Thumbnail;
         eliteEvent.RequiredRole = incoming.RequiredRole ?? eliteEvent.RequiredRole;
         eliteEvent.BlockedRole = incoming.BlockedRole ?? eliteEvent.BlockedRole;
-        
-        await context.SaveChangesAsync();
 
         // Update all related event members if the start or end time has changed
-        
         var updateStart = startTime is not null && startTime != eliteEvent.StartTime;
         var updateEnd = endTime is not null && endTime != eliteEvent.EndTime;
+        
+        eliteEvent.StartTime = startTime ?? eliteEvent.StartTime;
+        eliteEvent.EndTime = endTime ?? eliteEvent.EndTime;
+        
+        await context.SaveChangesAsync();
         
         if (updateStart || updateEnd) {
             await context.EventMembers
