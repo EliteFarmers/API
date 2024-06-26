@@ -5,7 +5,6 @@ using Quartz;
 
 namespace EliteAPI.Background.Discord;
 
-[DisallowConcurrentExecution]
 public class RefreshAuthTokenBackgroundTask(
 	UserManager<ApiUser> userManager,
 	IDiscordService discordService,

@@ -5,7 +5,6 @@ using Quartz;
 
 namespace EliteAPI.Background.Discord;
 
-[DisallowConcurrentExecution]
 public class RefreshUserGuildsBackgroundJob(
     ILogger<RefreshUserGuildsBackgroundJob> logger,
     UserManager<ApiUser> userManager,
