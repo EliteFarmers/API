@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
-using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.Entities.Events;
 
@@ -14,7 +12,8 @@ public enum EventType {
     Medals = 4,
 }
 
-public class Event {
+public class Event 
+{
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public ulong Id { get; set; }
     public bool Public { get; set; }
@@ -41,6 +40,10 @@ public class Event {
     
     public bool DynamicStartTime { get; set; }
     public bool Active { get; set; }
+    public int MaxTeams { get; set; }
+    public int MaxTeamMembers { get; set; }
+    
+    public List<EventTeam> Teams { get; set; } = [];
     
     [MaxLength(24)]
     public string? RequiredRole { get; set; }
@@ -52,36 +55,14 @@ public class Event {
     public Guild Guild { get; set; } = null!;
 }
 
-public enum EventMemberStatus {
-    Inactive,
-    Active,
-    Left,
-    Disqualified
-}
-
-public class EventMember {
-    [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-    public EventMemberStatus Status { get; set; }
-    public EventType Type { get; set; } = EventType.None;
+public static class EventTeamMode {
+    public const string Solo = "solo";
+    public const string Teams = "teams";
+    public const string CustomTeams = "custom";
     
-    public double Score { get; set; }
-    public DateTimeOffset LastUpdated { get; set; }
-    public DateTimeOffset StartTime { get; set; }
-    public DateTimeOffset EndTime { get; set; }
-    
-    [MaxLength(128)]
-    public string? Notes { get; set; }
-    
-    [ForeignKey("ProfileMember")]
-    public Guid ProfileMemberId { get; set; }
-    public ProfileMember ProfileMember { get; set; } = null!;
-    
-    [ForeignKey("Event")]
-    public ulong EventId { get; set; }
-    public Event Event { get; set; } = null!;
-    
-    [ForeignKey("User")]
-    public ulong UserId { get; set; }
-    public EliteAccount User { get; set; } = null!;
+    public static string GetMode(this Event @event) {
+        if (@event.MaxTeams != 0) return Teams;
+        if (@event.MaxTeamMembers != 0) return CustomTeams;
+        return Solo;
+    }
 }

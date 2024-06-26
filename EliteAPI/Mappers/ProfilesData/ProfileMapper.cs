@@ -16,11 +16,13 @@ public class ProfileMapper : Profile
 
 public class ProfileMemberMapper : Profile
 {
+    private static readonly JsonSerializerOptions CollectionOptions = new JsonSerializerOptions();
+    
     public ProfileMemberMapper() {
         CreateMap<ProfileMember, ProfileMemberDto>()
             .ForMember(x => x.ProfileName, opt => opt.MapFrom(x => x.ProfileName ?? x.Profile.ProfileName))
             .ForMember(x => x.Collections, opt =>
-                opt.MapFrom(x => x.Collections.Deserialize<Dictionary<string, long>>(new JsonSerializerOptions())))
+                opt.MapFrom(x => x.Collections.Deserialize<Dictionary<string, long>>(CollectionOptions)))
             .ForMember(x => x.CollectionTiers, opt => opt.MapFrom(x => x.CollectionTiers))
             .ForMember(x => x.CraftedMinions, opt => opt.MapFrom(x => x.Profile.CraftedMinions))
             .ForMember(x => x.Jacob, opt => opt.MapFrom(x => x.JacobData))
@@ -30,7 +32,8 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming))
             .ForMember(x => x.Unparsed, opt => opt.MapFrom(x => x.Unparsed))
             .ForMember(x => x.ChocolateFactory, opt => opt.MapFrom(x => x.ChocolateFactory))
-            .ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api));
+            .ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api))
+            .ForMember(x => x.Events, opt => opt.MapFrom(x => x.EventEntries));
 
         CreateMap<ProfileMember, MemberDetailsDto>()
             .ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))

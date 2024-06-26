@@ -35,8 +35,9 @@ public class EventController(
     /// </summary>
     /// <returns></returns>
     // GET <EventController>s/
-    [Route("/[controller]s")]
     [HttpGet]
+    [Route("/[controller]s")]
+    [Route("/v{version:apiVersion}/[controller]s")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<EventDetailsDto>>> GetUpcoming()
@@ -54,7 +55,6 @@ public class EventController(
     // GET <EventController>/12793764936498429
     [HttpGet]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
-    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<EventDetailsDto>> GetEvent(ulong eventId)
@@ -125,14 +125,12 @@ public class EventController(
     /// <param name="eventId"></param>
     /// <param name="playerUuid"></param>
     /// <returns></returns>
-    // GET <EventController>/12793764936498429
     [HttpGet("member/{playerUuid}")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
-    [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<EventMemberDto>>> GetEventMember(ulong eventId, string playerUuid)
+    public async Task<ActionResult<EventMemberDto>> GetEventMember(ulong eventId, string playerUuid)
     {
         var uuid = playerUuid.Replace("-", "");
         if (uuid is not { Length: 32 }) return BadRequest("Invalid playerUuid");
@@ -285,8 +283,8 @@ public class EventController(
     /// <param name="eventId"></param>
     /// <returns></returns>
     // POST <EventController>/12793764936498429/leave
-    [HttpPost("leave")]
     [Authorize]
+    [HttpPost("leave")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
@@ -326,6 +324,8 @@ public class EventController(
         foreach (var member in members)
         {
             member.Status = EventMemberStatus.Left;
+            member.TeamId = null;
+            member.Team = null;
         }
 
         await context.SaveChangesAsync();

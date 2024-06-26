@@ -13,7 +13,7 @@ public class SwaggerAuthFilter : IOperationFilter {
 		var metadata = context.ApiDescription.ActionDescriptor.EndpointMetadata;
 		
 		// Check if the endpoint has [Authorize] or the DiscordAuthFilter or DiscordBotOnlyFilter
-		if (!metadata.Any(x => x is AuthorizeAttribute || x is ServiceFilterAttribute filter && filter.ServiceType == typeof(DiscordBotOnlyFilter))) 
+		if (!metadata.Any(x => x is AuthorizeAttribute or OptionalAuthorizeAttribute || x is ServiceFilterAttribute filter && filter.ServiceType == typeof(DiscordBotOnlyFilter))) 
 		{
 			return;
 		}

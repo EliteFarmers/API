@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 
-namespace EliteAPI.Models.DTOs.Outgoing; 
+namespace EliteAPI.Models.DTOs.Outgoing;
 
 public class EventDetailsDto {
     /// <summary>
@@ -18,6 +18,10 @@ public class EventDetailsDto {
     /// Type of the event
     /// </summary>
     public EventType Type { get; set; }
+    /// <summary>
+    /// Team mode of the event
+    /// </summary>
+    public string? Mode { get; set; } = EventTeamMode.Solo;
     
     /// <summary>
     /// Event description
@@ -64,6 +68,16 @@ public class EventDetailsDto {
     public bool Active { get; set; }
     
     /// <summary>
+    /// Max amount of teams allowed in the event, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeams { get; set; }
+    
+    /// <summary>
+    /// Max amount of members allowed in a team, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeamMembers { get; set; }
+    
+    /// <summary>
     /// Discord role id required to participate in the event
     /// </summary>
     public string? RequiredRole { get; set; }
@@ -81,20 +95,61 @@ public class EventDetailsDto {
     public object? Data { get; set; }
 }
 
+public class EventTeamDto {
+    public int Id { get; set; }
+    public string? EventId { get; set; }
+    public string? Name { get; set; }
+    public string? Color { get; set; }
+    public string? Score { get; set; }
+    public string? OwnerId { get; set; }
+}
+
+public class EventTeamWithMembersDto : EventTeamDto {
+    public List<EventMemberDto> Members { get; set; } = [];
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? JoinCode { get; set; }
+}
+
+
+public class CreateEventTeamDto {
+    /// <summary>
+    /// An array of strings for the team name, example: [ "Bountiful", "Farmers" ]
+    /// </summary>
+    [MinLength(1), MaxLength(3)]
+    public List<string>? Name { get; set; }
+    [MaxLength(7)]
+    public string? Color { get; set; }
+}
+
+public class UpdateEventTeamDto {
+    /// <summary>
+    /// An array of strings for the team name, example: [ "Bountiful", "Farmers" ]
+    /// </summary>
+    [MinLength(1), MaxLength(3)]
+    public List<string>? Name { get; set; }
+    
+    [MaxLength(7)]
+    public string? Color { get; set; }
+}
+
 public class EventMemberDto {
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
     public string? ProfileId { get; set; }
     public required string EventId { get; set; }
     
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TeamId { get; set; }
+    
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
-
     public object? Data { get; set; }
     public string? LastUpdated { get; set; }
     
     public bool Disqualified { get; set; }
-    [MaxLength(128)]
+    
+    [MaxLength(128)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Notes { get; set; }
 }
 
@@ -103,6 +158,9 @@ public class EventMemberDetailsDto {
     public string? ProfileId { get; set; }
     public string? PlayerName { get; set; }
     public required string EventId { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TeamId { get; set; }
     
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
@@ -116,6 +174,8 @@ public class EventMemberBannedDto {
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
     
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TeamId { get; set; }
     public string? Score { get; set; }
     public string? Notes { get; set; }
     
@@ -235,6 +295,16 @@ public class CreateEventDto {
     /// </summary>
     [MaxLength(24)]
     public string? BlockedRole { get; set; }
+
+    /// <summary>
+    /// Max amount of teams allowed in the event, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeams { get; set; } = 0;
+
+    /// <summary>
+    /// Max amount of members allowed in a team, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeamMembers { get; set; } = 0;
 }
 
 public class CreateWeightEventDto : CreateEventDto {

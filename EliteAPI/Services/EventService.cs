@@ -11,7 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services;
 
-public class EventService(DataContext context, IMapper mapper) : IEventService 
+public class EventService(
+	DataContext context,
+	IMojangService mojangService,
+	IMapper mapper) 
+	: IEventService 
 {
 	public async Task<List<EventDetailsDto>> GetUpcomingEvents() {
 		var events = await context.Events
@@ -58,6 +62,18 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			return new BadRequestObjectResult("Event must be at least 3 days long");
 		}
 
+		if (eventDto.MaxTeams < -1) {
+			return new BadRequestObjectResult("Invalid max teams");
+		}
+		
+		if (eventDto.MaxTeamMembers < -1) {
+			return new BadRequestObjectResult("Invalid max members");
+		}
+		
+		if (eventDto is { MaxTeams: -1, MaxTeamMembers: -1 }) {
+			return new BadRequestObjectResult("Max members cannot be unlimited if max teams is unlimited");
+		}
+
 		var eliteEvent = eventDto.Type switch {
 			EventType.FarmingWeight => CreateWeightEvent(eventDto, guildId),
 			EventType.Medals => CreateMedalsEvent(eventDto, guildId),
@@ -92,6 +108,29 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 				return await CreateMedalsEventMember(medalEvent, eventMemberDto);
 		}
 		return new BadRequestObjectResult("Invalid event type");
+	}
+
+	public async Task<EventMember?> GetEventMemberByIdAsync(string userId, ulong eventId) {
+		if (!ulong.TryParse(userId, out var userIdLong)) return null;
+		
+		var member = await context.EventMembers.AsNoTracking()
+			.FirstOrDefaultAsync(m => m.UserId == userIdLong && m.EventId == eventId);
+
+		return member;
+	}
+
+	public async Task<EventMember?> GetEventMemberAsync(string playerUuidOrIgn, ulong eventId) {
+		var uuid = await mojangService.GetUuid(playerUuidOrIgn);
+
+		var userId = await context.MinecraftAccounts
+			.Where(m => m.Id == uuid)
+			.Select(m => m.AccountId)
+			.FirstOrDefaultAsync();
+	
+		var stringId = userId?.ToString();
+		if (stringId is null) return null;
+		
+		return await GetEventMemberByIdAsync(stringId, eventId);
 	}
 
 	public async Task InitializeEventMember(EventMember eventMember, ProfileMember member) {
@@ -185,6 +224,9 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			RequiredRole = eventDto.RequiredRole,
 			BlockedRole = eventDto.BlockedRole,
 			
+			MaxTeams = eventDto.MaxTeams,
+			MaxTeamMembers = eventDto.MaxTeamMembers,
+			
 			GuildId = guildId,
 		};
 
@@ -233,6 +275,9 @@ public class EventService(DataContext context, IMapper mapper) : IEventService
 			
 			RequiredRole = eventDto.RequiredRole,
 			BlockedRole = eventDto.BlockedRole,
+			
+			MaxTeams = eventDto.MaxTeams,
+			MaxTeamMembers = eventDto.MaxTeamMembers,
 			
 			GuildId = guildId,
 		};

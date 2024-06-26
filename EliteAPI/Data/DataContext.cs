@@ -87,6 +87,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;
+    public DbSet<EventTeam> EventTeams { get; set; } = null!;
     public DbSet<WeightEvent> WeightEvents { get; set; } = null!;
     public DbSet<MedalEvent> MedalEvents { get; set; } = null!;
     public DbSet<EventMember> EventMembers { get; set; } = null!;

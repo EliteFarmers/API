@@ -12,16 +12,16 @@ using StackExchange.Redis;
 namespace EliteAPI.Background.Discord;
 
 [DisallowConcurrentExecution]
-public class RefreshGuildsBackgroundJob(
+public class RefreshBotGuildsBackgroundJob(
     IConnectionMultiplexer redis,
-    ILogger<RefreshGuildsBackgroundJob> logger,
+    ILogger<RefreshBotGuildsBackgroundJob> logger,
     DataContext context,
     IHttpClientFactory httpClientFactory,
     IOptions<ConfigCooldownSettings> coolDowns,
     IMessageService messageService
 	) : IJob
 {
-    public static readonly JobKey Key = new(nameof(RefreshGuildsBackgroundJob));
+    public static readonly JobKey Key = new(nameof(RefreshBotGuildsBackgroundJob));
     private const string ClientName = "EliteAPI";
     private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") 
                                         ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");

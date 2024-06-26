@@ -64,8 +64,8 @@ public class ProfileMember : IDisposable
     public required string ProfileId { get; set; }
     public required Profile Profile { get; set; }
     public string? ProfileName { get; set; }
-    
-    public List<EventMember>? EventEntries { get; set; }
+
+    public List<EventMember> EventEntries { get; set; } = [];
 
     public void Dispose() => Collections?.Dispose();
 }

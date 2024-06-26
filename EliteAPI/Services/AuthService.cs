@@ -143,6 +143,7 @@ public class AuthService(
 			new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 			new(ApiUserClaims.Avatar, user.Account.Avatar ?? string.Empty),
 			new(ApiUserClaims.Ign, primaryAccount?.Name ?? string.Empty),
+			new(ApiUserClaims.Uuid, primaryAccount?.Id ?? string.Empty),
 			new(ApiUserClaims.DiscordAccessExpires, user.DiscordAccessTokenExpires.ToUnixTimeSeconds().ToString())
 		};
 		
@@ -185,7 +186,7 @@ public class AuthService(
 	
 	private static void UpdateUserDiscordTokens(ApiUser user, DiscordLoginDto dto) {
 		var accessExpires = long.TryParse(dto.ExpiresIn, out var expiresIn)
-			? DateTimeOffset.UtcNow.AddMilliseconds(expiresIn)
+			? DateTimeOffset.UtcNow.AddMilliseconds(expiresIn - 5000) // Subtract 5 seconds to add wiggle room for refreshing
 			: DateTimeOffset.UtcNow.AddMinutes(8);
 
 		user.DiscordAccessToken = dto.AccessToken;

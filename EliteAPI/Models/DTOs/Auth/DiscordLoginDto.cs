@@ -75,6 +75,10 @@ public class AuthSessionDto {
 	/// </summary>
 	public required string Ign { get; set; }
 	/// <summary>
+	/// Primary Minecraft UUID
+	/// </summary>
+	public required string Uuid { get; set; }
+	/// <summary>
 	/// List of user roles
 	/// </summary>
 	public required string[] Roles { get; set; }

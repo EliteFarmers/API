@@ -1,4 +1,5 @@
-﻿using System.Net.Mime;
+﻿using System.Globalization;
+using System.Net.Mime;
 using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Authentication;
@@ -8,6 +9,7 @@ using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +19,13 @@ namespace EliteAPI.Controllers.Events;
 
 [Authorize]
 [ApiController, ApiVersion(1.0)]
-[Route("/event")]
-[Route("/v{version:apiVersion}/event")]
+[Route("/guild/{guildId}/events")]
+[Route("/v{version:apiVersion}/guild/{guildId}/events")]
 public class AdminEventController(
     DataContext context,
     IMapper mapper,
     IDiscordService discordService,
-    IGuildService guildService,
+    IEventTeamService teamService,
     IEventService eventService,
     UserManager<ApiUser> userManager)
     : ControllerBase
@@ -35,7 +37,7 @@ public class AdminEventController(
     /// <param name="incoming"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpPost, Route("/guild/{guildId}/events/weight")]
+    [HttpPost("weight")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -68,7 +70,7 @@ public class AdminEventController(
     /// <param name="incoming"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpPost, Route("/guild/{guildId}/events/medals")]
+    [HttpPost("medals")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -119,7 +121,7 @@ public class AdminEventController(
     /// <param name="incoming"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpPatch, Route("/guild/{guildId}/events/{eventId}")]
+    [HttpPatch("{eventId}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -173,7 +175,7 @@ public class AdminEventController(
     /// <param name="eventId"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpDelete, Route("/guild/{guildId}/events/{eventId}")]
+    [HttpDelete("{eventId}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -197,7 +199,7 @@ public class AdminEventController(
     /// <param name="eventId"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpGet, Route("/guild/{guildId}/events/{eventId}/bans")]
+    [HttpGet("{eventId}/bans")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -223,7 +225,7 @@ public class AdminEventController(
     /// <param name="reason"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpPost, Route("/guild/{guildId}/events/{eventId}/bans/{playerUuid}")]
+    [HttpPost("{eventId}/bans/{playerUuid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -251,6 +253,8 @@ public class AdminEventController(
         }
         
         member.Status = EventMemberStatus.Disqualified;
+        member.TeamId = null;
+        member.Team = null;
         member.Notes = reason;
         
         await context.SaveChangesAsync();
@@ -266,7 +270,7 @@ public class AdminEventController(
     /// <param name="playerUuid"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpDelete, Route("/guild/{guildId}/events/{eventId}/bans/{playerUuid}")]
+    [HttpDelete("{eventId}/bans/{playerUuid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
@@ -286,8 +290,117 @@ public class AdminEventController(
         }
         
         member.Status = EventMemberStatus.Active;
+        member.TeamId = null;
+        member.Team = null;
  
         await context.SaveChangesAsync();
         return Ok();
+    }
+    
+    /// <summary>
+    /// Get all teams in an event
+    /// </summary>
+    /// <remarks>
+    /// This is a protected route in order to include join codes for the teams
+    /// </remarks>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="teamId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpGet("{eventId}/teams")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<EventTeamWithMembersDto>>> GetTeams(ulong guildId, ulong eventId, int teamId)
+    {
+        var teams = await teamService.GetEventTeamsAsync(eventId);
+        var mapped = teams.Select(t => new EventTeamWithMembersDto {
+            EventId = t.EventId.ToString(),
+            Id = t.Id,
+            Name = t.Name,
+            Score = t.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture),
+            JoinCode = t.JoinCode,
+            OwnerId = t.UserId,
+            Members = mapper.Map<List<EventMemberDto>>(t.Members)
+        }).ToList();
+        
+        return mapped;
+    }
+
+    /// <summary>
+    /// Create a team for an event
+    /// </summary>
+    /// <remarks>
+    /// This generally should only be used for events with a set amount of teams (users are not allowed to create their own teams)
+    /// </remarks>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="incoming"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost("{eventId}/teams")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> CreateTeam(ulong guildId, ulong eventId, [FromBody] CreateEventTeamDto incoming) {
+        var userId = User.GetId();
+        if (userId is null) {
+            return Unauthorized();
+        }
+        return await teamService.CreateAdminTeamAsync(eventId, incoming, userId);
+    }
+    
+    /// <summary>
+    /// Delete a team from an event
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="teamId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpDelete("{eventId}/teams/{teamId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> DeleteTeam(ulong guildId, ulong eventId, int teamId)
+    {
+        return await teamService.DeleteTeamAsync(teamId);
+    }
+
+    /// <summary>
+    /// Remove a member from a team
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="teamId"></param>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpDelete("{eventId}/teams/{teamId}/members/{playerUuidOrIgn}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> KickTeamMember(ulong guildId, ulong eventId, int teamId, string playerUuidOrIgn)
+    {
+        return await teamService.KickMemberAsync(teamId, playerUuidOrIgn);
+    }
+    
+    /// <summary>
+    /// Add a member to a team
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="teamId"></param>
+    /// <param name="playerUuidOrIgn"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost("{eventId}/teams/{teamId}/members/{playerUuidOrIgn}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> AddTeamMember(ulong guildId, ulong eventId, int teamId, string playerUuidOrIgn)
+    {
+        return await teamService.AddMemberToTeamAsync(teamId, playerUuidOrIgn);
     }
 }

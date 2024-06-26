@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using EliteAPI.Authentication;
+using EliteAPI.Background.Discord;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
@@ -11,12 +12,14 @@ using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Quartz;
 
 namespace EliteAPI.Services;
 
 public class DiscordService(
     IHttpClientFactory httpClientFactory,
     DataContext context,
+    ISchedulerFactory schedular,
     ILogger<DiscordService> logger,
     UserManager<ApiUser> userManager,
     IOptions<ConfigCooldownSettings> coolDowns)
@@ -188,7 +191,7 @@ public class DiscordService(
         return guild?.Permissions ?? "0";
     }
 
-    private async Task<List<GuildMember>> FetchUserGuilds(ApiUser user, string accessToken) {
+    public async Task<List<GuildMember>> FetchUserGuilds(ApiUser user, string accessToken) {
         const string url = DiscordBaseUrl + "/users/@me/guilds";
 
         var client = httpClientFactory.CreateClient(ClientName);
@@ -233,7 +236,6 @@ public class DiscordService(
     }
     
     public async Task<List<GuildMemberDto>> GetUsersGuilds(ulong userId, string accessToken) {
-
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null) return [];
         
@@ -242,13 +244,17 @@ public class DiscordService(
             .Where(gm => gm.AccountId == userId.ToString())
             .ToListAsync();
         
-        if (existing.Count > 0 && !user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
-            return existing.Select(gm => gm.ToDto()).ToList();
+        if (existing.Count <= 0 || user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
+            var jobData = new JobDataMap() {
+                { "userId", user.Id },
+                { "token", accessToken }
+            };
+            
+            var sch = await schedular.GetScheduler();
+            await sch.TriggerJob(RefreshUserGuildsBackgroundJob.Key, jobData);
         }
         
-        var members = await FetchUserGuilds(user, accessToken);
-        
-        return members.Select(gm => gm.ToDto()).ToList();
+        return existing.Select(gm => gm.ToDto()).ToList();
     }
     
     private async Task<GuildMember?> UpdateGuildMember(ulong userId, DiscordGuild guild) {
