@@ -51,7 +51,10 @@ public class EventTeamController(
 		var teams = await teamService.GetEventTeamsAsync(eventId);
 		var mapped = mapper.Map<List<EventTeamWithMembersDto>>(teams);
         
-		var expiry = eliteEvent?.Active is true ? TimeSpan.FromMinutes(2) : TimeSpan.FromMinutes(10);
+		var now = DateTime.UtcNow;
+		var expiry = eliteEvent?.StartTime < now && eliteEvent.EndTime > now 
+			? TimeSpan.FromMinutes(2) 
+			: TimeSpan.FromMinutes(10);
 		await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), expiry);
         
 		return Ok(mapped);

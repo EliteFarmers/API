@@ -324,6 +324,11 @@ public class EventController(
         foreach (var member in members)
         {
             member.Status = EventMemberStatus.Left;
+
+            if (member.TeamId is not null) {
+                return BadRequest("Leave your team before leaving the event.");
+            }
+            
             member.TeamId = null;
             member.Team = null;
         }

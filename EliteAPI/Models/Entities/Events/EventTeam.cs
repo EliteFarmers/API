@@ -7,7 +7,7 @@ public class EventTeam {
 	[Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
 	
-	[MaxLength(32)]
+	[MaxLength(64)]
 	public required string Name { get; set; }
 	[MaxLength(6)]
 	public string? Color { get; set; }
@@ -18,7 +18,7 @@ public class EventTeam {
 	public List<EventMember> Members { get; set; } = [];
 	public double Score => Members.Sum(m => m.Score);
 	
-	[MaxLength(18)]
+	[MaxLength(22)]
 	public required string UserId { get; set; }
 	
 	[ForeignKey("Event")]
