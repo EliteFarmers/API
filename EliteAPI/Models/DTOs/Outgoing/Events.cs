@@ -113,15 +113,22 @@ public class EventTeamWithMembersDto : EventTeamDto {
 
 
 public class CreateEventTeamDto {
-    [MaxLength(32)]
-    public string? Name { get; set; }
+    /// <summary>
+    /// An array of strings for the team name, example: [ "Bountiful", "Farmers" ]
+    /// </summary>
+    [MinLength(1), MaxLength(3)]
+    public List<string>? Name { get; set; }
     [MaxLength(7)]
     public string? Color { get; set; }
 }
 
 public class UpdateEventTeamDto {
-    [MaxLength(32)]
-    public string? Name { get; set; }
+    /// <summary>
+    /// An array of strings for the team name, example: [ "Bountiful", "Farmers" ]
+    /// </summary>
+    [MinLength(1), MaxLength(3)]
+    public List<string>? Name { get; set; }
+    
     [MaxLength(7)]
     public string? Color { get; set; }
 }
@@ -288,6 +295,16 @@ public class CreateEventDto {
     /// </summary>
     [MaxLength(24)]
     public string? BlockedRole { get; set; }
+
+    /// <summary>
+    /// Max amount of teams allowed in the event, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeams { get; set; } = 0;
+
+    /// <summary>
+    /// Max amount of members allowed in a team, 0 if solo event, -1 if unlimited
+    /// </summary>
+    public int MaxTeamMembers { get; set; } = 0;
 }
 
 public class CreateWeightEventDto : CreateEventDto {

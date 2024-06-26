@@ -19,9 +19,9 @@ public class EventTeamService(
 	: IEventTeamService 
 {
 	private readonly ImmutableList<string> _eventTeamWordList = 
-		ImmutableList.CreateRange(config.Value.TeamsWordList.Adjectives
-			.Concat(config.Value.TeamsWordList.Nouns)
-			.Concat(config.Value.TeamsWordList.Verbs));
+		ImmutableList.CreateRange(config.Value.TeamsWordList.First
+			.Concat(config.Value.TeamsWordList.Second)
+			.Concat(config.Value.TeamsWordList.Third));
 	
 	public async Task<ActionResult> CreateUserTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
 		var member = await eventService.GetEventMemberByIdAsync(userId, eventId);
@@ -48,7 +48,7 @@ public class EventTeamService(
 		}
 		
 		member.Team = new EventTeam {
-			Name = team.Name,
+			Name = string.Join(' ', team.Name),
 			Color = team.Color,
 			UserId = userId,
 			EventId = eventId
@@ -71,13 +71,30 @@ public class EventTeamService(
 		}
 		
 		var newTeam = new EventTeam {
-			Name = team.Name,
+			Name = string.Join(' ', team.Name),
 			Color = team.Color,
 			UserId = "admin",
 			EventId = eventId
 		};
 
 		context.EventTeams.Add(newTeam);
+		await context.SaveChangesAsync();
+
+		return new OkResult();
+	}
+
+	public async Task<ActionResult> RegenerateJoinCodeAsync(int teamId, string userId) {
+		var team = await GetTeamAsync(teamId);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		if (team.UserId != userId) {
+			return new UnauthorizedObjectResult("You are not the team owner");
+		}
+		
+		team.JoinCode = EventTeam.NewJoinCode();
+		context.Entry(team).State = EntityState.Modified;
 		await context.SaveChangesAsync();
 
 		return new OkResult();
@@ -310,7 +327,7 @@ public class EventTeamService(
 			team.Name = null;
 		}
 		
-		existing.Name = team.Name ?? existing.Name;
+		existing.Name = team.Name is not null ? string.Join(' ', team.Name) : existing.Name;
 		existing.Color = team.Color ?? existing.Color;
 		
 		context.Entry(existing).State = EntityState.Modified;
@@ -323,24 +340,25 @@ public class EventTeamService(
 		return config.Value.TeamsWordList;
 	}
 
-	public bool IsValidTeamName([NotNullWhen(true)] string? name) {
-		if (string.IsNullOrWhiteSpace(name)) {
+	public bool IsValidTeamName([NotNullWhen(true)] List<string>? words) {
+		if (words is null) {
 			return false;
 		}
 		
-		var words = name.Split(' ');
-		if (words.Length is > 3 or < 2) {
+		var distinctWords = words.Distinct().ToList();
+		
+		if (distinctWords.Count is > 3 or < 2) {
 			return false;
 		}
 		
 		return words.All(w => _eventTeamWordList.Contains(w));
 	}
 
-	private string GetRandomTeamName() {
+	private List<string> GetRandomTeamName() {
 		var random = new Random();
-		var adjective = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
-		var noun = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
-		var verb = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
-		return $"{adjective} {noun} {verb}";
+		var first = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
+		var second = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
+		var third = _eventTeamWordList[random.Next(_eventTeamWordList.Count)];
+		return [ first, second, third ];
 	}
 }

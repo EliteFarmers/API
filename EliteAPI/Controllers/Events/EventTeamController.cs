@@ -103,7 +103,15 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 		
-		return await teamService.CreateUserTeamAsync(eventId, team, userId);
+		var response = await teamService.CreateUserTeamAsync(eventId, team, userId);
+		
+		if (response is OkResult) {
+			// Invalidate teams cache
+			var db = redis.GetDatabase();
+			db.KeyDelete($"event:{eventId}:teams");
+		}
+
+		return response;
 	}
 
 	/// <summary>
@@ -124,6 +132,25 @@ public class EventTeamController(
 		}
 
 		return await teamService.UpdateTeamAsync(teamId, team, userId);
+	}
+	
+	/// <summary>
+	/// Generate new join code for a team
+	/// </summary>
+	/// <param name="eventId"></param>
+	/// <param name="teamId"></param>
+	/// <returns></returns>
+	[Authorize]
+	[HttpPost("{eventId}/team/{teamId:int}/code")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+	public async Task<IActionResult> UpdateTeamJoinCode(ulong eventId, int teamId) {
+		var userId = User.GetId();
+		if (userId is null) {
+			return Unauthorized();
+		}
+
+		return await teamService.RegenerateJoinCodeAsync(teamId, userId);
 	}
 	
 	/// <summary>

@@ -7,8 +7,8 @@ public class ConfigEventSettings
 
 public class EventTeamsWordListDto
 {
-    public List<string> Adjectives { get; set; } = [];
-    public List<string> Nouns { get; set; } = [];
-    public List<string> Verbs { get; set; } = [];
+    public List<string> First { get; set; } = [];
+    public List<string> Second { get; set; } = [];
+    public List<string> Third { get; set; } = [];
 }
 

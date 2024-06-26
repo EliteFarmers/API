@@ -62,6 +62,18 @@ public class EventService(
 			return new BadRequestObjectResult("Event must be at least 3 days long");
 		}
 
+		if (eventDto.MaxTeams < -1) {
+			return new BadRequestObjectResult("Invalid max teams");
+		}
+		
+		if (eventDto.MaxTeamMembers < -1) {
+			return new BadRequestObjectResult("Invalid max members");
+		}
+		
+		if (eventDto is { MaxTeams: -1, MaxTeamMembers: -1 }) {
+			return new BadRequestObjectResult("Max members cannot be unlimited if max teams is unlimited");
+		}
+
 		var eliteEvent = eventDto.Type switch {
 			EventType.FarmingWeight => CreateWeightEvent(eventDto, guildId),
 			EventType.Medals => CreateMedalsEvent(eventDto, guildId),
@@ -212,6 +224,9 @@ public class EventService(
 			RequiredRole = eventDto.RequiredRole,
 			BlockedRole = eventDto.BlockedRole,
 			
+			MaxTeams = eventDto.MaxTeams,
+			MaxTeamMembers = eventDto.MaxTeamMembers,
+			
 			GuildId = guildId,
 		};
 
@@ -260,6 +275,9 @@ public class EventService(
 			
 			RequiredRole = eventDto.RequiredRole,
 			BlockedRole = eventDto.BlockedRole,
+			
+			MaxTeams = eventDto.MaxTeams,
+			MaxTeamMembers = eventDto.MaxTeamMembers,
 			
 			GuildId = guildId,
 		};

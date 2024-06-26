@@ -11,8 +11,9 @@ public class EventTeam {
 	public required string Name { get; set; }
 	[MaxLength(6)]
 	public string? Color { get; set; }
-	[MaxLength(6)]
-	public string JoinCode { get; set; } = Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6];
+
+	[MaxLength(6)] 
+	public string JoinCode { get; set; } = NewJoinCode();
 
 	public List<EventMember> Members { get; set; } = [];
 	public double Score => Members.Sum(m => m.Score);
@@ -23,4 +24,8 @@ public class EventTeam {
 	[ForeignKey("Event")]
 	public ulong EventId { get; set; }
 	public Event Event { get; set; } = null!;
+	
+	public static string NewJoinCode() {
+		return Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6].ToUpperInvariant();
+	}
 }
