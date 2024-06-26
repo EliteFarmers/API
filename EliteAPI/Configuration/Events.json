@@ -60,7 +60,7 @@
         "Feeble",
         "Drab",
         "Immoral",
-        "Indsidious",
+        "Insidious",
         "Zealous",
         "Germanic",
         "Cooperative",
@@ -69,14 +69,14 @@
         "Obtuse",
         "Obsolete",
         "Responsible",
-        "Dilligent",
+        "Diligent",
         "Industrious",
         "Illustrious",
         "Tireless",
         "Nocturnal",
         "Impervious",
         "Resilient",
-        "Decieving",
+        "Deceiving",
         "Elite",
         "Elitist",
         "Elder",
@@ -112,6 +112,8 @@
         "Cool",
         "Stingy",
         "Opulent"
+	"Dark"
+	"Light"
       ],
       "Second": [
         "Wheat",
@@ -295,17 +297,19 @@
         "Shears",
         "Fence",
         "Gates",
+	"Lords",
         "Sheds",
         "Chickens",
         "Cows",
-        "Sheeps",
+        "Sheep",
         "Pigs",
         "Catalysts",
         "Cattle",
         "Deer",
         "Horses",
         "Tractors",
-        "Boxes"
+        "Boxes",
+	"Exterminators"
       ]
     }
   }
