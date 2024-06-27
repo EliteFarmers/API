@@ -66,6 +66,12 @@ public class EventToolCounterState {
 
 public static class ToolCounterStateExtensions {
 	public static long IncreaseFromInitial(this EventToolCounterState e) {
+		// Counter can overflow into negatives
+		if (e is { Initial: > 0, Current: < 0 }) {
+			var initial = e.Initial - int.MaxValue - int.MaxValue;
+			return e.Current - initial - e.Uncounted;
+		}
+        
 		return e.Current - e.Initial - e.Uncounted;
 	}
 	public static long IncreaseFromPrevious(this EventToolCounterState e) {

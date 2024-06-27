@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Tests.EventProgressTests; 
@@ -156,5 +157,44 @@ public class ToolStateTests {
         // Check that the "Initial" values are correct
         third["103d2e1f-0351-429f-b116-c85e81886598"].Counter.Initial.Should().Be(123121);
         third["103d2e1f-0351-429f-b116-c85e81886598"].Cultivating.Initial.Should().Be(456);
+        
+        // Check that the increases are correct
+        third["103d2e1f-0351-429f-b116-c85e81886598"].Counter.IncreaseFromInitial().Should().Be(0);
+        third["103d2e1f-0351-429f-b116-c85e81886598"].Cultivating.IncreaseFromInitial().Should().Be(0);
+    }
+    
+    [Fact]
+    public void ToolCultivatingWentNegativeTest() {
+        var first = new List<ItemDto> {
+            new() {
+                SkyblockId = "THEORETICAL_HOE_WARTS_3",
+                Uuid = "103d2e1f-0351-429f-b116-c85e81886598",
+                Attributes = new Dictionary<string, string> {
+                    { "modifier", "bountiful" },
+                    { "mined_crops", "1248372" },
+                    { "farmed_cultivating", "2147483600" } // 47 away from int limit
+                }
+            }
+        }.ExtractToolStates();
+
+        first.Should().HaveCount(1);
+        first["103d2e1f-0351-429f-b116-c85e81886598"].Cultivating.Initial.Should().Be(2147483600);
+        
+        var second = new List<ItemDto> {
+            new() {
+                SkyblockId = "THEORETICAL_HOE_WARTS_3",
+                Uuid = "103d2e1f-0351-429f-b116-c85e81886598",
+                Attributes = new Dictionary<string, string> {
+                    { "modifier", "bountiful" },
+                    { "mined_crops", "1248372" },
+                    { "farmed_cultivating", "-2147483604" } // Wrapped around
+                }
+            }
+        }.ExtractToolStates(first);
+        
+        second.Should().HaveCount(1);
+        second["103d2e1f-0351-429f-b116-c85e81886598"].IsActive.Should().BeTrue();
+
+        second["103d2e1f-0351-429f-b116-c85e81886598"].Cultivating.IncreaseFromInitial().Should().Be(90);
     }
 }
