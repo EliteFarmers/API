@@ -8,13 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services; 
 
-public class TimescaleService : ITimescaleService {
-    private readonly DataContext _context;
-
-    public TimescaleService(DataContext context) {
-        _context = context;
-    }
-
+public class TimescaleService(DataContext context) : ITimescaleService 
+{
     public async Task<List<CollectionDataPointDto>> GetCropCollection(Guid memberId, Crop crop, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
         var crops = await GetCropCollections(memberId, start, end, perDay);
         
@@ -26,7 +21,7 @@ public class TimescaleService : ITimescaleService {
 
     public async Task<List<CropCollectionsDataPointDto>> GetCropCollections(Guid memberId, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
         // Get all crop collections for the member between the start and end time. 
-        var cropCollection = await _context.CropCollections
+        var cropCollection = await context.CropCollections
             .Where(cc => cc.ProfileMemberId == memberId && cc.Time >= start && cc.Time <= end)
             .OrderBy(cc => cc.Time)
             .ToListAsync();
@@ -45,7 +40,7 @@ public class TimescaleService : ITimescaleService {
 
     public async Task<List<SkillsDataPointDto>> GetSkills(Guid memberId, DateTimeOffset start, DateTimeOffset end, int perDay = 4) {
         // Get all crop collections for the member between the start and end time. 
-        var skillExperiences = await _context.SkillExperiences
+        var skillExperiences = await context.SkillExperiences
             .Where(cc => cc.ProfileMemberId == memberId && cc.Time >= start && cc.Time <= end)
             .OrderBy(cc => cc.Time)
             .ToListAsync();
@@ -80,8 +75,8 @@ public class TimescaleService : ITimescaleService {
             var span = TimeSpan.FromDays(1) / perDay;
             var groupedByInterval = orderedGroup.GroupBy(obj => obj.Time.Ticks / span.Ticks).ToList();
             
-            // Add the first entry of each interval
-            selectedEntries.AddRange(groupedByInterval.Select(hourly => hourly.First()));
+            // Add the last entry of each interval
+            selectedEntries.AddRange(groupedByInterval.Select(hourly => hourly.Last()));
 
             // If there are enough groups, we are done here
             if (groupedByInterval.Count >= perDay) continue;
@@ -90,8 +85,8 @@ public class TimescaleService : ITimescaleService {
                 .Select(g => g.ToList())
                 .Where(g => g.Count > 1).ToList();
             
-            // Won't guarantee that that the max amount of entries will be returned, and might go over, but it's close enough
-            selectedEntries.AddRange(intervals.Select(g => g.Last()));
+            // Won't guarantee that the max amount of entries will be returned, and might go over, but it's close enough
+            selectedEntries.AddRange(intervals.Select(g => g.First()));
         }
         
         return selectedEntries;
