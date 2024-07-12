@@ -106,5 +106,11 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()));
+
+        CreateMap<EventMember, ProfileEventMemberDto>()
+            .ForMember(e => e.EventName, opt => opt.MapFrom(e => e.Event.Name))
+            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
     }
 }

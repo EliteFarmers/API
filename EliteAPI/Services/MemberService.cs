@@ -44,6 +44,7 @@ public class MemberService(
                 .Where(e => 
                     (e.Status == EventMemberStatus.Active || e.Status == EventMemberStatus.Inactive) 
                     && e.EndTime > now && e.StartTime <= now))
+            .ThenInclude(m => m.Event)
             .Include(p => p.ChocolateFactory).AsNoTracking()
             .Include(p => p.JacobData)
             .ThenInclude(j => j.Contests)

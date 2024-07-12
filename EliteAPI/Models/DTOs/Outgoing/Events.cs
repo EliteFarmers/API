@@ -153,6 +153,21 @@ public class EventMemberDto {
     public string? Notes { get; set; }
 }
 
+public class ProfileEventMemberDto {
+    public required string EventId { get; set; }
+    public required string EventName { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TeamId { get; set; }
+    public EventMemberStatus Status { get; set; }
+
+    /// <summary>
+    /// Currently not populated
+    /// </summary>
+    public int Rank { get; set; }
+    public string? Score { get; set; }
+}
+
 public class EventMemberDetailsDto {
     public string? PlayerUuid { get; set; }
     public string? ProfileId { get; set; }

@@ -53,7 +53,7 @@ public class ProfileMemberDto
     public required FarmingWeightDto FarmingWeight { get; set; }
     public SkillsDto Skills { get; set; } = new();
     public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
-    public List<EventMemberDto> Events { get; set; } = [];
+    public List<ProfileEventMemberDto> Events { get; set; } = [];
 
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; }
