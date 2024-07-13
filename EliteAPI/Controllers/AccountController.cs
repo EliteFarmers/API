@@ -41,10 +41,13 @@ public partial class AccountController(
         if (user?.AccountId is null) {
             return BadRequest("Linked account not found.");
         }
-        
+
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
+            .Include(a => a.Entitlements)
+            .Include(a => a.UserSettings)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId));
 
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
@@ -215,6 +218,25 @@ public partial class AccountController(
         }
 
         return await accountService.MakePrimaryAccount(user.AccountId.Value, playerUuidOrIgn);
+    }
+    
+    /// <summary>
+    /// Update user settings
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <returns></returns>
+    [Authorize]
+    [HttpPatch("settings")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<ActionResult> UpdateSettings(UserSettingsDto settings)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return Unauthorized("Account not found.");
+        }
+
+        return await accountService.UpdateSettings(user.AccountId.Value, settings);
     }
 
     [GeneratedRegex("^[a-zA-Z0-9_]{1,26}$")]

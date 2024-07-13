@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Models.Entities.Discord; 
 
@@ -32,6 +33,7 @@ public class Guild {
     
     public List<GuildChannel> Channels { get; set; } = [];
     public List<GuildRole> Roles { get; set; } = [];
+    public List<GuildEntitlement> Entitlements { get; set; } = [];
     
     public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }

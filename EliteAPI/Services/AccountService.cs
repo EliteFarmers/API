@@ -1,4 +1,5 @@
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
@@ -16,6 +17,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
         return await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
+            .Include(a => a.UserSettings)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
@@ -181,5 +183,21 @@ public class AccountService(DataContext context, IMemberService memberService) :
         await context.SaveChangesAsync();
         
         return new AcceptedResult();
+    }
+
+    public async Task<ActionResult> UpdateSettings(ulong discordId, UserSettingsDto settings) {
+        var account = await GetAccount(discordId);
+
+        if (account is null)
+        {
+            return new UnauthorizedObjectResult("Account not found.");
+        }
+
+        account.UserSettings.WeightImage = settings.WeightImage ?? account.UserSettings.WeightImage;
+        context.Accounts.Update(account);
+        
+        await context.SaveChangesAsync();
+        
+        return new OkResult();
     }
 }

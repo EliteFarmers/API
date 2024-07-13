@@ -4,9 +4,11 @@ using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using Z.EntityFramework.Extensions;
 
@@ -38,6 +40,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
         }
         
         optionsBuilder.UseNpgsql(Source);
+
+        optionsBuilder.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -63,6 +67,11 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             .HasValue<EventMember>(EventType.None)
             .HasValue<WeightEventMember>(EventType.FarmingWeight)
             .HasValue<MedalEventMember>(EventType.Medals);
+        
+        modelBuilder.Entity<Entitlement>().HasDiscriminator(e => e.Target)
+            .HasValue<Entitlement>(EntitlementTarget.None)
+            .HasValue<UserEntitlement>(EntitlementTarget.User)
+            .HasValue<GuildEntitlement>(EntitlementTarget.Guild);
     }
 
     public DbSet<EliteAccount> Accounts { get; set; } = null!;
@@ -84,6 +93,12 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<GuildChannel> GuildChannels { get; set; } = null!;
     public DbSet<GuildRole> GuildRoles { get; set; } = null!;
     public DbSet<GuildMember> GuildMembers { get; set; } = null!;
+    
+    // Discord Monetization
+    public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<Entitlement> Entitlements { get; set; } = null!;
+    public DbSet<UserEntitlement> UserEntitlements { get; set; } = null!;
+    public DbSet<GuildEntitlement> GuildEntitlements { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;

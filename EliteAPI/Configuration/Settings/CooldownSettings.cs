@@ -9,4 +9,6 @@ public class ConfigCooldownSettings
     public int DiscordGuildsCooldown { get; set; }
     public int UserGuildsCooldown { get; set; }
     public int UserRolesCooldown { get; set; }
+    public int DiscordProductsCooldown { get; set; }
+    public int EntitlementsRefreshCooldown { get; set; }
 }

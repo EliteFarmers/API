@@ -116,6 +116,7 @@ public static class ServiceExtensions
         services.AddScoped<IBadgeService, BadgeService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventTeamService, EventTeamService>();
+        services.AddScoped<IMonetizationService, MonetizationService>();
 
         services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();

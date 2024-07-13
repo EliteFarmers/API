@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Mappers.Accounts;
 
@@ -8,11 +9,9 @@ public class AccountMapper : Profile
 {
     public AccountMapper() {
         CreateMap<EliteAccount, AuthorizedAccountDto>()
-            .ForMember(a => a.Inventory, opt => opt.MapFrom(a => a.Inventory))
-            .ForMember(a => a.Redemptions, opt => opt.MapFrom(a => a.Redemptions))
-            .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.Settings))
+            .ForMember(a => a.Entitlements, opt => opt.MapFrom(a => a.Entitlements))
+            .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.UserSettings))
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
-            .ForMember(a => a.Permissions, opt => opt.MapFrom(a => (int) a.Permissions))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
     }
 }
@@ -45,10 +44,14 @@ public class EliteMapper : Profile
 {
     public EliteMapper()
     {
-        CreateMap<EliteSettings, EliteSettingsDto>();
+        CreateMap<UserSettings, UserSettingsDto>();
 
-        CreateMap<EliteInventory, EliteInventoryDto>()
-            .ForMember(x => x.SpentMedals, opt => opt.MapFrom(x => x.SpentMedals))
-            .ForMember(x => x.TotalEarnedMedals, opt => opt.MapFrom(x => x.TotalEarnedMedals));
+        CreateMap<Entitlement, UserEntitlementDto>()
+            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
+            .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
+        
+        CreateMap<UserEntitlement, UserEntitlementDto>()
+            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
+            .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
     }
 }

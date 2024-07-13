@@ -171,33 +171,19 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<EliteInventory>("Inventory")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
                     b.Property<string>("Locale")
                         .HasColumnType("text");
 
-                    b.Property<int>("Permissions")
+                    b.Property<int?>("UserSettingsId")
                         .HasColumnType("integer");
-
-                    b.Property<List<Purchase>>("Purchases")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<List<Redemption>>("Redemptions")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<EliteSettings>("Settings")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserSettingsId");
 
                     b.ToTable("Accounts");
                 });
@@ -278,6 +264,23 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("MinecraftAccountId");
 
                     b.ToTable("UserBadges");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.UserSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("WeightImage")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserSettings");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.Guild", b =>
@@ -1013,6 +1016,75 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Skills");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Entitlement", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool?>("Consumed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("ProductId")
+                        .HasColumnType("numeric(20,0)")
+                        .HasAnnotation("Relational:JsonPropertyName", "sku_id");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Target")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Entitlements");
+
+                    b.HasDiscriminator<int>("Target").HasValue(0);
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
+                {
+                    b.Property<decimal>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Flags")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
                 {
                     b.Property<long>("Cactus")
@@ -1321,6 +1393,31 @@ namespace EliteAPI.Data.Migrations
                     b.HasDiscriminator().HasValue(1);
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.GuildEntitlement", b =>
+                {
+                    b.HasBaseType("EliteAPI.Models.Entities.Monetization.Entitlement");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasIndex("GuildId");
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.UserEntitlement", b =>
+                {
+                    b.HasBaseType("EliteAPI.Models.Entities.Monetization.Entitlement");
+
+                    b.Property<decimal>("AccountId")
+                        .HasMaxLength(22)
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.ApiUser", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "Account")
@@ -1328,6 +1425,15 @@ namespace EliteAPI.Data.Migrations
                         .HasForeignKey("AccountId");
 
                     b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.EliteAccount", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.UserSettings", "UserSettings")
+                        .WithMany()
+                        .HasForeignKey("UserSettingsId");
+
+                    b.Navigation("UserSettings");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.MinecraftAccount", b =>
@@ -1803,6 +1909,41 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Entitlement", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Monetization.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
+                {
+                    b.OwnsOne("EliteAPI.Models.Entities.Monetization.ProductFeatures", "Features", b1 =>
+                        {
+                            b1.Property<decimal>("ProductId")
+                                .HasColumnType("numeric(20,0)");
+
+                            b1.Property<int?>("MaxJacobLeaderboards")
+                                .HasColumnType("integer");
+
+                            b1.Property<int?>("MaxMonthlyEvents")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("ProductId");
+
+                            b1.ToTable("Products");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductId");
+                        });
+
+                    b.Navigation("Features");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
@@ -1876,6 +2017,28 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.GuildEntitlement", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
+                        .WithMany()
+                        .HasForeignKey("GuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guild");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.UserEntitlement", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "Account")
+                        .WithMany("Entitlements")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.ApiUser", b =>
                 {
                     b.Navigation("GuildMemberships");
@@ -1883,6 +2046,8 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.EliteAccount", b =>
                 {
+                    b.Navigation("Entitlements");
+
                     b.Navigation("MinecraftAccounts");
                 });
 

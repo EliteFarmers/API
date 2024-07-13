@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Models.Entities.Accounts; 
 
@@ -9,26 +10,20 @@ public class EliteAccount
 {
     [Key]
     public required ulong Id { get; set; }
-    public PermissionFlags Permissions { get; set; } = PermissionFlags.None;
     
     public required string DisplayName { get; set; }
     public required string Username { get; set; }
     public string? Discriminator { get; set; } = "0";
-
     public string? Avatar { get; set; }
     public string? Email { get; set; }
     public string? Locale { get; set; }
-
-    [Column(TypeName = "jsonb")]
-    public List<Purchase> Purchases { get; set; } = new();
-    [Column(TypeName = "jsonb")]
-    public List<Redemption> Redemptions { get; set; } = new();
-    [Column(TypeName = "jsonb")] 
-    public EliteInventory Inventory { get; set; } = new();
-    [Column(TypeName = "jsonb")]
-    public EliteSettings Settings { get; set; } = new();
     
-    public List<MinecraftAccount> MinecraftAccounts { get; set; } = new();
+    [ForeignKey("UserSettings")]
+    public int? UserSettingsId { get; set; }
+    public UserSettings UserSettings { get; set; } = new();
+    
+    public List<UserEntitlement> Entitlements { get; set; } = [];
+    public List<MinecraftAccount> MinecraftAccounts { get; set; } = [];
 }
 
 [Flags]
