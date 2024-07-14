@@ -33,6 +33,17 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 				});
 			});
 		
+		var entitlementsKey = RefreshEntitlementsBackgroundJob.Key;
+		options.AddJob<RefreshEntitlementsBackgroundJob>(builder => builder.WithIdentity(entitlementsKey))
+			.AddTrigger(trigger => {
+				trigger.ForJob(entitlementsKey);
+				trigger.StartNow();
+				trigger.WithSimpleSchedule(schedule => {
+					schedule.WithIntervalInSeconds(_cooldowns.EntitlementsRefreshCooldown);
+					schedule.RepeatForever();
+				});
+			});
+		
 		options.AddJob<RefreshAuthTokenBackgroundTask>(builder => {
 			builder.WithIdentity(RefreshAuthTokenBackgroundTask.Key);
 			builder.StoreDurably();

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Services.Interfaces;
@@ -20,6 +21,7 @@ public class MonetizationService(
 	IHttpClientFactory httpClientFactory,
 	IConnectionMultiplexer redis,
 	ILogger<DiscordService> logger,
+	IBadgeService badgeService,
 	IOptions<ConfigCooldownSettings> coolDowns)
 	: IMonetizationService 
 {
@@ -133,10 +135,13 @@ public class MonetizationService(
 		var db = redis.GetDatabase();
 		
 		if (await db.KeyExistsAsync(key)) return;
-		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.EntitlementsRefreshCooldown));
+		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.ManualEntitlementsRefreshCooldown));
 		
 		var user = await context.Accounts
-			.Include(x => x.Entitlements)
+			.Include(a => a.Entitlements)
+			.ThenInclude(e => e.Product)
+			.Include(a => a.MinecraftAccounts)
+			.ThenInclude(m => m.Badges)
 			.FirstOrDefaultAsync(x => x.Id == userId);
 		
 		if (user is null) return;
@@ -169,6 +174,35 @@ public class MonetizationService(
 				existing.EndDate = entitlement.EndsAt;
 			}
 		}
+
+		if (user.Entitlements.Count > 0) {
+			await UpdateUserFeaturesAsync(user);
+		}
+		
+		await context.SaveChangesAsync();
+	}
+
+	private async Task UpdateUserFeaturesAsync(EliteAccount account) {
+		var primary = account.MinecraftAccounts.FirstOrDefault(x => x.Selected);
+		if (primary is null) return;
+
+		var badgeEntitlements = account.Entitlements
+			.Where(x => x is { Active: true, Product.Features.BadgeId: > 0 })
+			.GroupBy(x => x.Product.Features.BadgeId)
+			.Select(g => new { BadgeId = g.Key!.Value, Active = g.Any(x => x.Active) });
+		
+		account.ActiveRewards = false;
+		foreach (var badge in badgeEntitlements) {
+			switch (badge.Active) {
+				case true when primary.Badges.All(x => x.BadgeId != badge.BadgeId):
+					account.ActiveRewards = true;
+					await badgeService.AddBadgeToUser(primary.Id, badge.BadgeId);
+					break;
+				case false when primary.Badges.Any(x => x.BadgeId == badge.BadgeId):
+					await badgeService.RemoveBadgeFromUser(primary.Id, badge.BadgeId);
+					break;
+			}
+		}
 		
 		await context.SaveChangesAsync();
 	}
@@ -178,7 +212,7 @@ public class MonetizationService(
 		var db = redis.GetDatabase();
 		
 		if (await db.KeyExistsAsync(key)) return;
-		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.EntitlementsRefreshCooldown));
+		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.ManualEntitlementsRefreshCooldown));
 		
 		var guild = await context.Guilds
 			.Include(x => x.Entitlements)

@@ -8,6 +8,7 @@
     "UserGuildsCooldown": 600,
     "UserRolesCooldown": 3600,
     "DiscordProductsCooldown": 2400,
-    "EntitlementsRefreshCooldown": 60
+    "ManualEntitlementsRefreshCooldown": 60,
+    "EntitlementsRefreshCooldown": 43200
   }
 }

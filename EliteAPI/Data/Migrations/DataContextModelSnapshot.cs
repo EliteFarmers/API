@@ -158,6 +158,9 @@ namespace EliteAPI.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("numeric(20,0)");
 
+                    b.Property<bool>("ActiveRewards")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
 
@@ -288,6 +291,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool>("ActiveRewards")
+                        .HasColumnType("boolean");
 
                     b.Property<decimal>("AdminRole")
                         .HasColumnType("numeric(20,0)");

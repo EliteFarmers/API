@@ -30,6 +30,7 @@ public class Guild {
     public int MemberCount { get; set; }
     public bool HasBot { get; set; }
     public bool IsPublic { get; set; } = false;
+    public bool ActiveRewards { get; set; } = false;
     
     public List<GuildChannel> Channels { get; set; } = [];
     public List<GuildRole> Roles { get; set; } = [];

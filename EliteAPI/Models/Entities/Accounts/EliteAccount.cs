@@ -22,6 +22,7 @@ public class EliteAccount
     public int? UserSettingsId { get; set; }
     public UserSettings UserSettings { get; set; } = new();
     
+    public bool ActiveRewards { get; set; } = false;
     public List<UserEntitlement> Entitlements { get; set; } = [];
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = [];
 }
