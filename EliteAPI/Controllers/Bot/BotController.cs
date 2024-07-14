@@ -22,7 +22,8 @@ public class BotController(
     IDiscordService discordService,
     IGuildService guildService,
     IAccountService accountService, 
-    ILogger<BotController> logger, 
+    ILogger<BotController> logger,
+    IMonetizationService monetizationService,
     IBadgeService badgeService)
     : ControllerBase
 {
@@ -333,5 +334,16 @@ public class BotController(
     [HttpPost("account/{discordId:long:min(0)}/{playerIgnOrUuid}/primary")]
     public async Task<ActionResult> MakePrimaryAccount(long discordId, string playerIgnOrUuid) {
         return await accountService.MakePrimaryAccount((ulong) discordId, playerIgnOrUuid);
+    }
+    
+    /// <summary>
+    /// Refresh user purchases
+    /// </summary>
+    /// <param name="discordId"></param>
+    /// <returns></returns>
+    [HttpPost("account/{discordId:long:min(0)}/purchases")]
+    public async Task<ActionResult> RefreshUserEntitlements(ulong discordId) {
+        await monetizationService.FetchUserEntitlementsAsync(discordId);
+        return Ok();
     }
 }
