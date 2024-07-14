@@ -1,9 +1,14 @@
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -23,21 +28,26 @@ public class MonetizationService(
 
 	private readonly string _clientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID") 
 	                                    ?? throw new Exception("DISCORD_CLIENT_ID env variable is not set.");
-	private readonly string _clientSecret = Environment.GetEnvironmentVariable("DISCORD_CLIENT_SECRET") 
-	                                        ?? throw new Exception("DISCORD_CLIENT_SECRET env variable is not set.");
 	private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN") 
 	                                    ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");
     
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
-
-
-	public async Task UpdateProductCategoryAsync(ulong productId, ProductCategory category) {
+	
+	public async Task UpdateProductAsync(ulong productId, UpdateProductDto updateProductDto) {
 		var product = await context.Products
 			.FirstOrDefaultAsync(x => x.Id == productId);
 
 		if (product is null) return;
 		
-		product.Category = category;
+		product.Category = updateProductDto.Category ?? product.Category;
+		product.Icon = updateProductDto.Icon ?? product.Icon;
+		product.Description = updateProductDto.Description ?? product.Description;
+		
+		if (updateProductDto.Features is not null) {
+			product.Features.MaxJacobLeaderboards = updateProductDto.Features.MaxJacobLeaderboards ?? product.Features.MaxJacobLeaderboards;
+			product.Features.MaxMonthlyEvents = updateProductDto.Features.MaxMonthlyEvents ?? product.Features.MaxMonthlyEvents;
+			product.Features.BadgeId = updateProductDto.Features.BadgeId ?? product.Features.BadgeId;
+		}
 		
 		await context.SaveChangesAsync();
 	}
@@ -45,15 +55,79 @@ public class MonetizationService(
 	public async Task<List<UserEntitlement>> GetUserEntitlementsAsync(ulong userId) {
 		return await context.UserEntitlements
 			.Where(x => x.AccountId == userId)
+			.Include(u => u.Product)
 			.ToListAsync();
 	}
 
 	public async Task<List<GuildEntitlement>> GetGuildEntitlementsAsync(ulong guildId) {
 		return await context.GuildEntitlements
 			.Where(x => x.GuildId == guildId)
+			.Include(g => g.Product)
 			.ToListAsync();
 	}
-	
+
+	public async Task<ActionResult> GrantTestEntitlementAsync(ulong targetId, ulong productId, EntitlementTarget target = EntitlementTarget.User) {
+		var client = httpClientFactory.CreateClient(ClientName);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		
+		var body = new {
+			sku_id = productId,
+			owner_id = targetId,
+			owner_type = target,
+		};
+		
+		var jsonContent = JsonSerializer.Serialize(body);
+		
+		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements";
+		var response = await client.PostAsync(url, new StringContent(jsonContent, Encoding.UTF8, "application/json"));
+
+		if (!response.IsSuccessStatusCode) {
+			return new StatusCodeResult((int) response.StatusCode);
+		}
+
+		if (target == EntitlementTarget.Guild) {
+			await FetchGuildEntitlementsAsync(targetId);
+		} else {
+			await FetchUserEntitlementsAsync(targetId);
+		}
+
+		return new OkResult();
+	}
+
+	public async Task<ActionResult> RemoveTestEntitlementAsync(ulong targetId, ulong productId, EntitlementTarget target = EntitlementTarget.User) {
+		var entitlementId = (target == EntitlementTarget.Guild)
+			? await context.GuildEntitlements
+				.Where(x => x.ProductId == productId && x.GuildId == targetId)
+				.Select(x => x.Id)
+				.FirstOrDefaultAsync()
+			: await context.UserEntitlements
+				.Where(x => x.ProductId == productId && x.AccountId == targetId)
+				.Select(x => x.Id)
+				.FirstOrDefaultAsync();
+		
+		if (entitlementId == 0) {
+			return new NotFoundResult();
+		}
+		
+		var client = httpClientFactory.CreateClient(ClientName);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		
+		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements/{entitlementId}";
+		var response = await client.DeleteAsync(url);
+		
+		if (!response.IsSuccessStatusCode) {
+			return new StatusCodeResult((int) response.StatusCode);
+		}
+		
+		if (target == EntitlementTarget.Guild) {
+			await FetchGuildEntitlementsAsync(targetId);
+		} else {
+			await FetchUserEntitlementsAsync(targetId);
+		}
+
+		return new OkResult();
+	}
+
 	public async Task FetchUserEntitlementsAsync(ulong userId) {
 		var key = $"user:entitlements:{userId}";
 		var db = redis.GetDatabase();
@@ -75,14 +149,18 @@ public class MonetizationService(
 				.FirstOrDefault(x => x.ProductId == entitlement.ProductId);
 			
 			if (existing is null) {
-				user.Entitlements.Add(new UserEntitlement {
+				var newEntitlement = new UserEntitlement {
+					Id = entitlement.Id,
+					AccountId = user.Id,
 					ProductId = entitlement.ProductId,
 					Type = entitlement.Type,
 					Deleted = entitlement.Deleted,
 					Consumed = entitlement.Consumed,
 					StartDate = entitlement.StartsAt,
 					EndDate = entitlement.EndsAt,
-				});
+				};
+				user.Entitlements.Add(newEntitlement);
+				context.UserEntitlements.Add(newEntitlement);
 			} else {
 				existing.Type = entitlement.Type;
 				existing.Deleted = entitlement.Deleted;
@@ -116,14 +194,19 @@ public class MonetizationService(
 				.FirstOrDefault(x => x.ProductId == entitlement.ProductId);
 			
 			if (existing is null) {
-				guild.Entitlements.Add(new GuildEntitlement {
+				var newEntitlement = new GuildEntitlement {
+					Id = entitlement.Id,
+					GuildId = guild.Id,
 					ProductId = entitlement.ProductId,
 					Type = entitlement.Type,
 					Deleted = entitlement.Deleted,
 					Consumed = entitlement.Consumed,
 					StartDate = entitlement.StartsAt,
 					EndDate = entitlement.EndsAt,
-				});
+				};
+				
+				guild.Entitlements.Add(newEntitlement);
+				context.GuildEntitlements.Add(newEntitlement);
 			} else {
 				existing.Type = entitlement.Type;
 				existing.Deleted = entitlement.Deleted;
@@ -132,7 +215,48 @@ public class MonetizationService(
 				existing.EndDate = entitlement.EndsAt;
 			}
 		}
+
+		if (entitlements.Count > 0) {
+			await UpdateGuildFeaturesAsync(guild, guild.Entitlements);
+		}
 		
+		await context.SaveChangesAsync();
+	}
+	
+	private async Task UpdateGuildFeaturesAsync(Guild guild, List<GuildEntitlement> entitlements) {
+		if (guild.Features.Locked || entitlements.Count == 0) return;
+		
+		var maxLeaderboards = guild.Features.JacobLeaderboard?.MaxLeaderboards ?? 0;
+		var maxEvents = guild.Features.EventSettings?.MaxMonthlyEvents ?? 0;
+
+		var currentLeaderboards = 0;
+		var currentEvents = 0;
+
+		foreach (var entitlement in entitlements) {
+			if (!entitlement.Active) continue;
+
+			var features = entitlement.Product.Features;
+			if (features is { MaxMonthlyEvents: > 0 }) {
+				currentEvents = Math.Max(features.MaxMonthlyEvents.Value, currentEvents);
+			}
+            
+			if (features is { MaxJacobLeaderboards: > 0 }) {
+				currentLeaderboards = Math.Max(features.MaxJacobLeaderboards.Value, currentLeaderboards);
+			}
+		}
+
+		if (currentLeaderboards == maxLeaderboards && currentEvents == maxEvents) {
+			return;
+		}
+        
+		guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
+		guild.Features.JacobLeaderboard.MaxLeaderboards = currentLeaderboards;
+		guild.Features.EventSettings ??= new GuildEventSettings();
+		guild.Features.EventSettings.MaxMonthlyEvents = currentEvents;
+            
+		context.Entry(guild).Property(p => p.Features).IsModified = true;
+		context.Guilds.Update(guild);
+        
 		await context.SaveChangesAsync();
 	}
 	

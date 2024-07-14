@@ -34,6 +34,10 @@ public class Product {
 
 	[MaxLength(100)]
 	public required string Name { get; set; }
+	[MaxLength(1024)]
+	public string? Description { get; set; }
+	[MaxLength(256)]
+	public string? Icon { get; set; }
 	[MaxLength(128)]
 	public required string Slug { get; set; }
 	
@@ -48,11 +52,12 @@ public class Product {
 	public bool IsGuildSubscription => (Flags & 1 << 7) != 0;
 	public bool IsUserSubscription => (Flags & 1 << 8) != 0;
 	
-	public ProductFeatures? Features { get; set; }
+	public ProductFeatures Features { get; set; } = new();
 }
 
 [Owned]
 public class ProductFeatures {
 	public int? MaxMonthlyEvents { get; set; }
 	public int? MaxJacobLeaderboards { get; set; }
+	public int? BadgeId { get; set; }
 }

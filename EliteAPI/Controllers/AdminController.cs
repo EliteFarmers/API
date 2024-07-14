@@ -27,7 +27,7 @@ public class AdminController(
     /// </summary>
     /// <response code="200">List of admins</response>
     [HttpGet]
-    [Route("[controller]s")]
+    [Route("/[controller]s")]
     [Route("/v{version:apiVersion}/[controller]s")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]

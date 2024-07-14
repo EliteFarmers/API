@@ -21,6 +21,7 @@ public partial class AccountController(
     IMemberService memberService,
     IAccountService accountService, 
     IMojangService mojangService, 
+    IMonetizationService monetizationService,
     IMapper mapper,
     UserManager<ApiUser> userManager)
     : ControllerBase
@@ -46,6 +47,7 @@ public partial class AccountController(
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
             .Include(a => a.Entitlements)
+            .ThenInclude(a => a.Product)
             .Include(a => a.UserSettings)
             .AsSplitQuery()
             .FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId));
@@ -122,6 +124,7 @@ public partial class AccountController(
         result.DiscordAvatar = account.Avatar;
         result.PlayerData = mapper.Map<PlayerDataDto>(playerData);
         result.Profiles = profileDetails;
+        result.Settings = mapper.Map<UserSettingsDto>(account.UserSettings);
         
         return Ok(result);
     }
@@ -160,6 +163,7 @@ public partial class AccountController(
         result.DiscordAvatar = account?.Avatar;
         result.PlayerData = mappedPlayerData;
         result.Profiles = profilesDetails;
+        result.Settings = mapper.Map<UserSettingsDto>(account?.UserSettings);
         
         return Ok(result);
     }
@@ -237,6 +241,25 @@ public partial class AccountController(
         }
 
         return await accountService.UpdateSettings(user.AccountId.Value, settings);
+    }
+    
+    /// <summary>
+    /// Refresh purchases
+    /// </summary>
+    /// <returns></returns>
+    [Authorize]
+    [HttpPost("purchases")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<IActionResult> RefreshEntitlements()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return Unauthorized("Account not found.");
+        }
+        
+        await monetizationService.FetchUserEntitlementsAsync(user.AccountId.Value);
+        return Ok();
     }
 
     [GeneratedRegex("^[a-zA-Z0-9_]{1,26}$")]

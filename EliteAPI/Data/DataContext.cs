@@ -8,7 +8,6 @@ using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 using Z.EntityFramework.Extensions;
 
@@ -40,8 +39,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
         }
         
         optionsBuilder.UseNpgsql(Source);
-
-        optionsBuilder.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+        // optionsBuilder.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {

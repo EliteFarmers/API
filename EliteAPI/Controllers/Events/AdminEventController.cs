@@ -5,13 +5,11 @@ using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,8 +24,7 @@ public class AdminEventController(
     IMapper mapper,
     IDiscordService discordService,
     IEventTeamService teamService,
-    IEventService eventService,
-    UserManager<ApiUser> userManager)
+    IEventService eventService)
     : ControllerBase
 {
     /// <summary>

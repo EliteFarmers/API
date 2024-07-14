@@ -39,6 +39,7 @@ public class Guild {
 }
 
 public class GuildFeatures {
+    public bool Locked { get; set; } 
     public bool JacobLeaderboardEnabled { get; set; }
     public GuildJacobLeaderboardFeature? JacobLeaderboard { get; set; }
     

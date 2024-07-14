@@ -69,6 +69,7 @@ public class MinecraftAccountDto
     public string? DiscordId { get; set; }
     public string? DiscordUsername { get; set; }
     public string? DiscordAvatar { get; set; }
+    public UserSettingsDto Settings { get; set; } = new();
 
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
     public List<ProfileDetailsDto> Profiles { get; set; } = new();
@@ -129,6 +130,11 @@ public class UserEntitlementDto {
     /// SKU ID of the product
     /// </summary>
     public required string ProductId { get; set; }
+    
+    /// <summary>
+    /// Product details
+    /// </summary>
+    public required ProductDto Product { get; set; }
 	
     public bool Deleted { get; set; }
     
@@ -142,8 +148,88 @@ public class UserEntitlementDto {
     /// Start date of the entitlement
     /// </summary>
     public DateTimeOffset? StartDate { get; set; }
+    
     /// <summary>
     /// End date of the entitlement
     /// </summary>
     public DateTimeOffset? EndDate { get; set; }
+}
+
+public class ProductDto {
+    /// <summary>
+    /// Product name
+    /// </summary>
+    public required string Name { get; set; }
+    
+    /// <summary>
+    /// Slug of the product
+    /// </summary>
+    public required string Slug { get; set; }
+    
+    /// <summary>
+    /// Icon URL
+    /// </summary>
+    public string? Icon { get; set; }
+    
+    /// <summary>
+    /// Product description
+    /// </summary>
+    public string? Description { get; set; }
+    
+    /// <summary>
+    /// Type of product
+    /// </summary>
+    public ProductType Type { get; set; }
+    
+    /// <summary>
+    /// Category of the product
+    /// </summary>
+    public ProductCategory Category { get; set; } = ProductCategory.None;
+    
+    /// <summary>
+    /// Features of the product
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public ProductFeaturesDto Features { get; set; } = new();
+    
+    /// <summary>
+    /// Discord flags
+    /// </summary>
+    public int Flags { get; set; }
+}
+
+public class ProductFeaturesDto {
+    /// <summary>
+    /// Maximum number of events per month
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? MaxMonthlyEvents { get; set; }
+    
+    /// <summary>
+    /// Maximum number of Jacob leaderboards
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? MaxJacobLeaderboards { get; set; }
+    
+    /// <summary>
+    /// Badge ID to grant
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? BadgeId { get; set; }
+}
+
+public class UpdateProductDto {
+    public ProductCategory? Category { get; set; }
+    [MaxLength(256)]
+    public string? Icon { get; set; }
+    [MaxLength(1024)]
+    public string? Description { get; set; }
+    
+    public UpdateProductFeaturesDto? Features { get; set; }
+}
+
+public class UpdateProductFeaturesDto {
+    public int? MaxMonthlyEvents { get; set; }
+    public int? MaxJacobLeaderboards { get; set; }
+    public int? BadgeId { get; set; }
 }

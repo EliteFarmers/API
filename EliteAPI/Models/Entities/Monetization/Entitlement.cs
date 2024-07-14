@@ -18,8 +18,8 @@ public enum EntitlementType {
 
 public enum EntitlementTarget {
 	None = 0,
-	User = 1,
-	Guild = 2
+	Guild = 1,
+	User = 2,
 }
 
 public class Entitlement {
@@ -38,4 +38,6 @@ public class Entitlement {
 	
 	public DateTimeOffset? StartDate { get; set; }
 	public DateTimeOffset? EndDate { get; set; }
+	
+	public bool Active => StartDate is null || StartDate <= DateTimeOffset.UtcNow && (EndDate is null || EndDate >= DateTimeOffset.UtcNow);
 }

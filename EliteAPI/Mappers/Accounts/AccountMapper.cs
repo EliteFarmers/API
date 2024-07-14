@@ -48,10 +48,17 @@ public class EliteMapper : Profile
 
         CreateMap<Entitlement, UserEntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
+            .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
         
         CreateMap<UserEntitlement, UserEntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
+            .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
+
+        CreateMap<Product, ProductDto>()
+            .ForMember(p => p.Features, opt => opt.MapFrom(p => p.Features));
+        
+        CreateMap<ProductFeatures, ProductFeaturesDto>();
     }
 }

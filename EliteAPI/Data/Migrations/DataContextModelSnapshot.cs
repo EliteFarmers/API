@@ -1028,14 +1028,14 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("EndDate")
+                    b.Property<DateTimeOffset?>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("ProductId")
                         .HasColumnType("numeric(20,0)")
                         .HasAnnotation("Relational:JsonPropertyName", "sku_id");
 
-                    b.Property<DateTimeOffset>("StartDate")
+                    b.Property<DateTimeOffset?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Target")
@@ -1064,8 +1064,16 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
                     b.Property<decimal>("Flags")
                         .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1402,7 +1410,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.HasDiscriminator().HasValue(2);
+                    b.HasDiscriminator().HasValue(1);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.UserEntitlement", b =>
@@ -1415,7 +1423,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasDiscriminator().HasValue(1);
+                    b.HasDiscriminator().HasValue(2);
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.ApiUser", b =>
@@ -1927,6 +1935,9 @@ namespace EliteAPI.Data.Migrations
                             b1.Property<decimal>("ProductId")
                                 .HasColumnType("numeric(20,0)");
 
+                            b1.Property<int?>("BadgeId")
+                                .HasColumnType("integer");
+
                             b1.Property<int?>("MaxJacobLeaderboards")
                                 .HasColumnType("integer");
 
@@ -1941,7 +1952,8 @@ namespace EliteAPI.Data.Migrations
                                 .HasForeignKey("ProductId");
                         });
 
-                    b.Navigation("Features");
+                    b.Navigation("Features")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
@@ -2020,7 +2032,7 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.GuildEntitlement", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
-                        .WithMany()
+                        .WithMany("Entitlements")
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2061,6 +2073,8 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.Guild", b =>
                 {
                     b.Navigation("Channels");
+
+                    b.Navigation("Entitlements");
 
                     b.Navigation("Roles");
                 });
