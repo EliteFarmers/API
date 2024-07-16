@@ -213,8 +213,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
                     ? changes.WeightStyle
                     : null; // Clear the weight style if not valid (also allows for resetting the weight style)
         }
-
-
+        
         // Clear the weight style if not valid (also allows for resetting the weight style)
         if (!changes.WeightStyle.IsNullOrEmpty()) {
             account.UserSettings.Features.WeightStyle = null;
@@ -256,7 +255,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
                     ? changes.EmbedColor
                     : null; // Clear the embed color if not valid (also allows for resetting the embed color)
         }
-            
+        
         context.Accounts.Update(account);
         
         await context.SaveChangesAsync();

@@ -74,6 +74,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
     public DbSet<EliteAccount> Accounts { get; set; } = null!;
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
+    public DbSet<UserSettings> UserSettings { get; set; } = null!;
     public DbSet<Badge> Badges { get; set; } = null!;
     public DbSet<UserBadge> UserBadges { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;

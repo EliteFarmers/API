@@ -129,6 +129,30 @@ public partial class AccountController(
         return Ok(result);
     }
     
+    /// <summary>
+    /// Get account settings
+    /// </summary>
+    /// <param name="discordId"></param>
+    /// <returns></returns>
+    [HttpGet("{discordId:long:minlength(17)}/settings")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<UserSettingsDto>> GetDiscordAccountSettings(long discordId)
+    {
+        if (discordId <= 0) return BadRequest("Invalid Discord ID.");
+
+        var settings = await context.Accounts
+            .Include(a => a.UserSettings)
+            .Where(a => a.Id == (ulong)discordId)
+            .Select(a => mapper.Map<UserSettingsDto>(a.UserSettings))
+            .FirstOrDefaultAsync();
+        
+        if (settings is null) return NotFound("User settings not found.");
+        
+        return Ok(settings);
+    }
+    
     // GET <ValuesController>/12793764936498429
     /// <summary>
     /// Get Minecraft account by IGN or UUID
