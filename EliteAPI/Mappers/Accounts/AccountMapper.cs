@@ -59,6 +59,7 @@ public class EliteMapper : Profile
         CreateMap<Product, ProductDto>()
             .ForMember(p => p.Features, opt => opt.MapFrom(p => p.Features));
         
-        CreateMap<ProductFeatures, ProductFeaturesDto>();
+        CreateMap<UnlockedProductFeatures, UnlockedProductFeaturesDto>();
+        CreateMap<ConfiguredProductFeatures, ConfiguredProductFeaturesDto>();
     }
 }

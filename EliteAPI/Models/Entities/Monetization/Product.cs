@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
@@ -52,12 +52,41 @@ public class Product {
 	public bool IsGuildSubscription => (Flags & 1 << 7) != 0;
 	public bool IsUserSubscription => (Flags & 1 << 8) != 0;
 	
-	public ProductFeatures Features { get; set; } = new();
+	[Column(TypeName = "jsonb")]
+	public UnlockedProductFeatures Features { get; set; } = new();
 }
 
-[Owned]
-public class ProductFeatures {
-	public int? MaxMonthlyEvents { get; set; }
-	public int? MaxJacobLeaderboards { get; set; }
+public class UnlockedProductFeatures {
+	/// <summary>
+	/// ID of unlocked badge.
+	/// </summary>
 	public int? BadgeId { get; set; }
+	/// <summary>
+	/// Name of weight styles to unlock.
+	/// </summary>
+	public List<string>? WeightStyles { get; set; }
+	/// <summary>
+	/// Ability to override other's weight styles.
+	/// </summary>
+	public bool WeightStyleOverride { get; set; }
+	/// <summary>
+	/// Embed colors for bot commands.
+	/// </summary>
+	public List<string>? EmbedColors { get; set; }
+	/// <summary>
+	/// Ability to hide shop promotions.
+	/// </summary>
+	public bool HideShopPromotions { get; set; }
+	/// <summary>
+	/// Show "More Info" on weight command by default.
+	/// </summary>
+	public bool MoreInfoDefault { get; set; }
+	/// <summary>
+	/// Maximum number of events that can be created in a month. (For guilds)
+	/// </summary>
+	public int? MaxMonthlyEvents { get; set; }
+	/// <summary>
+	/// Maximum number of jacob leaderboard that can be active at once. (For guilds)
+	/// </summary>
+	public int? MaxJacobLeaderboards { get; set; }
 }

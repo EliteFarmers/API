@@ -8,6 +8,7 @@ using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Monetization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -277,9 +278,9 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("WeightImage")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                    b.Property<ConfiguredProductFeatures>("Features")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.HasKey("Id");
 
@@ -1073,6 +1074,10 @@ namespace EliteAPI.Data.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
+
+                    b.Property<UnlockedProductFeatures>("Features")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<decimal>("Flags")
                         .HasColumnType("numeric(20,0)");
@@ -1932,34 +1937,6 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
-                {
-                    b.OwnsOne("EliteAPI.Models.Entities.Monetization.ProductFeatures", "Features", b1 =>
-                        {
-                            b1.Property<decimal>("ProductId")
-                                .HasColumnType("numeric(20,0)");
-
-                            b1.Property<int?>("BadgeId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("MaxJacobLeaderboards")
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("MaxMonthlyEvents")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("ProductId");
-
-                            b1.ToTable("Products");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ProductId");
-                        });
-
-                    b.Navigation("Features")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>

@@ -88,10 +88,83 @@ public class MinecraftAccountPropertyDto
 public class UserSettingsDto
 {
     /// <summary>
-    /// Default weight image for the bot
+    /// Configurated features for the user
     /// </summary>
-    [MaxLength(256)]
-    public string? WeightImage { get; set; }
+    public ConfiguredProductFeaturesDto? Features { get; set; }
+}
+
+public class ConfiguredProductFeaturesDto {
+    /// <summary>
+    /// Name of weight style to use.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? WeightStyle { get; set; }
+    /// <summary>
+    /// Ability to override other's weight styles.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? WeightStyleOverride { get; set; }
+    /// <summary>
+    /// Embed color for the bot.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [MaxLength(6)]
+    public string? EmbedColor { get; set; }
+    /// <summary>
+    /// Show "More Info" on weight command by default.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? MoreInfoDefault { get; set; }
+    /// <summary>
+    /// If shop promotions should be hidden.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? HideShopPromotions { get; set; }
+}
+
+public class UnlockedProductFeaturesDto
+{
+    /// <summary>
+    /// ID of unlocked badge.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? BadgeId { get; set; }
+    /// <summary>
+    /// Name of weight style to unlock.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public List<string>? WeightStyles { get; set; }
+    /// <summary>
+    /// Ability to override other's weight styles.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? WeightStyleOverride { get; set; }
+    /// <summary>
+    /// Embed color for the bot.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [MaxLength(6)]
+    public List<string>? EmbedColors { get; set; }
+    /// <summary>
+    /// Ability to hide shop promotions.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? HideShopPromotions { get; set; }
+    /// <summary>
+    /// Show "More Info" on weight command by default.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? MoreInfoDefault { get; set; }
+    /// <summary>
+    /// Maximum number of events that can be created in a month. (For guilds)
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? MaxMonthlyEvents { get; set; }
+    /// <summary>
+    /// Maximum number of jacob leaderboard that can be active at once. (For guilds)
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? MaxJacobLeaderboards { get; set; }
 }
 
 public class LinkedAccountsDto {
@@ -190,32 +263,12 @@ public class ProductDto {
     /// Features of the product
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public ProductFeaturesDto Features { get; set; } = new();
+    public UnlockedProductFeaturesDto Features { get; set; } = new();
     
     /// <summary>
     /// Discord flags
     /// </summary>
     public int Flags { get; set; }
-}
-
-public class ProductFeaturesDto {
-    /// <summary>
-    /// Maximum number of events per month
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public int? MaxMonthlyEvents { get; set; }
-    
-    /// <summary>
-    /// Maximum number of Jacob leaderboards
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public int? MaxJacobLeaderboards { get; set; }
-    
-    /// <summary>
-    /// Badge ID to grant
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public int? BadgeId { get; set; }
 }
 
 public class UpdateProductDto {
@@ -225,11 +278,5 @@ public class UpdateProductDto {
     [MaxLength(1024)]
     public string? Description { get; set; }
     
-    public UpdateProductFeaturesDto? Features { get; set; }
-}
-
-public class UpdateProductFeaturesDto {
-    public int? MaxMonthlyEvents { get; set; }
-    public int? MaxJacobLeaderboards { get; set; }
-    public int? BadgeId { get; set; }
+    public UnlockedProductFeaturesDto? Features { get; set; }
 }

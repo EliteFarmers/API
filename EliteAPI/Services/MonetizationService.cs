@@ -49,6 +49,10 @@ public class MonetizationService(
 			product.Features.MaxJacobLeaderboards = updateProductDto.Features.MaxJacobLeaderboards ?? product.Features.MaxJacobLeaderboards;
 			product.Features.MaxMonthlyEvents = updateProductDto.Features.MaxMonthlyEvents ?? product.Features.MaxMonthlyEvents;
 			product.Features.BadgeId = updateProductDto.Features.BadgeId ?? product.Features.BadgeId;
+			product.Features.EmbedColors = updateProductDto.Features.EmbedColors ?? product.Features.EmbedColors;
+			product.Features.WeightStyles = updateProductDto.Features.WeightStyles ?? product.Features.WeightStyles;
+			product.Features.HideShopPromotions = updateProductDto.Features.HideShopPromotions ?? product.Features.HideShopPromotions;
+			product.Features.WeightStyleOverride = updateProductDto.Features.WeightStyleOverride ?? product.Features.WeightStyleOverride;
 		}
 		
 		await context.SaveChangesAsync();
@@ -183,27 +187,59 @@ public class MonetizationService(
 	}
 
 	private async Task UpdateUserFeaturesAsync(EliteAccount account) {
-		var primary = account.MinecraftAccounts.FirstOrDefault(x => x.Selected);
-		if (primary is null) return;
-
-		var badgeEntitlements = account.Entitlements
-			.Where(x => x is { Active: true, Product.Features.BadgeId: > 0 })
-			.GroupBy(x => x.Product.Features.BadgeId)
-			.Select(g => new { BadgeId = g.Key!.Value, Active = g.Any(x => x.Active) });
+		var hasHideShopPromotions = account.Entitlements
+			.Any(x => x is { Active: true, Product.Features.HideShopPromotions: true });
+		var hasWeightStyleOverride = account.Entitlements
+			.Any(x => x is { Active: true, Product.Features.WeightStyleOverride: true });
 		
-		account.ActiveRewards = false;
-		foreach (var badge in badgeEntitlements) {
-			switch (badge.Active) {
-				case true when primary.Badges.All(x => x.BadgeId != badge.BadgeId):
-					account.ActiveRewards = true;
-					await badgeService.AddBadgeToUser(primary.Id, badge.BadgeId);
-					break;
-				case false when primary.Badges.Any(x => x.BadgeId == badge.BadgeId):
-					await badgeService.RemoveBadgeFromUser(primary.Id, badge.BadgeId);
-					break;
+		// Flag the account as having active rewards (or not)
+		account.ActiveRewards = hasHideShopPromotions || hasWeightStyleOverride;
+
+		// Disable features if the user doesn't have the entitlement
+		account.UserSettings.Features.HideShopPromotions = hasHideShopPromotions && account.UserSettings.Features.HideShopPromotions;
+		account.UserSettings.Features.WeightStyleOverride = hasWeightStyleOverride && account.UserSettings.Features.WeightStyleOverride;
+
+		if (account.UserSettings.Features.WeightStyle is {} style) {
+			// Check if the user has an entitlement for that weight style
+			var weightStyle = account.Entitlements
+				.FirstOrDefault(x => x.Active && x.Product.Features.WeightStyles?.Contains(style) is true);
+			
+			// Clear the weight style if the user doesn't have the entitlement
+			if (weightStyle is null) {
+				account.UserSettings.Features.WeightStyle = null;
 			}
 		}
 		
+		if (account.UserSettings.Features.EmbedColor is {} color) {
+			// Check if the user has an entitlement for that embed color
+			var embedColor = account.Entitlements
+				.FirstOrDefault(x => x.Active && x.Product.Features.EmbedColors?.Contains(color) is true);
+			
+			// Clear the embed color if the user doesn't have the entitlement
+			if (embedColor is null) {
+				account.UserSettings.Features.EmbedColor = null;
+			}
+		}
+		
+		var primary = account.MinecraftAccounts.FirstOrDefault(x => x.Selected);
+		if (primary is not null) {
+			var badgeEntitlements = account.Entitlements
+				.Where(x => x is { Active: true, Product.Features.BadgeId: > 0 })
+				.GroupBy(x => x.Product.Features.BadgeId)
+				.Select(g => new { BadgeId = g.Key!.Value, Active = g.Any(x => x.Active) });
+		
+			foreach (var badge in badgeEntitlements) {
+				switch (badge.Active) {
+					case true when primary.Badges.All(x => x.BadgeId != badge.BadgeId):
+						account.ActiveRewards = true;
+						await badgeService.AddBadgeToUser(primary.Id, badge.BadgeId);
+						break;
+					case false when primary.Badges.Any(x => x.BadgeId == badge.BadgeId):
+						await badgeService.RemoveBadgeFromUser(primary.Id, badge.BadgeId);
+						break;
+				}
+			}
+		}
 		await context.SaveChangesAsync();
 	}
 	
