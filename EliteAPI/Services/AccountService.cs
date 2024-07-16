@@ -5,7 +5,6 @@ using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EliteAPI.Services;
 
@@ -214,11 +213,6 @@ public class AccountService(DataContext context, IMemberService memberService) :
                     : null; // Clear the weight style if not valid (also allows for resetting the weight style)
         }
         
-        // Clear the weight style if not valid (also allows for resetting the weight style)
-        if (!changes.WeightStyle.IsNullOrEmpty()) {
-            account.UserSettings.Features.WeightStyle = null;
-        }
-        
         if (changes.WeightStyleOverride is true 
             && entitlements.Any(ue => ue.Product.Features.WeightStyleOverride))
         {
@@ -234,7 +228,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
         {
             account.UserSettings.Features.MoreInfoDefault = true;
         } 
-        else if (changes.WeightStyleOverride is false)
+        else if (changes.MoreInfoDefault is false)
         {
             account.UserSettings.Features.MoreInfoDefault = false;
         }
