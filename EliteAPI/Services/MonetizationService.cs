@@ -53,6 +53,7 @@ public class MonetizationService(
 			product.Features.WeightStyles = updateProductDto.Features.WeightStyles ?? product.Features.WeightStyles;
 			product.Features.HideShopPromotions = updateProductDto.Features.HideShopPromotions ?? product.Features.HideShopPromotions;
 			product.Features.WeightStyleOverride = updateProductDto.Features.WeightStyleOverride ?? product.Features.WeightStyleOverride;
+			product.Features.MoreInfoDefault = updateProductDto.Features.MoreInfoDefault ?? product.Features.MoreInfoDefault;
 			
 			context.Entry(product).Property(p => p.Features).IsModified = true;
 		}

@@ -143,7 +143,6 @@ public class UnlockedProductFeaturesDto
     /// Embed color for the bot.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [MaxLength(6)]
     public List<string>? EmbedColors { get; set; }
     /// <summary>
     /// Ability to hide shop promotions.
