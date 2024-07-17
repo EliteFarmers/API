@@ -18,7 +18,6 @@ namespace EliteAPI.Controllers;
 [Route("/v{version:apiVersion}/[controller]")]
 public partial class ProductController(
 	DataContext context,
-	IAccountService accountService, 
 	IMonetizationService monetizationService, 
 	IConnectionMultiplexer redis,
 	IMapper mapper)
@@ -34,6 +33,8 @@ public partial class ProductController(
 	/// </summary>
 	/// <returns></returns>
 	[HttpGet]
+	[Route("/[controller]s")]
+	[Route("/v{version:apiVersion}/[controller]s")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<List<ProductDto>> GetProducts()
 	{
@@ -74,6 +75,10 @@ public partial class ProductController(
 		}
 		
 		await monetizationService.UpdateProductAsync(productId, dto);
+		
+		// Clear the product list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:productlist");
 		
 		return Ok();
 	}
