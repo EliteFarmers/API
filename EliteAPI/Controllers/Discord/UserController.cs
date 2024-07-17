@@ -24,6 +24,7 @@ public class UserController(
     IMapper mapper,
     IDiscordService discordService,
     IGuildService guildService,
+    IMonetizationService monetizationService,
     UserManager<ApiUser> userManager)
     : ControllerBase 
 {
@@ -539,6 +540,65 @@ public class UserController(
         }
         
         await context.SaveChangesAsync();
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Refresh purchases
+    /// </summary>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost("guild/{guildId}/purchases")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<IActionResult> RefreshEntitlements(ulong guildId)
+    {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        await monetizationService.FetchGuildEntitlementsAsync(guildId);
+        if (guild.Features.Locked) return Ok();
+        
+        var entitlements = await monetizationService.GetGuildEntitlementsAsync(guildId);
+        if (entitlements is { Count: 0 }) {
+            return Ok();
+        }
+        
+        var maxLeaderboards = guild.Features.JacobLeaderboard?.MaxLeaderboards ?? 0;
+        var maxEvents = guild.Features.EventSettings?.MaxMonthlyEvents ?? 0;
+
+        var currentLeaderboards = 0;
+        var currentEvents = 0;
+
+        foreach (var entitlement in entitlements) {
+            if (!entitlement.Active) continue;
+
+            var features = entitlement.Product.Features;
+            if (features is { MaxMonthlyEvents: > 0 }) {
+                currentEvents = Math.Max(features.MaxMonthlyEvents.Value, currentEvents);
+            }
+            
+            if (features is { MaxJacobLeaderboards: > 0 }) {
+                currentLeaderboards = Math.Max(features.MaxJacobLeaderboards.Value, currentLeaderboards);
+            }
+        }
+
+        if (currentLeaderboards == maxLeaderboards && currentEvents == maxEvents) {
+            return Ok();
+        }
+        
+        guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
+        guild.Features.JacobLeaderboard.MaxLeaderboards = currentLeaderboards;
+        guild.Features.EventSettings ??= new GuildEventSettings();
+        guild.Features.EventSettings.MaxMonthlyEvents = currentEvents;
+            
+        context.Entry(guild).Property(p => p.Features).IsModified = true;
+        context.Guilds.Update(guild);
+        
+        await context.SaveChangesAsync();
+
         return Ok();
     }
 }

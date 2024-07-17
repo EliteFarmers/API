@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Accounts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.Interfaces;
@@ -17,4 +18,5 @@ public interface IAccountService
     Task<ActionResult> LinkAccount(ulong discordId, string playerUuidOrIgn);
     Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn);
     Task<ActionResult> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn);
+    Task<ActionResult> UpdateSettings(ulong discordId, UserSettingsDto settings);
 }

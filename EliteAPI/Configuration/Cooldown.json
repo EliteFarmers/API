@@ -6,6 +6,9 @@
     "MinecraftAccountCooldown": 43200,
     "DiscordGuildsCooldown": 2400,
     "UserGuildsCooldown": 600,
-    "UserRolesCooldown": 3600
+    "UserRolesCooldown": 3600,
+    "DiscordProductsCooldown": 2400,
+    "ManualEntitlementsRefreshCooldown": 60,
+    "EntitlementsRefreshCooldown": 43200
   }
 }

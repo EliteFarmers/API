@@ -11,13 +11,35 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 	public void Configure(QuartzOptions options)
 	{
 		// Refresh Bot Guilds
-		var key = RefreshBotGuildsBackgroundJob.Key;
-		options.AddJob<RefreshBotGuildsBackgroundJob>(builder => builder.WithIdentity(key))
+		var guildsKey = RefreshBotGuildsBackgroundJob.Key;
+		options.AddJob<RefreshBotGuildsBackgroundJob>(builder => builder.WithIdentity(guildsKey))
 			.AddTrigger(trigger => {
-				trigger.ForJob(key);
+				trigger.ForJob(guildsKey);
 				trigger.StartNow();
 				trigger.WithSimpleSchedule(schedule => {
 					schedule.WithIntervalInSeconds(_cooldowns.DiscordGuildsCooldown);
+					schedule.RepeatForever();
+				});
+			});
+		
+		var productsKey = RefreshProductsBackgroundJob.Key;
+		options.AddJob<RefreshProductsBackgroundJob>(builder => builder.WithIdentity(productsKey))
+			.AddTrigger(trigger => {
+				trigger.ForJob(productsKey);
+				trigger.StartNow();
+				trigger.WithSimpleSchedule(schedule => {
+					schedule.WithIntervalInSeconds(_cooldowns.DiscordProductsCooldown);
+					schedule.RepeatForever();
+				});
+			});
+		
+		var entitlementsKey = RefreshEntitlementsBackgroundJob.Key;
+		options.AddJob<RefreshEntitlementsBackgroundJob>(builder => builder.WithIdentity(entitlementsKey))
+			.AddTrigger(trigger => {
+				trigger.ForJob(entitlementsKey);
+				trigger.StartNow();
+				trigger.WithSimpleSchedule(schedule => {
+					schedule.WithIntervalInSeconds(_cooldowns.EntitlementsRefreshCooldown);
 					schedule.RepeatForever();
 				});
 			});

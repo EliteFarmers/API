@@ -75,11 +75,11 @@ public static class ServiceExtensions
             });
 
         services.AddAuthorizationBuilder()
-            .AddPolicy("Admin", policy => policy.RequireRole("Admin"))
-            .AddPolicy("Moderator", policy => policy.RequireRole("Moderator", "Admin"))
-            .AddPolicy("Support", policy => policy.RequireRole("Support", "Moderator", "Admin"))
-            .AddPolicy("Wiki", policy => policy.RequireRole("Wiki", "Support", "Moderator", "Admin"))
-            .AddPolicy("User", policy => policy.RequireRole("User"))
+            .AddPolicy(ApiUserPolicies.Admin, policy => policy.RequireRole(ApiUserPolicies.Admin))
+            .AddPolicy(ApiUserPolicies.Moderator, policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
+            .AddPolicy(ApiUserPolicies.Support, policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
+            .AddPolicy(ApiUserPolicies.Wiki, policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
+            .AddPolicy(ApiUserPolicies.User, policy => policy.RequireRole(ApiUserPolicies.User))
             .AddGuildAdminPolicies();
     }
 
@@ -116,6 +116,7 @@ public static class ServiceExtensions
         services.AddScoped<IBadgeService, BadgeService>();
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventTeamService, EventTeamService>();
+        services.AddScoped<IMonetizationService, MonetizationService>();
 
         services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();

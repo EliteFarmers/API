@@ -21,6 +21,7 @@ public partial class AccountController(
     IMemberService memberService,
     IAccountService accountService, 
     IMojangService mojangService, 
+    IMonetizationService monetizationService,
     IMapper mapper,
     UserManager<ApiUser> userManager)
     : ControllerBase
@@ -41,10 +42,14 @@ public partial class AccountController(
         if (user?.AccountId is null) {
             return BadRequest("Linked account not found.");
         }
-        
+
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
+            .Include(a => a.Entitlements.Where(e => !e.Deleted))
+            .ThenInclude(a => a.Product)
+            .Include(a => a.UserSettings)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId));
 
         return Ok(mapper.Map<AuthorizedAccountDto>(account));
@@ -119,8 +124,33 @@ public partial class AccountController(
         result.DiscordAvatar = account.Avatar;
         result.PlayerData = mapper.Map<PlayerDataDto>(playerData);
         result.Profiles = profileDetails;
+        result.Settings = mapper.Map<UserSettingsDto>(account.UserSettings);
         
         return Ok(result);
+    }
+    
+    /// <summary>
+    /// Get account settings
+    /// </summary>
+    /// <param name="discordId"></param>
+    /// <returns></returns>
+    [HttpGet("{discordId:long:minlength(17)}/settings")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<UserSettingsDto>> GetDiscordAccountSettings(long discordId)
+    {
+        if (discordId <= 0) return BadRequest("Invalid Discord ID.");
+
+        var settings = await context.Accounts
+            .Include(a => a.UserSettings)
+            .Where(a => a.Id == (ulong)discordId)
+            .Select(a => mapper.Map<UserSettingsDto>(a.UserSettings))
+            .FirstOrDefaultAsync();
+        
+        if (settings is null) return NotFound("User settings not found.");
+        
+        return Ok(settings);
     }
     
     // GET <ValuesController>/12793764936498429
@@ -157,6 +187,7 @@ public partial class AccountController(
         result.DiscordAvatar = account?.Avatar;
         result.PlayerData = mappedPlayerData;
         result.Profiles = profilesDetails;
+        result.Settings = mapper.Map<UserSettingsDto>(account?.UserSettings);
         
         return Ok(result);
     }
@@ -215,6 +246,44 @@ public partial class AccountController(
         }
 
         return await accountService.MakePrimaryAccount(user.AccountId.Value, playerUuidOrIgn);
+    }
+    
+    /// <summary>
+    /// Update user settings
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <returns></returns>
+    [Authorize]
+    [HttpPatch("settings")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<ActionResult> UpdateSettings(UserSettingsDto settings)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return Unauthorized("Account not found.");
+        }
+
+        return await accountService.UpdateSettings(user.AccountId.Value, settings);
+    }
+    
+    /// <summary>
+    /// Refresh purchases
+    /// </summary>
+    /// <returns></returns>
+    [Authorize]
+    [HttpPost("purchases")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<IActionResult> RefreshEntitlements()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user?.AccountId is null) {
+            return Unauthorized("Account not found.");
+        }
+        
+        await monetizationService.FetchUserEntitlementsAsync(user.AccountId.Value);
+        return Ok();
     }
 
     [GeneratedRegex("^[a-zA-Z0-9_]{1,26}$")]

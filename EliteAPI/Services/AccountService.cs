@@ -1,4 +1,5 @@
 using EliteAPI.Data;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
@@ -16,6 +17,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
         return await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
+            .Include(a => a.UserSettings)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
@@ -181,5 +183,77 @@ public class AccountService(DataContext context, IMemberService memberService) :
         await context.SaveChangesAsync();
         
         return new AcceptedResult();
+    }
+
+    public async Task<ActionResult> UpdateSettings(ulong discordId, UserSettingsDto settings) {
+        var account = await GetAccount(discordId);
+
+        if (account is null)
+        {
+            return new UnauthorizedObjectResult("Account not found.");
+        }
+
+        if (settings.Features is null) {
+            return new OkResult();
+        }
+
+        var changes = settings.Features;
+
+        var entitlements = await context.UserEntitlements
+            .Where(ue => ue.AccountId == account.Id && !ue.Deleted
+                    && (ue.StartDate == null || ue.StartDate <= DateTimeOffset.UtcNow) 
+                    && (ue.EndDate == null || ue.EndDate >= DateTimeOffset.UtcNow))
+            .Include(entitlement => entitlement.Product)
+            .ToListAsync();
+
+        if (changes.WeightStyle is not null) {
+            account.UserSettings.Features.WeightStyle =
+                entitlements.Any(ue => ue.Product.Features.WeightStyles?.Contains(changes.WeightStyle) is true)
+                    ? changes.WeightStyle
+                    : null; // Clear the weight style if not valid (also allows for resetting the weight style)
+        }
+        
+        if (changes.WeightStyleOverride is true 
+            && entitlements.Any(ue => ue.Product.Features.WeightStyleOverride))
+        {
+            account.UserSettings.Features.WeightStyleOverride = true;
+        } 
+        else if (changes.WeightStyleOverride is false)
+        {
+            account.UserSettings.Features.WeightStyleOverride = false;
+        }
+        
+        if (changes.MoreInfoDefault is true 
+            && entitlements.Any(ue => ue.Product.Features.MoreInfoDefault))
+        {
+            account.UserSettings.Features.MoreInfoDefault = true;
+        } 
+        else if (changes.MoreInfoDefault is false)
+        {
+            account.UserSettings.Features.MoreInfoDefault = false;
+        }
+        
+        if (changes.HideShopPromotions is true 
+            && entitlements.Any(ue => ue.Product.Features.HideShopPromotions))
+        {
+            account.UserSettings.Features.HideShopPromotions = true;
+        }
+        else if (changes.HideShopPromotions is false)
+        {
+            account.UserSettings.Features.HideShopPromotions = false;
+        }
+
+        if (changes.EmbedColor is not null) {
+            account.UserSettings.Features.EmbedColor = 
+                entitlements.Any(ue => ue.Product.Features.EmbedColors?.Contains(changes.EmbedColor) is true)
+                    ? changes.EmbedColor
+                    : null; // Clear the embed color if not valid (also allows for resetting the embed color)
+        }
+        
+        context.Accounts.Update(account);
+        
+        await context.SaveChangesAsync();
+        
+        return new OkResult();
     }
 }

@@ -27,7 +27,7 @@ public class AdminController(
     /// </summary>
     /// <response code="200">List of admins</response>
     [HttpGet]
-    [Route("[controller]s")]
+    [Route("/[controller]s")]
     [Route("/v{version:apiVersion}/[controller]s")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
@@ -55,75 +55,6 @@ public class AdminController(
         
         return await users.AsNoTracking().AsSplitQuery().ToListAsync();
     }
-    
-    /// <summary>
-    /// Add member permissions
-    /// </summary>
-    /// <param name="memberId"></param>
-    /// <param name="permission"></param>
-    /// <returns></returns>
-    [Obsolete("Use AddRoleToUser instead.")]
-    [Authorize(ApiUserPolicies.Admin)]
-    [HttpPost("permissions/{memberId:long}/{permission:int}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> PromoteMember(long memberId, ushort permission) {
-        // Check that permission is valid
-        if (!Enum.IsDefined(typeof(PermissionFlags), permission)) {
-            return BadRequest("Invalid permission.");
-        }
-
-        var member = await context.Accounts
-            .FirstOrDefaultAsync(a => a.Id == (ulong) memberId);
-        
-        if (member is null) {
-            return NotFound("User not found.");
-        }
-        
-        // Set permission
-        member.Permissions = (PermissionFlags) permission;
-        
-        await context.SaveChangesAsync();
-        
-        return Ok();
-    }
-    
-    /// <summary>
-    /// Remove member permissions
-    /// </summary>
-    /// <param name="memberId"></param>
-    /// <param name="permission"></param>
-    /// <returns></returns>
-    [Obsolete("Use RemoveRoleFromUser instead.")]
-    [Authorize(ApiUserPolicies.Admin)]
-    [HttpDelete("permissions/{memberId:long}/{permission:int}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> DemoteMember(long memberId, ushort permission) {
-        // Check that permission is valid
-        if (!Enum.IsDefined(typeof(PermissionFlags), permission)) {
-            return BadRequest("Invalid permission.");
-        }
-        
-        var member = await context.Accounts
-            .FirstOrDefaultAsync(a => a.Id == (ulong) memberId);
-        
-        if (member is null) {
-            return NotFound("User not found.");
-        }
-        
-        // Remove permission
-        member.Permissions = PermissionFlags.None;
-        
-        await context.SaveChangesAsync();
-        
-        return Ok();
-    }
-    
     
     /// <summary>
     /// Get list of roles

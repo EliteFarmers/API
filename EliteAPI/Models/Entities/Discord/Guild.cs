@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Models.Entities.Discord; 
 
@@ -29,14 +30,17 @@ public class Guild {
     public int MemberCount { get; set; }
     public bool HasBot { get; set; }
     public bool IsPublic { get; set; } = false;
+    public bool ActiveRewards { get; set; } = false;
     
     public List<GuildChannel> Channels { get; set; } = [];
     public List<GuildRole> Roles { get; set; } = [];
+    public List<GuildEntitlement> Entitlements { get; set; } = [];
     
     public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public class GuildFeatures {
+    public bool Locked { get; set; } 
     public bool JacobLeaderboardEnabled { get; set; }
     public GuildJacobLeaderboardFeature? JacobLeaderboard { get; set; }
     

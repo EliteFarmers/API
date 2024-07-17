@@ -204,4 +204,30 @@ public class GuildController(
 
         return Ok();
     }
+    
+    /// <summary>
+    /// Set the guild's locked status
+    /// </summary>
+    /// <param name="guildId">Discord server (guild) ID</param>
+    /// <param name="locked">If server subscriptions should overwrite feature values.</param>
+    /// <returns></returns>
+    [Authorize(ApiUserPolicies.Admin)]
+    [HttpPost("lock")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    public async Task<ActionResult> LockGuildFeatures(ulong guildId, [FromQuery] bool locked = true) {
+        var guild = await discordService.GetGuild(guildId);
+        if (guild is null) {
+            return NotFound("Guild not found.");
+        }
+        
+        guild.Features.Locked = locked;
+
+        context.Guilds.Update(guild);
+        await context.SaveChangesAsync();
+        
+        return Ok();
+    }
 }
