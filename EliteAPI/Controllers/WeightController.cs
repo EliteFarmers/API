@@ -32,41 +32,41 @@ public class WeightController(
     /// Get farming weight for all profiles of a player
     /// </summary>
     /// <param name="playerUuid">Player UUID</param>
+    /// <param name="collections"></param>
     /// <returns></returns>
     [HttpGet("{playerUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid)
+    public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid, [FromQuery] bool collections = false)
     {
         var uuid = playerUuid.Replace("-", "");
         await memberService.UpdatePlayerIfNeeded(uuid);
 
-        var farmingWeightIds = await context.ProfileMembers
+        var members = await context.ProfileMembers
             .AsNoTracking()
-            .Where(x => x.PlayerUuid.Equals(uuid))
+            .Where(x => x.PlayerUuid.Equals(uuid) && !x.WasRemoved)
             .Include(x => x.Farming)
-            .Select(x => x.Farming.Id)
+            .Include(x => x.Profile)
             .ToListAsync();
-
-        var farmingWeights = await context.Farming
-            .AsNoTracking()
-            .Where(x => farmingWeightIds.Contains(x.Id))
-            .Include(x => x.ProfileMember)
-            .ThenInclude(m => m!.Profile)
-            .ToListAsync();
-
-        if (farmingWeights.Count == 0)
+        
+        if (members.Count == 0)
         {
             return NotFound("No profiles for the player matching this UUID was found");
         }
 
         var dto = new FarmingWeightAllProfilesDto {
-            SelectedProfileId = farmingWeights
-                .FirstOrDefault(w => w.ProfileMember?.IsSelected ?? false)?.ProfileMember?.ProfileId,
-            Profiles = mapper.Map<List<FarmingWeightWithProfileDto>>(farmingWeights)
+            SelectedProfileId = members.FirstOrDefault(p => p.IsSelected)?.ProfileId,
+            Profiles = members.Select(m => {
+                var mapped = mapper.Map<FarmingWeightWithProfileDto>(m);
+                if (collections) {
+                    mapped.Crops = m.ExtractCropCollections()
+                        .ToDictionary(k => k.Key.ProperName(), v => v.Value);
+                }
+                return mapped;
+            }).ToList()
         };
-
+        
         return Ok(dto);
     }
 
