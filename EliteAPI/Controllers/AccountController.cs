@@ -46,7 +46,7 @@ public partial class AccountController(
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
-            .Include(a => a.Entitlements)
+            .Include(a => a.Entitlements.Where(e => !e.Deleted))
             .ThenInclude(a => a.Product)
             .Include(a => a.UserSettings)
             .AsSplitQuery()

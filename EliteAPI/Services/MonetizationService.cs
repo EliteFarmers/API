@@ -102,21 +102,7 @@ public class MonetizationService(
 		return new OkResult();
 	}
 
-	public async Task<ActionResult> RemoveTestEntitlementAsync(ulong targetId, ulong productId, EntitlementTarget target = EntitlementTarget.User) {
-		var entitlementId = (target == EntitlementTarget.Guild)
-			? await context.GuildEntitlements
-				.Where(x => x.ProductId == productId && x.GuildId == targetId)
-				.Select(x => x.Id)
-				.FirstOrDefaultAsync()
-			: await context.UserEntitlements
-				.Where(x => x.ProductId == productId && x.AccountId == targetId)
-				.Select(x => x.Id)
-				.FirstOrDefaultAsync();
-		
-		if (entitlementId == 0) {
-			return new NotFoundResult();
-		}
-		
+	public async Task<ActionResult> RemoveTestEntitlementAsync(ulong targetId, ulong entitlementId, EntitlementTarget target = EntitlementTarget.User) {
 		var client = httpClientFactory.CreateClient(ClientName);
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
 		
@@ -144,6 +130,7 @@ public class MonetizationService(
 		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.ManualEntitlementsRefreshCooldown));
 		
 		var user = await context.Accounts
+			.Include(a => a.UserSettings)
 			.Include(a => a.Entitlements)
 			.ThenInclude(e => e.Product)
 			.Include(a => a.MinecraftAccounts)
@@ -157,7 +144,7 @@ public class MonetizationService(
 
 		foreach (var entitlement in entitlements) {
 			var existing = user.Entitlements
-				.FirstOrDefault(x => x.ProductId == entitlement.ProductId);
+				.FirstOrDefault(x => x.Id == entitlement.Id);
 			
 			if (existing is null) {
 				var newEntitlement = new UserEntitlement {
@@ -181,6 +168,13 @@ public class MonetizationService(
 			}
 		}
 
+		// Remove entitlements that the user no longer has
+		foreach (var existing in user.Entitlements) {
+			if (entitlements.All(x => x.Id != existing.Id)) {
+				existing.Deleted = true;
+			}
+		}
+
 		if (user.Entitlements.Count > 0) {
 			await UpdateUserFeaturesAsync(user);
 		}
@@ -193,13 +187,16 @@ public class MonetizationService(
 			.Any(x => x is { Active: true, Product.Features.HideShopPromotions: true });
 		var hasWeightStyleOverride = account.Entitlements
 			.Any(x => x is { Active: true, Product.Features.WeightStyleOverride: true });
+		var hasMoreInfoDefault = account.Entitlements
+			.Any(x => x is { Active: true, Product.Features.MoreInfoDefault: true });
 		
 		// Flag the account as having active rewards (or not)
-		account.ActiveRewards = hasHideShopPromotions || hasWeightStyleOverride;
+		account.ActiveRewards = hasHideShopPromotions || hasWeightStyleOverride || hasMoreInfoDefault;
 
 		// Disable features if the user doesn't have the entitlement
 		account.UserSettings.Features.HideShopPromotions = hasHideShopPromotions && account.UserSettings.Features.HideShopPromotions;
 		account.UserSettings.Features.WeightStyleOverride = hasWeightStyleOverride && account.UserSettings.Features.WeightStyleOverride;
+		account.UserSettings.Features.MoreInfoDefault = hasMoreInfoDefault && account.UserSettings.Features.MoreInfoDefault;
 
 		if (account.UserSettings.Features.WeightStyle is {} style) {
 			// Check if the user has an entitlement for that weight style
@@ -223,10 +220,11 @@ public class MonetizationService(
 			}
 		}
 		
+		// Check that active badges are still valid
 		var primary = account.MinecraftAccounts.FirstOrDefault(x => x.Selected);
 		if (primary is not null) {
 			var badgeEntitlements = account.Entitlements
-				.Where(x => x is { Active: true, Product.Features.BadgeId: > 0 })
+				.Where(x => x is { Product.Features.BadgeId : > 0 })
 				.GroupBy(x => x.Product.Features.BadgeId)
 				.Select(g => new { BadgeId = g.Key!.Value, Active = g.Any(x => x.Active) });
 		
@@ -242,6 +240,8 @@ public class MonetizationService(
 				}
 			}
 		}
+		
+		context.UserSettings.Update(account.UserSettings);
 		await context.SaveChangesAsync();
 	}
 	
@@ -263,7 +263,7 @@ public class MonetizationService(
 		
 		foreach (var entitlement in entitlements) {
 			var existing = guild.Entitlements
-				.FirstOrDefault(x => x.ProductId == entitlement.ProductId);
+				.FirstOrDefault(x => x.Id == entitlement.Id);
 			
 			if (existing is null) {
 				var newEntitlement = new GuildEntitlement {
@@ -285,6 +285,13 @@ public class MonetizationService(
 				existing.Consumed = entitlement.Consumed;
 				existing.StartDate = entitlement.StartsAt;
 				existing.EndDate = entitlement.EndsAt;
+			}
+		}
+		
+		// Remove entitlements that the guild no longer has
+		foreach (var existing in guild.Entitlements) {
+			if (entitlements.All(x => x.Id != existing.Id)) {
+				existing.Deleted = true;
 			}
 		}
 

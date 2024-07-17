@@ -46,16 +46,21 @@ public class EliteMapper : Profile
     {
         CreateMap<UserSettings, UserSettingsDto>();
 
-        CreateMap<Entitlement, UserEntitlementDto>()
+        CreateMap<Entitlement, EntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
             .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
         
-        CreateMap<UserEntitlement, UserEntitlementDto>()
+        CreateMap<UserEntitlement, EntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
             .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
 
+        CreateMap<GuildEntitlement, EntitlementDto>()
+            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
+            .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
+            .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
+        
         CreateMap<Product, ProductDto>()
             .ForMember(p => p.Id, opt => opt.MapFrom(p => p.Id.ToString()))
             .ForMember(p => p.Features, opt => opt.MapFrom(p => p.Features));

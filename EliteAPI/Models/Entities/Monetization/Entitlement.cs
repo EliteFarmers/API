@@ -39,5 +39,5 @@ public class Entitlement {
 	public DateTimeOffset? StartDate { get; set; }
 	public DateTimeOffset? EndDate { get; set; }
 	
-	public bool Active => StartDate is null || StartDate <= DateTimeOffset.UtcNow && (EndDate is null || EndDate >= DateTimeOffset.UtcNow);
+	public bool Active => !Deleted && (StartDate is null || StartDate <= DateTimeOffset.UtcNow) && (EndDate is null || EndDate >= DateTimeOffset.UtcNow);
 }

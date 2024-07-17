@@ -200,7 +200,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
         var changes = settings.Features;
 
         var entitlements = await context.UserEntitlements
-            .Where(ue => ue.AccountId == account.Id 
+            .Where(ue => ue.AccountId == account.Id && !ue.Deleted
                     && (ue.StartDate == null || ue.StartDate <= DateTimeOffset.UtcNow) 
                     && (ue.EndDate == null || ue.EndDate >= DateTimeOffset.UtcNow))
             .Include(entitlement => entitlement.Product)

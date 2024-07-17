@@ -42,7 +42,7 @@ public class AuthorizedAccountDto
     /// <summary>
     /// Purchased entitlements from the Discord store
     /// </summary>
-    public List<UserEntitlementDto> Entitlements { get; set; } = [];
+    public List<EntitlementDto> Entitlements { get; set; } = [];
     /// <summary>
     /// Linked Minecraft accounts
     /// </summary>
@@ -182,7 +182,7 @@ public class AccountWithPermsDto {
     public string? Avatar { get; set; }
 }
 
-public class UserEntitlementDto {
+public class EntitlementDto {
     /// <summary>
     /// Entitlement ID
     /// </summary>
