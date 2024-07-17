@@ -4,6 +4,7 @@ using AutoMapper;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -73,12 +74,13 @@ public class WeightController(
     /// Get farming weight for the selected profile of a player
     /// </summary>
     /// <param name="playerUuid"></param>
+    /// <param name="collections"></param>
     /// <returns></returns>
     [HttpGet("{playerUuid}/Selected")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<FarmingWeightDto>> GetSelectedProfileWeight(string playerUuid)
+    public async Task<ActionResult<FarmingWeightDto>> GetSelectedProfileWeight(string playerUuid, [FromQuery] bool collections = false)
     {
         var uuid = playerUuid.Replace("-", "");
         
@@ -88,12 +90,17 @@ public class WeightController(
         var weight = await query
             .Where(x => x.IsSelected)
             .Include(x => x.Farming)
-            .Select(x => x.Farming)
             .FirstOrDefaultAsync();
         
         if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
         
-        return Ok(mapper.Map<FarmingWeightDto>(weight));
+        var mapped = mapper.Map<FarmingWeightDto>(weight.Farming);
+        if (!collections) return Ok(mapped);
+
+        mapped.Crops = weight.ExtractCropCollections()
+            .ToDictionary(k => k.Key.ProperName(), v => v.Value);
+        
+        return Ok(mapped);
     }
 
     /// <summary>
@@ -101,12 +108,13 @@ public class WeightController(
     /// </summary>
     /// <param name="playerUuid"></param>
     /// <param name="profileUuid"></param>
+    /// <param name="collections"></param>
     /// <returns></returns>
     [HttpGet("{playerUuid}/{profileUuid}")]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<FarmingWeightDto>> GetSpecificProfileWeight(string playerUuid, string profileUuid)
+    public async Task<ActionResult<FarmingWeightDto>> GetSpecificProfileWeight(string playerUuid, string profileUuid, [FromQuery] bool collections = false)
     {
         var uuid = playerUuid.Replace("-", "");
         var profile = profileUuid.Replace("-", "");
@@ -117,12 +125,17 @@ public class WeightController(
         var weight = await query
             .Where(x => x.IsSelected && x.ProfileId.Equals(profile))
             .Include(x => x.Farming)
-            .Select(x => x.Farming)
             .FirstOrDefaultAsync();
         
         if (weight is null) return NotFound("No farming weight for the player matching this UUID was found");
         
-        return Ok(mapper.Map<FarmingWeightDto>(weight));
+        var mapped = mapper.Map<FarmingWeightDto>(weight.Farming);
+        if (!collections) return Ok(mapped);
+
+        mapped.Crops = weight.ExtractCropCollections()
+            .ToDictionary(k => k.Key.ProperName(), v => v.Value);
+        
+        return Ok(mapped);
     }
     
     /// <summary>

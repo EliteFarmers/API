@@ -1,8 +1,13 @@
-﻿namespace EliteAPI.Models.DTOs.Outgoing;
+﻿using System.Text.Json.Serialization;
+
+namespace EliteAPI.Models.DTOs.Outgoing;
 
 public class FarmingWeightDto
 {
     public double TotalWeight { get; set; } = 0;
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, long>? Crops { get; set; }
     public Dictionary<string, double> CropWeight { get; set; } = new();
     public Dictionary<string, double> BonusWeight { get; set; } = new();
     
