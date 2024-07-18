@@ -2,6 +2,7 @@
 using System.Text.Json;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing.Messaging;
+using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -64,6 +65,23 @@ public class MessageService : IMessageService {
                 "title": "{{title}}",
                 "message": "{{message}}",
                 "ping": "{{_rabbitMqSettings.ErrorAlertPing}}"
+            }
+            """
+        });
+    }
+
+    public void SendPurchaseMessage(Entitlement entitlement) {
+        if (string.IsNullOrEmpty(_rabbitMqSettings.ErrorAlertServer) || entitlement is not UserEntitlement ue) return;
+        
+        SendMessage(new MessageDto {
+            Name = "purchase",
+            GuildId = _rabbitMqSettings.ErrorAlertServer,
+            AuthorId = ue.AccountId.ToString(),
+            Data = $$"""
+            {
+                "userId": "{{ue.AccountId}}",
+                "skuId": "{{entitlement.ProductId}}",
+                "skuName": "{{entitlement.Product.Name}}"
             }
             """
         });
