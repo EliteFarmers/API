@@ -35,6 +35,7 @@ public class ProfileParser(
             c.ProfileMembers
                 .Include(p => p.MinecraftAccount)
                 .Include(p => p.Profile)
+                .ThenInclude(p => p.Garden)
                 .Include(p => p.Skills)
                 .Include(p => p.Farming)
                 .Include(p => p.JacobData)
