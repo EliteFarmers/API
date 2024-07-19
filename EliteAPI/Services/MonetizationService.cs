@@ -22,6 +22,7 @@ public class MonetizationService(
 	IConnectionMultiplexer redis,
 	ILogger<DiscordService> logger,
 	IBadgeService badgeService,
+    IMessageService messageService,
 	IOptions<ConfigCooldownSettings> coolDowns)
 	: IMonetizationService 
 {
@@ -158,8 +159,11 @@ public class MonetizationService(
 					StartDate = entitlement.StartsAt,
 					EndDate = entitlement.EndsAt,
 				};
+				
 				user.Entitlements.Add(newEntitlement);
 				context.UserEntitlements.Add(newEntitlement);
+
+				messageService.SendPurchaseMessage(user.Id.ToString(), entitlement.ProductId.ToString());
 			} else {
 				existing.Type = entitlement.Type;
 				existing.Deleted = entitlement.Deleted;

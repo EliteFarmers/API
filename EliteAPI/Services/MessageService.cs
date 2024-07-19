@@ -68,4 +68,21 @@ public class MessageService : IMessageService {
             """
         });
     }
+
+    public void SendPurchaseMessage(string accountId, string skuId, string skuName) {
+        if (string.IsNullOrEmpty(_rabbitMqSettings.ErrorAlertServer)) return;
+        
+        SendMessage(new MessageDto {
+            Name = "purchase",
+            GuildId = _rabbitMqSettings.ErrorAlertServer,
+            AuthorId = accountId,
+            Data = $$"""
+            {
+                "userId": "{{accountId}}",
+                "skuId": "{{skuId}}",
+                "skuName": "{{skuName}}"
+            }
+            """
+        });
+    }
 }
