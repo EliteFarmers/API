@@ -51,6 +51,7 @@ public class ProfileMemberDto
 
     public required JacobDataDto Jacob { get; set; }
     public required FarmingWeightDto FarmingWeight { get; set; }
+    public GardenDto? Garden { get; set; }
     public SkillsDto Skills { get; set; } = new();
     public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
     public List<ProfileEventMemberDto> Events { get; set; } = [];

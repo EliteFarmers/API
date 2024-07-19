@@ -12,4 +12,7 @@ public interface IHypixelApi {
 	
 	[Get("/player?uuid={uuid}")]
 	Task<ApiResponse<PlayerResponse>> FetchPlayer(string uuid);
+	
+	[Get("/skyblock/garden?profile={profileId}")]
+	Task<ApiResponse<GardenResponse>> FetchGarden(string profileId);
 }

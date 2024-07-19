@@ -22,6 +22,8 @@ public class Profile
     [Column(TypeName = "jsonb")]
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
 
+    public Garden? Garden { get; set; }
+    
     public long LastUpdated { get; set; }
 }
 

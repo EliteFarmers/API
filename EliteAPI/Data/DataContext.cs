@@ -79,6 +79,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<UserBadge> UserBadges { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
+    public DbSet<Garden> Gardens { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
     public DbSet<JacobContest> JacobContests { get; set; } = null!;

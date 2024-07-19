@@ -31,4 +31,14 @@ public class ProfileMemberResponse
     
 	[JsonPropertyName("inventory")]
 	public MemberInventoriesResponse? Inventories { get; set; }
+	
+	[JsonPropertyName("garden_player_data")]
+	public GardenPlayerDataResponse? Garden { get; set; }
+}
+
+public class GardenPlayerDataResponse {
+	public int Copper { get; set; }
+	
+	[JsonPropertyName("larva_consumed")]
+	public int LarvaConsumed { get; set; }
 }

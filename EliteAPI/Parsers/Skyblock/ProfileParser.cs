@@ -10,6 +10,7 @@ using EliteAPI.Parsers.Farming;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using HypixelAPI.DTOs;
 using Microsoft.Extensions.Options;
 using Quartz;
@@ -22,6 +23,7 @@ public class ProfileParser(
     IMojangService mojangService,
     IOptions<ConfigLeaderboardSettings> lbOptions,
     IOptions<ChocolateFactorySettings> cfOptions,
+    IOptions<ConfigCooldownSettings> coolDowns,
     ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService,
     ISchedulerFactory schedulerFactory,
@@ -29,12 +31,14 @@ public class ProfileParser(
 {
     private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
     private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
+    private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
     
     private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
         EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>            
             c.ProfileMembers
                 .Include(p => p.MinecraftAccount)
                 .Include(p => p.Profile)
+                .ThenInclude(p => p.Garden)
                 .Include(p => p.Skills)
                 .Include(p => p.Farming)
                 .Include(p => p.JacobData)
@@ -91,7 +95,9 @@ public class ProfileParser(
         if (members.Count == 0) return;
 
         var profileId = profile.ProfileId.Replace("-", "");
-        var existing = await context.Profiles.FindAsync(profileId);
+        var existing = await context.Profiles
+            .Include(p => p.Garden)
+            .FirstOrDefaultAsync(p => p.ProfileId == profileId);
 
         var profileObj = existing ?? new Profile
         {
@@ -101,7 +107,7 @@ public class ProfileParser(
             Members = [],
             IsDeleted = false
         };
-
+        
         profileObj.BankBalance = profile.Banking?.Balance ?? 0.0;
 
         if (existing is not null)
@@ -125,11 +131,17 @@ public class ProfileParser(
 
         foreach (var (key, memberData) in members)
         {
-            // Hyphens shouldn't be included anyways, but just in case Hypixel pulls another fast one
+            // Hyphens shouldn't be included anyway, but just in case Hypixel pulls another fast one
             var playerId = key.Replace("-", "");
 
             var selected = playerUuid?.Equals(playerId) == true && profile.Selected;
             await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid ?? "Unknown");
+        }
+
+        if (existing?.Garden is null) {
+            await UpdateGardenData(profileId);
+        } else if (existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
+            await UpdateGardenData(profileId);
         }
 
         try
@@ -232,11 +244,25 @@ public class ProfileParser(
         
         member.Unparsed = new UnparsedApiData
         {
+            Copper = incomingData.Garden?.Copper ?? 0,
+            Consumed = new Dictionary<string, int>(),
+            LevelCaps = new Dictionary<string, int>() {
+                { "farming", incomingData.Jacob?.Perks?.FarmingLevelCap ?? 0 },
+                { "taming", incomingData.PetsData?.PetCare?.PetTypesSacrificed.Count ?? 0 }
+            },
             Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
             TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
             AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
             Bestiary = incomingData.Bestiary ?? new JsonObject()
         };
+
+        if (incomingData.Garden?.LarvaConsumed is not null) {
+            member.Unparsed.Consumed.Add("wriggling_larva", incomingData.Garden.LarvaConsumed);
+        }
+        
+        if (incomingData.Events?.Easter?.RefinedDarkCacaoTrufflesConsumed is not null) {
+            member.Unparsed.Consumed.Add("refined_dark_cacao_truffles", incomingData.Events.Easter.RefinedDarkCacaoTrufflesConsumed);
+        }
         
         member.ParseJacob(incomingData.Jacob);
         await context.SaveChangesAsync();
@@ -323,6 +349,16 @@ public class ProfileParser(
 
         var scheduler = await schedulerFactory.GetScheduler();
         await scheduler.TriggerJob(ProcessContestsBackgroundJob.Key, data);
+    }
+    
+    private async Task UpdateGardenData(string profileId) 
+    {
+        var data = new JobDataMap {
+            { "ProfileId", profileId }
+        };
+
+        var scheduler = await schedulerFactory.GetScheduler();
+        await scheduler.TriggerJob(RefreshGardenBackgroundJob.Key, data);
     }
 
     private async Task AddTimeScaleRecords(ProfileMember member) {

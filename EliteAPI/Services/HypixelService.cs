@@ -3,6 +3,7 @@ using EliteAPI.Services.Interfaces;
 using HypixelAPI;
 using HypixelAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Refit;
 
 namespace EliteAPI.Services;
 
@@ -22,18 +23,8 @@ public class HypixelService(
         
         if (!response.IsSuccessStatusCode)
         {
-            if (response.StatusCode == HttpStatusCode.TooManyRequests) {
-                response.Headers.TryGetValues("ratelimit-limit", out var limit);
-                
-                if (limit is not null) {
-                    logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
-                }
-                else logger.LogWarning("Hypixel API rate limit exceeded!");
-            }
-            else {
-                logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
-            }
-            
+            LogRateLimitWarnings(response);
+            logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
             return new BadRequestResult();
         }
 
@@ -52,17 +43,30 @@ public class HypixelService(
 
         if (!response.IsSuccessStatusCode)
         {
-            if (response.StatusCode == HttpStatusCode.TooManyRequests) {
-                response.Headers.TryGetValues("ratelimit-limit", out var limit);
+            LogRateLimitWarnings(response);
+            logger.LogError("Failed to fetch player for {Uuid}, Error: {Error}", uuid, response.StatusCode);
+            return new BadRequestResult();
+        }
+        
+        if (response.Content is not { Success: true })
+        {
+            return new BadRequestResult();
+        }
 
-                if (limit is not null) {
-                    logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
-                }
-                else logger.LogWarning("Hypixel API rate limit exceeded!");
-            }
-            else {
-                logger.LogError("Failed to fetch profiles for {Uuid}, Error: {Error}", uuid, response.StatusCode);
-            }
+        return response.Content;
+    }
+    
+    public async Task<ActionResult<GardenResponse>> FetchGarden(string profileId)
+    {
+        if (profileId.Length is not (32 or 36)) return new BadRequestResult();
+        var response = await hypixelApi.FetchGarden(profileId);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            if (response.StatusCode == HttpStatusCode.NotFound) return new NotFoundResult();
+            LogRateLimitWarnings(response);
+            
+            logger.LogError("Failed to fetch garden for {Uuid}, Error: {Error}", profileId, response.StatusCode);
             
             return new BadRequestResult();
         }
@@ -73,5 +77,16 @@ public class HypixelService(
         }
 
         return response.Content;
+    }
+    
+    private void LogRateLimitWarnings<T>(ApiResponse<T> response) {
+        if (response.StatusCode != HttpStatusCode.TooManyRequests) return;
+        
+        response.Headers.TryGetValues("ratelimit-limit", out var limit);
+
+        if (limit is not null) {
+            logger.LogWarning("Hypixel API rate limit exceeded! Limit: {Limit}", limit);
+        }
+        else logger.LogWarning("Hypixel API rate limit exceeded!");
     }
 }

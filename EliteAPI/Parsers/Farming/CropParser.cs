@@ -50,3 +50,16 @@ public static class CropParser {
         return false;
     }
 }
+
+public static class CropId {
+    public const string Cactus = "CACTUS";
+    public const string Carrot = "CARROT_ITEM";
+    public const string CocoaBeans = "INK_SACK:3";
+    public const string Melon = "MELON";
+    public const string Mushroom = "MUSHROOM_COLLECTION";
+    public const string NetherWart = "NETHER_STALK";
+    public const string Potato = "POTATO_ITEM";
+    public const string Pumpkin = "PUMPKIN";
+    public const string SugarCane = "SUGAR_CANE";
+    public const string Wheat = "WHEAT";
+}

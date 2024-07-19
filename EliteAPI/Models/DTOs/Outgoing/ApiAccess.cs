@@ -11,6 +11,9 @@ public class ApiAccessDto {
 }
 
 public class UnparsedApiDataDto {
+    public int Copper { get; set; } = 0;
+    public Dictionary<string, int> Consumed { get; set; } = new();
+    public Dictionary<string, int> LevelCaps { get; set; } = new();
     public Dictionary<string, int>? Perks { get; set; }
     public List<TempStatBuffResponse>? TempStatBuffs { get; set; }
     public object? AccessoryBagSettings { get; set; }
