@@ -14,7 +14,12 @@ public class RateLimitHandler(IHypixelRequestLimiter limiter) : DelegatingHandle
 		using var lease = await limiter.AcquireAsync(permitCount: 1, cancellationToken);
 
 		if (!lease.IsAcquired) {
-			var limitedResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+			var limitedResponse = new HttpResponseMessage() {
+				RequestMessage = new HttpRequestMessage(),
+				Content = new StringContent("Rate limit exceeded"),
+				StatusCode = HttpStatusCode.TooManyRequests
+			};
+			
 			if (lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)) {
 				limitedResponse.Headers.Add("Retry-After",
 					((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
