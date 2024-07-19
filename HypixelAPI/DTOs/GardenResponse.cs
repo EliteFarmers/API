@@ -42,7 +42,7 @@ public class GardenResponseData {
 	/// Crop upgrade levels
 	/// </summary>
 	[JsonPropertyName("crop_upgrade_levels")]
-	public Dictionary<string, int> CropUpgrades { get; set; } = new();
+	public Dictionary<string, short> CropUpgrades { get; set; } = new();
 	
 	/// <summary>
 	/// Compster data
@@ -92,7 +92,7 @@ public class ComposterData {
 	/// Amount of fuel units in the composter
 	/// </summary>
 	[JsonPropertyName("fuel_units")]
-	public int FuelUnits { get; set; }
+	public double FuelUnits { get; set; }
 	
 	/// <summary>
 	/// Amount of compost items that will be crafted with the matter/fuel currently in the composter

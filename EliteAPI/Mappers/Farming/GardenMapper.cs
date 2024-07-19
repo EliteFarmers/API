@@ -26,8 +26,23 @@ public class GardenMapper : Profile {
 			.ForMember(c => c.SugarCane, o => o.MapFrom(c => c.SugarCane.ToString()))
 			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()));
 
+		CreateMap<MilestoneCrops, CropSettings<string>>()
+			.ForMember(c => c.Cactus, o => o.MapFrom(c => c.Cactus.ToString()))
+			.ForMember(c => c.Carrot, o => o.MapFrom(c => c.Carrot.ToString()))
+			.ForMember(c => c.CocoaBeans, o => o.MapFrom(c => c.CocoaBeans.ToString()))
+			.ForMember(c => c.Potato, o => o.MapFrom(c => c.Potato.ToString()))
+			.ForMember(c => c.Wheat, o => o.MapFrom(c => c.Wheat.ToString()))
+			.ForMember(c => c.Melon, o => o.MapFrom(c => c.Melon.ToString()))
+			.ForMember(c => c.Pumpkin, o => o.MapFrom(c => c.Pumpkin.ToString()))
+			.ForMember(c => c.Mushroom, o => o.MapFrom(c => c.Mushroom.ToString()))
+			.ForMember(c => c.SugarCane, o => o.MapFrom(c => c.SugarCane.ToString()))
+			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()));
+
+		CreateMap<CropUpgrades, CropSettings<int>>();
+		
 		CreateMap<Garden, GardenDto>()
-			.ForMember(g => g.UnlockedPlots, o => o.MapFrom(g => g.UnlockedPlots.SeparatePlots()))
+			.ForMember(g => g.Experience, o => o.MapFrom(g => (int) g.GardenExperience))
+			.ForMember(g => g.Plots, o => o.MapFrom(g => g.UnlockedPlots.SeparatePlots()))
 			.ForMember(g => g.Composter, o => o.MapFrom(g => g.Composter))
 			.ForMember(g => g.Crops, o => o.MapFrom(g => g.Crops))
 			.ForMember(g => g.CropUpgrades, o => o.MapFrom(g => g.Upgrades))

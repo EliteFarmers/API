@@ -45,7 +45,7 @@ public enum UnlockedPlots : uint {
 }
 
 public class Garden {
-	[Key, ForeignKey("Profile")]
+	[Key, ForeignKey("Profile"), MaxLength(36)]
 	public required string ProfileId { get; set; }
 	public Profile Profile { get; set; } = null!;
 	
@@ -60,7 +60,7 @@ public class Garden {
 	public UnlockedPlots UnlockedPlots { get; set; } = 0; 
 
 	[Column(TypeName = "jsonb")]
-	public ComposterData Composter { get; set; } = new();
+	public ComposterData? Composter { get; set; }
 	
 	[Column(TypeName = "jsonb")]
 	public Dictionary<string, VisitorData> Visitors { get; set; } = new();

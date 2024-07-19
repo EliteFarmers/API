@@ -13,7 +13,7 @@ public class GardenDto {
 	/// <summary>
 	/// Garden experience
 	/// </summary>
-	public int GardenExperience { get; set; } = 0;
+	public int Experience { get; set; } = 0;
 	
 	/// <summary>
 	/// Total completed visitors
@@ -38,7 +38,7 @@ public class GardenDto {
 	/// <summary>
 	/// List of unlocked plots
 	/// </summary>
-	public List<string> UnlockedPlots { get; set; } = [];
+	public List<string> Plots { get; set; } = [];
 	
 	/// <summary>
 	/// Composter data

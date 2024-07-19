@@ -38,6 +38,7 @@ public class MemberService(
             .Where(p => p.PlayerUuid == playerUuid)
             .Include(p => p.MinecraftAccount)
             .Include(p => p.Profile)
+            .ThenInclude(p => p.Garden)
             .Include(p => p.Skills)
             .Include(p => p.Farming)
             .Include(p => p.EventEntries!

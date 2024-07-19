@@ -34,6 +34,9 @@ public class EasterEventDataResponse {
     
     [JsonConverter(typeof(RabbitDictionaryConverter))]
     public Dictionary<string, int> Rabbits { get; set; } = new();
+    
+    [JsonPropertyName("refined_dark_cacao_truffles")]
+    public int RefinedDarkCacaoTrufflesConsumed { get; set; }
 }
 
 public class RawMemberEasterEventShop {
@@ -58,6 +61,8 @@ public class RawMemberPlayerData {
 
 public class MemberPetsResponse {
     public PetResponse[]? Pets { get; set; }
+    [JsonPropertyName("pet_care")]
+    public PetCareResponse? PetCare { get; set; }
 }
 
 public class PetResponse {
@@ -71,6 +76,10 @@ public class PetResponse {
     public string? Skin { get; set; }
 }
 
+public class PetCareResponse {
+    [JsonPropertyName("pet_types_sacrificed")]
+    public List<string> PetTypesSacrificed { get; set; } = [];
+}
 
 public class MemberCurrenciesResponse {
     [JsonPropertyName("coin_purse")]
