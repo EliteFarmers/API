@@ -162,8 +162,8 @@ public class MonetizationService(
 				
 				user.Entitlements.Add(newEntitlement);
 				context.UserEntitlements.Add(newEntitlement);
-				
-				messageService.SendPurchaseMessage(newEntitlement);
+
+				messageService.SendPurchaseMessage(user.Id.ToString(), entitlement.ProductId.ToString());
 			} else {
 				existing.Type = entitlement.Type;
 				existing.Deleted = entitlement.Deleted;
