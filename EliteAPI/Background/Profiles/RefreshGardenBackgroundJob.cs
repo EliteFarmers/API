@@ -3,6 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
@@ -45,8 +46,8 @@ public class RefreshGardenBackgroundJob(
         var key = $"refresh:garden:{profileId}";
         var db = redis.GetDatabase();
         if (db.KeyExists(key)) {
-            logger.LogInformation("Garden is still on cooldown");
-            // return;
+            logger.LogDebug("Garden is still on cooldown");
+            return;
         }
 
         await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.SkyblockGardenCooldown));
@@ -54,7 +55,7 @@ public class RefreshGardenBackgroundJob(
         var garden = await context.Gardens
             .FirstOrDefaultAsync(g => g.ProfileId == profileId);
         
-        // if (garden is not null && garden.LastUpdated.ToUnixTimeSeconds().OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) return;
+        if (garden is not null && garden.LastUpdated.ToUnixTimeSeconds().OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) return;
         
         // Fetch new data
         var incoming = await hypixelService.FetchGarden(profileId);
