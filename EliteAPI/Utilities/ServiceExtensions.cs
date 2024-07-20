@@ -15,6 +15,9 @@ using EliteAPI.Services.Background;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Options;
@@ -43,6 +46,14 @@ public static class ServiceExtensions
         });
 
         services.AddDbContext<DataContext>();
+        
+        // Not the best way to do this, but it works for now running on a single instance
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo("TempKeys"))
+            .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration() {
+                EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+                ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+            });
     }
     
     public static void AddEliteAuthentication(this IServiceCollection services, IConfiguration configuration) {

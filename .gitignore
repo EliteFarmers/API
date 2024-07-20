@@ -2,6 +2,7 @@
 /EliteAPI/.env
 .idea
 /EliteAPI/appsettings.*.json
+/EliteAPI/TempKeys
 
 
 ## Ignore Visual Studio temporary files, build results, and

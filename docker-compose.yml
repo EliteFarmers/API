@@ -16,6 +16,8 @@ services:
     ports:
       - "7008:7008"
       - "9102:9102"
+    volumes:
+      - ./EliteAPI/TempKeys:/root/.aspnet/DataProtection-Keys
     networks: 
         - eliteapi-network
   database:
