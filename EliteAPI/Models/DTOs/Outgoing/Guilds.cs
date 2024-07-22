@@ -134,11 +134,11 @@ public static class GuildMemberDtoExtensions {
     public static GuildMemberDto ToDto(this GuildMember member) {
         return new GuildMemberDto {
             Id = member.GuildId.ToString(),
-            Name = member.Guild.Name,
-            Icon = member.Guild.Icon,
-            HasBot = member.Guild.HasBot,
+            Name = member.Guild?.Name ?? string.Empty,
+            Icon = member.Guild?.Icon ?? string.Empty,
+            HasBot = member.Guild?.HasBot ?? true,
             Permissions = member.Permissions.ToString(),
-            Roles = member.Roles.Select(r => r.ToString()).ToList()
+            Roles = member.Roles?.Select(r => r.ToString()).ToList() ?? [],
         };
     }
 }
