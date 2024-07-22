@@ -89,13 +89,13 @@ public class ComposterData {
 	public double OrganicMatter { get; set; }
 	
 	/// <summary>
-	/// Amount of fuel units in the composter
+	/// Amount of fuel in the composter
 	/// </summary>
 	[JsonPropertyName("fuel_units")]
 	public double FuelUnits { get; set; }
 	
 	/// <summary>
-	/// Amount of compost items that will be crafted with the matter/fuel currently in the composter
+	/// Compost units?
 	/// </summary>
 	[JsonPropertyName("compost_units")]
 	public int CompostAvailable { get; set; }

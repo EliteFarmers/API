@@ -55,7 +55,7 @@ public class RefreshGardenBackgroundJob(
         var garden = await context.Gardens
             .FirstOrDefaultAsync(g => g.ProfileId == profileId);
         
-        if (garden is not null && garden.LastUpdated.ToUnixTimeSeconds().OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) return;
+        if (garden is not null && !garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) return;
         
         // Fetch new data
         var incoming = await hypixelService.FetchGarden(profileId);
