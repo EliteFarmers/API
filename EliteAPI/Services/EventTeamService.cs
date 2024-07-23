@@ -67,11 +67,16 @@ public class EventTeamService(
 		}
 		
 		if (!IsValidTeamName(team.Name)) {
-			team.Name = GetRandomTeamName();
+			return new BadRequestObjectResult("Invalid team name!");
 		}
 		
+		var newName = string.Join(' ', team.Name);
+		if (await TeamNameExists(eventId, newName)) {
+			return new BadRequestObjectResult("This team name is already in use!");
+		}
+
 		var newTeam = new EventTeam {
-			Name = string.Join(' ', team.Name),
+			Name = newName,
 			Color = team.Color,
 			UserId = "admin",
 			EventId = eventId
@@ -327,13 +332,24 @@ public class EventTeamService(
 			team.Name = null;
 		}
 		
-		existing.Name = team.Name is not null ? string.Join(' ', team.Name) : existing.Name;
+		var newName = team.Name is not null ? string.Join(' ', team.Name) : existing.Name;
+		if (newName != existing.Name && await TeamNameExists(existing.EventId, newName)) {
+			return new BadRequestObjectResult("This team name is already in use!");
+		}
+
+		existing.Name = newName;
 		existing.Color = team.Color ?? existing.Color;
 		
 		context.Entry(existing).State = EntityState.Modified;
 		await context.SaveChangesAsync();
 
 		return new OkResult();
+	}
+	
+	private async Task<bool> TeamNameExists(ulong eventId,string name) {
+		return await context.EventTeams
+			.Where(e => e.EventId == eventId)
+			.AnyAsync(e => e.Name == name);
 	}
 	
 	public EventTeamsWordListDto GetEventTeamNameWords() {
