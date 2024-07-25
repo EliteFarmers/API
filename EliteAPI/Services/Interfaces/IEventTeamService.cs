@@ -8,7 +8,7 @@ namespace EliteAPI.Services.Interfaces;
 public interface IEventTeamService {
 	Task<ActionResult> CreateUserTeamAsync(ulong eventId, CreateEventTeamDto team, string userId);
 	Task<ActionResult> CreateAdminTeamAsync(ulong eventId, CreateEventTeamDto team, string userId);
-	Task<ActionResult> UpdateTeamAsync(int id, UpdateEventTeamDto team, string userId);
+	Task<ActionResult> UpdateTeamAsync(int id, UpdateEventTeamDto team, string userId, bool admin = false);
 	Task<ActionResult> RegenerateJoinCodeAsync(int teamId, string userId);
 	Task<ActionResult> DeleteTeamValidateAsync(int id);
 	Task<ActionResult> DeleteTeamAsync(int id);

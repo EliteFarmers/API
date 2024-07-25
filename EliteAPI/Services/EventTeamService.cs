@@ -309,22 +309,22 @@ public class EventTeamService(
 		return new OkResult();
 	}
 
-	public async Task<ActionResult> UpdateTeamAsync(int id, UpdateEventTeamDto team, string userId) {
+	public async Task<ActionResult> UpdateTeamAsync(int id, UpdateEventTeamDto team, string userId, bool admin = false) {
 		var existing = await GetTeamAsync(id);
 		if (existing is null) {
 			return new BadRequestObjectResult("Invalid team");
 		}
 		
-		if (existing.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
+		if (!admin && existing.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
 			return new BadRequestObjectResult("Event has already started");
 		}
 		
 		var member = await eventService.GetEventMemberByIdAsync(userId, existing.EventId);
-		if (member?.TeamId is null || member.TeamId != id) {
+		if (!admin && (member?.TeamId is null || member.TeamId != id)) {
 			return new BadRequestObjectResult("You are not a member of this event");
 		}
 		
-		if (existing.UserId != member.UserId.ToString()) {
+		if (!admin && existing.UserId != member?.UserId.ToString()) {
 			return new BadRequestObjectResult("You are not the team owner");
 		}
 		

@@ -135,7 +135,7 @@ public class EventTeamController(
 			return Unauthorized();
 		}
 
-		return await teamService.UpdateTeamAsync(teamId, team, userId);
+		return await teamService.UpdateTeamAsync(teamId, team, userId, User.IsInRole(ApiUserPolicies.Moderator));
 	}
 	
 	/// <summary>
