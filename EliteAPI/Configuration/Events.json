@@ -113,7 +113,13 @@
         "Stingy",
         "Opulent",
         "Dark",
-        "Light"
+        "Light",
+        "Green",
+        "Veggie",
+        "Silo",
+        "Corn",
+        "The",
+        "Moo"
       ],
       "Second": [
         "Wheat",
@@ -207,7 +213,12 @@
         "Feed",
         "Moisture",
         "Rain",
-        "Minion"
+        "Minion",
+        "Weed",
+        "Dirt",
+        "Thumb",
+        "Haystack",
+        "Coop"
       ],
       "Third": [
         "Farmers",
@@ -309,7 +320,18 @@
         "Horses",
         "Tractors",
         "Boxes",
-        "Exterminators"
+        "Exterminators",
+        "Bandits",
+        "Soldiers",
+        "Gang",
+        "Gangsters",
+        "Hustlers",
+        "Maniacs",
+        "Mafia",
+        "Fools",
+        "Pals",
+        "Pirates",
+        "Crew"
       ]
     }
   }
