@@ -134,8 +134,9 @@ public class EventTeamController(
 		if (userId is null) {
 			return Unauthorized();
 		}
-
-		return await teamService.UpdateTeamAsync(teamId, team, userId, User.IsInRole(ApiUserPolicies.Moderator));
+		
+		var admin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
+		return await teamService.UpdateTeamAsync(teamId, team, userId, admin);
 	}
 	
 	/// <summary>
