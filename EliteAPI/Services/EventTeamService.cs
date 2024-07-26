@@ -44,11 +44,16 @@ public class EventTeamService(
 		}
 
 		if (!IsValidTeamName(team.Name)) {
-			team.Name = GetRandomTeamName();
+			return new BadRequestObjectResult("Invalid team name!");
+		}
+        
+		var newName = string.Join(' ', team.Name);
+		if (await TeamNameExists(eventId, newName)) {
+			return new BadRequestObjectResult("This team name is already in use!");
 		}
 		
 		member.Team = new EventTeam {
-			Name = string.Join(' ', team.Name),
+			Name = newName,
 			Color = team.Color,
 			UserId = userId,
 			EventId = eventId
