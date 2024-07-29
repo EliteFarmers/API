@@ -91,6 +91,24 @@ public class UserSettingsDto
     /// Configurated features for the user
     /// </summary>
     public ConfiguredProductFeaturesDto? Features { get; set; }
+    
+    /// <summary>
+    /// Selected weight style for the user
+    /// </summary>
+    public WeightStyleLinkedDto? WeightStyle { get; set; }
+}
+
+public class UpdateUserSettingsDto
+{
+    /// <summary>
+    /// Configurated features for the user
+    /// </summary>
+    public ConfiguredProductFeaturesDto? Features { get; set; }
+    
+    /// <summary>
+    /// Selected weight style for the user
+    /// </summary>
+    public int? WeightStyleId { get; set; }
 }
 
 public class ConfiguredProductFeaturesDto {
@@ -98,7 +116,7 @@ public class ConfiguredProductFeaturesDto {
     /// Name of weight style to use.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string? WeightStyle { get; set; }
+    public int? WeightStyle { get; set; }
     /// <summary>
     /// Ability to override other's weight styles.
     /// </summary>
@@ -268,6 +286,12 @@ public class ProductDto {
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public UnlockedProductFeaturesDto Features { get; set; } = new();
+    
+    /// <summary>
+    /// Unlocked weight styles
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public List<WeightStyleLinkedDto> WeightStyles { get; set; } = [];
     
     /// <summary>
     /// Discord flags

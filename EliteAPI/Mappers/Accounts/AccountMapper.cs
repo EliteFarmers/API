@@ -44,7 +44,8 @@ public class EliteMapper : Profile
 {
     public EliteMapper()
     {
-        CreateMap<UserSettings, UserSettingsDto>();
+        CreateMap<UserSettings, UserSettingsDto>()
+            .ForMember(a => a.WeightStyle, opt => opt.MapFrom(a => a.WeightStyle));
 
         CreateMap<Entitlement, EntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
@@ -60,12 +61,19 @@ public class EliteMapper : Profile
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
             .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
-        
+
         CreateMap<Product, ProductDto>()
             .ForMember(p => p.Id, opt => opt.MapFrom(p => p.Id.ToString()))
-            .ForMember(p => p.Features, opt => opt.MapFrom(p => p.Features));
+            .ForMember(p => p.Features, opt => opt.MapFrom(p => p.Features))
+            .ForMember(p => p.WeightStyles, opt => opt.MapFrom(p => p.WeightStyles));
+        
+        CreateMap<Product, ParentProductDto>()
+            .ForMember(p => p.Id, opt => opt.MapFrom(p => p.Id.ToString()))
+            .ForMember(p => p.Name, opt => opt.MapFrom(p => p.Name))
+            .ForMember(p => p.Slug, opt => opt.MapFrom(p => p.Slug));
         
         CreateMap<UnlockedProductFeatures, UnlockedProductFeaturesDto>();
-        CreateMap<ConfiguredProductFeatures, ConfiguredProductFeaturesDto>();
+        CreateMap<ConfiguredProductFeatures, ConfiguredProductFeaturesDto>()
+            .ForMember(c => c.WeightStyle, opt => opt.MapFrom<int?>(c => null));
     }
 }

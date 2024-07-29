@@ -185,7 +185,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
         return new AcceptedResult();
     }
 
-    public async Task<ActionResult> UpdateSettings(ulong discordId, UserSettingsDto settings) {
+    public async Task<ActionResult> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings) {
         var account = await GetAccount(discordId);
 
         if (account is null)
@@ -206,10 +206,10 @@ public class AccountService(DataContext context, IMemberService memberService) :
             .Include(entitlement => entitlement.Product)
             .ToListAsync();
 
-        if (changes.WeightStyle is not null) {
-            account.UserSettings.Features.WeightStyle =
-                entitlements.Any(ue => ue.Product.Features.WeightStyles?.Contains(changes.WeightStyle) is true)
-                    ? changes.WeightStyle
+        if (settings.WeightStyleId is not null) {
+            account.UserSettings.WeightStyleId =
+                entitlements.Any(ue => ue.Active && ue.HasWeightStyle(settings.WeightStyleId.Value))
+                    ? settings.WeightStyleId
                     : null; // Clear the weight style if not valid (also allows for resetting the weight style)
         }
         

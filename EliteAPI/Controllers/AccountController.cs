@@ -49,6 +49,7 @@ public partial class AccountController(
             .Include(a => a.Entitlements.Where(e => !e.Deleted))
             .ThenInclude(a => a.Product)
             .Include(a => a.UserSettings)
+            .ThenInclude(a => a.WeightStyle)
             .AsSplitQuery()
             .FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId));
 
@@ -144,6 +145,7 @@ public partial class AccountController(
 
         var settings = await context.Accounts
             .Include(a => a.UserSettings)
+            .ThenInclude(a => a.WeightStyle)
             .Where(a => a.Id == (ulong)discordId)
             .Select(a => mapper.Map<UserSettingsDto>(a.UserSettings))
             .FirstOrDefaultAsync();
@@ -257,7 +259,7 @@ public partial class AccountController(
     [HttpPatch("settings")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    public async Task<ActionResult> UpdateSettings(UserSettingsDto settings)
+    public async Task<ActionResult> UpdateSettings(UpdateUserSettingsDto settings)
     {
         var user = await userManager.GetUserAsync(User);
         if (user?.AccountId is null) {
