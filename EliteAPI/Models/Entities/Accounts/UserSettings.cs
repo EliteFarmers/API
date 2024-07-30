@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Models.Entities.Accounts;
 
@@ -12,6 +13,10 @@ public class UserSettings {
 	/// </summary>
 	[Column(TypeName = "jsonb")]
 	public ConfiguredProductFeatures Features { get; set; } = new();
+	
+	[ForeignKey("WeightStyle")]
+	public int? WeightStyleId { get; set; }
+	public WeightStyle? WeightStyle { get; set; }
 }
 
 public class ConfiguredProductFeatures {

@@ -54,6 +54,9 @@ public class Product {
 	
 	[Column(TypeName = "jsonb")]
 	public UnlockedProductFeatures Features { get; set; } = new();
+	
+	public List<WeightStyle> WeightStyles { get; set; } = [];
+	public List<ProductWeightStyle> ProductWeightStyles { get; set; } = [];
 }
 
 public class UnlockedProductFeatures {

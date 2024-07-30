@@ -102,6 +102,7 @@ public class EventTeamDto {
     public string? Color { get; set; }
     public string? Score { get; set; }
     public string? OwnerId { get; set; }
+    public string? OwnerUuid  { get; set; }
 }
 
 public class EventTeamWithMembersDto : EventTeamDto {
@@ -180,6 +181,7 @@ public class EventMemberDetailsDto {
     public EventMemberStatus Status { get; set; }
     public string? Score { get; set; }
     public string? LastUpdated { get; set; }
+    public bool? Disqualified { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Data { get; set; } = null;

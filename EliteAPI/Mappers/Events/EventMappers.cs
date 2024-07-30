@@ -40,11 +40,13 @@ public class EventTeamMappers : Profile {
         CreateMap<EventTeam, EventTeamDto>()
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.OwnerId, opt => opt.MapFrom(e => e.UserId.ToString()))
+            .ForMember(e => e.OwnerUuid, opt => opt.MapFrom(e => e.GetOwnerUuid()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture)));
         
         CreateMap<EventTeam, EventTeamWithMembersDto>()
             .ForMember(e => e.JoinCode, opt => opt.Ignore())
             .ForMember(e => e.OwnerId, opt => opt.MapFrom(e => e.UserId.ToString()))
+            .ForMember(e => e.OwnerUuid, opt => opt.MapFrom(e => e.GetOwnerUuid()))
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Members, opt => opt.MapFrom(e => e.Members));
@@ -60,6 +62,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
 
         CreateMap<WeightEventMember, EventMemberDto>()
@@ -69,6 +72,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
         
@@ -79,6 +83,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
 
@@ -89,6 +94,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
         
         CreateMap<MedalEventMember, EventMemberDetailsDto>()
@@ -98,6 +104,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
 

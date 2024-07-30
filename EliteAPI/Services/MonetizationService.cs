@@ -203,14 +203,14 @@ public class MonetizationService(
 		account.UserSettings.Features.WeightStyleOverride = hasWeightStyleOverride && account.UserSettings.Features.WeightStyleOverride;
 		account.UserSettings.Features.MoreInfoDefault = hasMoreInfoDefault && account.UserSettings.Features.MoreInfoDefault;
 
-		if (account.UserSettings.Features.WeightStyle is {} style) {
+		if (account.UserSettings.WeightStyleId is {} style) {
 			// Check if the user has an entitlement for that weight style
 			var weightStyle = account.Entitlements
-				.FirstOrDefault(x => x.Active && x.Product.Features.WeightStyles?.Contains(style) is true);
+				.FirstOrDefault(x => x.Active && x.HasWeightStyle(style));
 			
 			// Clear the weight style if the user doesn't have the entitlement
 			if (weightStyle is null) {
-				account.UserSettings.Features.WeightStyle = null;
+				account.UserSettings.WeightStyleId = null;
 			}
 		}
 		

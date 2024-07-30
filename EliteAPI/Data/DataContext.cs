@@ -70,6 +70,13 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             .HasValue<Entitlement>(EntitlementTarget.None)
             .HasValue<UserEntitlement>(EntitlementTarget.User)
             .HasValue<GuildEntitlement>(EntitlementTarget.Guild);
+
+        modelBuilder.Entity<Product>().Navigation(p => p.ProductWeightStyles).AutoInclude();
+        
+        modelBuilder.Entity<Product>()
+            .HasMany(e => e.WeightStyles)
+            .WithMany(e => e.Products)
+            .UsingEntity<ProductWeightStyle>();
     }
 
     public DbSet<EliteAccount> Accounts { get; set; } = null!;
@@ -99,6 +106,9 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<Entitlement> Entitlements { get; set; } = null!;
     public DbSet<UserEntitlement> UserEntitlements { get; set; } = null!;
     public DbSet<GuildEntitlement> GuildEntitlements { get; set; } = null!;
+    public DbSet<WeightStyle> WeightStyles { get; set; } = null!;
+    public DbSet<WeightStyleImage> WeightStyleImages { get; set; } = null!;
+    public DbSet<ProductWeightStyle> ProductWeightStyles { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;

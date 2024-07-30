@@ -555,8 +555,8 @@ public static class DiscordExtensions
     private const ulong Admin = 0x8;
     private const ulong ManageGuild = 0x20;
     
-    public static bool HasGuildAdminPermissions(this GuildMember member, GuildPermission permission) {
-        var adminRole = member.Guild.AdminRole;
+    public static bool HasGuildAdminPermissions(this GuildMember member, GuildPermission permission = GuildPermission.Role) {
+        var adminRole = member.Guild?.AdminRole ?? 0;
         // Accept admin role as admin if permission is set to role
         if (permission == GuildPermission.Role && adminRole != 0 && member.Roles.Contains(adminRole)) {
             return true;
