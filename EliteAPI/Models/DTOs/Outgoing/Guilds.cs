@@ -1,4 +1,6 @@
-﻿using EliteAPI.Models.Entities.Discord;
+﻿using System.Text.Json.Serialization;
+using EliteAPI.Models.Entities.Discord;
+using EliteAPI.Services;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -128,6 +130,9 @@ public class GuildMemberDto {
     public bool HasBot { get; set; }
     public required string Permissions { get; set; }
     public List<string> Roles { get; set; } = [];
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Admin { get; set; }
 }
 
 public static class GuildMemberDtoExtensions {
@@ -139,6 +144,7 @@ public static class GuildMemberDtoExtensions {
             HasBot = member.Guild?.HasBot ?? true,
             Permissions = member.Permissions.ToString(),
             Roles = member.Roles?.Select(r => r.ToString()).ToList() ?? [],
+            Admin = member.HasGuildAdminPermissions()
         };
     }
 }

@@ -168,7 +168,7 @@ public class WeightStyleElementDto
  
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? FontSize { get; set; }
-    public WeightStylePositionDto WeightStylePosition { get; set; } = new();
+    public WeightStylePositionDto Position { get; set; } = new();
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? MaxWidth { get; set; }

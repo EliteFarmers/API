@@ -56,7 +56,7 @@ public class WeightStyleMapper : Profile
 
 		CreateMap<WeightStyleElement, WeightStyleElementDto>()
 			.ForMember(w => w.Background, opt => opt.MapFrom(w => w.Background))
-			.ForMember(w => w.WeightStylePosition, opt => opt.MapFrom(w => w.WeightStylePosition))
+			.ForMember(w => w.Position, opt => opt.MapFrom(w => w.Position))
 			.ForMember(w => w.Outline, opt => opt.MapFrom(w => w.Outline))
 			.ReverseMap();
 

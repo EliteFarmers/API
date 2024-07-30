@@ -48,6 +48,7 @@ public partial class AccountController(
             .ThenInclude(a => a.Badges)
             .Include(a => a.Entitlements.Where(e => !e.Deleted))
             .ThenInclude(a => a.Product)
+            .ThenInclude(p => p.WeightStyles)
             .Include(a => a.UserSettings)
             .ThenInclude(a => a.WeightStyle)
             .AsSplitQuery()

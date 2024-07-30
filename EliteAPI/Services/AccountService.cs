@@ -18,6 +18,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
             .Include(a => a.UserSettings)
+            .ThenInclude(a => a.WeightStyle)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }

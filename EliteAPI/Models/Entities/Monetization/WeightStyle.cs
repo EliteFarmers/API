@@ -96,7 +96,7 @@ public class WeightStyleElement
     public string? Font { get; set; }
     public string? Fill { get; set; }
     public int? FontSize { get; set; }
-    public WeightStylePosition WeightStylePosition { get; set; } = new();
+    public WeightStylePosition Position { get; set; } = new();
     public double? MaxWidth { get; set; }
     public double? MaxHeight { get; set; }
     public WeightStyleElementOutline? Outline { get; set; }

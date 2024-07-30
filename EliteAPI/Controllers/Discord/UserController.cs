@@ -37,11 +37,11 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<GuildMemberDto>>> Get() {
         var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
+        if (user?.Id is null || user.DiscordAccessToken is null || !ulong.TryParse(user.Id, out var accountId)) {
             return BadRequest("Linked account not found.");
         }
 
-        return await discordService.GetUsersGuilds(user.AccountId.Value, user.DiscordAccessToken);
+        return await discordService.GetUsersGuilds(accountId, user.DiscordAccessToken);
     }
 
     /// <summary>

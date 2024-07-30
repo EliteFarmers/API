@@ -127,10 +127,25 @@ public class ProductController(
 	[HttpGet("styles")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<ActionResult<List<WeightStyleDto>>> GetWeightStyles() {
+	public async Task<ActionResult<List<WeightStyleWithDataDto>>> GetWeightStyles() {
+		const string key = "bot:stylelist";
+		var db = redis.GetDatabase();
+		
+		if (db.KeyExists(key)) {
+			var styleList = await db.StringGetAsync(key);
+			if (styleList.HasValue) {
+				var value = JsonSerializer.Deserialize<List<WeightStyleWithDataDto>>(styleList!, JsonOptions);
+				if (value is not null) {
+					return value;
+				}
+			}
+		}
+		
 		var existing = await context.WeightStyles
-			.Select(s => mapper.Map<WeightStyleDto>(s))
+			.Select(s => mapper.Map<WeightStyleWithDataDto>(s))
 			.ToListAsync();
+		
+		await db.StringSetAsync(key, JsonSerializer.Serialize(existing, JsonOptions), TimeSpan.FromMinutes(30));
 
 		return existing;
 	}
@@ -163,7 +178,7 @@ public class ProductController(
 	[HttpPost("style")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
-	public async Task<IActionResult> AddWeightStyleImage([FromBody] WeightStyleWithDataDto incoming) {
+	public async Task<IActionResult> CreateWeightStyle([FromBody] WeightStyleWithDataDto incoming) {
 		if (incoming.Name is null) {
 			return BadRequest("Name is required");
 		}
@@ -184,6 +199,9 @@ public class ProductController(
 		
 		context.WeightStyles.Add(newStyle);
 		await context.SaveChangesAsync();
+		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
 		
 		return Ok();
 	}
@@ -211,6 +229,9 @@ public class ProductController(
 		context.WeightStyles.Update(existing);
 		await context.SaveChangesAsync();
 		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		
 		return Ok();
 	}
 	
@@ -230,6 +251,9 @@ public class ProductController(
 		
 		context.WeightStyles.Remove(existing);
 		await context.SaveChangesAsync();
+		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
 		
 		return Ok();
 	}
@@ -260,6 +284,9 @@ public class ProductController(
 		context.WeightStyleImages.Add(newImage);
 		await context.SaveChangesAsync();
 		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		
 		return Ok();
 	}
 	
@@ -280,6 +307,9 @@ public class ProductController(
 
 		context.WeightStyleImages.Remove(image);
 		await context.SaveChangesAsync();
+		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
 		
 		return Ok();
 	}
@@ -317,6 +347,9 @@ public class ProductController(
 		context.ProductWeightStyles.Add(newLink);
 		await context.SaveChangesAsync();
 		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		
 		return Ok();
 	}
 	
@@ -341,6 +374,9 @@ public class ProductController(
 		
 		context.ProductWeightStyles.Remove(link);
 		await context.SaveChangesAsync();
+		
+		// Clear the style list cache
+		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
 		
 		return Ok();
 	}
