@@ -41,4 +41,6 @@ public class EventMember {
 	[ForeignKey("Team")]
 	public int? TeamId { get; set; }
 	public EventTeam? Team { get; set; }
+	
+	public bool IsDisqualified => Status == EventMemberStatus.Disqualified;
 }
