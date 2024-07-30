@@ -102,6 +102,7 @@ public class EventTeamDto {
     public string? Color { get; set; }
     public string? Score { get; set; }
     public string? OwnerId { get; set; }
+    public string? OwnerUuid  { get; set; }
 }
 
 public class EventTeamWithMembersDto : EventTeamDto {

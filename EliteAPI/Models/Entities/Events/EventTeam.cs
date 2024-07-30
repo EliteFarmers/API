@@ -28,4 +28,8 @@ public class EventTeam {
 	public static string NewJoinCode() {
 		return Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6].ToUpperInvariant();
 	}
+
+	public string GetOwnerUuid() {
+		return Members.Find(m => UserId == m.UserId.ToString())?.ProfileMember?.PlayerUuid ?? string.Empty;
+	}
 }
