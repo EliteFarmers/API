@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Asp.Versioning;
 using AutoMapper;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -62,6 +63,12 @@ public class EventController(
         var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
+        
+        var mapped = mapper.Map<EventDetailsDto>(eliteEvent);
+        
+        if (mapped.Data is WeightEventData { CropWeights: not { Count: > 0 } } data) {
+            data.CropWeights = FarmingWeightConfig.Settings.EventCropWeights;
+        }
         
         return Ok(mapper.Map<EventDetailsDto>(eliteEvent));
     }
