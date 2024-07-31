@@ -52,6 +52,8 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.Stops, opt => opt.MapFrom(w => w.Stops))
 			.ReverseMap();
 
+		CreateMap<WeightStyleDirection, WeightStyleDirectionDto>().ReverseMap();
+		
 		CreateMap<WeightStyleGradientStop, WeightStyleGradientStopDto>().ReverseMap();
 
 		CreateMap<WeightStyleElement, WeightStyleElementDto>()
