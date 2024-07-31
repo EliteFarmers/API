@@ -205,23 +205,26 @@ public class MonetizationService(
 
 		if (account.UserSettings.WeightStyleId is {} style) {
 			// Check if the user has an entitlement for that weight style
-			var weightStyle = account.Entitlements
-				.FirstOrDefault(x => x.Active && x.HasWeightStyle(style));
-			
-			// Clear the weight style if the user doesn't have the entitlement
-			if (weightStyle is null) {
+			var validStyle = account.Entitlements.Any(ue => ue.Active && ue.HasWeightStyle(style));
+
+			if (!validStyle) {
 				account.UserSettings.WeightStyleId = null;
+				account.UserSettings.WeightStyle = null;
+			} else {
+				account.ActiveRewards = true;
 			}
 		}
 		
 		if (account.UserSettings.Features.EmbedColor is {} color) {
 			// Check if the user has an entitlement for that embed color
-			var embedColor = account.Entitlements
-				.FirstOrDefault(x => x.Active && x.Product.Features.EmbedColors?.Contains(color) is true);
+			var validEmbedColor = account.Entitlements
+				.Any(x => x.Active && x.Product.Features.EmbedColors?.Contains(color) is true);
 			
 			// Clear the embed color if the user doesn't have the entitlement
-			if (embedColor is null) {
+			if (!validEmbedColor) {
 				account.UserSettings.Features.EmbedColor = null;
+			} else {
+				account.ActiveRewards = true;
 			}
 		}
 		

@@ -208,14 +208,10 @@ public class AccountService(DataContext context, IMemberService memberService) :
             .ToListAsync();
 
         if (settings.WeightStyleId is not null) {
-            account.UserSettings.WeightStyleId =
-                entitlements.Any(ue => ue.Active && ue.HasWeightStyle(settings.WeightStyleId.Value))
-                    ? settings.WeightStyleId
-                    : null; // Clear the weight style if not valid (also allows for resetting the weight style)
-
-            if (account.UserSettings.WeightStyleId is null) {
-                account.UserSettings.WeightStyle = null;
-            }
+            var validChange = entitlements.Any(ue => ue.Active && ue.HasWeightStyle(settings.WeightStyleId.Value));
+            
+            account.UserSettings.WeightStyleId = validChange ? settings.WeightStyleId : null;
+            account.UserSettings.WeightStyle = null;
         }
         
         if (changes.WeightStyleOverride is true 
