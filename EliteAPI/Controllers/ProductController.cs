@@ -157,15 +157,30 @@ public class ProductController(
 	[HttpGet("style/{styleId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<ActionResult<WeightStyleDto>> GetWeightStyle(int styleId) {
+	public async Task<ActionResult<WeightStyleWithDataDto>> GetWeightStyle(int styleId) {
+		var key = $"bot:stylelist:{styleId}";
+		var db = redis.GetDatabase();
+		
+		if (db.KeyExists(key)) {
+			var styleList = await db.StringGetAsync(key);
+			if (styleList.HasValue) {
+				var value = JsonSerializer.Deserialize<WeightStyleWithDataDto>(styleList!, JsonOptions);
+				if (value is not null) {
+					return value;
+				}
+			}
+		}
+		
 		var existing = await context.WeightStyles
 			.Where(s => s.Id == styleId)
-			.Select(s => mapper.Map<WeightStyleDto>(s))
+			.Select(s => mapper.Map<WeightStyleWithDataDto>(s))
 			.FirstOrDefaultAsync();
 		
 		if (existing is null) {
 			return NotFound("Weight style not found");
 		}
+
+		await db.StringSetAsync(key, JsonSerializer.Serialize(existing, JsonOptions), TimeSpan.FromMinutes(30));
 
 		return existing;
 	}
@@ -230,7 +245,9 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
-		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
 		
 		return Ok();
 	}
@@ -253,7 +270,9 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
-		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
 		
 		return Ok();
 	}
@@ -285,7 +304,9 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
-		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
 		
 		return Ok();
 	}
@@ -309,7 +330,9 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
-		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
 		
 		return Ok();
 	}
@@ -348,7 +371,9 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
-		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
 		
 		return Ok();
 	}
@@ -376,7 +401,9 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
-		await redis.GetDatabase().KeyDeleteAsync("bot:stylelist");
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
 		
 		return Ok();
 	}
