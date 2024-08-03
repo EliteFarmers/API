@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Utilities;
 
@@ -47,23 +48,9 @@ public static class FormatUtils
         return GetCropFromItemId(split[2]);
     }
 
-    public static Crop? GetCropFromItemId(string itemId) => itemId switch
-    {
-        "CACTUS" => Crop.Cactus,
-        "CARROT_ITEM" => Crop.Carrot,
-        "INK_SACK" => Crop.CocoaBeans,
-        "INK_SACK:3" => Crop.CocoaBeans,
-        "INK_SACK_3" => Crop.CocoaBeans,
-        "MELON" => Crop.Melon,
-        "MUSHROOM_COLLECTION" => Crop.Mushroom,
-        "NETHER_STALK" => Crop.NetherWart,
-        "POTATO_ITEM" => Crop.Potato,
-        "PUMPKIN" => Crop.Pumpkin,
-        "SUGAR_CANE" => Crop.SugarCane,
-        "WHEAT" => Crop.Wheat,
-        "SEEDS" => Crop.Seeds,
-        _ => null
-    };
+    public static Crop? GetCropFromItemId(string itemId) {
+        return itemId.TryGetCrop(out var crop) ? crop : null;
+    }
 
     public static string GetFormattedCropName(Crop crop) => crop switch
     {

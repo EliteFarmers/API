@@ -27,17 +27,17 @@ public static class CropParser {
 
     public static bool TryGetCrop(this string itemId, out Crop crop) {
         Crop? result = itemId switch {
-            "CACTUS" => Crop.Cactus,
-            "CARROT_ITEM" => Crop.Carrot,
-            "INK_SACK:3" => Crop.CocoaBeans,
-            "MELON" => Crop.Melon,
-            "MUSHROOM_COLLECTION" => Crop.Mushroom,
-            "NETHER_STALK" => Crop.NetherWart,
-            "POTATO_ITEM" => Crop.Potato,
-            "PUMPKIN" => Crop.Pumpkin,
-            "SUGAR_CANE" => Crop.SugarCane,
-            "WHEAT" => Crop.Wheat,
-            "WHEAT_SEEDS" => Crop.Seeds,
+            CropId.Cactus => Crop.Cactus,
+            CropId.Carrot => Crop.Carrot,
+            CropId.CocoaBeans or CropId.CocoaBeansAlt => Crop.CocoaBeans,
+            CropId.Melon => Crop.Melon,
+            CropId.Mushroom => Crop.Mushroom,
+            CropId.NetherWart => Crop.NetherWart,
+            CropId.Potato => Crop.Potato,
+            CropId.Pumpkin => Crop.Pumpkin,
+            CropId.SugarCane => Crop.SugarCane,
+            CropId.Wheat => Crop.Wheat,
+            CropId.Seeds => Crop.Seeds,
             _ => null
         };
         
@@ -55,6 +55,10 @@ public static class CropId {
     public const string Cactus = "CACTUS";
     public const string Carrot = "CARROT_ITEM";
     public const string CocoaBeans = "INK_SACK:3";
+    /// <summary>
+    /// Needed because config files can't have colons in keys
+    /// </summary>
+    public const string CocoaBeansAlt = "INK_SACK_3";
     public const string Melon = "MELON";
     public const string Mushroom = "MUSHROOM_COLLECTION";
     public const string NetherWart = "NETHER_STALK";
@@ -62,4 +66,5 @@ public static class CropId {
     public const string Pumpkin = "PUMPKIN";
     public const string SugarCane = "SUGAR_CANE";
     public const string Wheat = "WHEAT";
+    public const string Seeds = "SEEDS";
 }
