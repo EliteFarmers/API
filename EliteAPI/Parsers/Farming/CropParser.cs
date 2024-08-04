@@ -29,7 +29,6 @@ public static class CropParser {
         Crop? result = itemId switch {
             CropId.Cactus => Crop.Cactus,
             CropId.Carrot => Crop.Carrot,
-            CropId.CocoaBeans or CropId.CocoaBeansAlt => Crop.CocoaBeans,
             CropId.Melon => Crop.Melon,
             CropId.Mushroom => Crop.Mushroom,
             CropId.NetherWart => Crop.NetherWart,
@@ -38,6 +37,7 @@ public static class CropParser {
             CropId.SugarCane => Crop.SugarCane,
             CropId.Wheat => Crop.Wheat,
             CropId.Seeds => Crop.Seeds,
+            CropId.CocoaBeans or CropId.CocoaBeansAlt or CropId.CocoaBeansAlt2 => Crop.CocoaBeans,
             _ => null
         };
         
@@ -59,6 +59,10 @@ public static class CropId {
     /// Needed because config files can't have colons in keys
     /// </summary>
     public const string CocoaBeansAlt = "INK_SACK_3";
+    /// <summary>
+    /// Used in Jacob contest key parsing
+    /// </summary>
+    public const string CocoaBeansAlt2 = "INK_SACK";
     public const string Melon = "MELON";
     public const string Mushroom = "MUSHROOM_COLLECTION";
     public const string NetherWart = "NETHER_STALK";

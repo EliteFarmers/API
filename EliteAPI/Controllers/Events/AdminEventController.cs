@@ -158,8 +158,8 @@ public class AdminEventController(
             await context.EventMembers
                 .Where(em => em.EventId == eventId)
                 .ExecuteUpdateAsync(m => m
-                    .SetProperty(e => e.StartTime, startTime)
-                    .SetProperty(e => e.EndTime, endTime));
+                    .SetProperty(e => e.StartTime, eliteEvent.StartTime)
+                    .SetProperty(e => e.EndTime, eliteEvent.EndTime));
         }
         
         return Ok(eliteEvent);
