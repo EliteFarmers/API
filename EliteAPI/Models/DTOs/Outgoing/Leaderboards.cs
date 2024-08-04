@@ -12,6 +12,7 @@ public class LeaderboardDto {
 public class LeaderboardEntryDto {
     public string? Ign { get; init; }
     public string? Profile { get; init; }
+    public string? Uuid { get; init; }
     public double Amount { get; init; }
 }
 

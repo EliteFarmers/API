@@ -19,6 +19,10 @@ public class LeaderboardService(
 {
     private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
 
+    private static readonly RedisValue ProfileHash = "profile";
+    private static readonly RedisValue IgnHash = "ign";
+    private static readonly RedisValue UuidHash = "uuid";
+
     public async Task<List<LeaderboardEntry>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
         if (!TryGetLeaderboardSettings(leaderboardId, out var settings)) return [];
         await UpdateLeaderboardIfNeeded(leaderboardId);
@@ -48,7 +52,7 @@ public class LeaderboardService(
     }
 
     public async Task<List<LeaderboardEntryWithRank>> GetLeaderboardSliceAtScore(string leaderboardId, double score, int limit = 5, string? excludeMemberId = null) {
-        if (!LeaderboardExists(leaderboardId)) return new List<LeaderboardEntryWithRank>();
+        if (!LeaderboardExists(leaderboardId)) return [];
         
         // var memberRank = excludeMemberId is null ? -1 : await GetLeaderboardPositionNoCheck(leaderboardId, excludeMemberId);
         
@@ -76,8 +80,9 @@ public class LeaderboardService(
             var member = await db.HashGetAllAsync(memberId);
             return new LeaderboardEntryWithRank {
                 MemberId = memberId,
-                Profile = member.FirstOrDefault(x => x.Name == "profile").Value,
-                Ign = member.FirstOrDefault(x => x.Name == "ign").Value,
+                Profile = member.FirstOrDefault(x => x.Name == ProfileHash).Value,
+                Ign = member.FirstOrDefault(x => x.Name == IgnHash).Value,
+                Uuid = member.FirstOrDefault(x => x.Name == UuidHash).Value,
                 Amount = entry.Score,
                 Rank = (int) firstRank + i
             };
@@ -142,7 +147,7 @@ public class LeaderboardService(
         );
         
         if (slice.Length == 0) {
-            return new List<LeaderboardEntry>();
+            return [];
         }
         
         // Get the hashset for each member
@@ -151,8 +156,9 @@ public class LeaderboardService(
             var member = await db.HashGetAllAsync(memberId);
             return new LeaderboardEntry {
                 MemberId = memberId,
-                Profile = member.FirstOrDefault(x => x.Name == "profile").Value,
-                Ign = member.FirstOrDefault(x => x.Name == "ign").Value,
+                Profile = member.FirstOrDefault(x => x.Name == ProfileHash).Value,
+                Ign = member.FirstOrDefault(x => x.Name == IgnHash).Value,
+                Uuid = member.FirstOrDefault(x => x.Name == UuidHash).Value,
                 Amount = entry.Score
             };
         });
@@ -233,6 +239,7 @@ public class LeaderboardService(
                 MemberId = s.ProfileMemberId.ToString(),
                 Amount = EF.Property<double>(s, lbSettings.Id),
                 Profile = s.ProfileMember!.ProfileName ?? s.ProfileMember.Profile.ProfileName,
+                Uuid = s.ProfileMember!.PlayerUuid,
                 Ign = s.ProfileMember.MinecraftAccount.Name
             })
             .ToListAsync();
@@ -260,6 +267,7 @@ public class LeaderboardService(
                 MemberId = p.Id.ToString(),
                 Amount = p.Collections.RootElement.GetProperty(lbSettings.Id).GetInt64(),
                 Profile = p.ProfileName ?? p.Profile.ProfileName,
+                Uuid = p.PlayerUuid,
                 Ign = p.MinecraftAccount.Name
             })
             .ToListAsync();
@@ -291,6 +299,7 @@ public class LeaderboardService(
                 MemberId = p.Id.ToString(),
                 Amount = EF.Property<int>(p.Farming.Pests, lbSettings.Id),
                 Profile = p.ProfileName ?? p.Profile.ProfileName,
+                Uuid = p.PlayerUuid,
                 Ign = p.MinecraftAccount.Name
             })
             .ToListAsync();
@@ -306,8 +315,9 @@ public class LeaderboardService(
 
         foreach (var score in entries) {
             db.HashSet(score.MemberId, new[] {
-                new HashEntry("profile", score.Profile),
-                new HashEntry("ign", score.Ign),
+                new HashEntry(ProfileHash, score.Profile),
+                new HashEntry(IgnHash, score.Ign),
+                new HashEntry(UuidHash, score.Uuid ?? string.Empty)
             }, CommandFlags.FireAndForget);
         }
         
@@ -345,7 +355,8 @@ public class LeaderboardService(
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.ProfileName ?? member.Profile.ProfileName,
                         Amount = farmingWeight.TotalWeight,
-                        MemberId = member.Id.ToString()
+                        MemberId = member.Id.ToString(),
+                        Uuid = member.PlayerUuid
                     }).Take(lb.Limit);
             
             case "chocolate":
@@ -357,7 +368,8 @@ public class LeaderboardService(
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.ProfileName ?? member.Profile.ProfileName,
                         Amount = chocolateFactory.TotalChocolate,
-                        MemberId = member.Id.ToString()
+                        MemberId = member.Id.ToString(),
+                        Uuid = member.PlayerUuid
                     }).Take(lb.Limit);
 
             case "diamondmedals" or "platinummedals" or "goldmedals" or "silvermedals" or "bronzemedals": 
@@ -373,6 +385,7 @@ public class LeaderboardService(
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
+                        Uuid = member.PlayerUuid,
                         Amount = EF.Property<int>(jacobData.EarnedMedals, medal)
                     }).Take(lb.Limit);
             
@@ -385,6 +398,7 @@ public class LeaderboardService(
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
+                        Uuid = member.PlayerUuid,
                         Amount = jacobData.Participations
                     }).Take(lb.Limit);
             
@@ -396,6 +410,7 @@ public class LeaderboardService(
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
+                        Uuid = member.PlayerUuid,
                         Amount = member.SkyblockXp
                     }).Take(lb.Limit);
             
@@ -408,6 +423,7 @@ public class LeaderboardService(
                         Ign = member.MinecraftAccount.Name,
                         Profile = member.ProfileName ?? member.Profile.ProfileName,
                         MemberId = member.Id.ToString(),
+                        Uuid = member.PlayerUuid,
                         Amount = jacobData.FirstPlaceScores
                     }).Take(lb.Limit);
 
@@ -443,12 +459,9 @@ public class LeaderboardEntry {
     public string? Ign { get; init; }
     public string? Profile { get; init; }
     public double Amount { get; init; }
+    public string? Uuid { get; init; }
 }
 
-public class LeaderboardEntryWithRank {
-    public required string MemberId { get; init; }
-    public string? Ign { get; init; }
-    public string? Profile { get; init; }
-    public double Amount { get; init; }
+public class LeaderboardEntryWithRank : LeaderboardEntry {
     public int Rank { get; init; }
 }
