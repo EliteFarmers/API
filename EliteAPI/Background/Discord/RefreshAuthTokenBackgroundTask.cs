@@ -2,11 +2,13 @@
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Quartz;
+using StackExchange.Redis;
 
 namespace EliteAPI.Background.Discord;
 
 public class RefreshAuthTokenBackgroundTask(
 	UserManager<ApiUser> userManager,
+	IConnectionMultiplexer redis,
 	IDiscordService discordService,
 	ILogger<RefreshAuthTokenBackgroundTask> logger,
 	IMessageService messageService) 
@@ -28,12 +30,21 @@ public class RefreshAuthTokenBackgroundTask(
 			return;
 		}
 
-		try {
-			logger.LogInformation("Refreshing auth token for user {UserId}", user.Id);
-			await RefreshAuthToken(user);
-		}  catch (Exception e) {
-			messageService.SendErrorMessage("Failed Process Jacob Contests", e.Message);
-			throw new JobExecutionException(msg: "", refireImmediately: true, cause: e);
+		var key = $"discord:refresh:{user.Id}";
+		var lockToken = Guid.NewGuid().ToString();
+		var db = redis.GetDatabase();
+		
+		// Ensure only one instance of this job is running at a time
+		if (await db.LockTakeAsync(key, lockToken, TimeSpan.FromMinutes(1))) {
+			try {
+				logger.LogInformation("Refreshing auth token for user {UserId}", user.Id);
+				await RefreshAuthToken(user);
+			}  catch (Exception e) {
+				messageService.SendErrorMessage("Failed Process Jacob Contests", e.Message);
+				throw new JobExecutionException(msg: "", refireImmediately: true, cause: e);
+			} finally {
+				await db.LockReleaseAsync(key, lockToken);
+			}
 		}
 	}
 	
@@ -43,7 +54,7 @@ public class RefreshAuthTokenBackgroundTask(
 		if (string.IsNullOrWhiteSpace(refreshToken) || user.DiscordRefreshTokenExpires < DateTime.UtcNow) {
 			return;
 		}
-
+		
 		var newTokens = await discordService.RefreshDiscordUser(refreshToken);
 		
 		if (newTokens is null) {
