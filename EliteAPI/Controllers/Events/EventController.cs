@@ -103,13 +103,16 @@ public class EventController(
             .FirstOrDefaultAsync(e => e.Id == eventId);
         if (eliteEvent is null) return NotFound("Event not found.");
 
+        var isTeamEvent = eliteEvent.GetMode() != EventTeamMode.Solo;
+
         var members = await context.EventMembers.AsNoTracking()
             .Include(e => e.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount)
             .AsNoTracking()
             .Where(e => e.EventId == eventId 
                         && e.Status != EventMemberStatus.Disqualified 
-                        && e.Status != EventMemberStatus.Left)
+                        && e.Status != EventMemberStatus.Left
+                        && (e.TeamId != null || !isTeamEvent))
             .OrderByDescending(e => e.Score)
             .AsSplitQuery()
             .ToListAsync();
