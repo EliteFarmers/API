@@ -1,9 +1,10 @@
-﻿using EliteAPI.Background.Discord;
-using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Quartz;
+using StackExchange.Redis;
 
 namespace EliteAPI.Authentication;
 
@@ -15,31 +16,47 @@ public class GuildAdminRequirement(GuildPermission permission) : IAuthorizationR
 public class GuildAdminHandler(
 	IDiscordService discordService,
 	UserManager<ApiUser> userManager,
+	IConnectionMultiplexer redis,
 	ISchedulerFactory schedulerFactory) 
 	: AuthorizationHandler<GuildAdminRequirement>
 {
 	protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, GuildAdminRequirement requirement) {
 		if (context.Resource is not HttpContext httpContext) return;
+		if (httpContext.User.Identity?.IsAuthenticated is not true) return;
+		
 		// Get guild id from route
 		var guildIdObject = httpContext.GetRouteValue("guildId");
 		if (guildIdObject is null || !ulong.TryParse(guildIdObject.ToString(), out var guildId)) return;
 		
-		var user = await userManager.GetUserAsync(httpContext.User);
-		if (user is null) return;
+		// Check cache for if user has permission
+		var key = $"discord:guild_auth:{httpContext.User.GetId()}:{guildId}:{requirement.Permission}";
+		var lockToken = Guid.NewGuid().ToString();
+		var db = redis.GetDatabase();
 		
-		// Refresh Discord access token if it's expired
-		if (user.DiscordRefreshToken is not null
-			&& user.DiscordAccessTokenExpires > DateTimeOffset.UtcNow 
-		    && user.DiscordRefreshTokenExpires < DateTimeOffset.UtcNow) 
-		{
-			var data = new JobDataMap { { "AccountId", user.Id } };
-			var scheduler = await schedulerFactory.GetScheduler();
-			await scheduler.TriggerJob(RefreshAuthTokenBackgroundTask.Key, data);
+		var valueKey = await db.StringGetAsync(key + ":value");
+		if (valueKey.HasValue) {
+			if (valueKey == "true") {
+				context.Succeed(requirement);
+			}
+			return;
 		}
+		
+		// Ensure only one instance of this job is running at a time
+		if (await db.LockTakeAsync(key, lockToken, TimeSpan.FromMinutes(1))) {
+			try {
+				var user = await userManager.GetUserAsync(httpContext.User);
+				if (user is null) return;
 
-		var member = await discordService.GetGuildMemberIfAdmin(user, guildId, requirement.Permission);
-		if (member is null) return;
-
-		context.Succeed(requirement);
+				var member = await discordService.GetGuildMemberIfAdmin(user, guildId, requirement.Permission);
+				if (member is null) {
+					await db.StringSetAsync(key + ":value", "false", TimeSpan.FromMinutes(5));
+				} else {
+					await db.StringSetAsync(key + ":value", "true", TimeSpan.FromMinutes(5));
+					context.Succeed(requirement);
+				}
+			} finally {
+				await db.LockReleaseAsync(key, lockToken);
+			}
+		}
 	}
 }
