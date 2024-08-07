@@ -190,6 +190,34 @@ public class AdminEventController(
     }
     
     /// <summary>
+    /// Get all members from an event
+    /// </summary>
+    /// <remarks>
+    /// This differs from the normal GetEventMembers route in that it includes members who aren't on a team in a team event
+    /// </remarks>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpGet("{eventId}/members")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<AdminEventMemberDto>>> GetEventMembers(ulong guildId, ulong eventId)
+    {
+        var members = await context.EventMembers
+            .Include(m => m.ProfileMember)
+            .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
+            .Where(em => em.EventId == eventId &&
+                         (em.Status == EventMemberStatus.Active || em.Status == EventMemberStatus.Inactive))
+            .ToListAsync();
+        
+        var mapped = mapper.Map<List<AdminEventMemberDto>>(members);
+        
+        return Ok(mapped);
+    }
+    
+    /// <summary>
     /// Get banned members from an event
     /// </summary>
     /// <param name="guildId"></param>
@@ -205,7 +233,8 @@ public class AdminEventController(
         var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
-            .Where(em => em.EventId == eventId && em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left)
+            .Where(em => em.EventId == eventId &&
+                         (em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left))
             .ToListAsync();
         
         var mapped = mapper.Map<List<EventMemberBannedDto>>(members);
@@ -213,6 +242,108 @@ public class AdminEventController(
         return Ok(mapped);
     }
 
+    /// <summary>
+    /// Force add a member to an event
+    /// </summary>
+    /// <remarks>
+    /// Use with caution, this will add a member to an event without checking if they meet the requirements or if the event is running or not.
+    /// </remarks>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost("{eventId}/members/{playerUuid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<IActionResult> ForceAddMember(ulong guildId, ulong eventId, string playerUuid, [FromQuery] string profileId)
+    {
+        if (playerUuid.Length != 32 || string.IsNullOrWhiteSpace(profileId) || profileId.Length != 32) {
+            return BadRequest("Invalid player UUID.");
+        }
+        
+        var @event = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        
+        if (@event is null) {
+            return NotFound("Event not found.");
+        }
+        
+        var member = await context.ProfileMembers.AsNoTracking()
+            .Include(p => p.MinecraftAccount)
+            .Where(p => p.PlayerUuid == playerUuid && p.ProfileId == profileId)
+            .FirstOrDefaultAsync();
+
+        if (member?.MinecraftAccount.AccountId is null) {
+            return BadRequest("Player not found, or player does not have a linked account.");
+        }
+
+        var existing = await context.EventMembers.AsNoTracking()
+            .Where(em => em.EventId == eventId && em.ProfileMemberId == member.Id)
+            .FirstOrDefaultAsync();
+        
+        if (existing is not null) {
+            return BadRequest("Player is already in the event.");
+        }
+        
+        await eventService.CreateEventMember(@event, new CreateEventMemberDto {
+            EventId = @event.Id,
+            ProfileMemberId = member.Id,
+            UserId = member.MinecraftAccount.AccountId.Value,
+            Score = 0,
+            StartTime = @event.StartTime,
+            EndTime = @event.EndTime,
+            ProfileMember = member
+        });
+        
+        await context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// Fully delete a member record from an event
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="playerUuid"></param>
+    /// <param name="profileId"></param>
+    /// <param name="recordId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpDelete("{eventId}/members/{playerUuid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<IActionResult> PermDeleteMember(ulong guildId, ulong eventId, string playerUuid, [FromQuery] string? profileId = null, [FromQuery] int recordId = -1)
+    {
+        if (playerUuid.Length != 32) {
+            return BadRequest("Invalid player UUID.");
+        }
+        
+        var member = (recordId != -1) 
+            ? await context.EventMembers
+                .Include(m => m.ProfileMember)
+                .Where(em => em.EventId == eventId 
+                             && em.ProfileMember.PlayerUuid == playerUuid
+                             && (profileId == null || em.ProfileMember.ProfileId == profileId))
+                .FirstOrDefaultAsync()
+            : await context.EventMembers
+                .Include(m => m.ProfileMember)
+                .Where(em => em.EventId == eventId && em.Id == recordId)
+                .FirstOrDefaultAsync();
+        
+        if (member is null) {
+            return NotFound("Member not found.");
+        }
+        
+        context.EventMembers.Remove(member);
+
+        return Ok();
+    }
+    
     /// <summary>
     /// Ban a member from an event
     /// </summary>

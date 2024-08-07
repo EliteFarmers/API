@@ -187,7 +187,12 @@ public class EventMemberDetailsDto {
     public object? Data { get; set; } = null;
 }
 
+public class AdminEventMemberDto : EventMemberDetailsDto {
+    public int Id { get; set; }
+}
+
 public class EventMemberBannedDto {
+    public int Id { get; set; }
     public string? PlayerUuid { get; set; }
     public string? PlayerName { get; set; }
     
