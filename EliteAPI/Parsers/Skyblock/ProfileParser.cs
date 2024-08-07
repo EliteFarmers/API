@@ -27,6 +27,7 @@ public class ProfileParser(
     ILogger<ProfileParser> logger,
     ILeaderboardService leaderboardService,
     ISchedulerFactory schedulerFactory,
+    IMessageService messageService,
     IMapper mapper) 
 {
     private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
@@ -169,6 +170,12 @@ public class ProfileParser(
             if (shouldRemove) {
                 // Remove leaderboard positions
                 await leaderboardService.RemoveMemberFromAllLeaderboards(existing.Id.ToString());
+                
+                messageService.SendWipedMessage(
+                    playerId, 
+                    existing.MinecraftAccount.Name ?? "", 
+                    existing.ProfileId,
+                    existing.MinecraftAccount.AccountId?.ToString() ?? "");
             }
             
             // Only update if the player is the requester

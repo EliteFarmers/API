@@ -12,6 +12,9 @@ public class ChocolateFactoryDto {
 	public ChocolateFactoryRabbitsDto TotalRabbits { get; set; } = new();
 	
 	public bool UnlockedZorro { get; set; }
+	
+	public int RefinedTrufflesConsumed { get; set; }
+	public int CocoaFortuneUpgrades { get; set; }
 }
 
 public class ChocolateFactoryRabbitsDto {

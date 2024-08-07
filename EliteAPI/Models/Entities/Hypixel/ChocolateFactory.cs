@@ -19,6 +19,8 @@ public class ChocolateFactory {
 	public ChocolateFactoryRabbits TotalRabbits { get; set; } = new();
 	
 	public bool UnlockedZorro { get; set; }
+	public int RefinedTrufflesConsumed { get; set; }
+	public int CocoaFortuneUpgrades { get; set; }
 	
 	[ForeignKey("ProfileMember")]
 	public Guid ProfileMemberId { get; set; }

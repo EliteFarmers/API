@@ -42,6 +42,9 @@ public class EasterEventDataResponse {
 public class RawMemberEasterEventShop {
     [JsonPropertyName("chocolate_spent")]
     public long ChocolateSpent { get; set; }
+    
+    [JsonPropertyName("cocoa_fortune_upgrades")]
+    public int CocoaFortuneUpgrades { get; set; }
 }
 
 public class RawMemberPlayerData {

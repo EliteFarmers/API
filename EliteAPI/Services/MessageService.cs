@@ -85,4 +85,23 @@ public class MessageService : IMessageService {
             """
         });
     }
+    
+    public void SendWipedMessage(string uuid, string ign, string profileId, string discordId) {
+        if (string.IsNullOrEmpty(_rabbitMqSettings.WipeServer) || string.IsNullOrEmpty(_rabbitMqSettings.WipeChannel)) return;
+        
+        SendMessage(new MessageDto {
+            Name = "wipe",
+            GuildId = _rabbitMqSettings.WipeServer,
+            AuthorId = _rabbitMqSettings.WipeChannel,
+            Data = $$"""
+                     {
+                         "channelId": "{{_rabbitMqSettings.WipeChannel}}",
+                         "uuid": "{{uuid}}",
+                         "ign": "{{ign}}",
+                         "profileId": "{{profileId}}",
+                         "discord": "{{discordId}}"
+                     }
+                     """
+        });
+    }
 }

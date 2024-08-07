@@ -16,6 +16,8 @@ public static class ChocolateFactoryParser {
 		factory.TotalChocolate = incoming.TotalChocolate;
 		factory.ChocolateSincePrestige = incoming.ChocolateSincePrestige;
 		factory.ChocolateSpent = incoming.Shop.ChocolateSpent;
+		factory.CocoaFortuneUpgrades = incoming.Shop.CocoaFortuneUpgrades;
+		factory.RefinedTrufflesConsumed = incoming.RefinedDarkCacaoTrufflesConsumed;
 
 		factory.Prestige = incoming.Prestige;
 		factory.LastViewedChocolateFactory = incoming.LastViewedChocolateFactory;
