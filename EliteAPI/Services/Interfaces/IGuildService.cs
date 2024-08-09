@@ -8,8 +8,8 @@ namespace EliteAPI.Services.Interfaces;
 public interface IGuildService {
     Task<ActionResult> SendLeaderboardPanel(ulong guildId, string channelId, string authorId, string lbId);
     Task UpdateGuildData(ulong guildId, IncomingGuildDto guild);
-    Task UpdateGuildChannelData(ulong guildId, IncomingGuildChannelDto channel);
-    Task UpdateGuildRoleData(ulong guildId, IncomingGuildRoleDto role);
+    Task UpdateGuildChannelData(ulong guildId, IncomingGuildChannelDto channel, bool skipSave = false);
+    Task UpdateGuildRoleData(ulong guildId, IncomingGuildRoleDto role, bool skipSave = false);
     Task<GuildMemberDto?> GetUserGuild(string userId, ulong guildId);
     Task<GuildMemberDto?> GetUserGuild(ApiUser user, ulong guildId);
 }

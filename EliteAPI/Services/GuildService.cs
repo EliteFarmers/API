@@ -73,21 +73,25 @@ public class GuildService(
         }
 
         await context.SaveChangesAsync();
-        
+
         if (guild.Channels is not null) {
             foreach (var channel in guild.Channels) {
-                await UpdateGuildChannelData(guildId, channel);
+                await UpdateGuildChannelData(guildId, channel, true);
             }
+            
+            await context.SaveChangesAsync();
         }
-        
+
         if (guild.Roles is not null) {
             foreach (var role in guild.Roles) {
                 await UpdateGuildRoleData(guildId, role);
             }
+            
+            await context.SaveChangesAsync();
         }
     }
 
-    public async Task UpdateGuildChannelData(ulong guildId, IncomingGuildChannelDto channel) {
+    public async Task UpdateGuildChannelData(ulong guildId, IncomingGuildChannelDto channel, bool skipSave = false) {
         if (!ulong.TryParse(channel.Id, out var channelId)) {
             return;
         }
@@ -115,10 +119,12 @@ public class GuildService(
             dbChannel.LastUpdated = DateTimeOffset.UtcNow;
         }
 
-        await context.SaveChangesAsync();
+        if (!skipSave) {
+            await context.SaveChangesAsync();
+        }
     }
 
-    public async Task UpdateGuildRoleData(ulong guildId, IncomingGuildRoleDto role) {
+    public async Task UpdateGuildRoleData(ulong guildId, IncomingGuildRoleDto role, bool skipSave = false) {
         if (!ulong.TryParse(role.Id, out var roleId)) {
             return;
         }
@@ -139,8 +145,10 @@ public class GuildService(
             dbRole.Position = role.Position;
             dbRole.LastUpdated = DateTimeOffset.UtcNow;
         }
-
-        await context.SaveChangesAsync();
+    
+        if (!skipSave) {
+            await context.SaveChangesAsync();
+        }
     }
 
     public async Task<GuildMemberDto?> GetUserGuild(string userId, ulong guildId) {

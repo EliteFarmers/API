@@ -8,6 +8,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +37,12 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<IEnumerable<GuildMemberDto>>> Get() {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.Id is null || user.DiscordAccessToken is null || !ulong.TryParse(user.Id, out var accountId)) {
+        var userId = User.GetId();
+        if (userId is null) {
             return BadRequest("Linked account not found.");
         }
 
-        return await discordService.GetUsersGuilds(accountId, user.DiscordAccessToken);
+        return await discordService.GetUsersGuilds(userId);
     }
 
     /// <summary>
@@ -56,12 +57,12 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     public async Task<ActionResult<AuthorizedGuildDto>> GetGuild(ulong guildId) {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId is null || user.DiscordAccessToken is null) {
+        var userId = User.GetId();
+        if (userId is null) {
             return BadRequest("Linked account not found.");
         }
         
-        var guildMember = await discordService.GetGuildMemberIfAdmin(user, guildId);
+        var guildMember = await discordService.GetGuildMemberIfAdmin(User, guildId);
 
         if (guildMember is null) {
             return NotFound("Guild not found, or you do not have permission to access this guild.");

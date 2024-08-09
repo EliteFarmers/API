@@ -201,7 +201,7 @@ public class EventController(
             return BadRequest("You can no longer join this event.");
         }
         
-        var guilds = await discordService.GetUsersGuilds(account.Id, user.DiscordAccessToken);
+        var guilds = await discordService.GetUsersGuilds(user.Id);
         var userGuild = guilds.FirstOrDefault(g => g.Id == eliteEvent.GuildId.ToString());
 
         if (userGuild is null) {

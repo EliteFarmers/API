@@ -1,9 +1,6 @@
-﻿using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Services.Interfaces;
+﻿using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Quartz;
 using StackExchange.Redis;
 
 namespace EliteAPI.Authentication;
@@ -15,9 +12,7 @@ public class GuildAdminRequirement(GuildPermission permission) : IAuthorizationR
 
 public class GuildAdminHandler(
 	IDiscordService discordService,
-	UserManager<ApiUser> userManager,
-	IConnectionMultiplexer redis,
-	ISchedulerFactory schedulerFactory) 
+	IConnectionMultiplexer redis) 
 	: AuthorizationHandler<GuildAdminRequirement>
 {
 	protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, GuildAdminRequirement requirement) {
@@ -30,7 +25,6 @@ public class GuildAdminHandler(
 		
 		// Check cache for if user has permission
 		var key = $"discord:guild_auth:{httpContext.User.GetId()}:{guildId}:{requirement.Permission}";
-		var lockToken = Guid.NewGuid().ToString();
 		var db = redis.GetDatabase();
 		
 		var valueKey = await db.StringGetAsync(key + ":value");
@@ -42,12 +36,9 @@ public class GuildAdminHandler(
 		}
 		
 		// Ensure only one instance of this job is running at a time
-		if (await db.LockTakeAsync(key, lockToken, TimeSpan.FromMinutes(1))) {
+		if (await db.LockTakeAsync(key, "1", TimeSpan.FromMinutes(1))) {
 			try {
-				var user = await userManager.GetUserAsync(httpContext.User);
-				if (user is null) return;
-
-				var member = await discordService.GetGuildMemberIfAdmin(user, guildId, requirement.Permission);
+				var member = await discordService.GetGuildMemberIfAdmin(httpContext.User, guildId, requirement.Permission);
 				if (member is null) {
 					await db.StringSetAsync(key + ":value", "false", TimeSpan.FromMinutes(5));
 				} else {
@@ -55,7 +46,7 @@ public class GuildAdminHandler(
 					context.Succeed(requirement);
 				}
 			} finally {
-				await db.LockReleaseAsync(key, lockToken);
+				await db.LockReleaseAsync(key, "1");
 			}
 		}
 	}
