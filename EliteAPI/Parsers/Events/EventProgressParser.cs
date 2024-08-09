@@ -39,6 +39,17 @@ public static class EventProgressParser {
         if (!member.Api.Collections || !member.Api.Inventories) {
             eventMember.Status = EventMemberStatus.Disqualified;
             eventMember.Notes = "API access was disabled during the event.";
+            
+            if (eventMember.Team is not null) {
+                eventMember.Team = null;
+                eventMember.TeamId = null;
+                
+                eventMember.Team?.Members.Remove(eventMember);
+                if (eventMember.Team?.Members.Count == 0) {
+                    context.Entry(eventMember.Team).State = EntityState.Deleted;
+                }
+            }
+            
             return;
         }
         

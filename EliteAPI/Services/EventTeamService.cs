@@ -120,7 +120,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Event has already started");
 		}
 		
-		context.EventTeams.Remove(team);
+		context.Entry(team).State = EntityState.Deleted;
 		await context.SaveChangesAsync();
 
 		return new OkResult();
@@ -132,7 +132,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Invalid team id");
 		}
 		
-		context.EventTeams.Remove(team);
+		context.Entry(team).State = EntityState.Deleted;
 		await context.SaveChangesAsync();
 
 		return new OkResult();

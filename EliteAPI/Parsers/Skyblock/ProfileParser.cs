@@ -292,13 +292,19 @@ public class ProfileParser(
 
         // Load progress for all active events (if any)
         if (member.EventEntries is { Count: > 0 }) {
-            foreach (var entry in member.EventEntries.Where(entry => entry.IsEventRunning())) {
-                var real = await context.EventMembers.FirstOrDefaultAsync(e => e.Id == entry.Id);
-                var @event = await context.Events.FindAsync(entry.EventId);
+            try {
+                foreach (var entry in member.EventEntries.Where(entry => entry.IsEventRunning())) {
+                    var real = await context.EventMembers
+                        .Include(e => e.Team)
+                        .FirstOrDefaultAsync(e => e.Id == entry.Id);
+                    var @event = await context.Events.FindAsync(entry.EventId);
                 
-                if (real is null || @event is null) continue;
+                    if (real is null || @event is null) continue;
                 
-                real.LoadProgress(context, member, @event);
+                    real.LoadProgress(context, member, @event);
+                }
+            } catch (Exception e) {
+                logger.LogError(e, "Failed to load event progress for {PlayerUuid} in {ProfileId}", member.PlayerUuid, member.ProfileId);
             }
         }
 
