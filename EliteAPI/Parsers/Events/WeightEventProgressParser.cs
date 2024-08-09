@@ -7,9 +7,9 @@ namespace EliteAPI.Parsers.Events;
 public static class WeightEventProgressParser 
 {
 	/// <summary>
-	/// Cap mushrooms attributed to Mushroom Eater perk to 99% of 72,000 per hour
+	/// Cap mushrooms attributed to Mushroom Eater perk to 99% of 72,000 per hour, then assume players farm a maxiumum of 19/24 hours 
 	/// </summary>
-	private const int MaxMushroomEaterPerHour = (int)(72_000 * 0.99);
+	private const int MaxMushroomEaterPerHour = (int)(72_000 * 0.99 * 19 / 24);
 	
 	public static void UpdateFarmingWeight(this WeightEventMember eventMember, WeightEvent weightEvent, ProfileMember? member = null) {
 		if (member is not null) {
