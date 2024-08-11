@@ -117,6 +117,18 @@ public class ProfileService(
             .FirstOrDefaultAsync(p => p.IsSelected);
     }
 
+    public async Task<Garden?> GetProfileGarden(string profileUuid) {
+        return await context.Gardens.AsNoTracking()
+            .FirstOrDefaultAsync(g => g.ProfileId.Equals(profileUuid));
+    }
+
+    public async Task<Garden?> GetSelectedGarden(string playerUuid) {
+        var profileId = await GetSelectedProfileUuid(playerUuid);
+        if (profileId is null) return null;
+        
+        return await GetProfileGarden(profileId);
+    }
+
     public async Task<ProfileMember?> GetProfileMemberByProfileName(string playerUuid, string profileName)
     {
         var query = await memberService.ProfileMemberCompleteQuery(playerUuid);
@@ -126,12 +138,9 @@ public class ProfileService(
             .FirstOrDefaultAsync(p => p.Profile.ProfileName == profileName);
     }
 
-    public async Task<string?> GetSelectedProfileUuid(string playerUuid) {
-        var query = await memberService.ProfileMemberQuery(playerUuid);
-        if (query is null) return null;
-        
-        return await query.AsNoTracking()
-            .Where(p => p.IsSelected)
+    private async Task<string?> GetSelectedProfileUuid(string playerUuid) {
+        return await context.ProfileMembers.AsNoTracking()
+            .Where(p => p.PlayerUuid == playerUuid && p.IsSelected)
             .Select(p => p.ProfileId)
             .FirstOrDefaultAsync();
     }

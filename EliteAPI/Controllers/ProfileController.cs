@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Controllers;
 
 [Route("[controller]")]
+[Route("/v{version:apiVersion}/[controller]")]
 [ApiController, ApiVersion(1.0)]
 public class ProfileController(
     IProfileService profileService, 
@@ -100,6 +101,7 @@ public class ProfileController(
     /// <returns></returns>
     // GET <ProfileController>s
     [Route("/[controller]s/{playerUuid}")]
+    [Route("/v{version:apiVersion}/[controller]s/{playerUuid}")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -123,6 +125,7 @@ public class ProfileController(
     /// <returns></returns>
     // GET <ProfileController>s
     [Route("/[controller]s/{playerUuidOrIgn}/Names")]
+    [Route("/v{version:apiVersion}/[controller]s/{playerUuidOrIgn}/Names")]
     [HttpGet]
     [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
