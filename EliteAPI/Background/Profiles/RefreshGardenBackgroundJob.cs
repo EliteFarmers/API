@@ -37,7 +37,7 @@ public class RefreshGardenBackgroundJob(
             await RefreshGarden(profileId);
         }
         catch (Exception e) {
-            messageService.SendErrorMessage("Failed Refresh Garden", e.Message);
+            messageService.SendErrorMessage("Failed Refresh Garden", $"ProfileId: {profileId}\n" + e.Message);
             throw new JobExecutionException(msg: "", refireImmediately: true, cause: e);
         }
     }

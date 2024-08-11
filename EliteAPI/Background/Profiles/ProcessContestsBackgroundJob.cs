@@ -37,7 +37,9 @@ public class ProcessContestsBackgroundJob(
         try {
             await ProcessContests(memberId, incomingJacob);
         }  catch (Exception e) {
-            messageService.SendErrorMessage("Failed Process Jacob Contests", e.Message);
+            messageService.SendErrorMessage(
+                "Failed Process Jacob Contests",
+                $"AccountId: `{accountId}`\nProfileId: {profileId}\n[Profile](<https://elitebot.dev/@{accountId}/{profileId}>)\n" + e.Message);
             throw new JobExecutionException(msg: "", refireImmediately: true, cause: e);
         }
 	}
