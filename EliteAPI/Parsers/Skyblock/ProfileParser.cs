@@ -50,13 +50,13 @@ public class ProfileParser(
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
-    
+
     public async Task TransformProfilesResponse(ProfilesResponse data, string? playerUuid) {
         if (!data.Success) {
             logger.LogWarning("Received unsuccessful profiles response from {PlayerUuid}", playerUuid);
             return;
         }
-        
+
         if (data.Profiles is not { Length: > 0 }) {
             // Mark player as removed from all of their profiles if they have none in the response
             await context.ProfileMembers
@@ -69,7 +69,7 @@ public class ProfileParser(
                 );
             return;
         }
-        
+
         // Parse each profile
         foreach (var profile in data.Profiles) {
             await TransformSingleProfile(profile, playerUuid);
@@ -77,15 +77,31 @@ public class ProfileParser(
 
         var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
 
-        // Mark player as removed from all profiles that aren't in the response
-        await context.ProfileMembers
+        // Get profiles that aren't in the response
+        var wipedProfiles = await context.ProfileMembers
             .Include(p => p.Profile)
+            .Include(p => p.MinecraftAccount)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
-            .ExecuteUpdateAsync(member =>
-                member
-                    .SetProperty(m => m.WasRemoved, true)
-                    .SetProperty(m => m.IsSelected, false)
-            );
+            .Select(p => new { p.Id, p.WasRemoved, p.PlayerUuid, p.ProfileId, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
+            .ToListAsync();
+        
+        if (wipedProfiles.Count > 0) {
+            // Send wiped messages
+            foreach (var p in wipedProfiles) {
+                if (p.WasRemoved) continue;
+                messageService.SendWipedMessage(p.PlayerUuid, p.Ign, p.ProfileId, p.DiscordId?.ToString() ?? "");
+            }
+            
+            // Mark all as removed
+            await context.ProfileMembers
+                .Include(p => p.Profile)
+                .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
+                .ExecuteUpdateAsync(member =>
+                    member
+                        .SetProperty(m => m.WasRemoved, true)
+                        .SetProperty(m => m.IsSelected, false)
+                );
+        }
         
         await context.SaveChangesAsync();
     }
