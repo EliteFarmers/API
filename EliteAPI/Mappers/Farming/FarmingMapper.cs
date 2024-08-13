@@ -52,7 +52,8 @@ public class JacobContestParticipationsMapper : Profile
             .ForMember(j => j.Medal, opt => opt.MapFrom(x => FormatUtils.GetMedalName(x.MedalEarned)))
             .ForMember(j => j.Removed, opt => opt.MapFrom(x => x.ProfileMember.WasRemoved))
             .ForMember(j => j.PlayerUuid, opt => opt.MapFrom(x => x.ProfileMember.PlayerUuid))
-            .ForMember(j => j.PlayerName, opt => opt.MapFrom(x => x.ProfileMember.MinecraftAccount.Name));
+            .ForMember(j => j.PlayerName, opt => opt.MapFrom(x => x.ProfileMember.MinecraftAccount.Name))
+            .ForMember(j => j.ProfileUuid, opt => opt.MapFrom(x => x.ProfileMember.ProfileId));
     }
 }
 

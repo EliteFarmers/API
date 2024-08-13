@@ -65,6 +65,7 @@ public class StrippedContestParticipationDto {
     public bool Removed { get; set; } = false;
     public string PlayerUuid { get; set; } = "";
     public string PlayerName { get; set; } = "";
+    public string ProfileUuid { get; set; } = "";
 }
 
 public class ContestBracketsDetailsDto {
