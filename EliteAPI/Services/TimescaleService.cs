@@ -1,4 +1,5 @@
-﻿using EliteAPI.Data;
+﻿using System.Globalization;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
@@ -30,6 +31,8 @@ public class TimescaleService(DataContext context) : ITimescaleService
         
         return selectedEntries.Select(c => new CropCollectionsDataPointDto {
             Crops = c.ExtractReadableCropCollections(),
+            Pests = c.ExtractPestKills(),
+            CropWeights = c.CountCropWeight().ToString(CultureInfo.InvariantCulture),
             Timestamp = c.Time.ToUnixTimeSeconds()
         }).ToList();
     }

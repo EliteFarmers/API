@@ -70,7 +70,22 @@ public static class CropCollectionParser {
             { "pumpkin", cropCollection.Pumpkin },
             { "cane", cropCollection.SugarCane },
             { "wheat", cropCollection.Wheat },
+            { "seeds", cropCollection.Seeds }
         };
     }
     
+    public static Dictionary<string, int> ExtractPestKills(this CropCollection cropCollection) {
+        return new Dictionary<string, int> {
+            { "mite", cropCollection.Mite },
+            { "cricket", cropCollection.Cricket },
+            { "moth", cropCollection.Moth },
+            { "worm", cropCollection.Earthworm },
+            { "slug", cropCollection.Slug },
+            { "beetle", cropCollection.Beetle },
+            { "locust", cropCollection.Locust },
+            { "rat", cropCollection.Rat },
+            { "mosquito", cropCollection.Mosquito },
+            { "fly", cropCollection.Fly },
+        };
+    }
 }

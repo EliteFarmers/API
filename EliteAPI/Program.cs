@@ -117,9 +117,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         db.Database.Migrate();
-        if (db.Database.EnsureCreated()) {
-            db.ApplyHyperTables();
-        }
     }
     catch (Exception e)
     {

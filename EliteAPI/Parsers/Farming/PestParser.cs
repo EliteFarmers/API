@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Timescale;
 using HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
@@ -24,8 +25,23 @@ public static class PestParser {
         uncountedCrops[Pest.Fly.GetCrop()] = CalcUncountedCrops(Pest.Fly, pests.Fly);
     }
     
+    public static Dictionary<Crop, long> CalcUncountedCrops(this CropCollection cropCollection) {
+        return new Dictionary<Crop, long> {
+            [Pest.Mite.GetCrop()] = CalcUncountedCrops(Pest.Mite, cropCollection.Mite),
+            [Pest.Cricket.GetCrop()] = CalcUncountedCrops(Pest.Cricket, cropCollection.Cricket),
+            [Pest.Moth.GetCrop()] = CalcUncountedCrops(Pest.Moth, cropCollection.Moth),
+            [Pest.Earthworm.GetCrop()] = CalcUncountedCrops(Pest.Earthworm, cropCollection.Earthworm),
+            [Pest.Slug.GetCrop()] = CalcUncountedCrops(Pest.Slug, cropCollection.Slug),
+            [Pest.Beetle.GetCrop()] = CalcUncountedCrops(Pest.Beetle, cropCollection.Beetle),
+            [Pest.Locust.GetCrop()] = CalcUncountedCrops(Pest.Locust, cropCollection.Locust),
+            [Pest.Rat.GetCrop()] = CalcUncountedCrops(Pest.Rat, cropCollection.Rat),
+            [Pest.Mosquito.GetCrop()] = CalcUncountedCrops(Pest.Mosquito, cropCollection.Mosquito),
+            [Pest.Fly.GetCrop()] = CalcUncountedCrops(Pest.Fly, cropCollection.Fly)
+        };
+    }
+    
     public static long CalcUncountedCrops(Pest pest, int kills) {
-        var pestBrackets = FarmingItemsConfig.Settings.PestDropBrackets.ToList();
+        var pestBrackets = FarmingItemsConfig.Settings.PestDropBracketsList;
         var pestDropChances = FarmingItemsConfig.Settings.PestCropDropChances;
 
         var pestCount = kills;
