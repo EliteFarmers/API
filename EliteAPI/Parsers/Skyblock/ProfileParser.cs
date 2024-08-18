@@ -394,6 +394,8 @@ public class ProfileParser(
         if (member.Api.Collections) {
             var cropCollection = new CropCollection {
                 Time = DateTimeOffset.UtcNow,
+                ProfileMemberId = member.Id,
+                ProfileMember = member,
             
                 Cactus = member.Collections.RootElement.TryGetProperty("CACTUS", out var cactus) ? cactus.GetInt64() : 0,
                 Carrot = member.Collections.RootElement.TryGetProperty("CARROT_ITEM", out var carrot) ? carrot.GetInt64() : 0,
@@ -406,9 +408,17 @@ public class ProfileParser(
                 SugarCane = member.Collections.RootElement.TryGetProperty("SUGAR_CANE", out var sugarCane) ? sugarCane.GetInt64() : 0,
                 Wheat = member.Collections.RootElement.TryGetProperty("WHEAT", out var wheat) ? wheat.GetInt64() : 0,
                 Seeds = member.Collections.RootElement.TryGetProperty("SEEDS", out var seeds) ? seeds.GetInt64() : 0,
-            
-                ProfileMemberId = member.Id,
-                ProfileMember = member,
+                
+                Beetle = member.Farming.Pests.Beetle,
+                Cricket = member.Farming.Pests.Cricket,
+                Fly = member.Farming.Pests.Fly,
+                Locust = member.Farming.Pests.Locust,
+                Mite = member.Farming.Pests.Mite,
+                Mosquito = member.Farming.Pests.Mosquito,
+                Moth = member.Farming.Pests.Moth,
+                Rat = member.Farming.Pests.Rat,
+                Slug = member.Farming.Pests.Slug,
+                Earthworm = member.Farming.Pests.Earthworm,
             };
             
             await context.CropCollections.SingleInsertAsync(cropCollection);

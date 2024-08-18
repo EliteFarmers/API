@@ -13,7 +13,18 @@ public class FarmingItemsSettings {
     public Dictionary<string, short> FarmingArmorIds { get; set; } = new();
     public Dictionary<string, short> FarmingAccessoryIds { get; set; } = new();
     public Dictionary<Pest, string> PestIds { get; set; } = new();
-    public Dictionary<string, int> PestDropBrackets { get; set; } = new();
+    
+    [JsonIgnore]
+    private Dictionary<string, int> _pestDropBrackets = new();
+    public Dictionary<string, int> PestDropBrackets {
+        get => _pestDropBrackets;
+        set {
+            _pestDropBrackets = value;
+            PestDropBracketsList = value.ToList();
+        }
+    }
+    public List<KeyValuePair<string, int>> PestDropBracketsList = [];
+    
     public Dictionary<Pest, PestDropChance> PestCropDropChances { get; set; } = new();
 }
 

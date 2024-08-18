@@ -7,7 +7,9 @@ public class CollectionDataPointDto {
 
 public class CropCollectionsDataPointDto {
     public long Timestamp { get; set; }
+    public string CropWeights { get; set; } = "0";
     public required Dictionary<string, long> Crops { get; set; }
+    public required Dictionary<string, int> Pests { get; set; }
 }
 
 public class SkillDataPointDto {
