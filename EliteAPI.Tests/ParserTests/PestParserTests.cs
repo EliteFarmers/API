@@ -12,9 +12,24 @@ public class PestParserTests {
 		PestParser.CalcUncountedCrops(Pest.Mite, 25).Should().Be(0);
 		PestParser.CalcUncountedCrops(Pest.Mite, 50).Should().Be(0);
 		PestParser.CalcUncountedCrops(Pest.Mite, 51).Should()
-			.Be((int) Math.Ceiling(FarmingItemsConfig.Settings.PestCropDropChances[Pest.Mite].GetChance(250) * 1));
+			.Be((int) Math.Ceiling(FarmingItemsConfig.Settings.PestCropDropChances[Pest.Mite].GetCropsDropped(250) * 1));
 
 		PestParser.CalcUncountedCrops(Pest.Cricket, 426).Should().Be(834343);
+	}
+	
+	[Fact]
+	public void PestCollectionsTest() {
+		FarmingItemsConfig.Settings.PestCropDropChances[Pest.Slug].GetCropsDropped(1300, true, false)
+			.Should().BeApproximately(2402.13, 0.01);
+		
+		FarmingItemsConfig.Settings.PestCropDropChances[Pest.Slug].GetCropsDropped(0, true, false)
+			.Should().BeApproximately(211.2, 0.01);
+		
+		FarmingItemsConfig.Settings.PestCropDropChances[Pest.Fly].GetCropsDropped(1300, true, false)
+			.Should().BeApproximately(24053.76, 0.01);
+		
+		FarmingItemsConfig.Settings.PestCropDropChances[Pest.Fly].GetCropsDropped(0, true, false)
+			.Should().BeApproximately(3162.24, 0.01);
 	}
 	
 	

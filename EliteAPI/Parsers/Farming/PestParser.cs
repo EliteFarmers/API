@@ -56,7 +56,7 @@ public static class PestParser {
             
             // Use the last bracket for all remaining pests
             if (i == pestBrackets.Count - 1) {
-                totalDrops += (int) Math.Ceiling(pestDrops.GetChance(fortune) * pestCount);
+                totalDrops += (int) Math.Ceiling(pestDrops.GetCropsDropped(fortune) * pestCount);
                 continue;
             }
             
@@ -76,7 +76,7 @@ public static class PestParser {
             }
 
             // Calculate the drops for the current bracket
-            var drops = pestDrops.GetChance(fortune) * pestsToCount;
+            var drops = pestDrops.GetCropsDropped(fortune) * pestsToCount;
 
             pestCount -= pestsToCount;
             totalDrops += (int) Math.Ceiling(drops);

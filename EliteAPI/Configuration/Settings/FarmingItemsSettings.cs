@@ -35,17 +35,23 @@ public class PestDropChance {
     [JsonIgnore]
     private Dictionary<int, double> Precomputed { get; } = new();
     
-    public double GetChance(int fortune) {
-        if (Precomputed.TryGetValue(fortune, out var chance)) return chance;
+    public double GetCropsDropped(int fortune, bool includeZero = false, bool usePrecomputed = true) {
+        if (usePrecomputed && Precomputed.TryGetValue(fortune, out var chance)) return chance;
 
         // Zero fortune means we're ignoring the drops from this bracket
-        if (fortune == 0) {
-            Precomputed[fortune] = 0;
+        if (fortune == 0 && !includeZero) {
+            if (usePrecomputed) {
+                Precomputed[fortune] = 0;
+            }
             return 0;
         }
         
         var drops = Base * (fortune / 100f + 1);
         var rng = Rare.Sum((r) => r.Chance * (fortune / 600f + 1) * r.Drops);
+
+        if (!usePrecomputed) {
+            return drops + rng;
+        }
         
         Precomputed[fortune] = drops + rng;
         return Precomputed[fortune];
@@ -56,7 +62,7 @@ public class PestDropChance {
         
         var pestBrackets = FarmingItemsConfig.Settings.PestDropBrackets;
         foreach (var fortune in pestBrackets.Values) {
-            GetChance(fortune);
+            GetCropsDropped(fortune);
         }
         
         return Precomputed;
