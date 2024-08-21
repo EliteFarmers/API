@@ -17,6 +17,7 @@ public class RefreshGardenBackgroundJob(
     IConnectionMultiplexer redis,
     IHypixelService hypixelService,
     IOptions<ConfigCooldownSettings> coolDowns,
+    ILeaderboardService leaderboardService,
     DataContext context)
     : IJob {
     public static readonly JobKey Key = new(nameof(RefreshGardenBackgroundJob));
@@ -113,8 +114,28 @@ public class RefreshGardenBackgroundJob(
             garden.PopulateCropUpgrades(gardenData);
             
             context.Gardens.Update(garden);
+            
+            UpdateLeaderboardPlacements(garden);
         }
         
         await context.SaveChangesAsync();
+    }
+
+    private void UpdateLeaderboardPlacements(Garden garden) {
+        var id = garden.ProfileId;
+        // General garden placements
+        leaderboardService.UpdateLeaderboardScore("garden", id, garden.GardenExperience);
+        leaderboardService.UpdateLeaderboardScore("visitors-accepted", id, garden.CompletedVisitors);
+        // Crop milestones
+        leaderboardService.UpdateLeaderboardScore("cactus-milestone", id, garden.Crops.Cactus);
+        leaderboardService.UpdateLeaderboardScore("carrot-milestone", id, garden.Crops.Carrot);
+        leaderboardService.UpdateLeaderboardScore("cocoa-milestone", id, garden.Crops.CocoaBeans);
+        leaderboardService.UpdateLeaderboardScore("melon-milestone", id, garden.Crops.Melon);
+        leaderboardService.UpdateLeaderboardScore("mushroom-milestone", id, garden.Crops.Mushroom);
+        leaderboardService.UpdateLeaderboardScore("netherwart-milestone", id, garden.Crops.NetherWart);
+        leaderboardService.UpdateLeaderboardScore("potato-milestone", id, garden.Crops.Potato);
+        leaderboardService.UpdateLeaderboardScore("pumpkin-milestone", id, garden.Crops.Pumpkin);
+        leaderboardService.UpdateLeaderboardScore("sugarcane-milestone", id, garden.Crops.SugarCane);
+        leaderboardService.UpdateLeaderboardScore("wheat-milestone", id, garden.Crops.Wheat);
     }
 }
