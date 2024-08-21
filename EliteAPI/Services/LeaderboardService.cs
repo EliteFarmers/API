@@ -37,7 +37,7 @@ public class LeaderboardService(
         
         // If key exists, lb does not need updating
         // This also prevents repeated calls from triggering it twice
-        // if (await db.KeyExistsAsync(key)) return;
+        if (await db.KeyExistsAsync(key)) return;
         
         var expiry = DateTime.UtcNow.AddSeconds(_settings.CompleteRefreshInterval);
         // Set updated
@@ -96,7 +96,7 @@ public class LeaderboardService(
 
                 var values = members.ToString().Split("|");
                 List<ProfileLeaderboardMember> entryMembers = [];
-                for (var memberIndex = 0; memberIndex < values.Length; memberIndex += 3) {
+                for (var memberIndex = 1; memberIndex < values.Length; memberIndex += 3) {
                     entryMembers.Add(new ProfileLeaderboardMember {
                         Uuid = values[memberIndex],
                         Ign = values[memberIndex + 1],
@@ -107,6 +107,7 @@ public class LeaderboardService(
                 return new LeaderboardEntry {
                     Uuid = memberId,
                     MemberId = memberId,
+                    Profile = values[0],
                     Amount = entry.Score,
                     Members = entryMembers
                 };
@@ -139,7 +140,7 @@ public class LeaderboardService(
 
                 var values = members.ToString().Split("|");
                 List<ProfileLeaderboardMember> entryMembers = [];
-                for (var memberIndex = 0; memberIndex < values.Length; memberIndex += 3) {
+                for (var memberIndex = 1; memberIndex < values.Length; memberIndex += 3) {
                     entryMembers.Add(new ProfileLeaderboardMember {
                         Uuid = values[memberIndex],
                         Ign = values[memberIndex + 1],
@@ -151,6 +152,7 @@ public class LeaderboardService(
                     MemberId = memberId,
                     Amount = entry.Score,
                     Members = entryMembers,
+                    Profile = values[0],
                     Rank = i + firstRank
                 };
             }
@@ -422,7 +424,7 @@ public class LeaderboardService(
             if (score.Members is null || score.Members.Count < 1) continue;
             
             var stringified = string.Join('|', score.Members.Select(m => $"{m.Uuid}|{m.Ign}|{m.Xp}"));
-            db.StringSet($"{lbKey}:{score.MemberId}:members", stringified, expiry, When.Always, CommandFlags.FireAndForget);
+            db.StringSet($"{lbKey}:{score.MemberId}:members", score.Profile + "|" + stringified, expiry, When.Always, CommandFlags.FireAndForget);
         }
         
         var sortedSetEntries = entries
@@ -546,7 +548,7 @@ public class LeaderboardService(
             .ThenInclude(p => p.Members
                 .Where(m => !m.WasRemoved))
             .ThenInclude(m => m.MinecraftAccount)
-            .Where(g => g.GardenExperience > 0);
+            .Where(g => g.GardenExperience > 0 && g.Profile.Members.Count != 0);
         
         List<LeaderboardEntry> scores;
         
@@ -558,6 +560,7 @@ public class LeaderboardService(
                     .Select(g => new LeaderboardEntry {
                         Amount = g.GardenExperience,
                         MemberId = g.ProfileId,
+                        Profile = g.Profile.Members.First().ProfileName,
                         Members = g.Profile!.Members
                             .Where(m => !m.WasRemoved)
                             .Select(m => new ProfileLeaderboardMember() {
@@ -578,6 +581,7 @@ public class LeaderboardService(
                     .Select(g => new LeaderboardEntry() {
                         Amount = g.CompletedVisitors,
                         MemberId = g.ProfileId,
+                        Profile = g.Profile.Members.First().ProfileName,
                         Members = g.Profile!.Members
                             .Where(m => !m.WasRemoved)
                             .Select(m => new ProfileLeaderboardMember() {
@@ -597,6 +601,7 @@ public class LeaderboardService(
                     .Select(g => new LeaderboardEntry() {
                         Amount = EF.Property<long>(g.Crops, lbSettings.Id),
                         MemberId = g.ProfileId,
+                        Profile = g.Profile.Members.First().ProfileName,
                         Members = g.Profile!.Members
                             .Where(m => !m.WasRemoved)
                             .Select(m => new ProfileLeaderboardMember() {
