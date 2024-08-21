@@ -10,5 +10,6 @@ public class LeaderboardMapper : Profile {
         CreateMap<LeaderboardEntry, LeaderboardEntryDto>();
         CreateMap<LeaderboardEntryWithRank, LeaderboardEntryWithRankDto>();
         CreateMap<Leaderboard, LeaderboardDto>();
+        CreateMap<ProfileLeaderboardMember, ProfileLeaderboardMemberDto>();
     }
 }

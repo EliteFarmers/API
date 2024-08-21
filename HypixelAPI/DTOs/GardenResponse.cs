@@ -55,6 +55,12 @@ public class GardenResponseData {
 	/// </summary>
 	[JsonPropertyName("selected_barn_skin")]
 	public string? SelectedBarnSkin { get; set; } 
+	
+	/// <summary>
+	/// Visitors currently on the garden
+	/// </summary>
+	[JsonPropertyName("active_commissions")]
+	public Dictionary<string, object> CurrentVisitors { get; set; } = new();
 }
 
 public class GardenVisitorData {
