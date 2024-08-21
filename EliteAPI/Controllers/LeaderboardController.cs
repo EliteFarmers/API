@@ -71,6 +71,7 @@ public class LeaderboardController(
             Limit = limit,
             Offset = offset,
             MaxEntries = lb.Limit,
+            Profile = lb.Profile,
             Entries = mapper.Map<List<LeaderboardEntryDto>>(entries)
         };
         
@@ -122,6 +123,7 @@ public class LeaderboardController(
             Offset = offset,
             Limit = limit,
             MaxEntries = lb.Limit,
+            Profile = lb.Profile,
             Entries = mapper.Map<List<LeaderboardEntryDto>>(entries)
         });
     }
@@ -155,6 +157,7 @@ public class LeaderboardController(
             Offset = offset,
             Limit = limit,
             MaxEntries = lb.Limit,
+            Profile = lb.Profile,
             Entries = mapper.Map<List<LeaderboardEntryDto>>(entries)
         });
     }
@@ -178,7 +181,7 @@ public class LeaderboardController(
         
         if (memberId == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
         
-        var positions = await leaderboardService.GetLeaderboardPositions(memberId.ToString());
+        var positions = await leaderboardService.GetLeaderboardPositions(memberId.ToString(), profileUuid);
         
         return Ok(positions);
     }
@@ -215,6 +218,50 @@ public class LeaderboardController(
         }
         
         var (position, score) = await leaderboardService.GetLeaderboardPositionAndScore(leaderboardId, member.Id.ToString());
+        List<LeaderboardEntry>? upcomingPlayers = null;
+        
+        var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);
+        rank = position != -1 ? Math.Min(position, rank) : rank;
+
+        if (includeUpcoming && rank == -1) {
+            upcomingPlayers = await leaderboardService.GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
+        } else if (includeUpcoming && rank > 1) {
+            upcomingPlayers = await leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
+                Math.Min(rank - 1, 5));
+        }
+
+        // Reverse the list so that upcoming players are in ascending order
+        upcomingPlayers?.Reverse();
+        var upcoming = mapper.Map<List<LeaderboardEntryDto>>(upcomingPlayers);
+
+        var result = new LeaderboardPositionDto {
+            Rank = position,
+            Amount = score,
+            UpcomingRank = rank == -1 ? lb.Limit : rank - 1,
+            UpcomingPlayers = upcoming
+        };
+        
+        return Ok(result);
+    }
+    
+    /// <summary>
+    /// Get a profile's rank in a profile leaderboard
+    /// </summary>
+    /// <param name="leaderboardId">A profile leaderboard ID</param>
+    /// <param name="profileUuid">Profile Uuid (no hyphens)</param>
+    /// <param name="includeUpcoming">Include upcoming profiles</param>
+    /// <param name="atRank">Starting rank for upcoming profiles</param>
+    /// <returns></returns>
+    [HttpGet("rank/{leaderboardId}/{profileUuid}")]
+    [ResponseCache(Duration = 60 * 5, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    public async Task<ActionResult<LeaderboardPositionDto>> GetProfileLeaderboardRank(string leaderboardId, string profileUuid, [FromQuery] bool includeUpcoming = false, [FromQuery] int atRank = -1) {
+        if (!leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
+            return BadRequest("Invalid leaderboard ID.");
+        }
+        
+        var (position, score) = await leaderboardService.GetLeaderboardPositionAndScore(leaderboardId, profileUuid);
         List<LeaderboardEntry>? upcomingPlayers = null;
         
         var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);

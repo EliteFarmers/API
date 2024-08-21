@@ -1,4 +1,5 @@
-﻿using EliteAPI.Configuration.Settings;
+﻿using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Farming;
@@ -52,7 +53,7 @@ public class LeaderboardService(
     }
 
     public async Task<List<LeaderboardEntryWithRank>> GetLeaderboardSliceAtScore(string leaderboardId, double score, int limit = 5, string? excludeMemberId = null) {
-        if (!LeaderboardExists(leaderboardId)) return [];
+        if (!TryGetLeaderboardSettings(leaderboardId, out var lb)) return [];
         
         // var memberRank = excludeMemberId is null ? -1 : await GetLeaderboardPositionNoCheck(leaderboardId, excludeMemberId);
         
@@ -69,14 +70,93 @@ public class LeaderboardService(
         );
         
         if (slice.Length == 0) {
-            return new List<LeaderboardEntryWithRank>();
+            return [];
         }
         
         var firstRank = await db.SortedSetRankAsync($"lb:{leaderboardId}", slice.First().Element, Order.Descending) ?? 1;
+        var tasks = GetLeaderboardEntriesWithScore(slice, leaderboardId, (int) firstRank, lb.Profile);
         
-        // Get the hashset for each member
-        var tasks = slice.Select(async (entry, i) => {
+        return (await Task.WhenAll(tasks)).ToList();
+    }
+    
+    private IEnumerable<Task<LeaderboardEntry>> GetLeaderboardEntries(IEnumerable<SortedSetEntry> slice, string leaderboardId, bool profileLeaderboard = false) {
+        var db = redis.GetDatabase();
+        return slice.Select(async entry => {
             var memberId = entry.Element.ToString();
+
+            if (profileLeaderboard) {
+                var members = await db.StringGetAsync($"lb:{leaderboardId}:{memberId}:members");
+                if (members.IsNullOrEmpty) {
+                    return new LeaderboardEntry {
+                        Uuid = memberId,
+                        MemberId = memberId,
+                        Amount = entry.Score
+                    };
+                }
+
+                var values = members.ToString().Split("|");
+                List<ProfileLeaderboardMember> entryMembers = [];
+                for (var memberIndex = 1; memberIndex < values.Length; memberIndex += 3) {
+                    entryMembers.Add(new ProfileLeaderboardMember {
+                        Uuid = values[memberIndex],
+                        Ign = values[memberIndex + 1],
+                        Xp = int.Parse(values[memberIndex + 2])
+                    });
+                }
+            
+                return new LeaderboardEntry {
+                    Uuid = memberId,
+                    MemberId = memberId,
+                    Profile = values[0],
+                    Amount = entry.Score,
+                    Members = entryMembers
+                };
+            }
+            
+            var member = await db.HashGetAllAsync(memberId);
+            return new LeaderboardEntry {
+                MemberId = memberId,
+                Profile = member.FirstOrDefault(x => x.Name == ProfileHash).Value,
+                Ign = member.FirstOrDefault(x => x.Name == IgnHash).Value,
+                Uuid = member.FirstOrDefault(x => x.Name == UuidHash).Value,
+                Amount = entry.Score
+            };
+        });
+    }
+    private IEnumerable<Task<LeaderboardEntryWithRank>> GetLeaderboardEntriesWithScore(IEnumerable<SortedSetEntry> slice, string leaderboardId, int firstRank, bool profileLeaderboard = false) {
+        var db = redis.GetDatabase();
+        return slice.Select(async (entry, i) => {
+            var memberId = entry.Element.ToString();
+            
+            if (profileLeaderboard) {
+                var members = await db.StringGetAsync($"lb:{leaderboardId}:{memberId}:members");
+                if (members.IsNullOrEmpty) {
+                    return new LeaderboardEntryWithRank {
+                        MemberId = memberId,
+                        Amount = entry.Score,
+                        Rank = i + firstRank
+                    };
+                }
+
+                var values = members.ToString().Split("|");
+                List<ProfileLeaderboardMember> entryMembers = [];
+                for (var memberIndex = 1; memberIndex < values.Length; memberIndex += 3) {
+                    entryMembers.Add(new ProfileLeaderboardMember {
+                        Uuid = values[memberIndex],
+                        Ign = values[memberIndex + 1],
+                        Xp = int.Parse(values[memberIndex + 2])
+                    });
+                }
+            
+                return new LeaderboardEntryWithRank {
+                    MemberId = memberId,
+                    Amount = entry.Score,
+                    Members = entryMembers,
+                    Profile = values[0],
+                    Rank = i + firstRank
+                };
+            }
+            
             var member = await db.HashGetAllAsync(memberId);
             return new LeaderboardEntryWithRank {
                 MemberId = memberId,
@@ -84,14 +164,12 @@ public class LeaderboardService(
                 Ign = member.FirstOrDefault(x => x.Name == IgnHash).Value,
                 Uuid = member.FirstOrDefault(x => x.Name == UuidHash).Value,
                 Amount = entry.Score,
-                Rank = (int) firstRank + i
+                Rank = i + firstRank
             };
         });
-        
-        return (await Task.WhenAll(tasks)).ToList();
     }
 
-    public async Task<LeaderboardPositionsDto> GetLeaderboardPositions(string memberId) {
+    public async Task<LeaderboardPositionsDto> GetLeaderboardPositions(string memberId, string? profileId = null) {
         var result = new LeaderboardPositionsDto();
         
         // Can't use parallel foreach because of database connection
@@ -109,6 +187,12 @@ public class LeaderboardService(
         
         foreach (var lbId in _settings.PestLeaderboards.Keys) {
             result.Pests.Add(lbId, await GetLeaderboardPositionNoCheck(lbId, memberId));
+        }
+        
+        if (profileId is not null) {
+            foreach (var lbId in _settings.ProfileLeaderboards.Keys) {
+                result.Profile.Add(lbId, await GetLeaderboardPositionNoCheck(lbId, profileId));
+            }
         }
         
         return result;
@@ -137,6 +221,7 @@ public class LeaderboardService(
     }
     
     private async Task<List<LeaderboardEntry>> GetSlice(string leaderboardId, int offset = 0, int limit = 20) {
+        if (!TryGetLeaderboardSettings(leaderboardId, out var lb)) return [];
         var db = redis.GetDatabase();
 
         var slice = await db.SortedSetRangeByScoreWithScoresAsync(
@@ -151,21 +236,11 @@ public class LeaderboardService(
         }
         
         // Get the hashset for each member
-        var tasks = slice.Select(async entry => {
-            var memberId = entry.Element.ToString();
-            var member = await db.HashGetAllAsync(memberId);
-            return new LeaderboardEntry {
-                MemberId = memberId,
-                Profile = member.FirstOrDefault(x => x.Name == ProfileHash).Value,
-                Ign = member.FirstOrDefault(x => x.Name == IgnHash).Value,
-                Uuid = member.FirstOrDefault(x => x.Name == UuidHash).Value,
-                Amount = entry.Score
-            };
-        });
-        
-        return (await Task.WhenAll(tasks)).ToList();
+        var tasks = GetLeaderboardEntries(slice, leaderboardId, lb.Profile);
+        var entries = (await Task.WhenAll(tasks)).ToList();
+        return entries;
     }
-
+    
     public async Task RemoveMemberFromAllLeaderboards(string memberId) {
         var lbs = _settings.Leaderboards.Keys
             .Concat(_settings.CollectionLeaderboards.Keys)
@@ -201,6 +276,11 @@ public class LeaderboardService(
         
         if (_settings.PestLeaderboards.ContainsKey(leaderboardId)) {
             await FetchPestLeaderboard(leaderboardId);
+            return;
+        }
+        
+        if (_settings.ProfileLeaderboards.ContainsKey(leaderboardId)) {
+            await FetchProfileLeaderboard(leaderboardId);
         }
     }
 
@@ -326,7 +406,7 @@ public class LeaderboardService(
         
         var transaction = db.CreateTransaction();
         
-        // Intentionally not awaiting for use in the transaction
+        // Intentionally not awaiting use in the transaction
         #pragma warning disable CS4014 
         transaction.KeyDeleteAsync(lbKey);
         transaction.SortedSetAddAsync(lbKey, sortedSetEntries);
@@ -335,6 +415,32 @@ public class LeaderboardService(
         await transaction.ExecuteAsync();
     }
 
+    private async Task StoreProfileLeaderboardEntries(List<LeaderboardEntry> entries, string leaderboardId) {
+        var db = redis.GetDatabase();
+        var lbKey = $"lb:{leaderboardId}";
+        var expiry = TimeSpan.FromSeconds(_settings.CompleteRefreshInterval * 2);
+        
+        foreach (var score in entries) {
+            if (score.Members is null || score.Members.Count < 1) continue;
+            
+            var stringified = string.Join('|', score.Members.Select(m => $"{m.Uuid}|{m.Ign}|{m.Xp}"));
+            db.StringSet($"{lbKey}:{score.MemberId}:members", score.Profile + "|" + stringified, expiry, When.Always, CommandFlags.FireAndForget);
+        }
+        
+        var sortedSetEntries = entries
+            .Select(x => new SortedSetEntry(x.MemberId, x.Amount)).ToArray();
+        
+        var transaction = db.CreateTransaction();
+        
+        // Intentionally not awaiting use in the transaction
+        #pragma warning disable CS4014 
+        transaction.KeyDeleteAsync(lbKey);
+        transaction.SortedSetAddAsync(lbKey, sortedSetEntries);
+        #pragma warning restore CS4014        
+        
+        await transaction.ExecuteAsync();
+    }
+    
     private IQueryable<LeaderboardEntry> GetSpecialLeaderboardQuery(string leaderboardId) {
         if (!_settings.Leaderboards.TryGetValue(leaderboardId, out var lb)) {
             throw new Exception($"Leaderboard {leaderboardId} not found");
@@ -431,21 +537,104 @@ public class LeaderboardService(
                 throw new Exception($"Leaderboard {leaderboardId} not found");
         }
     }
+    
+    private async Task FetchProfileLeaderboard(string leaderboardId) {
+        if (!_settings.ProfileLeaderboards.TryGetValue(leaderboardId, out var lbSettings)) {
+            throw new Exception($"Profile leaderboard {leaderboardId} not found");
+        }
 
-    private bool LeaderboardExists(string leaderboardId) {
+        var query = dataContext.Gardens.AsNoTracking().AsSplitQuery()
+            .Include(g => g.Profile)
+            .ThenInclude(p => p.Members
+                .Where(m => !m.WasRemoved))
+            .ThenInclude(m => m.MinecraftAccount)
+            .Where(g => g.GardenExperience > 0 && g.Profile.Members.Count != 0);
+        
+        List<LeaderboardEntry> scores;
+        
+        switch (leaderboardId) {
+            case "garden":
+                scores = await query
+                    .OrderByDescending(g => g.GardenExperience)
+                    .Take(lbSettings.Limit)
+                    .Select(g => new LeaderboardEntry {
+                        Amount = g.GardenExperience,
+                        MemberId = g.ProfileId,
+                        Profile = g.Profile.Members.First().ProfileName,
+                        Members = g.Profile!.Members
+                            .Where(m => !m.WasRemoved)
+                            .Select(m => new ProfileLeaderboardMember() {
+                                Ign = m.MinecraftAccount.Name,
+                                Uuid = m.PlayerUuid,
+                                Xp = m.SkyblockXp
+                            })
+                            .OrderByDescending(m => m.Xp)
+                            .ToList()
+                    }).ToListAsync();
+                
+                break;
+            case "visitors-accepted":
+                scores = await query
+                    .Where(g => g.CompletedVisitors > 0)
+                    .OrderByDescending(g => g.CompletedVisitors)
+                    .Take(lbSettings.Limit)
+                    .Select(g => new LeaderboardEntry() {
+                        Amount = g.CompletedVisitors,
+                        MemberId = g.ProfileId,
+                        Profile = g.Profile.Members.First().ProfileName,
+                        Members = g.Profile!.Members
+                            .Where(m => !m.WasRemoved)
+                            .Select(m => new ProfileLeaderboardMember() {
+                                Ign = m.MinecraftAccount.Name,
+                                Uuid = m.PlayerUuid,
+                                Xp = m.SkyblockXp
+                            })
+                            .OrderByDescending(m => m.Xp)
+                            .ToList()
+                    }).ToListAsync();
+                break;
+            default: // Crop milestone leaderboards
+                scores = await query
+                    .Where(g => EF.Property<long>(g.Crops, lbSettings.Id) > 0)
+                    .OrderByDescending(g => EF.Property<long>(g.Crops, lbSettings.Id))
+                    .Take(lbSettings.Limit)
+                    .Select(g => new LeaderboardEntry() {
+                        Amount = EF.Property<long>(g.Crops, lbSettings.Id),
+                        MemberId = g.ProfileId,
+                        Profile = g.Profile.Members.First().ProfileName,
+                        Members = g.Profile!.Members
+                            .Where(m => !m.WasRemoved)
+                            .Select(m => new ProfileLeaderboardMember() {
+                                Ign = m.MinecraftAccount.Name,
+                                Uuid = m.PlayerUuid,
+                                Xp = m.SkyblockXp
+                            })
+                            .OrderByDescending(m => m.Xp)
+                            .ToList()
+                    }).ToListAsync();
+                break;
+        }
+
+        await StoreProfileLeaderboardEntries(scores, leaderboardId);
+    }
+
+
+    private bool LeaderboardExists(string leaderboardId, bool includeProfile = true) {
         return _settings.CollectionLeaderboards.ContainsKey(leaderboardId)
                || _settings.SkillLeaderboards.ContainsKey(leaderboardId)
                || _settings.Leaderboards.ContainsKey(leaderboardId)
-               || _settings.PestLeaderboards.ContainsKey(leaderboardId);
+               || _settings.PestLeaderboards.ContainsKey(leaderboardId)
+               || (includeProfile && _settings.ProfileLeaderboards.ContainsKey(leaderboardId));
     }
 
-    public bool TryGetLeaderboardSettings(string leaderboardId, out Leaderboard? lb) {
+    public bool TryGetLeaderboardSettings(string leaderboardId, [NotNullWhen(true)] out Leaderboard? lb, bool includeProfile = true) {
         return _settings.CollectionLeaderboards.TryGetValue(leaderboardId, out lb)
                || _settings.SkillLeaderboards.TryGetValue(leaderboardId, out lb) 
                || _settings.Leaderboards.TryGetValue(leaderboardId, out lb)
-               || _settings.PestLeaderboards.TryGetValue(leaderboardId, out lb);
+               || _settings.PestLeaderboards.TryGetValue(leaderboardId, out lb)
+               || (includeProfile && _settings.ProfileLeaderboards.TryGetValue(leaderboardId, out lb));
     }
-
+    
     public void UpdateLeaderboardScore(string leaderboardId, string memberId, double score) {
         if (!LeaderboardExists(leaderboardId)) return;
         
@@ -454,12 +643,19 @@ public class LeaderboardService(
     }
 }
 
+public class ProfileLeaderboardMember {
+    public required string Ign { get; init; }
+    public required string Uuid { get; init; }
+    public int Xp { get; init; }
+}
+
 public class LeaderboardEntry {
     public required string MemberId { get; init; }
     public string? Ign { get; init; }
     public string? Profile { get; init; }
     public double Amount { get; init; }
     public string? Uuid { get; init; }
+    public List<ProfileLeaderboardMember>? Members { get; init; }
 }
 
 public class LeaderboardEntryWithRank : LeaderboardEntry {

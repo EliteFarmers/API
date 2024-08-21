@@ -7,6 +7,7 @@ public class ConfigLeaderboardSettings {
     public Dictionary<string, Leaderboard> CollectionLeaderboards { get; set; } = new();
     public Dictionary<string, Leaderboard> SkillLeaderboards { get; set; } = new();
     public Dictionary<string, Leaderboard> PestLeaderboards { get; set; } = new();
+    public Dictionary<string, Leaderboard> ProfileLeaderboards { get; set; } = new();
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
@@ -17,4 +18,5 @@ public class Leaderboard
     public int Limit { get; set; } = 1000;
     public required string Order { get; set; } = "desc";
     public int ScoreFormat { get; set; } = 1;
+    public bool Profile { get; set; } = false;
 }

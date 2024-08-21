@@ -203,6 +203,80 @@
         "Title": "Fly Kills",
         "Limit": 5000
       }
+    },
+    "ProfileLeaderboards": {
+      "garden": {
+        "Id": "Garden",
+        "Title": "Garden Experience",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "visitors-accepted": {
+        "Id": "CompletedVisitors",
+        "Title": "Visitors Accepted",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "cactus-milestone": {
+        "Id": "Cactus",
+        "Title": "Cactus Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "carrot-milestone": {
+        "Id": "Carrot",
+        "Title": "Carrot Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "cocoa-milestone": {
+        "Id": "CocoaBeans",
+        "Title": "Cocoa Bean Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "melon-milestone": {
+        "Id": "Melon",
+        "Title": "Melon Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "mushroom-milestone": {
+        "Id": "Mushroom",
+        "Title": "Mushroom Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "netherwart-milestone": {
+        "Id": "NetherWart",
+        "Title": "Nether Wart Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "potato-milestone": {
+        "Id": "Potato",
+        "Title": "Potato Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "pumpkin-milestone": {
+        "Id": "Pumpkin",
+        "Title": "Pumpkin Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "sugarcane-milestone": {
+        "Id": "SugarCane",
+        "Title": "Sugar Cane Milestone",
+        "Limit": 5000,
+        "Profile": true
+      },
+      "wheat-milestone": {
+        "Id": "Wheat",
+        "Title": "Wheat Milestone",
+        "Limit": 5000,
+        "Profile": true
+      }
     }
   }
 }
