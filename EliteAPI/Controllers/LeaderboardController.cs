@@ -204,19 +204,26 @@ public class LeaderboardController(
             return BadRequest("Invalid leaderboard ID.");
         }
 
-        var member = await dataContext.ProfileMembers
-            .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
-            .Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
-            .FirstOrDefaultAsync();
+        var memberId = profileUuid;
 
-        if (member is null || member.Id == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
+        // Set the memberId to the profile member ID if the leaderboard is not a profile leaderboard
+        if (!lb.Profile) {
+            var member = await dataContext.ProfileMembers
+                .Where(p => p.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+                .Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
+                .FirstOrDefaultAsync();
 
-        // Update the profile if it's older than the cooldown
-        if (member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
-            await profileService.GetSelectedProfileMember(member.PlayerUuid);
+            if (member is null || member.Id == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
+
+            // Update the profile if it's older than the cooldown
+            if (member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
+                await profileService.GetSelectedProfileMember(member.PlayerUuid);
+            }
+            
+            memberId = member.Id.ToString();
         }
-        
-        var (position, score) = await leaderboardService.GetLeaderboardPositionAndScore(leaderboardId, member.Id.ToString());
+
+        var (position, score) = await leaderboardService.GetLeaderboardPositionAndScore(leaderboardId, memberId);
         List<LeaderboardEntry>? upcomingPlayers = null;
         
         var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);
@@ -256,34 +263,6 @@ public class LeaderboardController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
     public async Task<ActionResult<LeaderboardPositionDto>> GetProfileLeaderboardRank(string leaderboardId, string profileUuid, [FromQuery] bool includeUpcoming = false, [FromQuery] int atRank = -1) {
-        if (!leaderboardService.TryGetLeaderboardSettings(leaderboardId, out var lb) || lb is null) {
-            return BadRequest("Invalid leaderboard ID.");
-        }
-        
-        var (position, score) = await leaderboardService.GetLeaderboardPositionAndScore(leaderboardId, profileUuid);
-        List<LeaderboardEntry>? upcomingPlayers = null;
-        
-        var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);
-        rank = position != -1 ? Math.Min(position, rank) : rank;
-
-        if (includeUpcoming && rank == -1) {
-            upcomingPlayers = await leaderboardService.GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
-        } else if (includeUpcoming && rank > 1) {
-            upcomingPlayers = await leaderboardService.GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
-                Math.Min(rank - 1, 5));
-        }
-
-        // Reverse the list so that upcoming players are in ascending order
-        upcomingPlayers?.Reverse();
-        var upcoming = mapper.Map<List<LeaderboardEntryDto>>(upcomingPlayers);
-
-        var result = new LeaderboardPositionDto {
-            Rank = position,
-            Amount = score,
-            UpcomingRank = rank == -1 ? lb.Limit : rank - 1,
-            UpcomingPlayers = upcoming
-        };
-        
-        return Ok(result);
+        return await GetLeaderboardRank(leaderboardId, "", profileUuid, includeUpcoming, atRank);
     }
 }
