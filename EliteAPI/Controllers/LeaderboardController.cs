@@ -34,8 +34,7 @@ public class LeaderboardController(
     /// Get a list of leaderboards
     /// </summary>
     /// <returns></returns>
-    [HttpGet]
-    [Route("[controller]s")]
+    [HttpGet, Route("/[controller]s")]
     [Route("/v{version:apiVersion}/[controller]s")]
     [ResponseCache(Duration = 60 * 60 * 5, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
