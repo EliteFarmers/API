@@ -1,4 +1,5 @@
 ﻿using HypixelAPI.Handlers;
+using HypixelAPI.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 
@@ -7,8 +8,9 @@ namespace HypixelAPI;
 public static class DependencyInjection 
 {
 	public static IServiceCollection AddHypixelApi(this IServiceCollection services, string hypixelApiKey, string? userAgent = null) {
+		services.AddSingleton<IHypixelKeyUsageCounter, HypixelKeyUsageCounter>();
 		services.AddSingleton<IHypixelRequestLimiter, HypixelRequestLimiter>();
-		services.AddScoped<RateLimitHandler>();
+		services.AddScoped<HypixelRateLimitHandler>();
 		
 		services.AddRefitClient<IHypixelApi>()
 			.ConfigureHttpClient(opt => {
@@ -18,7 +20,7 @@ public static class DependencyInjection
 					opt.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
 				}
 			})
-			.AddHttpMessageHandler<RateLimitHandler>();
+			.AddHttpMessageHandler<HypixelRateLimitHandler>();
 
 		return services;
 	}

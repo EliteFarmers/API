@@ -1,10 +1,14 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Threading.RateLimiting;
+using HypixelAPI.Metrics;
 
 namespace HypixelAPI.Handlers;
 
-public class RateLimitHandler(IHypixelRequestLimiter limiter) : DelegatingHandler, IAsyncDisposable
+public class HypixelRateLimitHandler(
+	IHypixelRequestLimiter limiter,
+	IHypixelKeyUsageCounter keyUsageCounter
+	) : DelegatingHandler, IAsyncDisposable
 {
 	private const string RateLimitRemaining = "ratelimit-remaining";
 	private const string RateLimitLimit = "ratelimit-limit";
@@ -28,6 +32,7 @@ public class RateLimitHandler(IHypixelRequestLimiter limiter) : DelegatingHandle
 			return limitedResponse;
 		}
 
+		keyUsageCounter.Increment();
 		var response = await base.SendAsync(request, cancellationToken);
 
 		if (!response.Headers.TryGetValues(RateLimitLimit, out var limitValues)) {
