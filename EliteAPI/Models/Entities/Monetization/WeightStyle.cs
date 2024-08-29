@@ -60,6 +60,7 @@ public class WeightStyleBackground
     public WeightStylePosition? Size { get; set; }
     public string? Fill { get; set; }
     public List<WeightStyleBackgroundRect>? Rects { get; set; }
+    public string? ImageUrl { get; set; }
     public int? Radius { get; set; }
     public double? Opacity { get; set; }
 }
