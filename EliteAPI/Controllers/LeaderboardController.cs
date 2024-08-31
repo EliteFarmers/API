@@ -216,7 +216,7 @@ public class LeaderboardController(
             if (member is null || member.Id == Guid.Empty) return BadRequest("Invalid player or profile UUID.");
 
             // Update the profile if it's older than the cooldown
-            if (member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown)) {
+            if (member.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown * 2)) {
                 await profileService.GetSelectedProfileMember(member.PlayerUuid);
             }
             
