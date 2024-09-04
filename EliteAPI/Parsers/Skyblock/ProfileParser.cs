@@ -86,13 +86,15 @@ public class ProfileParser(
             .ToListAsync();
         
         // Mark profiles as removed
-        foreach (var p in wipedProfiles) {
-            if (p.GameMode != "bingo") {
-                messageService.SendWipedMessage(p.PlayerUuid, p.Ign, p.ProfileId, p.DiscordId?.ToString() ?? "");
+        foreach (var wiped in wipedProfiles) {
+            if (profileIds.Contains(wiped.ProfileId)) continue; // Shouldn't be necessary, but just in case
+            
+            if (wiped.GameMode != "bingo") {
+                messageService.SendWipedMessage(wiped.PlayerUuid, wiped.Ign, wiped.ProfileId, wiped.DiscordId?.ToString() ?? "");
             }
             
             await context.ProfileMembers
-                .Where(m => m.Id == p.Id)
+                .Where(m => m.Id == wiped.Id)
                 .ExecuteUpdateAsync(member =>
                     member
                         .SetProperty(m => m.WasRemoved, true)
@@ -180,8 +182,9 @@ public class ProfileParser(
         
         if (existing is not null)
         {
+            existing.WasRemoved = shouldRemove;
+
             if (shouldRemove) {
-                existing.WasRemoved = true;
                 existing.IsSelected = false;
                 
                 // Remove leaderboard positions
