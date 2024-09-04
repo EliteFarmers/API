@@ -82,12 +82,14 @@ public class ProfileParser(
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
             .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId) && !p.WasRemoved)
-            .Select(p => new { p.Id, p.PlayerUuid, p.ProfileId, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
+            .Select(p => new { p.Id, p.PlayerUuid, p.ProfileId, p.Profile.GameMode, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
             .ToListAsync();
         
         // Mark profiles as removed
         foreach (var p in wipedProfiles) {
-            messageService.SendWipedMessage(p.PlayerUuid, p.Ign, p.ProfileId, p.DiscordId?.ToString() ?? "");
+            if (p.GameMode != "bingo") {
+                messageService.SendWipedMessage(p.PlayerUuid, p.Ign, p.ProfileId, p.DiscordId?.ToString() ?? "");
+            }
             
             await context.ProfileMembers
                 .Where(m => m.Id == p.Id)
