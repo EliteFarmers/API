@@ -81,21 +81,16 @@ public class ProfileParser(
         var wipedProfiles = await context.ProfileMembers
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
-            .Select(p => new { p.Id, p.WasRemoved, p.PlayerUuid, p.ProfileId, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
+            .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId) && !p.WasRemoved)
+            .Select(p => new { p.Id, p.PlayerUuid, p.ProfileId, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
             .ToListAsync();
         
-        if (wipedProfiles.Count > 0) {
-            // Send wiped messages
-            foreach (var p in wipedProfiles) {
-                if (p.WasRemoved) continue;
-                messageService.SendWipedMessage(p.PlayerUuid, p.Ign, p.ProfileId, p.DiscordId?.ToString() ?? "");
-            }
+        // Mark profiles as removed
+        foreach (var p in wipedProfiles) {
+            messageService.SendWipedMessage(p.PlayerUuid, p.Ign, p.ProfileId, p.DiscordId?.ToString() ?? "");
             
-            // Mark all as removed
             await context.ProfileMembers
-                .Include(p => p.Profile)
-                .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId))
+                .Where(m => m.Id == p.Id)
                 .ExecuteUpdateAsync(member =>
                     member
                         .SetProperty(m => m.WasRemoved, true)
@@ -184,6 +179,9 @@ public class ProfileParser(
         if (existing is not null)
         {
             if (shouldRemove) {
+                existing.WasRemoved = true;
+                existing.IsSelected = false;
+                
                 // Remove leaderboard positions
                 await leaderboardService.RemoveMemberFromAllLeaderboards(existing.Id.ToString());
                 
@@ -204,7 +202,6 @@ public class ProfileParser(
             existing.ProfileName ??= profile.ProfileName;
             
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            existing.WasRemoved = shouldRemove;
             
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             context.MinecraftAccounts.Update(existing.MinecraftAccount);
@@ -331,25 +328,28 @@ public class ProfileParser(
         
         await context.SaveChangesAsync();
 
-        await UpdateLeaderboards(member, previousApi);
+        UpdateLeaderboards(member, previousApi);
     }
     
-    private async Task UpdateLeaderboards(ProfileMember member, ApiAccess previousApi) {
+    private void UpdateLeaderboards(ProfileMember member, ApiAccess previousApi) {
         var memberId = member.Id.ToString();
         
         // Update misc leaderboards
         leaderboardService.UpdateLeaderboardScore("farmingweight", memberId, member.Farming.TotalWeight);
         leaderboardService.UpdateLeaderboardScore("skyblockxp", memberId, member.SkyblockXp);
 
-        // If collections api was turned off, remove scores
-        if (previousApi.Collections && !member.Api.Collections) {
-            await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.CollectionLeaderboards.Keys, memberId);
-        }
+        // Might want to do this later, but for now the leaderboard queries don't check API access
+        // So removing members from leaderboards if they disable the API is not a good idea
         
+        // If collections api was turned off, remove scores
+        // if (previousApi.Collections && !member.Api.Collections) {
+        //     await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.CollectionLeaderboards.Keys, memberId);
+        // }
+        //
         // If skills api was turned off, remove scores
-        if (previousApi.Skills && !member.Api.Skills) {
-            await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.SkillLeaderboards.Keys, memberId);
-        }
+        // if (previousApi.Skills && !member.Api.Skills) {
+        //     await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.SkillLeaderboards.Keys, memberId);
+        // }
         
         // Update pest leaderboards
         leaderboardService.UpdateLeaderboardScore("mite", memberId, member.Farming.Pests.Mite);
