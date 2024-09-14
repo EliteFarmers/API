@@ -1,23 +1,31 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Elite API</title>
-    <!-- Embed elements Elements via Web Component -->
-    <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
-</head>
-<body>
+    <head>
+        <title>Elite API Reference</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
+    <body>
+         <!-- Need a Custom Header? Check out this example https://codepen.io/scalarorg/pen/VwOXqam -->
+        <script id="api-reference" data-url="/v1/swagger.json"></script>
+        <script>
+             const configuration = {
+                 theme: 'purple',
+                 darkMode: true,
+                 metaData: {
+                     title: 'Elite API Reference',
+                     description: 'Elite Farmers API Documentation',
+                     ogDescription: 'Elite Farmers API Documentation',
+                     ogTitle: 'Elite API Reference',
+                 },
+                 authentication: {
+                     preferredSecurityScheme: 'Bearer'
+                 },
+                 favicon: window.location.origin.replace('api.', '') + '/favicon.webp',
+             }
 
-<elements-api id="docs" router="hash" layout="sidebar"></elements-api>
-<script>
-    (async () => {
-        const docs = document.getElementById('docs');
-        docs.apiDescriptionUrl = window.location.origin + '/v1/swagger.json'
-        docs.router = 'hash';
-    })();
-</script>
-
-</body>
+             document.getElementById('api-reference').dataset.configuration = JSON.stringify(configuration);
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+    </body>
 </html>

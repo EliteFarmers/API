@@ -19,7 +19,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
             Name = "Authorization",
             Type = SecuritySchemeType.Http,
             BearerFormat = "JWT",
-            Scheme = "Bearer"
+            Scheme = "bearer"
         });
             
         options.DocumentFilter<DefaultApiVersionFilter>();
@@ -37,7 +37,8 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
 	
 	private static OpenApiInfo CreateInfoForApiVersion(ApiVersionDescription description)
     {
-        var text = new StringBuilder("A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. Use of this API requires following the TOS. This API is not affiliated with Hypixel or Mojang.");
+        var text = new StringBuilder("A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data. " +
+                                     "Use of this API requires following the [TOS](https://elitebot.dev/apiterms). This API is not affiliated with Hypixel or Mojang.");
         var info = new OpenApiInfo()
         {
             Title = "Elite API",
