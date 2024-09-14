@@ -79,7 +79,7 @@ public class RefreshGardenBackgroundJob(
         
         var gardenData = incoming.Value.Garden;
         var plots = gardenData.CombinePlots();
-        var visitors = gardenData.Visitors?.CombineVisitors() ?? new Dictionary<string, VisitorData>();
+        var visitors = gardenData.CombineVisitors();
         
         if (garden is null) {
             var newGarden = new Garden {

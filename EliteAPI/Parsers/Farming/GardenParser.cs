@@ -4,18 +4,28 @@ using HypixelAPI.DTOs;
 namespace EliteAPI.Parsers.Farming;
 
 public static class GardenParser {
-	public static Dictionary<string, VisitorData> CombineVisitors(this GardenVisitorData vistors) {
-		var result = new Dictionary<string, VisitorData>();
+	public static Dictionary<string, VisitorData> CombineVisitors(this GardenResponseData data) {
+		var visitors = data.Visitors;
 		
-		foreach (var (id, visitCount) in vistors.Visits) {
-			var accepted = vistors.Completed.TryGetValue(id, out var acceptedCount) ? acceptedCount : 0;
+		var result = new Dictionary<string, VisitorData>();
+		if (visitors is null) {
+			return result;
+		}
+		
+		foreach (var (id, visitCount) in visitors.Visits) {
+			var accepted = visitors.Completed.TryGetValue(id, out var acceptedCount) ? acceptedCount : 0;
+			var currentlyVisiting = data.CurrentVisitors.ContainsKey(id);
 			
-			var data = new VisitorData {
-				Visits = visitCount,
+			var visitorData = new VisitorData {
+				Visits = currentlyVisiting ? visitCount - 1 : visitCount,
 				Accepted = accepted
 			};
 			
-			result[id] = data;
+			if (visitorData is { Visits: 0, Accepted: 0 }) {
+				continue;
+			}
+			
+			result[id] = visitorData;
 		}
 
 		return result;
