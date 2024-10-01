@@ -10,6 +10,8 @@
       "MELON_DICER_2": 3,
       "MELON_DICER_3": 3,
       "FUNGI_CUTTER": 4,
+      "DAEDALUS_AXE": 4,
+      "STARRED_DAEDALUS_AXE": 4,
       "THEORETICAL_HOE_WARTS_1": 5,
       "THEORETICAL_HOE_WARTS_2": 5,
       "THEORETICAL_HOE_WARTS_3": 5,
@@ -24,7 +26,8 @@
       "THEORETICAL_HOE_CANE_3": 8,
       "THEORETICAL_HOE_WHEAT_1": 9,
       "THEORETICAL_HOE_WHEAT_2": 9,
-      "THEORETICAL_HOE_WHEAT_3": 9
+      "THEORETICAL_HOE_WHEAT_3": 9,
+      "HOE_OF_NO_TILLING": 10
     },
     "FarmingEquipmentIds": {
       "LOTUS_BELT": -1,
