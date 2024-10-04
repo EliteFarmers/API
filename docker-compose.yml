@@ -65,7 +65,7 @@ services:
     networks:
         - eliteapi-network
   prometheus:
-    image: prom/prometheus:v2.43.1
+    image: prom/prometheus:v2.54.1
     restart: unless-stopped
     ports:
         - '9090:9090'
