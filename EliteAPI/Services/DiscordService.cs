@@ -373,6 +373,7 @@ public class DiscordService(
         var existing = await context.Guilds
             .Include(g => g.Channels)
             .Include(g => g.Roles)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(g => g.Id == guildId);
         
         if (!skipCache && existing is not null && !existing.LastUpdated.OlderThanSeconds(_coolDowns.DiscordGuildsCooldown)) {
@@ -453,6 +454,12 @@ public class DiscordService(
             await UpdateDiscordChannel(guild, channel, false);
         }
         
+        // Remove channels that are no longer in the guild
+        var channelIds = channelList.Select(c => ulong.Parse(c.Id)).ToList();
+        await context.GuildChannels
+            .Where(c => c.GuildId == guild.Id && !channelIds.Contains(c.Id))
+            .ExecuteDeleteAsync();
+        
         var roles = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/roles");
         if (!roles.IsSuccessStatusCode) return guild;
         
@@ -462,6 +469,12 @@ public class DiscordService(
         foreach (var role in roleList) {
             await UpdateDiscordRole(guild, role, false);
         }
+        
+        // Remove roles that are no longer in the guild
+        var roleIds = roleList.Select(r => ulong.Parse(r.Id)).ToList();
+        await context.GuildRoles
+            .Where(r => r.GuildId == guild.Id && !roleIds.Contains(r.Id))
+            .ExecuteDeleteAsync();
 
         await context.SaveChangesAsync();
         

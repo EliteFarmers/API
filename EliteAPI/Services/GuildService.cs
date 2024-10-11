@@ -50,6 +50,7 @@ public class GuildService(
         var dbGuild = await context.Guilds
             .Include(g => g.Channels)
             .Include(g => g.Roles)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(g => g.Id == guildId);
 
         var hasPerms = ulong.TryParse(guild.BotPermissions, out var botPermissions);
@@ -84,7 +85,7 @@ public class GuildService(
 
         if (guild.Roles is not null) {
             foreach (var role in guild.Roles) {
-                await UpdateGuildRoleData(guildId, role);
+                await UpdateGuildRoleData(guildId, role, true);
             }
             
             await context.SaveChangesAsync();

@@ -38,8 +38,9 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             Source = builder.Build();
         }
         
-        optionsBuilder.UseNpgsql(Source);
-        // optionsBuilder.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+        optionsBuilder.UseNpgsql(Source, opt => {
+            opt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        });
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
