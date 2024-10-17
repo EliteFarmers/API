@@ -37,7 +37,7 @@ services:
     networks:
         - eliteapi-network
   cache:
-    image: redis:7.0.11
+    image: redis:7.4.0
     restart: always
     ports:
         - '6380:6379'
