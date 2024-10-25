@@ -37,7 +37,7 @@ services:
     networks:
         - eliteapi-network
   cache:
-    image: redis:7.0.11
+    image: redis:7.4.1
     restart: always
     ports:
         - '6380:6379'
@@ -65,7 +65,7 @@ services:
     networks:
         - eliteapi-network
   prometheus:
-    image: prom/prometheus:v2.43.1
+    image: prom/prometheus:v2.55.0
     restart: unless-stopped
     ports:
         - '9090:9090'
