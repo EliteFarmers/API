@@ -485,7 +485,7 @@ public class ContestsController(
         var identicalResponses = await db.StringGetAsync(hashKey);
 
         if (!identicalResponses.TryParse(out long val) || val < RequiredIdenticalContestSubmissions) {
-            return Ok($"Response saved, {val} identical responses");
+            return Ok();
         }
         
         var secondsUntilNextYear = FormatUtils.GetTimeFromSkyblockDate(currentYear + 1, 0, 0) - DateTimeOffset.UtcNow.ToUnixTimeSeconds();
