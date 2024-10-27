@@ -50,6 +50,7 @@ public class ProductController(
 		}
 		
 		var list = await context.Products
+			.Include(p => p.WeightStyles)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.ToListAsync();
 		
