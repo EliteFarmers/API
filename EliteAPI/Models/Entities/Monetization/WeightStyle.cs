@@ -1,11 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
+public enum CosmeticType {
+    WeightStyle = 0,
+}
+
+[Table("Cosmetics")]
+[Index(nameof(Type))]
 public class WeightStyle {
 	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
+    
+    public CosmeticType Type { get; set; } = CosmeticType.WeightStyle;
 
     /// <summary>
     /// Formatter ID to pass data into for the bot
@@ -20,13 +31,21 @@ public class WeightStyle {
     [MaxLength(1024)]
     public string? Description { get; set; }
     
-    public List<WeightStyleImage> Images { get; set; } = [];
+    public Image? Image { get; set; }
     
     public List<ProductWeightStyle> ProductWeightStyles { get; set; } = [];
     public List<Product> Products { get; set; } = [];
     
 	[Column(TypeName = "jsonb")]
 	public WeightStyleData Data { get; set; } = new();
+}
+
+public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
+{
+    public void Configure(EntityTypeBuilder<WeightStyle> builder)
+    {
+        builder.Navigation(p => p.Image).AutoInclude();
+    }
 }
 
 public class WeightStyleData

@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
@@ -29,6 +32,7 @@ public class Product {
 	[Key]
 	public ulong Id { get; set; }
 	
+	public bool Available { get; set; }
 	public ProductType Type { get; set; }
 	public ProductCategory Category { get; set; } = ProductCategory.None;
 
@@ -40,6 +44,8 @@ public class Product {
 	public string? Icon { get; set; }
 	[MaxLength(128)]
 	public required string Slug { get; set; }
+	
+	public int Price { get; set; }
 	
 	public ulong Flags { get; set; }
 	
@@ -57,6 +63,21 @@ public class Product {
 	
 	public List<WeightStyle> WeightStyles { get; set; } = [];
 	public List<ProductWeightStyle> ProductWeightStyles { get; set; } = [];
+	
+	public List<Image> Images { get; set; } = [];
+}
+
+public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
+{
+	public void Configure(EntityTypeBuilder<Product> builder)
+	{
+		builder.Navigation(p => p.ProductWeightStyles).AutoInclude();
+        
+		builder
+			.HasMany(e => e.WeightStyles)
+			.WithMany(e => e.Products)
+			.UsingEntity<ProductWeightStyle>();
+	}
 }
 
 public class UnlockedProductFeatures {

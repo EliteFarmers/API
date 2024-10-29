@@ -294,6 +294,12 @@ public class ProductDto {
     public List<WeightStyleLinkedDto> WeightStyles { get; set; } = [];
     
     /// <summary>
+    /// Product Images
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public List<ImageAttachmentDto> Images { get; set; } = [];
+    
+    /// <summary>
     /// Discord flags
     /// </summary>
     public int Flags { get; set; }

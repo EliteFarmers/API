@@ -1,4 +1,5 @@
-﻿using EliteAPI.Data;
+﻿using AutoMapper;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.DTOs.Outgoing.Messaging;
@@ -13,6 +14,7 @@ namespace EliteAPI.Services;
 public class GuildService(
     IDiscordService discordService,
     DataContext context,
+    IMapper mapper,
     IMessageService messageService)
     : IGuildService 
 {
@@ -50,27 +52,34 @@ public class GuildService(
         var dbGuild = await context.Guilds
             .Include(g => g.Channels)
             .Include(g => g.Roles)
+            .Include(g => g.Icon)
+            .Include(g => g.Banner)
             .AsSplitQuery()
             .FirstOrDefaultAsync(g => g.Id == guildId);
 
         var hasPerms = ulong.TryParse(guild.BotPermissions, out var botPermissions);
         
         if (dbGuild is null) {
+            var icon = guild.Icon is not null ? await discordService.UpdateGuildIcon(guildId, guild.Icon) : null;
+            var banner = guild.Banner is not null ? await discordService.UpdateGuildBanner(guildId, guild.Banner) : null;
+            
             dbGuild = new Guild {
                 Id = guildId,
                 Name = guild.Name,
-                Icon = guild.Icon,
-                Banner = guild.Banner,
+                Icon = icon,
+                Banner = banner,
                 BotPermissions = hasPerms ? botPermissions : 0,
                 DiscordFeatures = guild.Features ?? []
             };
             await context.Guilds.AddAsync(dbGuild);
         } else {
-            dbGuild.Name = guild.Name ?? dbGuild.Name;
-            dbGuild.Icon = guild.Icon ?? dbGuild.Icon;
-            dbGuild.Banner = guild.Banner ?? dbGuild.Banner;
+            dbGuild.Name = guild.Name;
             dbGuild.BotPermissions = hasPerms ? botPermissions : dbGuild.BotPermissions;
             dbGuild.DiscordFeatures = guild.Features ?? dbGuild.DiscordFeatures;
+            
+            if (guild.Icon is not null && guild.Icon != dbGuild.Icon?.Hash) {
+                dbGuild.Icon = await discordService.UpdateGuildIcon(guildId, guild.Icon);
+            }
         }
 
         await context.SaveChangesAsync();
@@ -155,19 +164,10 @@ public class GuildService(
     public async Task<GuildMemberDto?> GetUserGuild(string userId, ulong guildId) {
         var guildMember = await context.GuildMembers
             .Include(u => u.Guild)
+            .ThenInclude(guild => guild.Icon)
             .FirstOrDefaultAsync(u => u.AccountId == userId && u.GuildId == guildId);
         
-        if (guildMember is null) {
-            return null;
-        }
-        
-        return new GuildMemberDto {
-            Id = guildMember.GuildId.ToString(),
-            Name = guildMember.Guild.Name,
-            Permissions = guildMember.Permissions.ToString(),
-            HasBot = guildMember.Guild.HasBot,
-            Icon = guildMember.Guild.Icon
-        };
+        return guildMember is null ? null : mapper.Map<GuildMemberDto>(guildMember);
     }
 
     public async Task<GuildMemberDto?> GetUserGuild(ApiUser user, ulong guildId) {

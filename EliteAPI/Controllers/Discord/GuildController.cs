@@ -35,14 +35,7 @@ public class GuildController(
         var guilds = await context.Guilds
             .Where(g => g.InviteCode != null && g.IsPublic)
             .OrderByDescending(g => g.MemberCount)
-            .Select(g => new GuildDetailsDto {
-                Id = g.Id.ToString(), 
-                Name = g.Name,
-                InviteCode = g.InviteCode,
-                Banner = g.Banner,
-                Icon = g.Icon,
-                MemberCount = g.MemberCount
-            })
+            .Select(g => mapper.Map<GuildDetailsDto>(g))
             .ToListAsync();
 
         return Ok(guilds);

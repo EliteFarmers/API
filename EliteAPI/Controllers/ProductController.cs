@@ -21,6 +21,7 @@ public class ProductController(
 	DataContext context,
 	IMonetizationService monetizationService, 
 	IConnectionMultiplexer redis,
+	IObjectStorageService objectStorageService,
 	IMapper mapper)
 	: ControllerBase
 {
@@ -51,6 +52,7 @@ public class ProductController(
 		
 		var list = await context.Products
 			.Include(p => p.WeightStyles)
+			.Include(p => p.Images)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.ToListAsync();
 		
@@ -83,6 +85,7 @@ public class ProductController(
 		var existing = await context.Products
 			.Where(p => p.Id == productId)
 			.Include(p => p.WeightStyles)
+			.Include(p => p.Images)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.FirstOrDefaultAsync();
 		
@@ -279,29 +282,35 @@ public class ProductController(
 	}
 	
 	/// <summary>
-	/// Add image to a weight style
+	/// Set image for a weight style
 	/// </summary>
 	/// <returns></returns>
 	[Authorize(ApiUserPolicies.Admin)]
-	[HttpPost("style/{styleId:int}/image")]
+	[HttpPut("style/{styleId:int}/image")]
+	[RequestSizeLimit(500 * 1024 * 1024)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<IActionResult> AddWeightStyleImage(int styleId, [FromBody] WeightStyleImageDto image)
+	public async Task<IActionResult> SetWeightStyleImage(int styleId, [FromForm] UploadImageDto imageDto)
 	{
 		var style = await context.WeightStyles.FindAsync(styleId);
 		if (style is null) {
 			return NotFound("Style not found");
 		}
-
-		var newImage = new WeightStyleImage {
-			WeightStyleId = styleId,
-			Url = image.Url,
-			Title = image.Title,
-			Description = image.Description,
-			Order = image.Order,
-		};
 		
-		context.WeightStyleImages.Add(newImage);
+		if (style.Image is not null) {
+			await DeleteWeightStyleImage(styleId);
+		}
+		
+		var path = $"cosmetics/weightstyles/{styleId}{Path.GetExtension(imageDto.Image.FileName).ToLowerInvariant()}";
+		var newImage = await objectStorageService.UploadImageAsync(path, imageDto.Image);
+		
+		newImage.Title = imageDto.Title;
+		newImage.Description = imageDto.Description;
+		newImage.Order = imageDto.Order;
+		
+		context.Images.Add(newImage);
+		style.Image = newImage;
+		
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
@@ -320,14 +329,18 @@ public class ProductController(
 	[HttpDelete("style/{styleId:int}/image/{imageId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<IActionResult> DeleteWeightStyleImage(int styleId, int imageId)
+	public async Task<IActionResult> DeleteWeightStyleImage(int styleId)
 	{
-		var image = await context.WeightStyleImages.FindAsync(imageId);
-		if (image is null) {
+		var style = await context.WeightStyles.FindAsync(styleId);
+		if (style?.Image is null) {
 			return NotFound("Image not found");
 		}
 
-		context.WeightStyleImages.Remove(image);
+		await objectStorageService.DeleteAsync(style.Image.Path);
+
+		context.Images.Remove(style.Image);
+		style.Image = null;
+
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache

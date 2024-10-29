@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Discord;
-using EliteAPI.Services;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -11,9 +10,10 @@ public class PrivateGuildDto {
     
     public GuildFeatures Features { get; set; } = new();
 
-    public string? Icon { get; set; }
+    public ImageAttachmentDto? Icon { get; set; }
+    public ImageAttachmentDto? Banner { get; set; }
+
     public string? InviteCode { get; set; }
-    public string? Banner { get; set; }
     
     public string? Description { get; set; }
 
@@ -34,8 +34,9 @@ public class PublicGuildDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
     
-    public string? Icon { get; set; }
-    public string? Banner { get; set; }
+    public ImageAttachmentDto? Icon { get; set; }
+    public ImageAttachmentDto? Banner { get; set; }
+    
     public string? InviteCode { get; set; }
     
     public string? Description { get; set; }
@@ -115,8 +116,8 @@ public class GuildDetailsDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
     
-    public string? Icon { get; set; }
-    public string? Banner { get; set; }
+    public ImageAttachmentDto? Icon { get; set; }
+    public ImageAttachmentDto? Banner { get; set; }
     public string? InviteCode { get; set; }
     
     public int MemberCount { get; set; }
@@ -126,27 +127,13 @@ public class GuildMemberDto {
     public required string Id { get; set; }
     public required string Name { get; set; }
 
-    public string? Icon { get; set; }
+    public ImageAttachmentDto? Icon { get; set; }
     public bool HasBot { get; set; }
     public required string Permissions { get; set; }
     public List<string> Roles { get; set; } = [];
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Admin { get; set; }
-}
-
-public static class GuildMemberDtoExtensions {
-    public static GuildMemberDto ToDto(this GuildMember member) {
-        return new GuildMemberDto {
-            Id = member.GuildId.ToString(),
-            Name = member.Guild?.Name ?? string.Empty,
-            Icon = member.Guild?.Icon ?? string.Empty,
-            HasBot = member.Guild?.HasBot ?? true,
-            Permissions = member.Permissions.ToString(),
-            Roles = member.Roles?.Select(r => r.ToString()).ToList() ?? [],
-            Admin = member.HasGuildAdminPermissions()
-        };
-    }
 }
 
 public class AuthorizedGuildDto {

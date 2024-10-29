@@ -1,9 +1,9 @@
-﻿using EliteAPI.Data.Configurations;
-using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Images;
 using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -45,9 +45,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.ApplyConfiguration(new RoleConfiguration());
         
+        // This automatically applies all IEntityTypeConfiguration implementations in the assembly
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
+
         modelBuilder.HasCollation("case_insensitive", locale: "en-u-ks-primary", provider: "icu", deterministic: false);
         
         modelBuilder.Entity<MinecraftAccount>().Property(c => c.Name)
@@ -71,13 +72,6 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             .HasValue<Entitlement>(EntitlementTarget.None)
             .HasValue<UserEntitlement>(EntitlementTarget.User)
             .HasValue<GuildEntitlement>(EntitlementTarget.Guild);
-
-        modelBuilder.Entity<Product>().Navigation(p => p.ProductWeightStyles).AutoInclude();
-        
-        modelBuilder.Entity<Product>()
-            .HasMany(e => e.WeightStyles)
-            .WithMany(e => e.Products)
-            .UsingEntity<ProductWeightStyle>();
     }
 
     public DbSet<EliteAccount> Accounts { get; set; } = null!;
@@ -108,8 +102,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<UserEntitlement> UserEntitlements { get; set; } = null!;
     public DbSet<GuildEntitlement> GuildEntitlements { get; set; } = null!;
     public DbSet<WeightStyle> WeightStyles { get; set; } = null!;
-    public DbSet<WeightStyleImage> WeightStyleImages { get; set; } = null!;
     public DbSet<ProductWeightStyle> ProductWeightStyles { get; set; } = null!;
+    public DbSet<Image> Images { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;
