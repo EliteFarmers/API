@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Images;
 
 namespace EliteAPI.Models.Entities.Accounts;
 
@@ -13,8 +14,11 @@ public class Badge {
     public required string Description { get; set; }
     [MaxLength(512)]
     public required string Requirements { get; set; }
-    [MaxLength(256)]
-    public required string ImageId { get; set; }
+    
+    [ForeignKey("Image"), MaxLength(48)]
+    public string? ImageId { get; set; }
+    public Image? Image { get; set; }
+    
     public bool TieToAccount { get; set; }
 }
 

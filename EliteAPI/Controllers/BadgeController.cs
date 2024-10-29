@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+﻿using System.Net.Mime;
+using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
@@ -16,6 +17,7 @@ namespace EliteAPI.Controllers;
 public class BadgeController(
     DataContext context,
     IBadgeService badgeService,
+    IObjectStorageService objectStorageService,
     IMapper mapper)
     : ControllerBase
 {
@@ -76,22 +78,30 @@ public class BadgeController(
     /// <returns></returns>
     [Authorize(ApiUserPolicies.Admin)]
     [HttpPost]
+    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> CreateBadge([FromBody] CreateBadgeDto badge) {
+    public async Task<ActionResult> CreateBadge([FromForm] CreateBadgeDto badge) {
         var newBadge = new Badge {
             Name = badge.Name,
             Description = badge.Description,
-            ImageId = badge.ImageId,
             Requirements = badge.Requirements,
             TieToAccount = badge.TieToAccount
         };
         
         context.Badges.Add(newBadge);
-        
         await context.SaveChangesAsync();
+        
+        if (badge.Image is not null) {
+            var image = await objectStorageService.UploadImageAsync($"badges/{newBadge.Id}.png", badge.Image);
+           
+            newBadge.Image = image;
+            newBadge.ImageId = image.Id;
+            
+            await context.SaveChangesAsync();
+        }
         
         return Ok();
     }
@@ -104,12 +114,14 @@ public class BadgeController(
     /// <returns></returns>
     [Authorize(ApiUserPolicies.Admin)]
     [HttpPatch("{badgeId:int}")]
+    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> EditBadge(int badgeId, [FromBody] EditBadgeDto badge) {
+    public async Task<ActionResult> EditBadge(int badgeId, [FromForm] EditBadgeDto badge) {
         var existingBadge = await context.Badges
+            .Include(b => b.Image)
             .FirstOrDefaultAsync(b => b.Id == badgeId);
         
         if (existingBadge is null) {
@@ -120,6 +132,19 @@ public class BadgeController(
         existingBadge.Description = badge.Description ?? existingBadge.Description;
         existingBadge.ImageId = badge.ImageId ?? existingBadge.ImageId;
         existingBadge.Requirements = badge.Requirements ?? existingBadge.Requirements;
+        
+        if (badge.Image is not null) {
+            if (existingBadge.Image is not null) {
+                await objectStorageService.DeleteAsync(existingBadge.Image.Path);
+            }
+            
+            var image = await objectStorageService.UploadImageAsync($"badges/{existingBadge.Id}.png", badge.Image);
+           
+            existingBadge.Image = image;
+            existingBadge.ImageId = image.Id;
+            
+            await context.SaveChangesAsync();
+        }
         
         await context.SaveChangesAsync();
         

@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Discord;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Events;
 
@@ -22,6 +25,8 @@ public class Event
     [MaxLength(64)]
     public required string Name { get; set; }
     
+    public bool Approved { get; set; }
+    
     [MaxLength(1024)]
     public string? Description { get; set; }
     [MaxLength(1024)]
@@ -29,11 +34,7 @@ public class Event
     [MaxLength(1024)]
     public string? PrizeInfo { get; set; }
     
-    [MaxLength(1024)]
-    public string? Banner { get; set; }
-    [MaxLength(1024)]
-    public string? Thumbnail { get; set; }
-    
+    public Image? Banner { get; set; }
     public DateTimeOffset StartTime { get; set; }
     public DateTimeOffset EndTime { get; set; }
     public DateTimeOffset JoinUntilTime { get; set; }
@@ -53,6 +54,19 @@ public class Event
     [ForeignKey("Guild")]
     public ulong GuildId { get; set; }
     public Guild Guild { get; set; } = null!;
+}
+
+public class EventEntityConfiguration : IEntityTypeConfiguration<Event>
+{
+    public void Configure(EntityTypeBuilder<Event> builder)
+    {
+        builder.Navigation(e => e.Banner).AutoInclude();
+        
+        builder.HasDiscriminator(e => e.Type)
+            .HasValue<Event>(EventType.None)
+            .HasValue<WeightEvent>(EventType.FarmingWeight)
+            .HasValue<MedalEvent>(EventType.Medals);
+    }
 }
 
 public static class EventTeamMode {

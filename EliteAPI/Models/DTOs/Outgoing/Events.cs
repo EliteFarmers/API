@@ -273,18 +273,6 @@ public class CreateEventDto {
     public string? PrizeInfo { get; set; }
     
     /// <summary>
-    /// An image URL for the event banner
-    /// </summary>
-    [MaxLength(256)]
-    public string? Banner { get; set; }
-    
-    /// <summary>
-    /// An image URL for the event thumbnail
-    /// </summary>
-    [MaxLength(256)]
-    public string? Thumbnail { get; set; }
-    
-    /// <summary>
     /// Unix timestamp for the start time of the event in seconds
     /// </summary>
     [Required]

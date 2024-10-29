@@ -1,9 +1,24 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace EliteAPI.Models.Entities.Monetization;
 
 public class ProductImage {
-	public int Id { get; set; }
-	public string? Title { get; set; }
-	public string? Description { get; set; }
-	public int Order { get; set; }
-	public string Path { get; set; } = null!;
+	[ForeignKey("Product")]
+	public ulong ProductId { get; set; }
+	public Product Product { get; set; } = null!;
+	
+	[ForeignKey("Image")]
+	public required string ImageId { get; set; }
+	public Image Image { get; set; } = null!;
+}
+
+public class ProductImageEntityConfiguration : IEntityTypeConfiguration<ProductImage>
+{
+	public void Configure(EntityTypeBuilder<ProductImage> builder)
+	{
+		builder.HasKey(pi => new { pi.ProductId, pi.ImageId });
+	}
 }

@@ -77,6 +77,11 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
 			.HasMany(e => e.WeightStyles)
 			.WithMany(e => e.Products)
 			.UsingEntity<ProductWeightStyle>();
+
+		builder
+			.HasMany(e => e.Images)
+			.WithMany()
+			.UsingEntity<ProductImage>();
 	}
 }
 

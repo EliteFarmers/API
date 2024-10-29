@@ -1,7 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Incoming;
 
 public class CreateBadgeDto {
-    public required string ImageId { get; set; }
+    public IFormFile? Image { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
     public required string Requirements { get; set; }
@@ -32,6 +32,7 @@ public class EditBadgeDto {
     public string? Name { get; set; }
     public string? Description { get; set; }
     public string? Requirements { get; set; }
+    public IFormFile? Image { get; set; }
 }
 
 public class EditUserBadgeDto {

@@ -19,7 +19,7 @@ public class EventService(
 {
 	public async Task<List<EventDetailsDto>> GetUpcomingEvents() {
 		var events = await context.Events
-            .Where(e => e.EndTime > DateTimeOffset.UtcNow)
+            .Where(e => e.EndTime > DateTimeOffset.UtcNow && e.Approved)
             .OrderBy(e => e.StartTime)
             .AsNoTracking()
             .ToListAsync();
@@ -210,10 +210,7 @@ public class EventService(
 			Rules = eventDto.Rules,
 			PrizeInfo = eventDto.PrizeInfo,
 			Public = true, // For now, all events are public
-			
-			Banner = eventDto.Banner,
-			Thumbnail = eventDto.Thumbnail,
-			
+
 			StartTime = startTime.Value,
 			EndTime = endTime.Value,
 			JoinUntilTime = joinUntilTime.Value,
@@ -262,10 +259,7 @@ public class EventService(
 			Rules = eventDto.Rules,
 			PrizeInfo = eventDto.PrizeInfo,
 			Public = true, // For now, all events are public
-			
-			Banner = eventDto.Banner,
-			Thumbnail = eventDto.Thumbnail,
-			
+	
 			StartTime = startTime.Value,
 			EndTime = endTime.Value,
 			JoinUntilTime = joinUntilTime.Value,
