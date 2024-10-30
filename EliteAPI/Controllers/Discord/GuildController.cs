@@ -104,7 +104,7 @@ public class GuildController(
         }
         
         var events = await context.Events
-            .Where(e => e.GuildId == guild.Id)
+            .Where(e => e.GuildId == guild.Id && e.Approved)
             .OrderBy(e => e.StartTime)
             .AsNoTracking()
             .ToListAsync();

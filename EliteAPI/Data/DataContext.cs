@@ -58,11 +58,6 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
         modelBuilder.Entity<MinecraftAccount>().Navigation(e => e.Badges).AutoInclude();
         modelBuilder.Entity<UserBadge>().Navigation(e => e.Badge).AutoInclude();
         
-        modelBuilder.Entity<EventMember>().HasDiscriminator(e => e.Type)
-            .HasValue<EventMember>(EventType.None)
-            .HasValue<WeightEventMember>(EventType.FarmingWeight)
-            .HasValue<MedalEventMember>(EventType.Medals);
-        
         modelBuilder.Entity<Entitlement>().HasDiscriminator(e => e.Target)
             .HasValue<Entitlement>(EntitlementTarget.None)
             .HasValue<UserEntitlement>(EntitlementTarget.User)

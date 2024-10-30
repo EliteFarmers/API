@@ -1,7 +1,9 @@
 ﻿using Asp.Versioning;
+using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,6 +20,8 @@ namespace EliteAPI.Controllers;
 public class AdminController(
     DataContext context,
     IConnectionMultiplexer redis,
+    IMapper mapper,
+    IObjectStorageService objectStorage,
     UserManager<ApiUser> userManager) 
     : ControllerBase
 {
@@ -163,6 +167,73 @@ public class AdminController(
         
         // Delete all upcoming contests
         await db.KeyDeleteAsync($"contests:{currentYear}");
+        
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Get events pending approval
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(ApiUserPolicies.Moderator)]
+    [HttpGet("events/pending")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<EventDetailsDto>>> GetPendingEvents() {
+        var events = await context.Events
+            .Where(e => !e.Approved)
+            .ToListAsync();
+        
+        return Ok(mapper.Map<List<EventDetailsDto>>(events));
+    }
+    
+    /// <summary>
+    /// Set event approval
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <param name="approve"></param>
+    /// <returns></returns>
+    [Authorize(ApiUserPolicies.Moderator)]
+    [HttpPost("events/{eventId}/approve")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> SetEventApproval(ulong eventId, [FromQuery] bool approve = true)
+    {
+        var eliteEvent = await context.Events
+            .Include(e => e.Banner)
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
+        eliteEvent.Approved = approve;
+        await context.SaveChangesAsync();
+
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Delete an event
+    /// </summary>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
+    [Authorize(ApiUserPolicies.Admin)]
+    [HttpDelete("events/{eventId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> DeleteEvent(ulong eventId)
+    {
+        var eliteEvent = await context.Events
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
+        if (eliteEvent.Banner is not null) {
+            await objectStorage.DeleteAsync(eliteEvent.Banner.Path);
+        }
+
+        context.Events.Remove(eliteEvent);
+        await context.SaveChangesAsync();
         
         return Ok();
     }

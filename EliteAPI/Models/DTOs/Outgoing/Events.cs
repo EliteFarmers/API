@@ -39,11 +39,7 @@ public class EventDetailsDto {
     /// <summary>
     /// Image URL for the event banner
     /// </summary>
-    public string? Banner { get; set; }
-    /// <summary>
-    /// Image URL for the event thumbnail
-    /// </summary>
-    public string? Thumbnail { get; set; }
+    public ImageAttachmentDto? Banner { get; set; }
     
     /// <summary>
     /// Start time of the event as a string in Unix seconds
@@ -66,6 +62,10 @@ public class EventDetailsDto {
     /// Event status
     /// </summary>
     public bool Active { get; set; }
+    /// <summary>
+    /// Event approval status
+    /// </summary>
+    public bool Approved { get; set; }
     
     /// <summary>
     /// Max amount of teams allowed in the event, 0 if solo event, -1 if unlimited
@@ -211,9 +211,6 @@ public class EditEventDto {
     public string? Description { get; set; }
     public string? Rules { get; set; }
     public string? PrizeInfo { get; set; }
-    
-    public string? Banner { get; set; }
-    public string? Thumbnail { get; set; }
     
     public long? StartTime { get; set; }
     public long? JoinTime { get; set; }

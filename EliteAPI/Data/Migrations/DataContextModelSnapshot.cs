@@ -132,9 +132,8 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("character varying(1024)");
 
                     b.Property<string>("ImageId")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(48)
+                        .HasColumnType("character varying(48)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -150,6 +149,8 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ImageId");
 
                     b.ToTable("Badges");
                 });
@@ -330,7 +331,8 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("character varying(48)");
 
                     b.Property<string>("InviteCode")
-                        .HasColumnType("text");
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
@@ -343,7 +345,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.HasKey("Id");
 
@@ -460,9 +463,11 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Banner")
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
+                    b.Property<bool>("Approved")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("BannerId")
+                        .HasColumnType("character varying(48)");
 
                     b.Property<string>("BlockedRole")
                         .HasMaxLength(24)
@@ -513,14 +518,12 @@ namespace EliteAPI.Data.Migrations
                     b.Property<DateTimeOffset>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Thumbnail")
-                        .HasMaxLength(1024)
-                        .HasColumnType("character varying(1024)");
-
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BannerId");
 
                     b.HasIndex("GuildId");
 
@@ -575,13 +578,14 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
-
                     b.HasIndex("ProfileMemberId");
 
                     b.HasIndex("TeamId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("EventMembers");
 
@@ -622,7 +626,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("EventId", "UserId")
+                        .IsUnique();
 
                     b.ToTable("EventTeams");
                 });
@@ -1101,9 +1106,6 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
 
-                    b.Property<decimal?>("ProductId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<string>("Title")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
@@ -1112,8 +1114,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("Path")
                         .IsUnique();
-
-                    b.HasIndex("ProductId");
 
                     b.ToTable("Images");
                 });
@@ -1203,6 +1203,21 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductImage", b =>
+                {
+                    b.Property<decimal>("ProductId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("ImageId")
+                        .HasColumnType("character varying(48)");
+
+                    b.HasKey("ProductId", "ImageId");
+
+                    b.HasIndex("ImageId");
+
+                    b.ToTable("ProductImage");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductWeightStyle", b =>
@@ -1645,6 +1660,15 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Account");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.Badge", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Images.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId");
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.EliteAccount", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Accounts.UserSettings", "UserSettings")
@@ -1747,11 +1771,17 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
                 {
+                    b.HasOne("EliteAPI.Models.Entities.Images.Image", "Banner")
+                        .WithMany()
+                        .HasForeignKey("BannerId");
+
                     b.HasOne("EliteAPI.Models.Entities.Discord.Guild", "Guild")
                         .WithMany()
                         .HasForeignKey("GuildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Banner");
 
                     b.Navigation("Guild");
                 });
@@ -2254,13 +2284,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
-            modelBuilder.Entity("EliteAPI.Models.Entities.Images.Image", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Monetization.Product", null)
-                        .WithMany("Images")
-                        .HasForeignKey("ProductId");
-                });
-
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Entitlement", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Monetization.Product", "Product")
@@ -2268,6 +2291,25 @@ namespace EliteAPI.Data.Migrations
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductImage", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Images.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Models.Entities.Monetization.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
 
                     b.Navigation("Product");
                 });
@@ -2460,8 +2502,6 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
                 {
-                    b.Navigation("Images");
-
                     b.Navigation("ProductWeightStyles");
                 });
 

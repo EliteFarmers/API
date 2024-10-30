@@ -5,7 +5,6 @@ using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Images;
@@ -30,6 +29,56 @@ public class AdminEventController(
     IEventService eventService)
     : ControllerBase
 {
+    
+    /// <summary>
+    /// Get events for a guild (admin)
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpGet("admin")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<EventDetailsDto>>> GetGuildEvents(ulong guildId) {
+        var events = await context.Events
+            .Where(e => e.GuildId == guildId)
+            .OrderBy(e => e.StartTime)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return mapper.Map<List<EventDetailsDto>>(events) ?? [];
+    }
+
+    /// <summary>
+    /// Get event (admin)
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpGet("{eventId}/admin")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<EventDetailsDto>> GetGuildEvent(ulong guildId, ulong eventId) {
+        var @event = await context.Events
+            .Where(e => e.GuildId == guildId && e.Id == eventId) 
+            .OrderBy(e => e.StartTime)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+        
+        if (@event is null) {
+            return NotFound("Event not found.");
+        }
+
+        return mapper.Map<EventDetailsDto>(@event);
+    }
+    
     /// <summary>
     /// Create a Farming Weight Event
     /// </summary>
@@ -240,6 +289,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<AdminEventMemberDto>>> GetEventMembers(ulong guildId, ulong eventId)
     {
+        var eliteEvent = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
         var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
@@ -265,6 +318,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventMemberBannedDto>>> GetBannedMembers(ulong guildId, ulong eventId)
     {
+        var eliteEvent = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
         var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
@@ -354,6 +411,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<IActionResult> PermDeleteMember(ulong guildId, ulong eventId, string playerUuid, [FromQuery] string? profileId = null, [FromQuery] int recordId = -1)
     {
+        var @event = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (@event is null) return NotFound("Event not found.");
+        
         if (playerUuid.Length != 32) {
             return BadRequest("Invalid player UUID.");
         }
@@ -361,7 +422,7 @@ public class AdminEventController(
         var member = (recordId != -1) 
             ? await context.EventMembers
                 .Include(m => m.ProfileMember)
-                .Where(em => em.EventId == eventId 
+                .Where(em => em.EventId == eventId
                              && em.ProfileMember.PlayerUuid == playerUuid
                              && (profileId == null || em.ProfileMember.ProfileId == profileId))
                 .FirstOrDefaultAsync()
@@ -439,7 +500,7 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> UnbanMember(ulong guildId, ulong eventId, string playerUuid)
     {
-        var eliteEvent = await context.Events
+        var eliteEvent = await context.Events.AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
@@ -477,6 +538,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventTeamWithMembersDto>>> GetTeams(ulong guildId, ulong eventId, int teamId)
     {
+        var @event = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (@event is null) return NotFound("Event not found.");
+        
         var teams = await teamService.GetEventTeamsAsync(eventId);
         var mapped = teams.Select(t => new EventTeamWithMembersDto {
             EventId = t.EventId.ToString(),
@@ -565,51 +630,5 @@ public class AdminEventController(
     public async Task<ActionResult> AddTeamMember(ulong guildId, ulong eventId, int teamId, string playerUuidOrIgn)
     {
         return await teamService.AddMemberToTeamAsync(teamId, playerUuidOrIgn);
-    }
-    
-    /// <summary>
-    /// Set event banner image
-    /// </summary>
-    /// <param name="guildId"></param>
-    /// <param name="eventId"></param>
-    /// <param name="image"></param>
-    /// <returns></returns>
-    [Authorize(ApiUserPolicies.Moderator)]
-    [HttpPost("{eventId}/approval")]
-    [RequestSizeLimit(512 * 1024)] // 512KB
-    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> SetEventApproval(ulong guildId, ulong eventId, [FromQuery] bool approve = true)
-    {
-        var eliteEvent = await context.Events
-            .Include(e => e.Banner)
-            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
-        if (eliteEvent is null) return NotFound("Event not found.");
-
-        eliteEvent.Approved = approve;
-        await context.SaveChangesAsync();
-
-        return Ok();
-    }
-    
-    /// <summary>
-    /// Get events pending approval
-    /// </summary>
-    /// <returns></returns>
-    [Authorize(ApiUserPolicies.Moderator)]
-    [HttpGet("events/pending")]
-    [RequestSizeLimit(512 * 1024)] // 512KB
-    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<List<EventDetailsDto>>> GetPendingEvents() {
-        var events = await context.Events
-            .Where(e => !e.Approved)
-            .ToListAsync();
-        
-        return Ok(mapper.Map<List<EventDetailsDto>>(events));
     }
 }

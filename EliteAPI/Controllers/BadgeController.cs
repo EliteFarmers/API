@@ -1,5 +1,4 @@
-﻿using System.Net.Mime;
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
@@ -78,7 +77,6 @@ public class BadgeController(
     /// <returns></returns>
     [Authorize(ApiUserPolicies.Admin)]
     [HttpPost]
-    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -114,7 +112,6 @@ public class BadgeController(
     /// <returns></returns>
     [Authorize(ApiUserPolicies.Admin)]
     [HttpPatch("{badgeId:int}")]
-    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(string))]
@@ -130,7 +127,6 @@ public class BadgeController(
         
         existingBadge.Name = badge.Name ?? existingBadge.Name;
         existingBadge.Description = badge.Description ?? existingBadge.Description;
-        existingBadge.ImageId = badge.ImageId ?? existingBadge.ImageId;
         existingBadge.Requirements = badge.Requirements ?? existingBadge.Requirements;
         
         if (badge.Image is not null) {
@@ -142,8 +138,6 @@ public class BadgeController(
            
             existingBadge.Image = image;
             existingBadge.ImageId = image.Id;
-            
-            await context.SaveChangesAsync();
         }
         
         await context.SaveChangesAsync();

@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Images;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Accounts;
 
@@ -20,6 +22,12 @@ public class Badge {
     public Image? Image { get; set; }
     
     public bool TieToAccount { get; set; }
+}
+
+public class BadgeEntityConfiguration : IEntityTypeConfiguration<Badge> {
+    public void Configure(EntityTypeBuilder<Badge> builder) {
+        builder.Navigation(b => b.Image).AutoInclude();
+    }
 }
 
 public class UserBadge {
