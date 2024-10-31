@@ -1,18 +1,19 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Images;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Incoming;
 
 public class CreateBadgeDto {
-    [FromForm]
+    [FromForm(Name = "Image"), AllowedFileExtensions]
     public IFormFile? Image { get; set; }
-    [FromForm]
+    [FromForm(Name = "Name")]
     public required string Name { get; set; }
-    [FromForm]
+    [FromForm(Name = "Description")]
     public required string Description { get; set; }
-    [FromForm]
+    [FromForm(Name = "Requirements")]
     public required string Requirements { get; set; }
-    [FromForm]
+    [FromForm(Name = "TieToAccount")]
     public bool TieToAccount { get; set; }
 }
 
@@ -42,7 +43,7 @@ public class EditBadgeDto {
     public string? Description { get; set; }
     [FromForm(Name = "Requirements")]
     public string? Requirements { get; set; }
-    [FromForm(Name = "Image")]
+    [FromForm(Name = "Image"), AllowedFileExtensions]
     public IFormFile? Image { get; set; }
 }
 

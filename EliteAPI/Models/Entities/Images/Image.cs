@@ -34,8 +34,7 @@ public class ImageEntityConfiguration : IEntityTypeConfiguration<Image>
 	public void Configure(EntityTypeBuilder<Image> builder)
 	{
 		builder.HasKey(image => image.Id);
-		// Make image path unique
-		builder.HasIndex(image => image.Path).IsUnique();
+		builder.HasIndex(image => image.Path);
 	}
 }
 
@@ -43,6 +42,7 @@ public class AllowedFileExtensions : ValidationAttribute
 {
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
+	    if (value is null) return ValidationResult.Success;
         if (value is not IFormFile file) return new ValidationResult("File is required");
         
         if (!IsFileValid(file)) {

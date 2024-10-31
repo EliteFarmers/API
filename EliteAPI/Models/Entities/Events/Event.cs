@@ -34,7 +34,10 @@ public class Event
     [MaxLength(1024)]
     public string? PrizeInfo { get; set; }
     
+    [ForeignKey("Banner"), MaxLength(48)]
+    public string? BannerId { get; set; }
     public Image? Banner { get; set; }
+    
     public DateTimeOffset StartTime { get; set; }
     public DateTimeOffset EndTime { get; set; }
     public DateTimeOffset JoinUntilTime { get; set; }

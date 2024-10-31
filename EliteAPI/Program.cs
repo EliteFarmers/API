@@ -7,6 +7,7 @@ using EliteAPI.Utilities;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
@@ -36,6 +37,18 @@ builder.Services.AddRouting(options => {
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
+});
+
+const int hundredMb = 100 * 1024 * 1024;
+
+builder.Services.Configure<KestrelServerOptions>(options => {
+    options.Limits.MaxRequestBodySize = hundredMb;
+});
+
+builder.Services.Configure<FormOptions>(options => {
+    options.ValueLengthLimit = hundredMb;
+    options.MultipartBodyLengthLimit = hundredMb;
+    options.MultipartHeadersLengthLimit = hundredMb;
 });
 
 builder.Services.AddOpenTelemetry()

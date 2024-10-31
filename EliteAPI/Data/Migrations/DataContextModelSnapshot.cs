@@ -467,6 +467,7 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("BannerId")
+                        .HasMaxLength(48)
                         .HasColumnType("character varying(48)");
 
                     b.Property<string>("BlockedRole")
@@ -1112,8 +1113,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Path")
-                        .IsUnique();
+                    b.HasIndex("Path");
 
                     b.ToTable("Images");
                 });

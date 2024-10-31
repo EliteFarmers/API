@@ -7,7 +7,6 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
-using EliteAPI.Models.Entities.Images;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -220,34 +219,70 @@ public class AdminEventController(
     /// </summary>
     /// <param name="guildId"></param>
     /// <param name="eventId"></param>
-    /// <param name="image"></param>
+    /// <param name="data"></param>
     /// <returns></returns>
     [GuildAdminAuthorize]
-    [HttpPut("{eventId}/banner")]
-    [RequestSizeLimit(512 * 1024)] // 512KB
-    [Consumes(MediaTypeNames.Application.FormUrlEncoded)]
+    [HttpPost("{eventId}/banner")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult> SetEventBanner(ulong guildId, ulong eventId, [AllowedFileExtensions] IFormFile image)
+    public async Task<ActionResult> SetEventBanner(ulong guildId, ulong eventId, [FromForm] EditEventBannerDto data)
+    {
+        if (data.Image is null) return BadRequest("No image provided.");
+        
+        var eliteEvent = await context.Events
+            .Include(e => e.Banner)
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
+        var newImage = await objectStorageService.UploadImageAsync($"guilds/{guildId}/events/{eventId}/banner.png", data.Image);
+        
+        if (eliteEvent.Banner is not null) {
+            eliteEvent.Banner.Metadata = newImage.Metadata;
+            eliteEvent.Banner.Hash = newImage.Hash;
+            eliteEvent.Banner.Title = newImage.Title;
+            eliteEvent.Banner.Description = newImage.Description;
+        } else {
+            context.Images.Add(newImage);
+            eliteEvent.Banner = newImage;
+        }
+        
+        await context.SaveChangesAsync();
+
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Delete event banner image
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="image"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpDelete("{eventId}/banner")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> DeleteEventBanner(ulong guildId, ulong eventId)
     {
         var eliteEvent = await context.Events
             .Include(e => e.Banner)
             .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
         if (eliteEvent is null) return NotFound("Event not found.");
 
-        if (eliteEvent.Banner is not null) {
-            context.Images.Remove(eliteEvent.Banner);
-            eliteEvent.Banner = null;
-        }
+        if (eliteEvent.Banner is null) return Ok();
         
-        var newImage = await objectStorageService.UploadImageAsync($"guilds/{guildId}/events/{eventId}.png", image);
-        eliteEvent.Banner = newImage;
-        
+        await objectStorageService.DeleteAsync(eliteEvent.Banner.Path);
+        context.Images.Remove(eliteEvent.Banner);
+        eliteEvent.Banner = null;
+        eliteEvent.BannerId = null;
+            
         await context.SaveChangesAsync();
 
         return Ok();
     }
+
 
     /// <summary>
     /// Delete an Event

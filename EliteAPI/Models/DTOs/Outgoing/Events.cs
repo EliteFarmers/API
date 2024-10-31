@@ -2,6 +2,8 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -223,6 +225,11 @@ public class EditEventDto {
     public string? BlockedRole { get; set; }
     
     public string? GuildId { get; set; }
+}
+
+public class EditEventBannerDto {
+    [FromForm(Name = "Image"), AllowedFileExtensions]
+    public IFormFile? Image { get; set; }
 }
 
 public class EditWeightEventDto : EditEventDto {
