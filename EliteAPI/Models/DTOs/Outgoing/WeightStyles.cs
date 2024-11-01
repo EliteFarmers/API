@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Images;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -61,13 +62,13 @@ public class ImageAttachmentDto
 
 public class UploadImageDto
 {
-    [MaxLength(64)]
+    [FromForm(Name = "Title"), MaxLength(64)]
     public string? Title { get; set; }
-    [MaxLength(512)]
-    public string? Description { get; set; }
-    public int? Order { get; set; }
     
-    [AllowedFileExtensions]
+    [FromForm(Name = "Description"), MaxLength(512)]
+    public string? Description { get; set; }
+    
+    [FromForm(Name = "Image"), AllowedFileExtensions]
     public IFormFile Image { get; set; } = null!;
 }
 

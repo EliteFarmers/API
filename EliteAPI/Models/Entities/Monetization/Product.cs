@@ -72,7 +72,8 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
 	public void Configure(EntityTypeBuilder<Product> builder)
 	{
 		builder.Navigation(p => p.ProductWeightStyles).AutoInclude();
-        
+		builder.Navigation(p => p.Images).AutoInclude();
+		
 		builder
 			.HasMany(e => e.WeightStyles)
 			.WithMany(e => e.Products)

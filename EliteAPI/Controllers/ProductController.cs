@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using System.Text.Json;
+using System.Web;
 using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
@@ -108,7 +109,7 @@ public class ProductController(
 	[HttpPatch("{productId}")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> UpdateProduct(ulong productId, [FromBody] UpdateProductDto dto)
+	public async Task<IActionResult> UpdateProduct(ulong productId, [FromBody] EditProductDto dto)
 	{
 		var product = await context.Products.FindAsync(productId);
 		if (product is null) {
@@ -116,6 +117,73 @@ public class ProductController(
 		}
 		
 		await monetizationService.UpdateProductAsync(productId, dto);
+		
+		// Clear the product list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:productlist");
+		
+		return Ok();
+	}
+	
+	/// <summary>
+	/// Add image to a product
+	/// </summary>
+	/// <param name="productId"></param>
+	/// <param name="imageDto"></param>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpPost("{productId}/images")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+	public async Task<IActionResult> AddProductImage(ulong productId, [FromForm] UploadImageDto imageDto)
+	{
+		var product = await context.Products.FindAsync(productId);
+		if (product is null) {
+			return NotFound("Product not found");
+		}
+		
+		var image = await objectStorageService.UploadImageAsync($"products/{productId}/{Guid.NewGuid()}.png", imageDto.Image);
+		
+		image.Title = imageDto.Title;
+		image.Description = imageDto.Description;
+		
+		product.Images.Add(image);
+		await context.SaveChangesAsync();
+		
+		// Clear the product list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:productlist");
+		
+		return Ok();
+	}
+	
+	/// <summary>
+	/// Delete image from a product
+	/// </summary>
+	/// <param name="productId"></param>
+	/// <param name="imagePath"></param>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpDelete("{productId}/images/{imagePath}")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> DeleteProductImage(ulong productId, string imagePath)
+	{
+		var product = await context.Products.Include(i => i.Images).FirstOrDefaultAsync(p => p.Id == productId);
+		if (product is null) {
+			return NotFound("Product not found");
+		}
+
+		var decoded = HttpUtility.UrlDecode(imagePath);
+		var productImage = product.Images.FirstOrDefault(i => decoded.EndsWith(i.Path));
+		
+		if (productImage is null) {
+			return NotFound("Image not found");
+		}
+		
+		product.Images.Remove(productImage);
+		await context.SaveChangesAsync();
+		
+		await objectStorageService.DeleteAsync(productImage.Path);
 		
 		// Clear the product list cache
 		var db = redis.GetDatabase();
@@ -306,8 +374,7 @@ public class ProductController(
 		
 		newImage.Title = imageDto.Title;
 		newImage.Description = imageDto.Description;
-		newImage.Order = imageDto.Order;
-		
+
 		context.Images.Add(newImage);
 		style.Image = newImage;
 		

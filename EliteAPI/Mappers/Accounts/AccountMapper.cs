@@ -65,7 +65,11 @@ public class EliteMapper : Profile
         CreateMap<Product, ProductDto>()
             .ForMember(p => p.Id, opt => opt.MapFrom(p => p.Id.ToString()))
             .ForMember(p => p.Features, opt => opt.MapFrom(p => p.Features))
-            .ForMember(p => p.WeightStyles, opt => opt.MapFrom(p => p.WeightStyles));
+            .ForMember(p => p.Images, opt => opt.MapFrom(p => p.Images))
+            .ForMember(p => p.WeightStyles, opt => opt.MapFrom(p => p.WeightStyles))
+            .ForMember(p => p.IsSubscription, opt => opt.MapFrom(p => p.IsGuildSubscription || p.IsUserSubscription))
+            .ForMember(p => p.IsGuildSubscription, opt => opt.MapFrom(p => p.IsGuildSubscription))
+            .ForMember(p => p.IsUserSubscription, opt => opt.MapFrom(p => p.IsUserSubscription));
         
         CreateMap<Product, ParentProductDto>()
             .ForMember(p => p.Id, opt => opt.MapFrom(p => p.Id.ToString()))

@@ -262,9 +262,9 @@ public class ProductDto {
     public required string Slug { get; set; }
     
     /// <summary>
-    /// Icon URL
+    /// Product price
     /// </summary>
-    public string? Icon { get; set; }
+    public int Price { get; set; }
     
     /// <summary>
     /// Product description
@@ -303,14 +303,21 @@ public class ProductDto {
     /// Discord flags
     /// </summary>
     public int Flags { get; set; }
+
+    public bool IsSubscription { get; set; }
+    public bool IsGuildSubscription { get; set; }
+    public bool IsUserSubscription { get; set; }
 }
 
-public class UpdateProductDto {
+public class EditProductDto {
     public ProductCategory? Category { get; set; }
     [MaxLength(256)]
     public string? Icon { get; set; }
     [MaxLength(1024)]
     public string? Description { get; set; }
     
+    public bool? Available { get; set; }
+    
+    public int? Price { get; set; }
     public UnlockedProductFeaturesDto? Features { get; set; }
 }
