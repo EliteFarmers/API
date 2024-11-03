@@ -35,7 +35,11 @@ public class Product {
 	public bool Available { get; set; }
 	public ProductType Type { get; set; }
 	public ProductCategory Category { get; set; } = ProductCategory.None;
-
+	
+	[ForeignKey("Thumbnail"), MaxLength(48)]
+	public string? ThumbnailId { get; set; }
+	public Image? Thumbnail { get; set; }
+	
 	[MaxLength(100)]
 	public required string Name { get; set; }
 	[MaxLength(1024)]
@@ -72,6 +76,7 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
 	public void Configure(EntityTypeBuilder<Product> builder)
 	{
 		builder.Navigation(p => p.ProductWeightStyles).AutoInclude();
+		builder.Navigation(p => p.Thumbnail).AutoInclude();
 		builder.Navigation(p => p.Images).AutoInclude();
 		
 		builder

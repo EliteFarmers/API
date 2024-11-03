@@ -54,12 +54,31 @@ public class ProductController(
 		var list = await context.Products
 			.Include(p => p.WeightStyles)
 			.Include(p => p.Images)
+			.Where(p => p.Available)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.ToListAsync();
 		
 		await db.StringSetAsync(key, JsonSerializer.Serialize(list, JsonOptions), TimeSpan.FromMinutes(5));
 
 		return list;
+	}
+	
+	/// <summary>
+	/// Get all products
+	/// </summary>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Moderator)]
+	[HttpGet]
+	[Route("/[controller]s/admin")]
+	[Route("/v{version:apiVersion}/[controller]s/admin")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<ActionResult<List<ProductDto>>> GetAllProductsAdmin()
+	{
+		return await context.Products
+			.Include(p => p.WeightStyles)
+			.Include(p => p.Images)
+			.Select(x => mapper.Map<ProductDto>(x))
+			.ToListAsync();
 	}
 	
 	/// <summary>
@@ -124,18 +143,19 @@ public class ProductController(
 		
 		return Ok();
 	}
-	
+
 	/// <summary>
 	/// Add image to a product
 	/// </summary>
 	/// <param name="productId"></param>
 	/// <param name="imageDto"></param>
+	/// <param name="thumbnail">Specify if this image should be the thumbnail</param>
 	/// <returns></returns>
 	[Authorize(ApiUserPolicies.Admin)]
 	[HttpPost("{productId}/images")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<IActionResult> AddProductImage(ulong productId, [FromForm] UploadImageDto imageDto)
+	public async Task<IActionResult> AddProductImage(ulong productId, [FromForm] UploadImageDto imageDto, [FromQuery] bool thumbnail = false)
 	{
 		var product = await context.Products.FindAsync(productId);
 		if (product is null) {
@@ -146,8 +166,18 @@ public class ProductController(
 		
 		image.Title = imageDto.Title;
 		image.Description = imageDto.Description;
+
+		if (thumbnail) {
+			if (product.Thumbnail is not null) {
+				await DeleteProductImage(productId, product.Thumbnail.Path);
+			}
+			
+			product.Thumbnail = image;
+			product.ThumbnailId = image.Id;
+		} else {
+			product.Images.Add(image);
+		}
 		
-		product.Images.Add(image);
 		await context.SaveChangesAsync();
 		
 		// Clear the product list cache
@@ -174,13 +204,20 @@ public class ProductController(
 		}
 
 		var decoded = HttpUtility.UrlDecode(imagePath);
-		var productImage = product.Images.FirstOrDefault(i => decoded.EndsWith(i.Path));
+		var productImage = product.Images.FirstOrDefault(i => decoded.EndsWith(i.Path))
+			?? (product.Thumbnail?.Path == decoded ? product.Thumbnail : null);
 		
 		if (productImage is null) {
 			return NotFound("Image not found");
 		}
 		
-		product.Images.Remove(productImage);
+		if (product.Thumbnail == productImage) {
+			product.Thumbnail = null;
+			product.ThumbnailId = null;
+		} else {
+			product.Images.Remove(productImage);
+		}
+		
 		await context.SaveChangesAsync();
 		
 		await objectStorageService.DeleteAsync(productImage.Path);

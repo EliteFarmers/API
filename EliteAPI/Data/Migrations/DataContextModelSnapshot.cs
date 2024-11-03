@@ -1197,10 +1197,16 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<string>("ThumbnailId")
+                        .HasMaxLength(48)
+                        .HasColumnType("character varying(48)");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ThumbnailId");
 
                     b.ToTable("Products");
                 });
@@ -2293,6 +2299,15 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Images.Image", "Thumbnail")
+                        .WithMany()
+                        .HasForeignKey("ThumbnailId");
+
+                    b.Navigation("Thumbnail");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductImage", b =>

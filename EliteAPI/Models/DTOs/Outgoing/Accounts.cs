@@ -272,6 +272,11 @@ public class ProductDto {
     public string? Description { get; set; }
     
     /// <summary>
+    /// If the product is available for purchase
+    /// </summary>
+    public bool Available { get; set; }
+    
+    /// <summary>
     /// Type of product
     /// </summary>
     public ProductType Type { get; set; }
@@ -292,6 +297,11 @@ public class ProductDto {
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public List<WeightStyleLinkedDto> WeightStyles { get; set; } = [];
+    
+    /// <summary>
+    /// Product thumbnail
+    /// </summary>
+    public ImageAttachmentDto? Thumbnail { get; set; }
     
     /// <summary>
     /// Product Images
