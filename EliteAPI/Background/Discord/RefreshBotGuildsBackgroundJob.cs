@@ -18,7 +18,9 @@ public class RefreshBotGuildsBackgroundJob(
     DataContext context,
     IHttpClientFactory httpClientFactory,
     IOptions<ConfigCooldownSettings> coolDowns,
-    IMessageService messageService
+    IMessageService messageService,
+    IDiscordService discordService,
+    IObjectStorageService objectStorageService
 	) : IJob
 {
     public static readonly JobKey Key = new(nameof(RefreshBotGuildsBackgroundJob));
@@ -65,13 +67,17 @@ public class RefreshBotGuildsBackgroundJob(
         }
         
         foreach (var guild in guilds) {
-            var existingGuild = await context.Guilds.FirstOrDefaultAsync(g => g.Id == guild.Id, cancellationToken: ct);
+            var existingGuild = await context.Guilds
+                .Include(g => g.Icon)
+                .FirstOrDefaultAsync(g => g.Id == guild.Id, cancellationToken: ct);
             
             if (existingGuild is null) {
+                var icon = guild.Icon is null ? null : await discordService.UpdateGuildIcon(guild.Id, guild.Icon);
+                
                 context.Guilds.Add(new Guild {
                     Id = guild.Id,
                     Name = guild.Name,
-                    Icon = guild.Icon,
+                    Icon = icon,
                     BotPermissions = guild.Permissions,
                     HasBot = true,
                     DiscordFeatures = guild.Features,
@@ -79,11 +85,19 @@ public class RefreshBotGuildsBackgroundJob(
                 });
             } else {
                 existingGuild.Name = guild.Name;
-                existingGuild.Icon = guild.Icon;
                 existingGuild.BotPermissions = guild.Permissions;
                 existingGuild.DiscordFeatures = guild.Features;
                 existingGuild.MemberCount = guild.MemberCount;
                 existingGuild.HasBot = true;
+                
+                if (guild.Icon is not null && guild.Icon != existingGuild.Icon?.Hash) {
+                    existingGuild.Icon = await discordService.UpdateGuildIcon(guild.Id, guild.Icon, existingGuild.Icon?.Hash);
+                    await Task.Delay(500, ct);
+                } else if (guild.Icon is null && existingGuild.Icon is not null) {
+                    await objectStorageService.DeleteAsync(existingGuild.Icon.Path, ct);
+                    context.Images.Remove(existingGuild.Icon);
+                    existingGuild.Icon = null;
+                }
                 
                 existingGuild.LastUpdated = DateTimeOffset.UtcNow;
             }

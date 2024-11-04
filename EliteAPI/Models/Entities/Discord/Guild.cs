@@ -1,27 +1,32 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Images;
 using EliteAPI.Models.Entities.Monetization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Discord; 
 
 public class Guild {
     [Key]
     public ulong Id { get; set; }
+    [MaxLength(128)]
     public required string Name { get; set; }
     
     [Column(TypeName = "jsonb")]
     public GuildFeatures Features { get; set; } = new();
     
+    [MaxLength(16)]
     public string? InviteCode { get; set; }
-    public string? Banner { get; set; }
+    
+    public Image? Banner { get; set; }
+    public Image? Icon { get; set; }
     
     [MaxLength(1024)]
     public string? Description { get; set; }
 
     public ulong AdminRole { get; set; }
-    
-    public string? Icon { get; set; }
     public ulong BotPermissions { get; set; }
 
     [Column(TypeName = "jsonb")]
@@ -38,6 +43,15 @@ public class Guild {
     
     public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }
+
+public class GuildEntityConfiguration : IEntityTypeConfiguration<Guild>
+{
+    public void Configure(EntityTypeBuilder<Guild> builder) {
+        builder.Navigation(guild => guild.Icon).AutoInclude();
+        builder.Navigation(guild => guild.Banner).AutoInclude();
+    }
+}
+
 
 public class GuildFeatures {
     public bool Locked { get; set; } 

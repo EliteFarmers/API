@@ -13,6 +13,7 @@ public class EventMappers : Profile {
             .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
+            .ForMember(e => e.Banner, opt => opt.MapFrom(e => e.Banner))
             .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
         
         CreateMap<WeightEvent, EventDetailsDto>()
@@ -21,6 +22,7 @@ public class EventMappers : Profile {
             .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
+            .ForMember(e => e.Banner, opt => opt.MapFrom(e => e.Banner))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
             .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
         
@@ -30,6 +32,7 @@ public class EventMappers : Profile {
             .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
+            .ForMember(e => e.Banner, opt => opt.MapFrom(e => e.Banner))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
             .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
     }

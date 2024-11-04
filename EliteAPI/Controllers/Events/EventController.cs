@@ -61,7 +61,7 @@ public class EventController(
     public async Task<ActionResult<EventDetailsDto>> GetEvent(ulong eventId)
     {
         var eliteEvent = await context.Events.AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == eventId);
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.Approved);
         if (eliteEvent is null) return NotFound("Event not found.");
         
         var mapped = mapper.Map<EventDetailsDto>(eliteEvent);

@@ -3,6 +3,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
+using EliteAPI.Models.Entities.Images;
 
 namespace EliteAPI.Services.Interfaces;
 
@@ -20,4 +21,6 @@ public interface IDiscordService
     Task FetchUserRoles(GuildMember member);
     Task<Guild?> GetGuild(ulong guildId, bool skipCache = false);
     Task RefreshDiscordGuild(ulong guildId);
+    Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, string? delete = null);
+    Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, string? delete = null);
 }

@@ -77,7 +77,7 @@ public class UserController(
             Id = guildId.ToString(),
             Permissions = guildMember.Permissions.ToString(),
             Guild = mapper.Map<PrivateGuildDto>(guild),
-            Member = guildMember.ToDto()
+            Member = mapper.Map<GuildMemberDto>(guildMember)
         });
     }
     

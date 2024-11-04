@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -16,7 +18,7 @@ public class WeightStyleDto
     [MaxLength(1024)]
     public string? Description { get; set; }
     
-    public List<WeightStyleImageDto> Images { get; set; } = [];
+    public ImageAttachmentDto? Image { get; set; }
     public List<ParentProductDto> Products { get; set; } = [];
 }
 
@@ -32,15 +34,42 @@ public class WeightStyleLinkedDto
     public string? Name { get; set; }
 }
 
-public class WeightStyleImageDto
+public class ImageAttachmentDto
 {
-    public int Id { get; set; }
-    public string? Url { get; set; }
-    [MaxLength(64)]
+    /// <summary>
+    /// Image title
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault), MaxLength(64)]
     public string? Title { get; set; }
-    [MaxLength(512)]
+    
+    /// <summary>
+    /// Image description
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault), MaxLength(512)]
     public string? Description { get; set; }
-    public int Order { get; set; }
+    
+    /// <summary>
+    /// Image ordering number
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int? Order { get; set; }
+    
+    /// <summary>
+    /// Full image URL
+    /// </summary>
+    public string Url { get; set; } = null!;
+}
+
+public class UploadImageDto
+{
+    [FromForm(Name = "Title"), MaxLength(64)]
+    public string? Title { get; set; }
+    
+    [FromForm(Name = "Description"), MaxLength(512)]
+    public string? Description { get; set; }
+    
+    [FromForm(Name = "Image"), AllowedFileExtensions]
+    public IFormFile Image { get; set; } = null!;
 }
 
 public class ParentProductDto

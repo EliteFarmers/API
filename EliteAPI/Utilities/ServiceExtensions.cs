@@ -38,6 +38,7 @@ public static class ServiceExtensions
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<IMessageService, MessageService>();
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+        services.AddSingleton<IObjectStorageService, ObjectStorageService>();
 
         services.AddHostedService<BackgroundQueueWorker>();
         

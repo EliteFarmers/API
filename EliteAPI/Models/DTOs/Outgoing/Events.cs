@@ -2,6 +2,8 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Models.Entities.Images;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -39,11 +41,7 @@ public class EventDetailsDto {
     /// <summary>
     /// Image URL for the event banner
     /// </summary>
-    public string? Banner { get; set; }
-    /// <summary>
-    /// Image URL for the event thumbnail
-    /// </summary>
-    public string? Thumbnail { get; set; }
+    public ImageAttachmentDto? Banner { get; set; }
     
     /// <summary>
     /// Start time of the event as a string in Unix seconds
@@ -66,6 +64,10 @@ public class EventDetailsDto {
     /// Event status
     /// </summary>
     public bool Active { get; set; }
+    /// <summary>
+    /// Event approval status
+    /// </summary>
+    public bool Approved { get; set; }
     
     /// <summary>
     /// Max amount of teams allowed in the event, 0 if solo event, -1 if unlimited
@@ -212,9 +214,6 @@ public class EditEventDto {
     public string? Rules { get; set; }
     public string? PrizeInfo { get; set; }
     
-    public string? Banner { get; set; }
-    public string? Thumbnail { get; set; }
-    
     public long? StartTime { get; set; }
     public long? JoinTime { get; set; }
     public long? EndTime { get; set; }
@@ -226,6 +225,11 @@ public class EditEventDto {
     public string? BlockedRole { get; set; }
     
     public string? GuildId { get; set; }
+}
+
+public class EditEventBannerDto {
+    [FromForm(Name = "Image"), AllowedFileExtensions]
+    public IFormFile? Image { get; set; }
 }
 
 public class EditWeightEventDto : EditEventDto {
@@ -271,18 +275,6 @@ public class CreateEventDto {
     /// </summary>
     [MaxLength(1024)]
     public string? PrizeInfo { get; set; }
-    
-    /// <summary>
-    /// An image URL for the event banner
-    /// </summary>
-    [MaxLength(256)]
-    public string? Banner { get; set; }
-    
-    /// <summary>
-    /// An image URL for the event thumbnail
-    /// </summary>
-    [MaxLength(256)]
-    public string? Thumbnail { get; set; }
     
     /// <summary>
     /// Unix timestamp for the start time of the event in seconds

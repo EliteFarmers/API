@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
+[Table("ProductCosmetics")]
 public class ProductWeightStyle {
 	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }

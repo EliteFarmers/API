@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using System.Text.Json;
+using System.Web;
 using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Data;
@@ -21,6 +22,7 @@ public class ProductController(
 	DataContext context,
 	IMonetizationService monetizationService, 
 	IConnectionMultiplexer redis,
+	IObjectStorageService objectStorageService,
 	IMapper mapper)
 	: ControllerBase
 {
@@ -51,12 +53,32 @@ public class ProductController(
 		
 		var list = await context.Products
 			.Include(p => p.WeightStyles)
+			.Include(p => p.Images)
+			.Where(p => p.Available)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.ToListAsync();
 		
 		await db.StringSetAsync(key, JsonSerializer.Serialize(list, JsonOptions), TimeSpan.FromMinutes(5));
 
 		return list;
+	}
+	
+	/// <summary>
+	/// Get all products
+	/// </summary>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Moderator)]
+	[HttpGet]
+	[Route("/[controller]s/admin")]
+	[Route("/v{version:apiVersion}/[controller]s/admin")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<ActionResult<List<ProductDto>>> GetAllProductsAdmin()
+	{
+		return await context.Products
+			.Include(p => p.WeightStyles)
+			.Include(p => p.Images)
+			.Select(x => mapper.Map<ProductDto>(x))
+			.ToListAsync();
 	}
 	
 	/// <summary>
@@ -83,6 +105,7 @@ public class ProductController(
 		var existing = await context.Products
 			.Where(p => p.Id == productId)
 			.Include(p => p.WeightStyles)
+			.Include(p => p.Images)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.FirstOrDefaultAsync();
 		
@@ -105,7 +128,7 @@ public class ProductController(
 	[HttpPatch("{productId}")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> UpdateProduct(ulong productId, [FromBody] UpdateProductDto dto)
+	public async Task<IActionResult> UpdateProduct(ulong productId, [FromBody] EditProductDto dto)
 	{
 		var product = await context.Products.FindAsync(productId);
 		if (product is null) {
@@ -113,6 +136,91 @@ public class ProductController(
 		}
 		
 		await monetizationService.UpdateProductAsync(productId, dto);
+		
+		// Clear the product list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:productlist");
+		
+		return Ok();
+	}
+
+	/// <summary>
+	/// Add image to a product
+	/// </summary>
+	/// <param name="productId"></param>
+	/// <param name="imageDto"></param>
+	/// <param name="thumbnail">Specify if this image should be the thumbnail</param>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpPost("{productId}/images")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+	public async Task<IActionResult> AddProductImage(ulong productId, [FromForm] UploadImageDto imageDto, [FromQuery] bool thumbnail = false)
+	{
+		var product = await context.Products.FindAsync(productId);
+		if (product is null) {
+			return NotFound("Product not found");
+		}
+		
+		var image = await objectStorageService.UploadImageAsync($"products/{productId}/{Guid.NewGuid()}.png", imageDto.Image);
+		
+		image.Title = imageDto.Title;
+		image.Description = imageDto.Description;
+
+		if (thumbnail) {
+			if (product.Thumbnail is not null) {
+				await DeleteProductImage(productId, product.Thumbnail.Path);
+			}
+			
+			product.Thumbnail = image;
+			product.ThumbnailId = image.Id;
+		} else {
+			product.Images.Add(image);
+		}
+		
+		await context.SaveChangesAsync();
+		
+		// Clear the product list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:productlist");
+		
+		return Ok();
+	}
+	
+	/// <summary>
+	/// Delete image from a product
+	/// </summary>
+	/// <param name="productId"></param>
+	/// <param name="imagePath"></param>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpDelete("{productId}/images/{imagePath}")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> DeleteProductImage(ulong productId, string imagePath)
+	{
+		var product = await context.Products.Include(i => i.Images).FirstOrDefaultAsync(p => p.Id == productId);
+		if (product is null) {
+			return NotFound("Product not found");
+		}
+
+		var decoded = HttpUtility.UrlDecode(imagePath);
+		var productImage = product.Images.FirstOrDefault(i => decoded.EndsWith(i.Path))
+			?? (product.Thumbnail?.Path == decoded ? product.Thumbnail : null);
+		
+		if (productImage is null) {
+			return NotFound("Image not found");
+		}
+		
+		if (product.Thumbnail == productImage) {
+			product.Thumbnail = null;
+			product.ThumbnailId = null;
+		} else {
+			product.Images.Remove(productImage);
+		}
+		
+		await context.SaveChangesAsync();
+		
+		await objectStorageService.DeleteAsync(productImage.Path);
 		
 		// Clear the product list cache
 		var db = redis.GetDatabase();
@@ -279,29 +387,34 @@ public class ProductController(
 	}
 	
 	/// <summary>
-	/// Add image to a weight style
+	/// Set image for a weight style
 	/// </summary>
 	/// <returns></returns>
 	[Authorize(ApiUserPolicies.Admin)]
-	[HttpPost("style/{styleId:int}/image")]
+	[HttpPut("style/{styleId:int}/image")]
+	[RequestSizeLimit(500 * 1024 * 1024)]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<IActionResult> AddWeightStyleImage(int styleId, [FromBody] WeightStyleImageDto image)
+	public async Task<IActionResult> SetWeightStyleImage(int styleId, [FromForm] UploadImageDto imageDto)
 	{
 		var style = await context.WeightStyles.FindAsync(styleId);
 		if (style is null) {
 			return NotFound("Style not found");
 		}
-
-		var newImage = new WeightStyleImage {
-			WeightStyleId = styleId,
-			Url = image.Url,
-			Title = image.Title,
-			Description = image.Description,
-			Order = image.Order,
-		};
 		
-		context.WeightStyleImages.Add(newImage);
+		if (style.Image is not null) {
+			await DeleteWeightStyleImage(styleId);
+		}
+		
+		var path = $"cosmetics/weightstyles/{styleId}{Path.GetExtension(imageDto.Image.FileName).ToLowerInvariant()}";
+		var newImage = await objectStorageService.UploadImageAsync(path, imageDto.Image);
+		
+		newImage.Title = imageDto.Title;
+		newImage.Description = imageDto.Description;
+
+		context.Images.Add(newImage);
+		style.Image = newImage;
+		
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
@@ -320,14 +433,18 @@ public class ProductController(
 	[HttpDelete("style/{styleId:int}/image/{imageId:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<IActionResult> DeleteWeightStyleImage(int styleId, int imageId)
+	public async Task<IActionResult> DeleteWeightStyleImage(int styleId)
 	{
-		var image = await context.WeightStyleImages.FindAsync(imageId);
-		if (image is null) {
+		var style = await context.WeightStyles.FindAsync(styleId);
+		if (style?.Image is null) {
 			return NotFound("Image not found");
 		}
 
-		context.WeightStyleImages.Remove(image);
+		await objectStorageService.DeleteAsync(style.Image.Path);
+
+		context.Images.Remove(style.Image);
+		style.Image = null;
+
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache

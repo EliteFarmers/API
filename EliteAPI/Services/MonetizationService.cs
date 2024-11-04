@@ -36,25 +36,27 @@ public class MonetizationService(
     
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	
-	public async Task UpdateProductAsync(ulong productId, UpdateProductDto updateProductDto) {
+	public async Task UpdateProductAsync(ulong productId, EditProductDto editProductDto) {
 		var product = await context.Products
 			.FirstOrDefaultAsync(x => x.Id == productId);
 
 		if (product is null) return;
 		
-		product.Category = updateProductDto.Category ?? product.Category;
-		product.Icon = updateProductDto.Icon ?? product.Icon;
-		product.Description = updateProductDto.Description ?? product.Description;
+		product.Category = editProductDto.Category ?? product.Category;
+		product.Icon = editProductDto.Icon ?? product.Icon;
+		product.Description = editProductDto.Description ?? product.Description;
+		product.Price = editProductDto.Price ?? product.Price;
+		product.Available = editProductDto.Available ?? product.Available;
 		
-		if (updateProductDto.Features is not null) {
-			product.Features.MaxJacobLeaderboards = updateProductDto.Features.MaxJacobLeaderboards ?? product.Features.MaxJacobLeaderboards;
-			product.Features.MaxMonthlyEvents = updateProductDto.Features.MaxMonthlyEvents ?? product.Features.MaxMonthlyEvents;
-			product.Features.BadgeId = updateProductDto.Features.BadgeId ?? product.Features.BadgeId;
-			product.Features.EmbedColors = updateProductDto.Features.EmbedColors ?? product.Features.EmbedColors;
-			product.Features.WeightStyles = updateProductDto.Features.WeightStyles ?? product.Features.WeightStyles;
-			product.Features.HideShopPromotions = updateProductDto.Features.HideShopPromotions ?? product.Features.HideShopPromotions;
-			product.Features.WeightStyleOverride = updateProductDto.Features.WeightStyleOverride ?? product.Features.WeightStyleOverride;
-			product.Features.MoreInfoDefault = updateProductDto.Features.MoreInfoDefault ?? product.Features.MoreInfoDefault;
+		if (editProductDto.Features is not null) {
+			product.Features.MaxJacobLeaderboards = editProductDto.Features.MaxJacobLeaderboards ?? product.Features.MaxJacobLeaderboards;
+			product.Features.MaxMonthlyEvents = editProductDto.Features.MaxMonthlyEvents ?? product.Features.MaxMonthlyEvents;
+			product.Features.BadgeId = editProductDto.Features.BadgeId ?? product.Features.BadgeId;
+			product.Features.EmbedColors = editProductDto.Features.EmbedColors ?? product.Features.EmbedColors;
+			product.Features.WeightStyles = editProductDto.Features.WeightStyles ?? product.Features.WeightStyles;
+			product.Features.HideShopPromotions = editProductDto.Features.HideShopPromotions ?? product.Features.HideShopPromotions;
+			product.Features.WeightStyleOverride = editProductDto.Features.WeightStyleOverride ?? product.Features.WeightStyleOverride;
+			product.Features.MoreInfoDefault = editProductDto.Features.MoreInfoDefault ?? product.Features.MoreInfoDefault;
 			
 			context.Entry(product).Property(p => p.Features).IsModified = true;
 		}

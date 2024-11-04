@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Events;
 
@@ -31,5 +33,13 @@ public class EventTeam {
 
 	public string GetOwnerUuid() {
 		return Members.Find(m => UserId == m.UserId.ToString())?.ProfileMember?.PlayerUuid ?? string.Empty;
+	}
+}
+
+public class EventTeamEntityConfiguration : IEntityTypeConfiguration<EventTeam>
+{
+	public void Configure(EntityTypeBuilder<EventTeam> builder)
+	{
+		builder.HasIndex(e => new { e.EventId, e.UserId }).IsUnique();
 	}
 }

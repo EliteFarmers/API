@@ -24,9 +24,60 @@ public class AdminEventController(
     IMapper mapper,
     IDiscordService discordService,
     IEventTeamService teamService,
+    IObjectStorageService objectStorageService,
     IEventService eventService)
     : ControllerBase
 {
+    
+    /// <summary>
+    /// Get events for a guild (admin)
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpGet("admin")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<List<EventDetailsDto>>> GetGuildEvents(ulong guildId) {
+        var events = await context.Events
+            .Where(e => e.GuildId == guildId)
+            .OrderBy(e => e.StartTime)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return mapper.Map<List<EventDetailsDto>>(events) ?? [];
+    }
+
+    /// <summary>
+    /// Get event (admin)
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpGet("{eventId}/admin")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult<EventDetailsDto>> GetGuildEvent(ulong guildId, ulong eventId) {
+        var @event = await context.Events
+            .Where(e => e.GuildId == guildId && e.Id == eventId) 
+            .OrderBy(e => e.StartTime)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+        
+        if (@event is null) {
+            return NotFound("Event not found.");
+        }
+
+        return mapper.Map<EventDetailsDto>(@event);
+    }
+    
     /// <summary>
     /// Create a Farming Weight Event
     /// </summary>
@@ -123,11 +174,11 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-    public async Task<ActionResult<EventDetailsDto>> EditEvent(ulong guildId, ulong eventId, [FromBody] EditEventDto incoming)
+    public async Task<ActionResult> EditEvent(ulong guildId, ulong eventId, [FromBody] EditEventDto incoming)
     {
         var eliteEvent = await context.Events
-            .FirstOrDefaultAsync(e => e.Id == eventId);
-        if (eliteEvent is null) return NotFound("Event not found.");
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null || eliteEvent.GuildId != guildId) return NotFound("Event not found.");
 
         var startTime = incoming.StartTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.StartTime.Value) : (DateTimeOffset?)null;
         var endTime = incoming.EndTime is not null ? DateTimeOffset.FromUnixTimeSeconds(incoming.EndTime.Value) : (DateTimeOffset?)null;
@@ -140,8 +191,6 @@ public class AdminEventController(
         eliteEvent.Active = incoming.Active ?? eliteEvent.Active;
         eliteEvent.Rules = incoming.Rules ?? eliteEvent.Rules;
         eliteEvent.PrizeInfo = incoming.PrizeInfo ?? eliteEvent.PrizeInfo;
-        eliteEvent.Banner = incoming.Banner ?? eliteEvent.Banner;
-        eliteEvent.Thumbnail = incoming.Thumbnail ?? eliteEvent.Thumbnail;
         eliteEvent.RequiredRole = incoming.RequiredRole ?? eliteEvent.RequiredRole;
         eliteEvent.BlockedRole = incoming.BlockedRole ?? eliteEvent.BlockedRole;
 
@@ -161,9 +210,79 @@ public class AdminEventController(
                     .SetProperty(e => e.StartTime, eliteEvent.StartTime)
                     .SetProperty(e => e.EndTime, eliteEvent.EndTime));
         }
-        
-        return Ok(eliteEvent);
+
+        return Ok();
     }
+
+    /// <summary>
+    /// Set event banner image
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpPost("{eventId}/banner")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> SetEventBanner(ulong guildId, ulong eventId, [FromForm] EditEventBannerDto data)
+    {
+        if (data.Image is null) return BadRequest("No image provided.");
+        
+        var eliteEvent = await context.Events
+            .Include(e => e.Banner)
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
+        var newImage = await objectStorageService.UploadImageAsync($"guilds/{guildId}/events/{eventId}/banner.png", data.Image);
+        
+        if (eliteEvent.Banner is not null) {
+            eliteEvent.Banner.Metadata = newImage.Metadata;
+            eliteEvent.Banner.Hash = newImage.Hash;
+            eliteEvent.Banner.Title = newImage.Title;
+            eliteEvent.Banner.Description = newImage.Description;
+        } else {
+            context.Images.Add(newImage);
+            eliteEvent.Banner = newImage;
+        }
+        
+        await context.SaveChangesAsync();
+
+        return Ok();
+    }
+    
+    /// <summary>
+    /// Delete event banner image
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <param name="eventId"></param>
+    /// <param name="image"></param>
+    /// <returns></returns>
+    [GuildAdminAuthorize]
+    [HttpDelete("{eventId}/banner")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> DeleteEventBanner(ulong guildId, ulong eventId)
+    {
+        var eliteEvent = await context.Events
+            .Include(e => e.Banner)
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
+        if (eliteEvent.Banner is null) return Ok();
+        
+        await objectStorageService.DeleteAsync(eliteEvent.Banner.Path);
+        context.Images.Remove(eliteEvent.Banner);
+        eliteEvent.Banner = null;
+        eliteEvent.BannerId = null;
+            
+        await context.SaveChangesAsync();
+
+        return Ok();
+    }
+
 
     /// <summary>
     /// Delete an Event
@@ -180,7 +299,7 @@ public class AdminEventController(
     public async Task<ActionResult<EventDetailsDto>> DeleteEvent(ulong guildId, ulong eventId)
     {
         var eliteEvent = await context.Events
-            .FirstOrDefaultAsync(e => e.Id == eventId);
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
         if (eliteEvent is null) return NotFound("Event not found.");
 
         context.Events.Remove(eliteEvent);
@@ -205,6 +324,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<AdminEventMemberDto>>> GetEventMembers(ulong guildId, ulong eventId)
     {
+        var eliteEvent = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+
         var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
@@ -230,6 +353,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventMemberBannedDto>>> GetBannedMembers(ulong guildId, ulong eventId)
     {
+        var eliteEvent = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (eliteEvent is null) return NotFound("Event not found.");
+        
         var members = await context.EventMembers
             .Include(m => m.ProfileMember)
             .ThenInclude(p => p.MinecraftAccount).AsNoTracking()
@@ -265,7 +392,7 @@ public class AdminEventController(
         }
         
         var @event = await context.Events.AsNoTracking()
-            .FirstOrDefaultAsync(e => e.Id == eventId);
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
         
         if (@event is null) {
             return NotFound("Event not found.");
@@ -319,6 +446,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<IActionResult> PermDeleteMember(ulong guildId, ulong eventId, string playerUuid, [FromQuery] string? profileId = null, [FromQuery] int recordId = -1)
     {
+        var @event = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (@event is null) return NotFound("Event not found.");
+        
         if (playerUuid.Length != 32) {
             return BadRequest("Invalid player UUID.");
         }
@@ -326,7 +457,7 @@ public class AdminEventController(
         var member = (recordId != -1) 
             ? await context.EventMembers
                 .Include(m => m.ProfileMember)
-                .Where(em => em.EventId == eventId 
+                .Where(em => em.EventId == eventId
                              && em.ProfileMember.PlayerUuid == playerUuid
                              && (profileId == null || em.ProfileMember.ProfileId == profileId))
                 .FirstOrDefaultAsync()
@@ -368,7 +499,7 @@ public class AdminEventController(
         }
         
         var eliteEvent = await context.Events
-            .FirstOrDefaultAsync(e => e.Id == eventId);
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
         var member = await context.EventMembers
@@ -404,8 +535,8 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult> UnbanMember(ulong guildId, ulong eventId, string playerUuid)
     {
-        var eliteEvent = await context.Events
-            .FirstOrDefaultAsync(e => e.Id == eventId);
+        var eliteEvent = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
         if (eliteEvent is null) return NotFound("Event not found.");
         
         var member = await context.EventMembers
@@ -442,6 +573,10 @@ public class AdminEventController(
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
     public async Task<ActionResult<List<EventTeamWithMembersDto>>> GetTeams(ulong guildId, ulong eventId, int teamId)
     {
+        var @event = await context.Events.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == eventId && e.GuildId == guildId);
+        if (@event is null) return NotFound("Event not found.");
+        
         var teams = await teamService.GetEventTeamsAsync(eventId);
         var mapped = teams.Select(t => new EventTeamWithMembersDto {
             EventId = t.EventId.ToString(),

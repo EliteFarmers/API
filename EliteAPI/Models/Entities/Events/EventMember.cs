@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Hypixel;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Events;
 
@@ -43,4 +45,17 @@ public class EventMember {
 	public EventTeam? Team { get; set; }
 	
 	public bool IsDisqualified => Status == EventMemberStatus.Disqualified;
+}
+
+public class EventMemberEntityConfiguration : IEntityTypeConfiguration<EventMember>
+{
+	public void Configure(EntityTypeBuilder<EventMember> builder)
+	{
+		builder.HasIndex(e => new { e.EventId, e.UserId }).IsUnique();
+		
+		builder.HasDiscriminator(e => e.Type)
+			.HasValue<EventMember>(EventType.None)
+			.HasValue<WeightEventMember>(EventType.FarmingWeight)
+			.HasValue<MedalEventMember>(EventType.Medals);
+	}
 }
