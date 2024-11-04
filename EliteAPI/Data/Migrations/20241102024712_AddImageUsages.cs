@@ -61,7 +61,7 @@ namespace EliteAPI.Data.Migrations
             migrationBuilder.AlterColumn<string>(
                 name: "InviteCode",
                 table: "Guilds",
-                type: "character varying(16)",
+                type: "character varying(64)",
                 maxLength: 16,
                 nullable: true,
                 oldClrType: typeof(string),

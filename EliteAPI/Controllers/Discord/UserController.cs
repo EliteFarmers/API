@@ -101,7 +101,7 @@ public class UserController(
         }
         
         // Check that the invite code is valid a-Z0-9
-        if (!inviteCode.All(char.IsLetterOrDigit) || inviteCode.Length > 16) {
+        if (!inviteCode.All(char.IsLetterOrDigit) || inviteCode.Length > 64) {
             return BadRequest("Invalid invite code.");
         }
         

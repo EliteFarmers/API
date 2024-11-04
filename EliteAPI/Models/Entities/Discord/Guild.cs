@@ -17,7 +17,7 @@ public class Guild {
     [Column(TypeName = "jsonb")]
     public GuildFeatures Features { get; set; } = new();
     
-    [MaxLength(16)]
+    [MaxLength(64)]
     public string? InviteCode { get; set; }
     
     public Image? Banner { get; set; }
