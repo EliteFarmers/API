@@ -48,7 +48,7 @@ public static class JacobDataParser
         return jacob;
     }
 
-    private static void PopulateBrackets(this IDictionary<Crop, ContestMedal> result, List<string> crops, ContestMedal medal) {
+    private static void PopulateBrackets(this Dictionary<Crop, ContestMedal> result, List<string> crops, ContestMedal medal) {
         foreach (var crop in crops) {
             if (!crop.TryGetCrop(out var key)) continue;
 

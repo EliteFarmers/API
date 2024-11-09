@@ -290,6 +290,8 @@ public class ProfileParser(
         }
         
         member.ParseJacob(incomingData.Jacob);
+        context.JacobData.Update(member.JacobData);
+        
         await context.SaveChangesAsync();
         
         member.ParseSkills(incomingData);
