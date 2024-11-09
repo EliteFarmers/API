@@ -77,8 +77,9 @@ If you need to test admin features, currently you can only do so by manually add
 <hr>
 
 1. Clone the repository
-2. Make a copy of `EliteAPI/.env.example` and rename it to `.env` in the same directory. Then fill in the environment variables in your new file.
-3. Make a copy of `EliteAPI/appsettings.json` and rename it to `appsettings.Development.json` in the same directory.
-4. Fill in at least the database connection string in the `appsettings.Development.json` file, but it should work with the default settings if using the provided `docker-compose` file locally.
-5. Run `docker compose up` in the root directory of the repository.
-6. The API should now be running on `http://localhost:7008/` and can be put behind a reverse proxy if needed.
+2. Make a copy of `.env.example` and rename it to `.env` in the same directory. Then fill in the environment variables in your new file. These variables are used in the containers.
+3. Make a copy of `EliteAPI/.env.example` and rename it to `.env` in the same directory. Then fill in the environment variables in your new file.
+4. Make a copy of `EliteAPI/appsettings.json` and rename it to `appsettings.Development.json` in the same directory.
+5. Fill in at least the database connection string in the `appsettings.Development.json` file, but it should work with the default settings if using the provided `docker-compose` file locally.
+6. Run `docker compose up` in the root directory of the repository.
+8. The API should now be running on `http://localhost:7008/` and can be put behind a reverse proxy if needed.

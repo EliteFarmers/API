@@ -7,7 +7,7 @@ services:
     env_file:
       - ./EliteAPI/.env
     environment:
-      - POSTGRES_CONNECTION="Server=database;Port=5432;Database=eliteapi;Username=user;Password=postgres123;Include Error Detail=true"
+      - POSTGRES_CONNECTION="Server=database;Port=5432;Database=${POSTGRES_DB:-eliteapi};Username=${POSTGRES_USER:-user};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD env variable is required};Include Error Detail=true"
     depends_on:
       - database
       - cache
@@ -17,20 +17,17 @@ services:
       - "7008:7008"
       - "9102:9102"
     volumes:
-      - ./EliteAPI/TempKeys:/root/.aspnet/DataProtection-Keys
+      - ./EliteAPI/TempKeys:/app/TempKeys
     networks: 
         - eliteapi-network
   database:
     image: timescale/timescaledb:latest-pg15
     restart: always
-    environment:
-        - POSTGRES_USER=user
-        - POSTGRES_PASSWORD=postgres123
-        - POSTGRES_DB=eliteapi
+    command: -c 'max_connections=${POSTGRES_MAX_CONNECTIONS:-100}'
     ports:
-        - '5436:5432' 
+        - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432' 
     expose:
-        - '5436'
+        - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}'
     volumes:
         - db-data:/var/lib/postgresql/data
         - ./EliteAPI/Data/setup.sql:/docker-entrypoint-initdb.d/init.sql
@@ -39,11 +36,11 @@ services:
   cache:
     image: redis:7.4.1
     restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
     ports:
-        - '6380:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass redisCachePassword123
+      - '${REDIS_PORT:?REDIS_PORT env variable is required}:6379'
     expose:
-        - '6379'
+        - '${REDIS_PORT:?REDIS_PORT env variable is required}'
     volumes:
         - redis-data:/data
     networks:
@@ -85,9 +82,6 @@ services:
     expose:
         - '5672'
         - '15672'
-    environment:
-        - RABBITMQ_DEFAULT_USER=user
-        - RABBITMQ_DEFAULT_PASS=rabbitPassword123
     networks:
         - eliteapi-network
         

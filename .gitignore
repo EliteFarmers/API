@@ -1,4 +1,5 @@
 # Added
+.env
 /EliteAPI/.env
 .idea
 /EliteAPI/appsettings.*.json
