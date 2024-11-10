@@ -45,16 +45,14 @@ public class ProcessContestsBackgroundJob(
 	}
 	
 	private async Task ProcessContests(Guid memberId, RawJacobData? incoming) {
-        var member = await context.ProfileMembers
-            .Include(m => m.JacobData)
-            .ThenInclude(j => j.Contests)
-            .ThenInclude(p => p.JacobContest)
-            .FirstOrDefaultAsync(p => p.Id == memberId);
-
         if (incoming is null) return;
 
-        var jacob = member?.JacobData;
-        if (jacob is null || member is null) return;
+        var jacob = await context.JacobData
+            .Include(j => j.Contests)
+                .ThenInclude(c => c.JacobContest)
+            .FirstOrDefaultAsync(j => j.ProfileMemberId == memberId);
+        
+        if (jacob is null) return;
         
         var incomingContests = incoming?.Contests;
         if (incomingContests is null || incomingContests.Count == 0) return;
@@ -154,7 +152,6 @@ public class ProcessContestsBackgroundJob(
                     MedalEarned = medal,
 
                     ProfileMemberId = memberId,
-                    ProfileMember = member,
                     JacobContestId = actualKey
                 };
                 
@@ -195,12 +192,15 @@ public class ProcessContestsBackgroundJob(
         jacob.EarnedMedals.Gold = medalCounts.TryGetValue(ContestMedal.Gold, out var gold) ? gold : 0;
         jacob.EarnedMedals.Platinum = medalCounts.TryGetValue(ContestMedal.Platinum, out var platinum) ? platinum : 0;
         jacob.EarnedMedals.Diamond = medalCounts.TryGetValue(ContestMedal.Diamond, out var diamond) ? diamond : 0;
-        
+
         jacob.FirstPlaceScores = jacob.Contests.Count(c => c.Position == 0);
         
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         
-        context.JacobData.Update(jacob);
+        if (context.Entry(jacob).State == EntityState.Detached) {
+            context.Attach(jacob);
+            context.Entry(jacob).State = EntityState.Modified;
+        }
         
         await context.SaveChangesAsync();
         await transaction.CommitAsync();

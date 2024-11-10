@@ -302,9 +302,6 @@ public class ProfileParser(
         }
 
         await AddTimeScaleRecords(member);
-        // Runs on background service
-        await ParseJacobContests(member.PlayerUuid, member.ProfileId, member.Id, incomingData.Jacob);
-        
         profile.CombineMinions(incomingData.PlayerData?.CraftedGenerators);
         
         await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
@@ -333,6 +330,9 @@ public class ProfileParser(
         context.Profiles.Update(profile);
         
         await context.SaveChangesAsync();
+        
+        // Runs on background service
+        await ParseJacobContests(member.PlayerUuid, member.ProfileId, member.Id, incomingData.Jacob);
 
         UpdateLeaderboards(member, previousApi);
     }
