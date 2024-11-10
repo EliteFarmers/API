@@ -22,6 +22,7 @@ public class AdminController(
     IConnectionMultiplexer redis,
     IMapper mapper,
     IObjectStorageService objectStorage,
+    IMojangService mojangService,
     UserManager<ApiUser> userManager) 
     : ControllerBase
 {
@@ -235,6 +236,37 @@ public class AdminController(
         context.Events.Remove(eliteEvent);
         await context.SaveChangesAsync();
         
+        return Ok();
+    }
+
+    /// <summary>
+    /// Reset a fetch cooldown on a player
+    /// </summary>
+    /// <param name="playerId"></param>
+    /// <returns></returns>
+    [Authorize(ApiUserPolicies.Moderator)]
+    [HttpPost("/cooldowns/player/{playerId}/reset")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> ClearPlayerCooldowns(string playerId) {
+        var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerId);
+        if (account is null) return NotFound("Player not found.");
+
+        account.LastUpdated = 0;
+        account.ProfilesLastUpdated = 0;
+        account.PlayerDataLastUpdated = 0;
+        
+        if (context.Entry(account).State != EntityState.Modified) {
+            context.Entry(account).State = EntityState.Modified;
+        }
+        
+        await context.SaveChangesAsync();
+        
+        var db = redis.GetDatabase();
+        await db.KeyDeleteAsync($"player:{account.Id}:updating");
+        await db.KeyDeleteAsync($"profile:{account.Id}:updating");
+
         return Ok();
     }
 }

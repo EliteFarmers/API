@@ -26,6 +26,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
     public async Task<EliteAccount?> GetAccountByIgn(string ign)
     {
         var minecraftAccount = await context.MinecraftAccounts
+            .AsNoTracking()
             .Include(mc => mc.Badges)
             .Where(mc => mc.Name == ign)
             .FirstOrDefaultAsync();
