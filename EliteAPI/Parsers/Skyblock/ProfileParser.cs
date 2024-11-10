@@ -290,7 +290,6 @@ public class ProfileParser(
         }
         
         member.ParseJacob(incomingData.Jacob);
-        context.JacobData.Update(member.JacobData);
         
         await context.SaveChangesAsync();
         
@@ -329,7 +328,7 @@ public class ProfileParser(
         }
 
         context.Farming.Update(member.Farming);
-        context.ProfileMembers.Update(member);
+        context.Entry(member.JacobData).State = EntityState.Modified;
         context.JacobData.Update(member.JacobData);
         context.Profiles.Update(profile);
         

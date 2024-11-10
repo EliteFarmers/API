@@ -30,7 +30,7 @@ public static class JacobDataParser
             jacob.Perks.LevelCap = incomingJacob.Perks.FarmingLevelCap ?? 0;
         }
         
-        jacob.Stats ??= new JacobStats();
+        jacob.Stats = new JacobStats();
         if (incomingJacob.UniqueBrackets is not null) {
             jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Diamond, ContestMedal.Diamond);
             jacob.Stats.Brackets.PopulateBrackets(incomingJacob.UniqueBrackets.Platinum, ContestMedal.Platinum);
