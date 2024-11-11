@@ -49,6 +49,27 @@ public class EventController(
     }
     
     /// <summary>
+    /// Get all upcoming events
+    /// </summary>
+    /// <returns></returns>
+    // GET <EventController>s/
+    [HttpGet]
+    [Route("/[controller]/defaults")]
+    [Route("/v{version:apiVersion}/[controller]/defaults")]
+    [ResponseCache(Duration = 60 * 10, Location = ResponseCacheLocation.Any)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public ActionResult<EventDefaultsDto> GetEventDefaults()
+    {
+        var defaults = new EventDefaultsDto {
+            CropWeights = FarmingWeightConfig.Settings.EventCropWeights,
+            // This should be moved to a config file eventually
+            MedalValues = new MedalEventData().MedalWeights
+        };
+        
+        return Ok(defaults);
+    }
+    
+    /// <summary>
     /// Get an event by ID
     /// </summary>
     /// <param name="eventId"></param>

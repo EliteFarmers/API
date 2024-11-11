@@ -114,6 +114,10 @@ public class EventTeamWithMembersDto : EventTeamDto {
     public string? JoinCode { get; set; }
 }
 
+public class EventDefaultsDto {
+    public Dictionary<Crop, double> CropWeights { get; set; } = new();
+    public Dictionary<ContestMedal, int> MedalValues { get; set; } = new();
+}
 
 public class CreateEventTeamDto {
     /// <summary>
@@ -225,19 +229,14 @@ public class EditEventDto {
     public string? BlockedRole { get; set; }
     
     public string? GuildId { get; set; }
+    
+    public WeightEventData? WeightData { get; set; }
+    public MedalEventData? MedalData { get; set; }
 }
 
 public class EditEventBannerDto {
     [FromForm(Name = "Image"), AllowedFileExtensions]
     public IFormFile? Image { get; set; }
-}
-
-public class EditWeightEventDto : EditEventDto {
-    public WeightEventData? Data { get; set; }
-}
-
-public class EditMedalEventDto : EditEventDto {
-    public MedalEventData? Data { get; set; }
 }
 
 public class CreateEventDto {

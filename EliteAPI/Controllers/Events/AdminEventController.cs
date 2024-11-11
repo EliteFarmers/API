@@ -193,7 +193,15 @@ public class AdminEventController(
         eliteEvent.PrizeInfo = incoming.PrizeInfo ?? eliteEvent.PrizeInfo;
         eliteEvent.RequiredRole = incoming.RequiredRole ?? eliteEvent.RequiredRole;
         eliteEvent.BlockedRole = incoming.BlockedRole ?? eliteEvent.BlockedRole;
-
+        
+        if (eliteEvent is MedalEvent medalEvent && incoming.MedalData is not null) {
+            medalEvent.Data = incoming.MedalData;
+        }
+        
+        if (eliteEvent is WeightEvent weightEvent && incoming.WeightData is not null) {
+            weightEvent.Data = incoming.WeightData;
+        }
+        
         // Update all related event members if the start or end time has changed
         var updateStart = startTime is not null && startTime != eliteEvent.StartTime;
         var updateEnd = endTime is not null && endTime != eliteEvent.EndTime;

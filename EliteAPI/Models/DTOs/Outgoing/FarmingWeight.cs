@@ -64,7 +64,6 @@ public class PestsDto {
 public class WeightsDto {
     public Dictionary<string, double> Crops { get; set; } = new();
     public PestWeightsDto Pests { get; set; } = new();
-    
 }
 
 public class PestWeightsDto {
