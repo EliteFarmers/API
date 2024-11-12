@@ -52,13 +52,8 @@ public class ObjectStorageService : IObjectStorageService {
 		
 		await using var stream = file.OpenReadStream();
 		
-		// Get hash of the file
-		// var hash = MD5.HashDataAsync(stream, token);
-		
 		var eTag = await UploadAsync(path, stream, token);
 		if (string.IsNullOrEmpty(eTag)) throw new InvalidOperationException("Failed to upload image.");
-		
-		// var hashString = BitConverter.ToString(await hash).Replace("-", "").ToLower();
 		
 		var image = new Image {
 			Path = path,
@@ -77,6 +72,11 @@ public class ObjectStorageService : IObjectStorageService {
 	/// <param name="token"></param>
 	/// <returns></returns>
 	public async Task<Image> UploadImageAsync(string path, string remoteUrl, Dictionary<string, string>? metadata = null, CancellationToken token = default) {
+		var formFile = await DownloadImageAsync(remoteUrl, token);
+		return await UploadImageAsync(path, formFile, metadata, token);
+	}
+	
+	private async Task<IFormFile> DownloadImageAsync(string remoteUrl, CancellationToken token = default) {
 		using var client = _httpClientFactory.CreateClient("EliteAPI");
 		var response = await client.GetAsync(remoteUrl, token);
 		
@@ -95,8 +95,24 @@ public class ObjectStorageService : IObjectStorageService {
 			throw new InvalidOperationException($"Failed to read image from {remoteUrl}");
 		}
 		
-		var formFile = new FormFile(stream, 0, stream.Length, "image", "image" + Path.GetExtension(path));
-		return await UploadImageAsync(path, formFile, metadata, token);
+		return new FormFile(stream, 0, stream.Length, "image", "image" + Path.GetExtension(remoteUrl));
+	}
+
+	public async Task UpdateImageAsync(Image image, IFormFile file, string? newPath = null, CancellationToken token = default) {
+		if (newPath is not null) {
+			await DeleteAsync(image.Path, token);
+			image.Path = newPath;
+		}
+		
+		await using var stream = file.OpenReadStream();
+		var eTag = await UploadAsync(image.Path, stream, token);
+		
+		if (string.IsNullOrEmpty(eTag)) throw new InvalidOperationException("Failed to upload image.");
+	}
+
+	public async Task UpdateImageAsync(Image image, string remoteUrl, string? newPath = null, CancellationToken token = default) {
+		var file = await DownloadImageAsync(remoteUrl, token);
+		await UpdateImageAsync(image, file, newPath, token);
 	}
 
 	public async Task DeleteAsync(string path, CancellationToken token = default) {

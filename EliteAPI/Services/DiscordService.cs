@@ -251,6 +251,7 @@ public class DiscordService(
             .Include(gm => gm.Guild)
             .ThenInclude(g => g.Icon)
             .Where(gm => gm.AccountId == userId)
+            .AsNoTracking()
             .ToListAsync();
         
         if (existing.Count <= 0 || user.GuildsLastUpdated.OlderThanSeconds(_coolDowns.UserGuildsCooldown)) {
@@ -269,6 +270,7 @@ public class DiscordService(
         var accountId = userId.ToString();
         
         var existingGuild = await context.Guilds
+            .Include(g => g.Icon)
             .AsNoTracking()
             .FirstOrDefaultAsync(g => g.Id == guild.Id);
         
@@ -282,7 +284,6 @@ public class DiscordService(
         if (existing is null) {
             existing = new GuildMember {
                 GuildId = guild.Id,
-                Guild = existingGuild,
                 AccountId = accountId,
                 Permissions = guild.Permissions
             };
@@ -435,11 +436,19 @@ public class DiscordService(
             guild.LastUpdated = DateTimeOffset.UtcNow;
 
             if (guild.Icon?.Hash != incoming.Icon && incoming.Icon is not null) {
-                guild.Icon = await UpdateGuildIcon(guildId, incoming.Icon, guild.Icon?.Hash);
+                if (guild.Icon is null) {
+                    guild.Icon = await UpdateGuildIcon(guildId, incoming.Icon);
+                } else {
+                    await UpdateGuildIcon(guildId, incoming.Icon, guild.Icon);
+                }
             }
             
             if (guild.IsPublic && guild.Banner?.Hash != incoming.Splash && incoming.Splash is not null) {
-                guild.Banner = await UpdateGuildBanner(guildId, incoming.Splash, guild.Banner?.Hash);
+                if (guild.Banner is null) {
+                    guild.Banner = await UpdateGuildBanner(guildId, incoming.Splash);
+                } else {
+                    await UpdateGuildBanner(guildId, incoming.Splash, guild.Banner);
+                }
             }
 
             if (guild.Features.JacobLeaderboardEnabled) {
@@ -495,44 +504,52 @@ public class DiscordService(
         return guild;
     }
 
-    public async Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, string? delete = null) {
+    public async Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, Image? image = null) {
         try {
-            if (delete is not null) {
-                await objectStorageService.DeleteAsync(delete);
+            var iconType = iconHash.StartsWith("a_") ? "gif" : "webp";
+            var newPath = $"guilds/{guildId}/icons/{iconHash}.{iconType}";
+            var remoteUrl = $"https://cdn.discordapp.com/icons/{guildId}/{iconHash}.{iconType}?size=128";
+
+            if (image is null) {
+                return await objectStorageService.UploadImageAsync(path: newPath, remoteUrl: remoteUrl);
             }
             
-            var iconType = iconHash.StartsWith("a_") ? "gif" : "webp";
+            if (image.Path == newPath) {
+                return image; // Same path means the image is already up to date
+            }
+            
+            await objectStorageService.UpdateImageAsync(image: image, newPath: newPath, remoteUrl: remoteUrl);
+            image.Hash = iconHash;
 
-            var icon = await objectStorageService.UploadImageAsync(
-                path: $"guilds/{guildId}/icons/{iconHash}.{iconType}",
-                remoteUrl: $"https://cdn.discordapp.com/icons/{guildId}/{iconHash}.{iconType}?size=128");
-
-            icon.Hash = iconHash;
-            return icon;
+            return image;
         } catch {
             logger.LogWarning("Failed to fetch guild icon from Discord for guild {GuildId}", guildId);
             return null;
         }
     }
     
-    public async Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, string? delete = null) {
+    public async Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, Image? image = null) {
         try {
-            if (delete is not null) {
-                await objectStorageService.DeleteAsync(delete);
+            var newPath = $"guilds/{guildId}/{bannerHash}.webp";
+            var remoteUrl = $"https://cdn.discordapp.com/splashes/{guildId}/{bannerHash}.webp?size=1280";
+            
+            if (image is null) {
+                return await objectStorageService.UploadImageAsync(path: newPath, remoteUrl: remoteUrl);
             }
             
-            var banner = await objectStorageService.UploadImageAsync(
-                path: $"guilds/{guildId}/{bannerHash}.webp",
-                remoteUrl: $"https://cdn.discordapp.com/splashes/{guildId}/{bannerHash}.webp?size=1280");
+            if (image.Path == newPath) {
+                return image; // Same path means the image is already up to date
+            }
+            
+            await objectStorageService.UpdateImageAsync(image: image, newPath: newPath, remoteUrl: remoteUrl);
+            image.Hash = bannerHash;
 
-            banner.Hash = bannerHash;
-            return banner;
+            return image;
         } catch {
             logger.LogWarning("Failed to fetch guild banner from Discord for guild {GuildId}", guildId);
             return null;
         }
     }
-            
 
     private async Task UpdateDiscordChannel(Guild guild, DiscordChannel channel, bool save = true) {
         if (!ulong.TryParse(channel.Id, out var channelId)) return;

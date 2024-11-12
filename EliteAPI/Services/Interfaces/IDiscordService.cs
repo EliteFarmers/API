@@ -21,6 +21,6 @@ public interface IDiscordService
     Task FetchUserRoles(GuildMember member);
     Task<Guild?> GetGuild(ulong guildId, bool skipCache = false);
     Task RefreshDiscordGuild(ulong guildId);
-    Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, string? delete = null);
-    Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, string? delete = null);
+    Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, Image? image = null);
+    Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, Image? image = null);
 }

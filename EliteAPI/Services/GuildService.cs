@@ -78,7 +78,11 @@ public class GuildService(
             dbGuild.DiscordFeatures = guild.Features ?? dbGuild.DiscordFeatures;
             
             if (guild.Icon is not null && guild.Icon != dbGuild.Icon?.Hash) {
-                dbGuild.Icon = await discordService.UpdateGuildIcon(guildId, guild.Icon);
+                if (dbGuild.Icon is null) {
+                    dbGuild.Icon = await discordService.UpdateGuildIcon(guildId, guild.Icon);
+                } else {
+                    await discordService.UpdateGuildIcon(guildId, guild.Icon, dbGuild.Icon);
+                }
             }
         }
 
