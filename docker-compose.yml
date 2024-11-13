@@ -74,8 +74,10 @@ services:
     networks:
         - eliteapi-network
   rabbit:
-    image: rabbitmq:4-management
+    image: rabbitmq:3.8-alpine
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
         - '5672:5672'
         - '15672:15672'

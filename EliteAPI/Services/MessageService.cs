@@ -24,7 +24,8 @@ public class MessageService : IMessageService {
         var factory = new ConnectionFactory {
             HostName = _rabbitMqSettings.Host,
             UserName = _rabbitMqSettings.User,
-            Password = _rabbitMqSettings.Password
+            Password = _rabbitMqSettings.Password,
+            Port = _rabbitMqSettings.Port
         };
 
         try {
