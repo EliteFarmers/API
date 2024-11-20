@@ -45,9 +45,8 @@ public static class CropCollectionParser {
         if (currentCollections is null or { Count: 0 } || initialCollections is { Count: 0 }) return cropIncreases;
         
         foreach (var crop in currentCollections.Keys) {
-            if (!initialCollections.ContainsKey(crop)) continue;
+            if (!initialCollections.TryGetValue(crop, out var initialAmount)) continue;
 
-            var initialAmount = initialCollections[crop];
             var currentAmount = currentCollections[crop];
 
             var increase = Math.Max(currentAmount - initialAmount, 0);
@@ -86,6 +85,7 @@ public static class CropCollectionParser {
             { "rat", cropCollection.Rat },
             { "mosquito", cropCollection.Mosquito },
             { "fly", cropCollection.Fly },
+            { "mouse", cropCollection.Mouse }
         };
     }
 }

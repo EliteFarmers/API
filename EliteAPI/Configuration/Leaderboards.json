@@ -202,6 +202,11 @@
         "Id": "Fly",
         "Title": "Fly Kills",
         "Limit": 5000
+      },
+      "mouse": {
+        "Id": "Mouse",
+        "Title": "Mouse Kills",
+        "Limit": 5000
       }
     },
     "ProfileLeaderboards": {

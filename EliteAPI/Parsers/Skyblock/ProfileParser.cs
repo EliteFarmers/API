@@ -368,6 +368,7 @@ public class ProfileParser(
         leaderboardService.UpdateLeaderboardScore("rat", memberId, member.Farming.Pests.Rat);
         leaderboardService.UpdateLeaderboardScore("mosquito", memberId, member.Farming.Pests.Mosquito);
         leaderboardService.UpdateLeaderboardScore("fly", memberId, member.Farming.Pests.Fly);
+        leaderboardService.UpdateLeaderboardScore("mouse", memberId, member.Farming.Pests.Mouse);
         
         // Update chocolate factory leaderboards
         leaderboardService.UpdateLeaderboardScore("chocolate", memberId, member.ChocolateFactory.TotalChocolate);
@@ -425,6 +426,7 @@ public class ProfileParser(
                 Rat = member.Farming.Pests.Rat,
                 Slug = member.Farming.Pests.Slug,
                 Earthworm = member.Farming.Pests.Earthworm,
+                Mouse = member.Farming.Pests.Mouse
             };
             
             await context.CropCollections.SingleInsertAsync(cropCollection);

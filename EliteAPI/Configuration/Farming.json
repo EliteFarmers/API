@@ -82,7 +82,8 @@
       "6": "pest_locust_1",
       "7": "pest_rat_1",
       "8": "pest_mosquito_1",
-      "9": "pest_fly_1"
+      "9": "pest_fly_1",
+      "10": "pest_mouse_1"
     },
     "PestDropBrackets": {
       "0": 0,

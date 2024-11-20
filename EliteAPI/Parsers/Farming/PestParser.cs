@@ -105,6 +105,7 @@ public static class PestParser {
             pests.Rat = bestiaryKills.Rat;
             pests.Slug = bestiaryKills.Slug;
             pests.Earthworm = bestiaryKills.Earthworm;
+            pests.Mouse = bestiaryKills.Mouse;
         } catch (JsonException) {
             return;
         }
@@ -132,5 +133,6 @@ public static class PestParser {
         [JsonPropertyName("pest_rat_1")] public int Rat { get; set; } = 0;
         [JsonPropertyName("pest_mosquito_1")] public int Mosquito { get; set; } = 0;
         [JsonPropertyName("pest_fly_1")] public int Fly { get; set; } = 0;
+        [JsonPropertyName("pest_mouse_1")] public int Mouse { get; set; } = 0;
     }
 }
