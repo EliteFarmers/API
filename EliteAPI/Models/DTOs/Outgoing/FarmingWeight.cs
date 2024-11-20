@@ -59,7 +59,7 @@ public class PestsDto {
     public int Rat { get; set; } = 0;
     public int Slug { get; set; } = 0;
     public int Earthworm { get; set; } = 0;
-    // public int Mouse { get; set; } = 0;
+    public int Mouse { get; set; } = 0;
 }
 
 public class WeightsDto {
