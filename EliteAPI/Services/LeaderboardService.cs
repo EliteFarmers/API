@@ -545,10 +545,9 @@ public class LeaderboardService(
 
         var query = dataContext.Gardens.AsNoTracking().AsSplitQuery()
             .Include(g => g.Profile)
-            .ThenInclude(p => p.Members
-                .Where(m => !m.WasRemoved))
+            .ThenInclude(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
-            .Where(g => g.GardenExperience > 0 && g.Profile.Members.Count != 0);
+            .Where(g => g.GardenExperience > 0 && g.Profile.Members.Any(m => !m.WasRemoved));
         
         List<LeaderboardEntry> scores;
         
@@ -560,7 +559,7 @@ public class LeaderboardService(
                     .Select(g => new LeaderboardEntry {
                         Amount = g.GardenExperience,
                         MemberId = g.ProfileId,
-                        Profile = g.Profile.Members.First().ProfileName,
+                        Profile = g.Profile.Members.First(m => !m.WasRemoved).ProfileName,
                         Members = g.Profile!.Members
                             .Where(m => !m.WasRemoved)
                             .Select(m => new ProfileLeaderboardMember() {
@@ -581,7 +580,7 @@ public class LeaderboardService(
                     .Select(g => new LeaderboardEntry() {
                         Amount = g.CompletedVisitors,
                         MemberId = g.ProfileId,
-                        Profile = g.Profile.Members.First().ProfileName,
+                        Profile = g.Profile.Members.First(m => !m.WasRemoved).ProfileName,
                         Members = g.Profile!.Members
                             .Where(m => !m.WasRemoved)
                             .Select(m => new ProfileLeaderboardMember() {
@@ -601,7 +600,7 @@ public class LeaderboardService(
                     .Select(g => new LeaderboardEntry() {
                         Amount = EF.Property<long>(g.Crops, lbSettings.Id),
                         MemberId = g.ProfileId,
-                        Profile = g.Profile.Members.First().ProfileName,
+                        Profile = g.Profile.Members.First(m => !m.WasRemoved).ProfileName,
                         Members = g.Profile!.Members
                             .Where(m => !m.WasRemoved)
                             .Select(m => new ProfileLeaderboardMember() {
