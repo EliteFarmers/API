@@ -24,19 +24,51 @@ public class FarmingItemsSettings {
         }
     }
     public List<KeyValuePair<string, int>> PestDropBracketsList = [];
-    
+
+    [JsonIgnore] 
+    private Dictionary<int, double>? _weightTargets; 
+    [JsonIgnore]
+    public Dictionary<int, double> WeightTargets => _weightTargets ??= CalculateWeightTargets();
+
     public Dictionary<Pest, PestDropChance> PestCropDropChances { get; set; } = new();
+    
+    private Dictionary<int, double> CalculateWeightTargets() {
+        var targets = new Dictionary<int, double>();
+        var weights = FarmingWeightConfig.Settings.CropWeights;
+
+        foreach (var fortune in PestDropBrackets.Values) {
+            var minimum = PestCropDropChances.Values
+                .Select(chance => chance.GetCropDrops(fortune) / weights[chance.Crop])
+                .Min();
+
+            targets[fortune] = minimum;
+        }
+        
+        return targets;
+    }
 }
 
 public class PestDropChance {
+    public Crop Crop { get; set; }
+    public int Items { get; set; } = 0;
     public int Base { get; set; } = 0;
+    public double Scaling { get; set; } = 0;
     public List<PestRngDrop> Rare { get; set; } = [];
     
     [JsonIgnore]
     private Dictionary<int, double> Precomputed { get; } = new();
     
-    public double GetCropsDropped(int fortune, bool includeZero = false, bool usePrecomputed = true) {
+    public double GetCropDrops(int fortune) {
+        var drops = Base * (fortune / Scaling + Items);
+        var rng = Rare.Sum((r) => r.Chance * (fortune / 600f + 1) * r.Drops);
+        return drops + rng;
+    }
+    
+    public double GetCropsToSubtract(int fortune, bool includeZero = false, bool usePrecomputed = true) {
         if (usePrecomputed && Precomputed.TryGetValue(fortune, out var chance)) return chance;
+        
+        var cropWeights = FarmingWeightConfig.Settings.CropWeights;
+        var targetWeights = FarmingItemsConfig.Settings.WeightTargets;
 
         // Zero fortune means we're ignoring the drops from this bracket
         if (fortune == 0 && !includeZero) {
@@ -45,15 +77,15 @@ public class PestDropChance {
             }
             return 0;
         }
-        
-        var drops = Base * (fortune / 100f + 1);
-        var rng = Rare.Sum((r) => r.Chance * (fortune / 600f + 1) * r.Drops);
 
+        var total = GetCropDrops(fortune);
+        var toSubtract = total - (total / (total / cropWeights[Crop]) * targetWeights[fortune]);
+        
         if (!usePrecomputed) {
-            return drops + rng;
+            return toSubtract;
         }
         
-        Precomputed[fortune] = drops + rng;
+        Precomputed[fortune] = toSubtract;
         return Precomputed[fortune];
     }
     
@@ -62,7 +94,7 @@ public class PestDropChance {
         
         var pestBrackets = FarmingItemsConfig.Settings.PestDropBrackets;
         foreach (var fortune in pestBrackets.Values) {
-            GetCropsDropped(fortune);
+            GetCropsToSubtract(fortune);
         }
         
         return Precomputed;
