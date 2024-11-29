@@ -92,80 +92,112 @@
       "250": 750,
       "500": 1000,
       "750": 1150,
-      "1000": 1300
+      "1000": 1300,
+      "5000": 1500
     },
+    "PestTargetWeight": 0.1,
     "PestCropDropChances": {
       "0": {
+        "crop": 0,
+        "items": 2,
         "base": 160,
+        "scaling":  17.5,
         "rare": [{
-          "drops": 25600,
-          "chance": 0.02
+          "drops": 153600,
+          "chance": 0.005
         }]
       },
       "1": {
+        "crop": 1,
+        "items": 3,
         "base": 160,
+        "scaling": 10.5,
         "rare": [{
-          "drops": 20480,
-          "chance": 0.03
+          "drops": 245760,
+          "chance": 0.005
         }]
       },
       "2": {
+        "crop": 2,
+        "items": 3,
         "base": 160,
+        "scaling": 12,
         "rare": [{
-          "drops": 20480,
-          "chance": 0.03
+          "drops": 225280,
+          "chance": 0.005
         }]
       },
       "3": {
+        "crop": 3,
+        "items": 5,
         "base": 160,
+        "scaling": 7,
         "rare": [{
-          "drops": 25600,
-          "chance": 0.04
+          "drops": 384000,
+          "chance": 0.005
         }]
       },
       "4": {
+        "crop": 4,
+        "items": 1,
         "base": 160,
+        "scaling": 35,
         "rare": [{
-          "drops": 5120,
-          "chance": 0.005
+          "drops": 76800,
+          "chance": 0.0025
         }, {
-          "drops": 5120,
-          "chance": 0.005
+          "drops": 76800,
+          "chance": 0.0025
         }]
       },
       "5": {
+        "crop": 5,
+        "items": 3,
         "base": 160,
+        "scaling": 12,
         "rare": [{
-          "drops": 25600,
-          "chance": 0.03
+          "drops": 230400,
+          "chance": 0.005
         }]
       },
       "6": {
+        "crop": 6,
+        "items": 3,
         "base": 160,
+        "scaling": 10.5,
         "rare": [{
-          "drops": 25600,
-          "chance": 0.03
+          "drops": 256000,
+          "chance": 0.005
         }]
       },
       "7": {
+        "crop": 7,
+        "items": 1,
         "base": 160,
+        "scaling": 35,
         "rare": [{
-          "drops": 25600,
-          "chance": 0.01
+          "drops": 76800,
+          "chance": 0.005
         }]
       },
       "8": {
+        "crop": 8,
+        "items": 2,
         "base": 160,
+        "scaling": 17.5,
         "rare": [{
-          "drops": 25600,
-          "chance": 0.02
+          "drops": 153600,
+          "chance": 0.005
         }]
       },
       "9": {
-        "base": 1296,
+        "crop": 9,
+        "items": 1,
+        "base": 160,
+        "scaling": 35,
         "rare": [{
-          "drops": 186624,
-          "chance": 0.01
+          "drops": 76800,
+          "chance": 0.005
         }]
       }
     }
