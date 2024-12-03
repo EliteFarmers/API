@@ -199,15 +199,15 @@ public class WeightController(
             crops.Add(formattedKey, value);
         }
         
-        var reversed = FarmingItemsConfig.Settings.PestDropBrackets
+        var reversed = FarmingWeightConfig.Settings.PestDropBrackets
             .DistinctBy(p => p.Value)
             .ToDictionary(pair => pair.Value, pair => pair.Key);
 
         var result = new WeightsDto {
             Crops = crops,
             Pests = {
-                Brackets = FarmingItemsConfig.Settings.PestDropBrackets,
-                Values = FarmingItemsConfig.Settings.PestCropDropChances
+                Brackets = FarmingWeightConfig.Settings.PestDropBrackets,
+                Values = FarmingWeightConfig.Settings.PestCropDropChances
                     .DistinctBy(p => p.Key.ToString().ToLowerInvariant())
                     .ToDictionary(
                         pair => pair.Key.ToString().ToLowerInvariant(), 

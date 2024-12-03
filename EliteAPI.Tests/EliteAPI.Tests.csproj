@@ -27,4 +27,10 @@
     <ProjectReference Include="..\EliteAPI\EliteAPI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\EliteAPI\Configuration\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Configuration\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
 </Project>
