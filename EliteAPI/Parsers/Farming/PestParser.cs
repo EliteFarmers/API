@@ -40,13 +40,15 @@ public static class PestParser {
         };
     }
     
-    public static long CalcUncountedCrops(Pest pest, int kills) {
-        var pestBrackets = FarmingItemsConfig.Settings.PestDropBracketsList;
-        var pestDropChances = FarmingItemsConfig.Settings.PestCropDropChances;
+    public static long CalcUncountedCrops(Pest pest, int kills, ConfigFarmingWeightSettings? weightConfig = null) {
+        var config = weightConfig ?? FarmingWeightConfig.Settings;
+        var pestBrackets = config.PestDropBracketsList;
+        var pestDropChances = config.PestCropDropChances;
 
         var pestCount = kills;
         var pestsToCount = 0;
         var totalDrops = 0;
+        
         for (var i = 0; i < pestBrackets.Count; i++) {
             // Exit if there are no more pests to calculate
             if (pestCount <= 0) break;
@@ -56,7 +58,7 @@ public static class PestParser {
             
             // Use the last bracket for all remaining pests
             if (i == pestBrackets.Count - 1) {
-                totalDrops += (int) Math.Ceiling(pestDrops.GetCropsDropped(fortune) * pestCount);
+                totalDrops += (int) Math.Ceiling(pestDrops.GetCropsToSubtract(fortune, weightConfig: config) * pestCount);
                 continue;
             }
             
@@ -76,7 +78,7 @@ public static class PestParser {
             }
 
             // Calculate the drops for the current bracket
-            var drops = pestDrops.GetCropsDropped(fortune) * pestsToCount;
+            var drops = pestDrops.GetCropsToSubtract(fortune, weightConfig: config) * pestsToCount;
 
             pestCount -= pestsToCount;
             totalDrops += (int) Math.Ceiling(drops);

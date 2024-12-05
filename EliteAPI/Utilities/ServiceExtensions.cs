@@ -148,18 +148,23 @@ public static class ServiceExtensions
         
         services.AddSingleton<IConnectionMultiplexer>(multiplexer);
     }
+    
+    public static void RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
+    {
+        configurationBuilder.Sources.AddRange(new List<JsonConfigurationSource>
+        {
+            new() { Path = $"{directoryPath}/Weight.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/Cooldown.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/Leaderboards.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/Farming.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false }
+        });
+    }
 
     public static void RegisterEliteConfigFiles(this WebApplicationBuilder builder)
     {
-        builder.Configuration.Sources.AddRange(new List<JsonConfigurationSource>
-        {
-            new() { Path = "Configuration/Weight.json" },
-            new() { Path = "Configuration/Cooldown.json" },
-            new() { Path = "Configuration/Leaderboards.json" },
-            new() { Path = "Configuration/Farming.json" },
-            new() { Path = "Configuration/ChocolateFactory.json" },
-            new() { Path = "Configuration/Events.json" }
-        });
+        builder.Configuration.RegisterEliteConfigFiles();
 
         builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
         builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));

@@ -1,7 +1,10 @@
 using EliteAPI.Configuration.Settings;
-using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.Farming;
+using EliteAPI.Utilities;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Tests.WeightTests;
 
@@ -58,133 +61,14 @@ public class WeightParserTests {
 	
 	
 	public WeightParserTests() {
-		FarmingWeightConfig.Settings.CropsPerOneWeight = new() {
-			{ "CACTUS", 177254.45 },
-			{ "CARROT_ITEM", 302061.86 },
-			{ "INK_SACK_3", 267174.04 },
-			{ "MELON", 485308.47 },
-			{ "MUSHROOM_COLLECTION", 90178.06 },
-			{ "NETHER_STALK", 250000 },
-			{ "POTATO_ITEM", 300000 },
-			{ "PUMPKIN", 98284.71 },
-			{ "SUGAR_CANE", 200000 },
-			{ "WHEAT", 100000 }
-		};
+		var configurationBuilder = new ConfigurationBuilder();
+		configurationBuilder.RegisterEliteConfigFiles();
+		var configuration = configurationBuilder.Build();
 		
-		FarmingWeightConfig.Settings.CropItemIds = FarmingWeightConfig.Settings.CropsPerOneWeight.Keys
-			.Select(c => c == "INK_SACK_3" ? "INK_SACK:3" : c).ToList();
+		var services = new ServiceCollection();
+		services.Configure<ConfigFarmingWeightSettings>(configuration.GetSection("FarmingWeight"));
+		var serviceProvider = services.BuildServiceProvider();
 		
-		FarmingItemsConfig.Settings.PestDropBrackets = new Dictionary<string, int> {
-			{ "0", 0 }, { "50", 250 }, { "100", 500 }, { "250", 750 },
-			{ "500", 1000 }, { "750", 1250 }, { "1000", 1500 }
-		};
-
-		FarmingItemsConfig.Settings.PestCropDropChances = new Dictionary<Pest, PestDropChance> {
-			{
-				Pest.Mite, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 25600,
-							Chance = 0.02
-						}
-					]
-				}
-			}, {
-				Pest.Cricket, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 20480,
-							Chance = 0.03
-						}
-					]
-				}
-			}, {
-				Pest.Moth, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 20480,
-							Chance = 0.03
-						}
-					]
-				}
-			}, {
-				Pest.Earthworm, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 25600,
-							Chance = 0.04
-						}
-					]
-				}
-			}, {
-				Pest.Slug, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 5120,
-							Chance = 0.005
-						},
-						new PestRngDrop {
-							Drops = 5120,
-							Chance = 0.005
-						}
-					]
-				}
-			}, {
-				Pest.Beetle, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 25600,
-							Chance = 0.03
-						}
-					]
-				}
-			}, {
-				Pest.Locust, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 25600,
-							Chance = 0.03
-						}
-					]
-				}
-			}, {
-				Pest.Rat, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 25600,
-							Chance = 0.01
-						}
-					]
-				}
-			}, {
-				Pest.Mosquito, new() {
-					Base = 160,
-					Rare = [
-						new PestRngDrop {
-							Drops = 25600,
-							Chance = 0.02
-						}
-					]
-				}
-			}, {
-				Pest.Fly, new() {
-					Base = 1296,
-					Rare = [
-						new PestRngDrop {
-							Drops = 186624,
-							Chance = 0.01
-						}
-					]
-				}
-			}
-		};
+		FarmingWeightConfig.Settings = serviceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
 	}
 }
