@@ -373,7 +373,7 @@ public class DiscordService(
         }
     }
 
-    public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false) {
+    public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false, bool replaceImages = false) {
         var existing = await context.Guilds
             .Include(g => g.Channels)
             .Include(g => g.Roles)
@@ -398,18 +398,18 @@ public class DiscordService(
             var guild = await response.Content.ReadFromJsonAsync<FullDiscordGuild>();
             if (guild is null) return existing;
             
-            return await UpdateDiscordGuild(guild);
+            return await UpdateDiscordGuild(guild, replaceImages);
         } catch (Exception e) {
             logger.LogError(e, "Failed to parse guild from Discord");
             return existing;
         }
     }
 
-    public async Task RefreshDiscordGuild(ulong guildId) {
-        await GetGuild(guildId, true);
+    public async Task RefreshDiscordGuild(ulong guildId, bool replaceImages = false) {
+        await GetGuild(guildId, true, replaceImages: replaceImages);
     }
 
-    private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true) {
+    private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true, bool replaceImages = true) {
         if (incoming is null) return null;
         if (!ulong.TryParse(incoming.Id, out var guildId)) return null;
         
@@ -435,19 +435,19 @@ public class DiscordService(
             guild.MemberCount = incoming.MemberCount;
             guild.LastUpdated = DateTimeOffset.UtcNow;
 
-            if (guild.Icon?.Hash != incoming.Icon && incoming.Icon is not null) {
+            if ((replaceImages || guild.Icon?.Hash != incoming.Icon) && incoming.Icon is not null) {
                 if (guild.Icon is null) {
-                    guild.Icon = await UpdateGuildIcon(guildId, incoming.Icon);
+                    guild.Icon = await UpdateGuildIcon(guildId, incoming.Icon, force: replaceImages);
                 } else {
-                    await UpdateGuildIcon(guildId, incoming.Icon, guild.Icon);
+                    await UpdateGuildIcon(guildId, incoming.Icon, guild.Icon, force: replaceImages);
                 }
             }
             
-            if (guild.IsPublic && guild.Banner?.Hash != incoming.Splash && incoming.Splash is not null) {
+            if (guild.IsPublic && (replaceImages || guild.Banner?.Hash != incoming.Splash) && incoming.Splash is not null) {
                 if (guild.Banner is null) {
-                    guild.Banner = await UpdateGuildBanner(guildId, incoming.Splash);
+                    guild.Banner = await UpdateGuildBanner(guildId, incoming.Splash, force: replaceImages);
                 } else {
-                    await UpdateGuildBanner(guildId, incoming.Splash, guild.Banner);
+                    await UpdateGuildBanner(guildId, incoming.Splash, guild.Banner, force: replaceImages);
                 }
             }
 
@@ -504,7 +504,7 @@ public class DiscordService(
         return guild;
     }
 
-    public async Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, Image? image = null) {
+    public async Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, Image? image = null, bool force = false) {
         try {
             var iconType = iconHash.StartsWith("a_") ? "gif" : "webp";
             var newPath = $"guilds/{guildId}/icons/{iconHash}.{iconType}";
@@ -514,7 +514,7 @@ public class DiscordService(
                 return await objectStorageService.UploadImageAsync(path: newPath, remoteUrl: remoteUrl);
             }
             
-            if (image.Path == newPath) {
+            if (image.Path == newPath && !force) {
                 return image; // Same path means the image is already up to date
             }
             
@@ -522,13 +522,14 @@ public class DiscordService(
             image.Hash = iconHash;
 
             return image;
-        } catch {
+        } catch (Exception e) {
+            logger.LogError(e.Message);
             logger.LogWarning("Failed to fetch guild icon from Discord for guild {GuildId}", guildId);
             return null;
         }
     }
     
-    public async Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, Image? image = null) {
+    public async Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, Image? image = null, bool force = false) {
         try {
             var newPath = $"guilds/{guildId}/{bannerHash}.webp";
             var remoteUrl = $"https://cdn.discordapp.com/splashes/{guildId}/{bannerHash}.webp?size=1280";
@@ -537,7 +538,7 @@ public class DiscordService(
                 return await objectStorageService.UploadImageAsync(path: newPath, remoteUrl: remoteUrl);
             }
             
-            if (image.Path == newPath) {
+            if (image.Path == newPath && !force) {
                 return image; // Same path means the image is already up to date
             }
             

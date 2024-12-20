@@ -23,7 +23,8 @@ public class AdminController(
     IMapper mapper,
     IObjectStorageService objectStorage,
     IMojangService mojangService,
-    UserManager<ApiUser> userManager) 
+    UserManager<ApiUser> userManager,
+    IDiscordService discordService) 
     : ControllerBase
 {
     
@@ -267,6 +268,21 @@ public class AdminController(
         await db.KeyDeleteAsync($"player:{account.Id}:updating");
         await db.KeyDeleteAsync($"profile:{account.Id}:updating");
 
+        return Ok();
+    }
+
+    /// <summary>
+    /// Refresh a Discord guild
+    /// </summary>
+    /// <param name="guildId"></param>
+    /// <returns></returns>
+    [Authorize(ApiUserPolicies.Moderator)]
+    [HttpPost("/guild/{guildId:long}/refresh")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(string))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+    public async Task<ActionResult> RefreshGuild(long guildId) {
+        await discordService.RefreshDiscordGuild((ulong) guildId, replaceImages: true);
         return Ok();
     }
 }

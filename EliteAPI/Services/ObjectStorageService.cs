@@ -22,7 +22,7 @@ public class ObjectStorageService : IObjectStorageService {
 		_bucketName = config["S3:BucketName"] ?? "elite";
 		
 		if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(endpoint)) {
-			_logger.LogWarning("S3 credentials not found, ObjectStorageService will not be available.");
+			_logger.LogWarning("S3 credentials not found, ObjectStorageService will not be available");
 			return;
 		}
 		
@@ -90,7 +90,7 @@ public class ObjectStorageService : IObjectStorageService {
 			throw new InvalidOperationException($"Response from {remoteUrl} is not an image");
 		}
 		
-		await using var stream = await response.Content.ReadAsStreamAsync(token);
+		var stream = await response.Content.ReadAsStreamAsync(token);
 		if (stream is null) {
 			throw new InvalidOperationException($"Failed to read image from {remoteUrl}");
 		}
