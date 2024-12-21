@@ -16,6 +16,9 @@ public class FarmingWeightDto
     public PestsDto Pests { get; set; } = new();
     
     public FarmingInventoryDto? Inventory { get; set; } = new();
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public long LastUpdated { get; set; }
 }
 
 public class FarmingWeightAllProfilesDto {
@@ -38,6 +41,7 @@ public class FarmingWeightWithProfileDto
     public Dictionary<string, int> UncountedCrops { get; set; } = new();
     
     public PestsDto Pests { get; set; } = new();
+    public long LastUpdated { get; set; }
 }
 
 public class FarmingInventoryDto
