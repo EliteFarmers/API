@@ -55,6 +55,14 @@ public class JacobPerks
 public class JacobStats {
     public Dictionary<Crop, ContestMedal> Brackets { get; set; } = new();
     public Dictionary<Crop, long> PersonalBests { get; set; } = new();
+    public Dictionary<Crop, JacobCropStats> Crops { get; set; } = new();
+}
+
+public class JacobCropStats {
+    public int Participations { get; set; }
+    public int FirstPlaceScores { get; set; }
+    public long? PersonalBestTimestamp { get; set; }
+    public EarnedMedalInventory Medals { get; set; } = new();
 }
 
 [Index(nameof(Timestamp))]

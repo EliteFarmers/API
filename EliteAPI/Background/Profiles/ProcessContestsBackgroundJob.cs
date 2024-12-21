@@ -194,6 +194,33 @@ public class ProcessContestsBackgroundJob(
         jacob.EarnedMedals.Diamond = medalCounts.TryGetValue(ContestMedal.Diamond, out var diamond) ? diamond : 0;
 
         jacob.FirstPlaceScores = jacob.Contests.Count(c => c.Position == 0);
+
+        jacob.Stats ??= new JacobStats();
+        jacob.Stats.Crops = new Dictionary<Crop, JacobCropStats>() {
+            { Crop.Cactus, new JacobCropStats() },
+            { Crop.CocoaBeans, new JacobCropStats() },
+            { Crop.Melon, new JacobCropStats() },
+            { Crop.Mushroom, new JacobCropStats() },
+            { Crop.NetherWart, new JacobCropStats() },
+            { Crop.Potato, new JacobCropStats() },
+            { Crop.Pumpkin, new JacobCropStats() },
+            { Crop.SugarCane, new JacobCropStats() },
+            { Crop.Wheat, new JacobCropStats() }
+        };
+        
+        foreach (var contest in jacob.Contests) {
+            if (!jacob.Stats.Crops.TryGetValue(contest.JacobContest.Crop, out var cropStats)) continue;
+            
+            cropStats.Participations++;
+            if (contest.Position == 0) cropStats.FirstPlaceScores++;
+            cropStats.Medals.AddMedal(contest);
+            
+            if (contest.Collected == jacob.Stats.PersonalBests.GetValueOrDefault(contest.JacobContest.Crop, -2)) {
+                cropStats.PersonalBestTimestamp = contest.JacobContest.Timestamp;
+            }
+        }
+        
+        context.Entry(jacob).Property(j => j.Stats).IsModified = true;
         
         jacob.ContestsLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         

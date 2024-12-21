@@ -16,7 +16,11 @@ public class JacobDataMapper : Profile
             .ForMember(j => j.Perks, opt => opt.MapFrom(x => x.Perks))
             .ForMember(j => j.Stats, opt => opt.MapFrom(x => x.Stats));
 
-        CreateMap<JacobStats, JacobStatsDto>();
+        CreateMap<JacobStats, JacobStatsDto>()
+            .ForMember(j => j.Crops, opt => opt.MapFrom(x => x.Crops));
+
+        CreateMap<JacobCropStats, JacobCropStatsDto>()
+            .ForMember(j => j.Medals, opt => opt.MapFrom(x => x.Medals));
     }
 }
 

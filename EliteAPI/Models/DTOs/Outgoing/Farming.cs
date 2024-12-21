@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
+﻿using System.Text.Json.Serialization;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -40,6 +41,7 @@ public class JacobStatsDto
 {
     public Dictionary<Crop, ContestMedal> Brackets { get; set; } = new();
     public Dictionary<Crop, long> PersonalBests { get; set; } = new();
+    public Dictionary<Crop, JacobCropStatsDto> Crops { get; set; } = new();
 }
 
 public class JacobContestDto
@@ -47,6 +49,14 @@ public class JacobContestDto
     public required string Crop { get; set; }
     public long Timestamp { get; set; }
     public int Participants { get; set; }
+}
+
+public class JacobCropStatsDto {
+    public int Participations { get; set; }
+    public int FirstPlaceScores { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? PersonalBestTimestamp { get; set; }
+    public EarnedMedalInventoryDto Medals { get; set; } = new();
 }
 
 public class JacobContestWithParticipationsDto

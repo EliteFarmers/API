@@ -98,4 +98,30 @@ public static class JacobContestParser
         ContestMedal.Diamond => "diamond",
         _ => "none"
     };
+    
+    public static void AddMedal(this EarnedMedalInventory inventory, ContestParticipation contest) {
+        var medal = contest.MedalEarned;
+        switch (medal)
+        {
+            case ContestMedal.Bronze:
+                inventory.Bronze++;
+                break;
+            case ContestMedal.Silver:
+                inventory.Silver++;
+                break;
+            case ContestMedal.Gold:
+                inventory.Gold++;
+                break;
+            case ContestMedal.Platinum:
+                inventory.Platinum++;
+                break;
+            case ContestMedal.Diamond:
+                inventory.Diamond++;
+                break;
+            case ContestMedal.None:
+            default:
+                break;
+        }
+        
+    }
 }
