@@ -198,6 +198,7 @@ public class ProcessContestsBackgroundJob(
         jacob.Stats ??= new JacobStats();
         jacob.Stats.Crops = new Dictionary<Crop, JacobCropStats>() {
             { Crop.Cactus, new JacobCropStats() },
+            { Crop.Carrot, new JacobCropStats() },
             { Crop.CocoaBeans, new JacobCropStats() },
             { Crop.Melon, new JacobCropStats() },
             { Crop.Mushroom, new JacobCropStats() },
