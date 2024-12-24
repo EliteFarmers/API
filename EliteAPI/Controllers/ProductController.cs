@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Web;
 using Asp.Versioning;
 using AutoMapper;
+using EliteAPI.Background.Discord;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -11,6 +12,7 @@ using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 using StackExchange.Redis;
 
 namespace EliteAPI.Controllers;
@@ -23,6 +25,7 @@ public class ProductController(
 	IMonetizationService monetizationService, 
 	IConnectionMultiplexer redis,
 	IObjectStorageService objectStorageService,
+	ISchedulerFactory schedulerFactory,
 	IMapper mapper)
 	: ControllerBase
 {
@@ -79,6 +82,26 @@ public class ProductController(
 			.Include(p => p.Images)
 			.Select(x => mapper.Map<ProductDto>(x))
 			.ToListAsync();
+	}
+	
+	/// <summary>
+	/// Refresh all products
+	/// </summary>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpPost]
+	[Route("/[controller]s/refresh")]
+	[Route("/v{version:apiVersion}/[controller]s/refresh")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<ActionResult<List<ProductDto>>> RefreshProductsAdmin()
+	{
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:products");
+		
+		var scheduler = await schedulerFactory.GetScheduler();
+		await scheduler.TriggerJob(RefreshProductsBackgroundJob.Key);
+		
+		return Ok();
 	}
 	
 	/// <summary>
