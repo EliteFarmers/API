@@ -19,6 +19,7 @@ public class WeightStyleDto
     public string? Description { get; set; }
     
     public ImageAttachmentDto? Image { get; set; }
+    public List<ImageAttachmentDto> Images { get; set; } = [];
     public List<ParentProductDto> Products { get; set; } = [];
 }
 

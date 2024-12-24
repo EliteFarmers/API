@@ -12,11 +12,13 @@ public class WeightStyleMapper : Profile
 		
 		CreateMap<WeightStyle, WeightStyleDto>()
 			.ForMember(w => w.Image, opt => opt.MapFrom(w => w.Image))
+			.ForMember(w => w.Images, opt => opt.MapFrom(w => w.Images))
 			.ForMember(w => w.Products, opt => opt.MapFrom(w => w.Products));
 
 		CreateMap<WeightStyle, WeightStyleWithDataDto>()
 			.ForMember(w => w.Data, opt => opt.MapFrom(w => w.Data))
 			.ForMember(w => w.Image, opt => opt.MapFrom(w => w.Image))
+			.ForMember(w => w.Images, opt => opt.MapFrom(w => w.Images))
 			.ForMember(w => w.Products, opt => opt.MapFrom(w => w.Products));
 
 		CreateMap<Image, ImageAttachmentDto>()

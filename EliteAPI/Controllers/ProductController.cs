@@ -281,17 +281,19 @@ public class ProductController(
 		}
 		
 		var existing = await context.WeightStyles
+			.Include(s => s.Images)
 			.Where(s => s.Id == styleId)
-			.Select(s => mapper.Map<WeightStyleWithDataDto>(s))
 			.FirstOrDefaultAsync();
 		
 		if (existing is null) {
 			return NotFound("Weight style not found");
 		}
+		
+		var mapped = mapper.Map<WeightStyleWithDataDto>(existing);
 
-		await db.StringSetAsync(key, JsonSerializer.Serialize(existing, JsonOptions), TimeSpan.FromMinutes(30));
+		await db.StringSetAsync(key, JsonSerializer.Serialize(mapped, JsonOptions), TimeSpan.FromMinutes(30));
 
-		return existing;
+		return mapped;
 	}
 	
 	/// <summary>
@@ -406,7 +408,7 @@ public class ProductController(
 			await DeleteWeightStyleImage(styleId);
 		}
 		
-		var path = $"cosmetics/weightstyles/{styleId}{Path.GetExtension(imageDto.Image.FileName).ToLowerInvariant()}";
+		var path = $"cosmetics/weightstyles/{styleId}/{Path.GetExtension(imageDto.Image.FileName).ToLowerInvariant()}";
 		var newImage = await objectStorageService.UploadImageAsync(path, imageDto.Image);
 		
 		newImage.Title = imageDto.Title;
@@ -519,6 +521,91 @@ public class ProductController(
 		await context.SaveChangesAsync();
 		
 		// Clear the style list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
+		
+		return Ok();
+	}
+	
+	/// <summary>
+	/// Add image to a cosmetic
+	/// </summary>
+	/// <param name="styleId"></param>
+	/// <param name="imageDto"></param>
+	/// <param name="thumbnail">Specify if this image should be the thumbnail</param>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpPost("style/{styleId:int}/images")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
+	public async Task<IActionResult> AddStyleImage(int styleId, [FromForm] UploadImageDto imageDto, [FromQuery] bool thumbnail = false)
+	{
+		var style = await context.WeightStyles.FindAsync(styleId);
+		if (style is null) {
+			return NotFound("Style not found");
+		}
+		
+		var image = await objectStorageService.UploadImageAsync($"cosmetics/weightstyles/{styleId}/{Guid.NewGuid()}.png", imageDto.Image);
+		
+		image.Title = imageDto.Title;
+		image.Description = imageDto.Description;
+
+		if (thumbnail) {
+			if (style.Image is not null) {
+				await DeleteStyleImage(styleId, style.Image.Path);
+			}
+			
+			style.Image = image;
+		} else {
+			style.Images.Add(image);
+		}
+		
+		await context.SaveChangesAsync();
+		
+		// Clear the product list cache
+		var db = redis.GetDatabase();
+		await db.KeyDeleteAsync("bot:stylelist");
+		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");
+		
+		return Ok();
+	}
+	
+	/// <summary>
+	/// Delete image from a style
+	/// </summary>
+	/// <param name="styleId"></param>
+	/// <param name="imagePath"></param>
+	/// <returns></returns>
+	[Authorize(ApiUserPolicies.Admin)]
+	[HttpDelete("style/{styleId:int}/images/{imagePath}")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> DeleteStyleImage(int styleId, string imagePath)
+	{
+		var style = await context.WeightStyles.Include(i => i.Images).FirstOrDefaultAsync(p => p.Id == styleId);
+		if (style is null) {
+			return NotFound("Style not found");
+		}
+
+		var decoded = HttpUtility.UrlDecode(imagePath);
+		var styleImage = style.Images.FirstOrDefault(i => decoded.EndsWith(i.Path))
+			?? (style.Image?.Path == decoded ? style.Image : null);
+		
+		if (styleImage is null) {
+			return NotFound("Image not found");
+		}
+		
+		if (style.Image == styleImage) {
+			style.Image = null;
+		} else {
+			style.Images.Remove(styleImage);
+		}
+		
+		await context.SaveChangesAsync();
+		
+		await objectStorageService.DeleteAsync(styleImage.Path);
+		
+		// Clear the product list cache
 		var db = redis.GetDatabase();
 		await db.KeyDeleteAsync("bot:stylelist");
 		await db.KeyDeleteAsync($"bot:stylelist:{styleId}");

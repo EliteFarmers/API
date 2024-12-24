@@ -32,6 +32,7 @@ public class WeightStyle {
     public string? Description { get; set; }
     
     public Image? Image { get; set; }
+    public List<Image> Images { get; set; } = [];
     
     public List<ProductWeightStyle> ProductWeightStyles { get; set; } = [];
     public List<Product> Products { get; set; } = [];
@@ -45,6 +46,15 @@ public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
     public void Configure(EntityTypeBuilder<WeightStyle> builder)
     {
         builder.Navigation(p => p.Image).AutoInclude();
+        builder.Navigation(p => p.Images).AutoInclude();
+        
+        builder
+            .HasMany(e => e.Images)
+            .WithMany()
+            .UsingEntity<CosmeticImage>(
+                j => j.HasOne(ci => ci.Image).WithMany().HasForeignKey(ci => ci.ImageId),
+                j => j.HasOne(ci => ci.Cosmetic).WithMany().HasForeignKey(ci => ci.CosmeticId)
+            );
     }
 }
 
