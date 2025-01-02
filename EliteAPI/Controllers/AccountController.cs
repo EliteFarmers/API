@@ -47,10 +47,10 @@ public partial class AccountController(
             .Include(a => a.MinecraftAccounts)
             .ThenInclude(a => a.Badges)
             .Include(a => a.Entitlements.Where(e => !e.Deleted))
-            .ThenInclude(a => a.Product)
-            .ThenInclude(p => p.WeightStyles)
+                .ThenInclude(a => a.Product)
+                .ThenInclude(p => p.WeightStyles)
             .Include(a => a.UserSettings)
-            .ThenInclude(a => a.WeightStyle)
+                .ThenInclude(a => a.WeightStyle)
             .AsSplitQuery()
             .FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId));
 

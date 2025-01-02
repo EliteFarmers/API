@@ -19,22 +19,14 @@ public enum ProductType {
 	SubscriptionGroup = 6
 }
 
-public enum ProductCategory {
-	None = 0,
-	Misc = 1,
-	/// <summary>
-	/// Background image for the bot.
-	/// </summary>
-	WeightImage = 2,
-}
-
 public class Product {
 	[Key]
 	public ulong Id { get; set; }
 	
 	public bool Available { get; set; }
 	public ProductType Type { get; set; }
-	public ProductCategory Category { get; set; } = ProductCategory.None;
+	public List<Category> Categories { get; set; } = [];
+	public List<Tag> Tags { get; set; } = [];
 	
 	[ForeignKey("Thumbnail"), MaxLength(48)]
 	public string? ThumbnailId { get; set; }

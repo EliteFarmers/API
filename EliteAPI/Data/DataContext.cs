@@ -94,6 +94,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<WeightStyle> WeightStyles { get; set; } = null!;
     public DbSet<ProductWeightStyle> ProductWeightStyles { get; set; } = null!;
     public DbSet<Image> Images { get; set; } = null!;
+    public DbSet<Category> Categories { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;

@@ -282,11 +282,6 @@ public class ProductDto {
     public ProductType Type { get; set; }
     
     /// <summary>
-    /// Category of the product
-    /// </summary>
-    public ProductCategory Category { get; set; } = ProductCategory.None;
-    
-    /// <summary>
     /// Features of the product
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

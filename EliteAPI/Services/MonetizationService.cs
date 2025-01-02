@@ -42,7 +42,6 @@ public class MonetizationService(
 
 		if (product is null) return;
 		
-		product.Category = editProductDto.Category ?? product.Category;
 		product.Icon = editProductDto.Icon ?? product.Icon;
 		product.Description = editProductDto.Description ?? product.Description;
 		product.Price = editProductDto.Price ?? product.Price;
