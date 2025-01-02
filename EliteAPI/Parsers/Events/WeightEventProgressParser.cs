@@ -7,9 +7,9 @@ namespace EliteAPI.Parsers.Events;
 public static class WeightEventProgressParser 
 {
 	/// <summary>
-	/// Cap mushrooms attributed to Mushroom Eater perk to 99% of 72,000 per hour, then assume players farm a maxiumum of 19/24 hours 
+	/// Cap mushrooms attributed to Mushroom Eater perk to 95% of 72,000 per hour
 	/// </summary>
-	private const int MaxMushroomEaterPerHour = (int)(72_000 * 0.99 * 19 / 24);
+	private const int MaxMushroomEaterPerHour = (int)(72_000 * 0.95);
 	
 	public static void UpdateFarmingWeight(this WeightEventMember eventMember, WeightEvent weightEvent, ProfileMember? member = null) {
 		if (member is not null) {
@@ -32,7 +32,7 @@ public static class WeightEventProgressParser
 			.GroupBy(t => t.Crop!.Value)
 			.ToDictionary(g => g.Key, g => g.ToList());
 
-		var mushroomEaterMushrooms = GetMushroomEaterMushrooms(weightEvent, collectionIncreases, toolsByCrop);
+		var mushroomEaterMushrooms = GetMushroomEaterMushrooms(eventMember, collectionIncreases, toolsByCrop);
 
 		foreach (var (crop, tools) in toolsByCrop) {
 			collectionIncreases.TryGetValue(crop, out var increasedCollection);
@@ -80,7 +80,7 @@ public static class WeightEventProgressParser
 	/// <summary>
 	/// Get maximum mushrooms attributed to Mushroom Eater perk
 	/// </summary>
-	private static long GetMushroomEaterMushrooms(WeightEvent weightEvent, Dictionary<Crop, long> collectionIncreases,
+	private static long GetMushroomEaterMushrooms(WeightEventMember eventMember, Dictionary<Crop, long> collectionIncreases,
 		Dictionary<Crop, List<EventToolState>> toolsByCrop) {
 		// Get unaccounted for mushroom collection for dealing with Mushroom Eater perk
 		collectionIncreases.TryGetValue(Crop.Mushroom, out var increasedMushroom);
@@ -88,9 +88,10 @@ public static class WeightEventProgressParser
 		var farmedMushroom = toolsByCrop.TryGetValue(Crop.Mushroom, out var mushroomTools)
 			? mushroomTools.Sum(t => t.Cultivating.IncreaseFromInitial()) : 0;
 		
-		var elapsedHours = (DateTimeOffset.UtcNow - weightEvent.StartTime).TotalHours;
+		var elapsedHours = eventMember.EstimatedTimeActive / 3600.0;
 		var maxMushroomEater = (int)(elapsedHours * MaxMushroomEaterPerHour);
 		var mushroomEaterMushrooms = Math.Min(Math.Max(increasedMushroom - farmedMushroom, 0), maxMushroomEater);
+		
 		return mushroomEaterMushrooms;
 	}
 

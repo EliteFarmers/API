@@ -2,12 +2,14 @@
 using System.Text.Json;
 using Asp.Versioning;
 using AutoMapper;
+using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -156,6 +158,7 @@ public class EventController(
     /// <param name="eventId"></param>
     /// <param name="playerUuid"></param>
     /// <returns></returns>
+    [OptionalAuthorize]
     [HttpGet("member/{playerUuid}")]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -174,8 +177,13 @@ public class EventController(
         if (member is null) return NotFound("Event member not found.");
         
         var mapped = mapper.Map<EventMemberDto>(member);
-
-        return Ok(mapped);
+        
+        if (User.GetId() is { } id && (id == member.UserId.ToString() || User.IsInRole(ApiUserPolicies.Moderator))) {
+            return mapped;
+        } else {
+            mapped.Notes = null;
+            return mapped;
+        }
     }
 
     /// <summary>

@@ -24,6 +24,7 @@ public class EventMember {
 	public DateTimeOffset LastUpdated { get; set; }
 	public DateTimeOffset StartTime { get; set; }
 	public DateTimeOffset EndTime { get; set; }
+	public long EstimatedTimeActive { get; set; }
     
 	[MaxLength(128)]
 	public string? Notes { get; set; }

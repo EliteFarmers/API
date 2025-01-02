@@ -32,9 +32,12 @@ public static class EventProgressParser {
             eventMember.Status = EventMemberStatus.Inactive;
             return;
         }
-
+        
+        // Update estimated time active
+        // This isn't perfect as it uses the status from the last update
+        eventMember.UpdateEstimatedTimeActive();
         eventMember.LastUpdated = currentTime;
-
+        
         // Disqualify the member if they disabled API access during the event
         if (!member.Api.Collections || !member.Api.Inventories) {
             eventMember.Status = EventMemberStatus.Disqualified;
@@ -52,9 +55,6 @@ public static class EventProgressParser {
             
             return;
         }
-        
-        // Update the tool states and collection increases
-        // eventMember.UpdateToolsAndCollections(member);
 
         switch (@event.Type) {
             case EventType.None:
@@ -78,4 +78,11 @@ public static class EventProgressParser {
         
         context.Entry(eventMember).State = EntityState.Modified;
     }
+    
+    private static void UpdateEstimatedTimeActive(this EventMember eventMember) {
+        if (eventMember.Status != EventMemberStatus.Active) return;
+        
+        // Add difference in seconds to estimated time active
+        eventMember.EstimatedTimeActive += (long)(DateTimeOffset.UtcNow - eventMember.LastUpdated).TotalSeconds;
+    } 
 }
