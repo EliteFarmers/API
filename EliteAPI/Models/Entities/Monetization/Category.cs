@@ -20,6 +20,8 @@ public class Category {
 	
 	public int Order { get; set; }
 	
+	public bool Published { get; set; }
+	
 	public List<ProductCategory> ProductCategories { get; set; } = [];
 	public List<Product> Products { get; set; } = [];
 }

@@ -25,8 +25,11 @@ public class Product {
 	
 	public bool Available { get; set; }
 	public ProductType Type { get; set; }
+	
 	public List<Category> Categories { get; set; } = [];
+	public List<ProductCategory> ProductCategories { get; set; } = [];
 	public List<Tag> Tags { get; set; } = [];
+	public List<ProductTag> ProductTags { get; set; } = [];
 	
 	[ForeignKey("Thumbnail"), MaxLength(48)]
 	public string? ThumbnailId { get; set; }
@@ -61,6 +64,8 @@ public class Product {
 	public List<ProductWeightStyle> ProductWeightStyles { get; set; } = [];
 	
 	public List<Image> Images { get; set; } = [];
+	
+	public DateTimeOffset? ReleasedAt { get; set; }
 }
 
 public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>

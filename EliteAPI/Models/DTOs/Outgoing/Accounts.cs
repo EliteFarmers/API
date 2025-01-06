@@ -315,14 +315,29 @@ public class ProductDto {
 }
 
 public class EditProductDto {
-    public ProductCategory? Category { get; set; }
-    [MaxLength(256)]
-    public string? Icon { get; set; }
+    /// <summary>
+    /// Description of the product
+    /// </summary>
     [MaxLength(1024)]
     public string? Description { get; set; }
     
+    /// <summary>
+    /// If the product is available for purchase
+    /// </summary>
     public bool? Available { get; set; }
     
+    /// <summary>
+    /// Product price in USD cents
+    /// </summary>
     public int? Price { get; set; }
+    
+    /// <summary>
+    /// Features of the product
+    /// </summary>
     public UnlockedProductFeaturesDto? Features { get; set; }
+    
+    /// <summary>
+    /// Unix seconds timestamp of release date
+    /// </summary>
+    public string? ReleasedAt { get; set; }
 }

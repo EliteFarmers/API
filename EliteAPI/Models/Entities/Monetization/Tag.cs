@@ -20,6 +20,8 @@ public class Tag {
 	
 	public int Order { get; set; }
 	
+	public bool Published { get; set; }
+	
 	public List<ProductTag> ProductTags { get; set; } = [];
 	public List<Product> Products { get; set; } = [];
 }
@@ -31,7 +33,7 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 		builder
 			.HasMany(e => e.Products)
 			.WithMany(e => e.Tags)
-			.UsingEntity<ProductCategory>();
+			.UsingEntity<ProductTag>();
 
 		builder.HasIndex(p => p.Slug).IsUnique();
 	}

@@ -1118,6 +1118,42 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Published")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.CosmeticImage", b =>
                 {
                     b.Property<int>("CosmeticId")
@@ -1181,9 +1217,6 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("Available")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Category")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
@@ -1207,6 +1240,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Price")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -1226,6 +1262,26 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductCategory", b =>
+                {
+                    b.Property<decimal>("ProductId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProductId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("Order");
+
+                    b.ToTable("ProductCategories");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductImage", b =>
                 {
                     b.Property<decimal>("ProductId")
@@ -1239,6 +1295,26 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ImageId");
 
                     b.ToTable("ProductImage");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductTag", b =>
+                {
+                    b.Property<decimal>("ProductId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProductId", "TagId");
+
+                    b.HasIndex("Order");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("ProductTags");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductWeightStyle", b =>
@@ -1262,6 +1338,42 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("WeightStyleId");
 
                     b.ToTable("ProductCosmetics");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Published")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.WeightStyle", b =>
@@ -2350,6 +2462,25 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Thumbnail");
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductCategory", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Monetization.Category", "Category")
+                        .WithMany("ProductCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Models.Entities.Monetization.Product", "Product")
+                        .WithMany("ProductCategories")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductImage", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Images.Image", "Image")
@@ -2367,6 +2498,25 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Image");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductTag", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Monetization.Product", "Product")
+                        .WithMany("ProductTags")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Models.Entities.Monetization.Tag", "Tag")
+                        .WithMany("ProductTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductWeightStyle", b =>
@@ -2555,9 +2705,23 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Category", b =>
+                {
+                    b.Navigation("ProductCategories");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
                 {
+                    b.Navigation("ProductCategories");
+
+                    b.Navigation("ProductTags");
+
                     b.Navigation("ProductWeightStyles");
+                });
+
+            modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Tag", b =>
+                {
+                    b.Navigation("ProductTags");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.WeightStyle", b =>

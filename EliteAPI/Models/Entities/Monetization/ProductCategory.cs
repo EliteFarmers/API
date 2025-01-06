@@ -6,7 +6,7 @@ namespace EliteAPI.Models.Entities.Monetization;
 
 public class ProductCategory {
 	[ForeignKey(nameof(Product))]
-	public int ProductId { get; set; }
+	public ulong ProductId { get; set; }
 	public Product Product { get; set; } = null!;
 
 	[ForeignKey(nameof(Category))]
@@ -21,5 +21,6 @@ public class ProductCategoryEntityConfiguration : IEntityTypeConfiguration<Produ
 	public void Configure(EntityTypeBuilder<ProductCategory> builder)
 	{
 		builder.HasKey(pi => new { pi.ProductId, pi.CategoryId });
+		builder.HasIndex(pi => pi.Order);
 	}
 }
