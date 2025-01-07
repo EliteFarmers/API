@@ -6,12 +6,9 @@ using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing.Shop;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Monetization;
-using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Quartz;
-using StackExchange.Redis;
 
 namespace EliteAPI.Controllers.Shop;
 
@@ -20,13 +17,8 @@ namespace EliteAPI.Controllers.Shop;
 [Route("/v{version:apiVersion}/shop/[controller]")]
 public class CategoryController(
 	DataContext context,
-	IMonetizationService monetizationService,
-	IConnectionMultiplexer redis,
-	IObjectStorageService objectStorageService,
-	ISchedulerFactory schedulerFactory,
 	IMapper mapper)
 	: ControllerBase {
-
 
 	/// <summary>
 	/// Get all shop categories
@@ -38,9 +30,10 @@ public class CategoryController(
 	[Route("/v{version:apiVersion}/shop/categories")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<List<ShopCategoryDto>>> GetCategories() {
-		if (!User.IsInRole(ApiUserPolicies.Moderator)) {
+		if (!User.IsInRole(ApiUserPolicies.Admin) && !User.IsInRole(ApiUserPolicies.Moderator)) {
 			return await context.Categories
 				.OrderBy(c => c.Order)
+				.Where(c => c.Published)
 				.Select(c => mapper.Map<ShopCategoryDto>(c))
 				.ToListAsync();
 		}
@@ -60,14 +53,17 @@ public class CategoryController(
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
 	public async Task<ActionResult<ShopCategoryWithProductsDto>> GetCategoryWithProducts(string id) {
-		IQueryable<ProductCategory> query = context.ProductCategories
-			.Include(c => c.Product);
+		IQueryable<Category> query = context.Categories
+			.Include(c => c.ProductCategories)
+			.Include(c => c.Products);
 
-		if (!User.IsInRole(ApiUserPolicies.Moderator)) {
-			query = query.Where(c => c.Category.Published);
+		if (!User.IsInRole(ApiUserPolicies.Moderator) && !User.IsInRole(ApiUserPolicies.Admin)) {
+			query = query.Where(c => c.Published);
 		}
 		
-		var category = await query.FirstOrDefaultAsync(c => c.CategoryId.ToString() == id || c.Category.Slug == id);
+		var category = int.TryParse(id, out var categoryId)
+			? await query.FirstOrDefaultAsync(c => c.Id == categoryId)
+			: await query.FirstOrDefaultAsync(c => c.Slug == id);
 		
 		if (category is null) {
 			return NotFound("Category not found");
@@ -128,7 +124,7 @@ public class CategoryController(
 		category.Description = dto.Description ?? category.Description;
 		category.Published = dto.Published ?? category.Published;
 		
-		if (dto.Slug is not null) {
+		if (dto.Slug is not null && dto.Slug != category.Slug) {
 			var existing = await context.Categories
 				.AsNoTracking()
 				.FirstOrDefaultAsync(c => c.Slug == dto.Slug);
