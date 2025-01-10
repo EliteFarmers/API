@@ -29,19 +29,31 @@ public class CategoryController(
 	[Route("/shop/categories")]
 	[Route("/v{version:apiVersion}/shop/categories")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<List<ShopCategoryDto>>> GetCategories() {
-		if (!User.IsInRole(ApiUserPolicies.Admin) && !User.IsInRole(ApiUserPolicies.Moderator)) {
+	public async Task<ActionResult<List<ShopCategoryDto>>> GetCategories([FromQuery] bool includeProducts = false) {
+		var admin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
+
+		if (includeProducts) {
+			var results = await context.Categories
+				.Include(c => c.Products.Where(p => admin || p.Available))
+				.ThenInclude(product => product.ProductCategories)
+				.OrderBy(c => c.Order)
+				.Where(c => admin || c.Published)
+				.ToListAsync();
+			
+			foreach (var category in results) {
+				category.Products = category.Products
+					.OrderBy(p => p.ProductCategories.First(pc => pc.CategoryId == category.Id).Order)
+					.ToList();
+			}
+			
+			return mapper.Map<List<ShopCategoryDto>>(results);
+		} else {
 			return await context.Categories
 				.OrderBy(c => c.Order)
-				.Where(c => c.Published)
+				.Where(c => admin || c.Published)
 				.Select(c => mapper.Map<ShopCategoryDto>(c))
 				.ToListAsync();
 		}
-
-		return await context.Categories
-			.OrderBy(c => c.Order)
-			.Select(c => mapper.Map<ShopCategoryDto>(c))
-			.ToListAsync();
 	}
 	
 	/// <summary>
@@ -52,14 +64,12 @@ public class CategoryController(
 	[OptionalAuthorize]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
-	public async Task<ActionResult<ShopCategoryWithProductsDto>> GetCategoryWithProducts(string id) {
-		IQueryable<Category> query = context.Categories
-			.Include(c => c.ProductCategories)
-			.Include(c => c.Products);
-
-		if (!User.IsInRole(ApiUserPolicies.Moderator) && !User.IsInRole(ApiUserPolicies.Admin)) {
-			query = query.Where(c => c.Published);
-		}
+	public async Task<ActionResult<ShopCategoryDto>> GetCategoryWithProducts(string id) {
+		var admin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
+		
+		var query = context.Categories
+			.Include(c => c.Products.Where(p => admin || p.Available))
+			.Where(c => admin || c.Published);
 		
 		var category = int.TryParse(id, out var categoryId)
 			? await query.FirstOrDefaultAsync(c => c.Id == categoryId)
@@ -69,9 +79,11 @@ public class CategoryController(
 			return NotFound("Category not found");
 		}
 		
-		var dto = mapper.Map<ShopCategoryWithProductsDto>(category);
+		category.Products = category.Products
+			.OrderBy(p => p.ProductCategories.First(pc => pc.CategoryId == category.Id).Order)
+			.ToList();
 		
-		return dto;
+		return mapper.Map<ShopCategoryDto>(category);
 	}
 	
 	/// <summary>

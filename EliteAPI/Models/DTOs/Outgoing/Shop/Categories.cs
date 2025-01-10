@@ -9,9 +9,6 @@ public class ShopCategoryDto {
 	public string? Description { get; set; }
 	public int Order { get; set; }
 	public bool Published { get; set; }
-}
-
-public class ShopCategoryWithProductsDto : ShopCategoryDto {
 	public List<ProductDto> Products { get; set; } = [];
 }
 
