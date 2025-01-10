@@ -42,11 +42,23 @@ public class MonetizationService(
 
 		if (product is null) return;
 		
-		product.Category = editProductDto.Category ?? product.Category;
-		product.Icon = editProductDto.Icon ?? product.Icon;
 		product.Description = editProductDto.Description ?? product.Description;
 		product.Price = editProductDto.Price ?? product.Price;
+		
+		if (!product.Available && editProductDto.Available is true) {
+			product.ReleasedAt = DateTimeOffset.UtcNow;
+		}
+		
 		product.Available = editProductDto.Available ?? product.Available;
+
+		if (!string.IsNullOrWhiteSpace(editProductDto.ReleasedAt) && long.TryParse(editProductDto.ReleasedAt, out var unixTime)) {
+			try {
+				var releasedAt = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+				product.ReleasedAt = releasedAt;
+			} catch (Exception e) {
+				logger.LogError(e, "Failed to parse releasedAt for product {ProductId}", productId);
+			}
+		} 
 		
 		if (editProductDto.Features is not null) {
 			product.Features.MaxJacobLeaderboards = editProductDto.Features.MaxJacobLeaderboards ?? product.Features.MaxJacobLeaderboards;

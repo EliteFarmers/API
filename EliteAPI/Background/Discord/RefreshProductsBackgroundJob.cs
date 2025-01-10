@@ -73,7 +73,6 @@ public class RefreshProductsBackgroundJob(
                 context.Products.Add(new Product {
                     Id = id,
                     Type = discordProduct.Type,
-                    Category = ProductCategory.None,
                     Name = discordProduct.Name,
                     Slug = discordProduct.Slug,
                     Flags = discordProduct.Flags,

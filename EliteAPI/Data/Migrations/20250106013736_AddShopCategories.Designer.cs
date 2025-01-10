@@ -12,6 +12,7 @@ using EliteAPI.Models.Entities.Monetization;
 using HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -20,9 +21,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250106013736_AddShopCategories")]
+    partial class AddShopCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -545,9 +548,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<DateTimeOffset>("EndTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("EstimatedTimeActive")
-                        .HasColumnType("bigint");
 
                     b.Property<decimal>("EventId")
                         .HasColumnType("numeric(20,0)");
