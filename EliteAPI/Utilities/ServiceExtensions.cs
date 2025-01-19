@@ -135,18 +135,40 @@ public static class ServiceExtensions
         services.AddScoped<DiscordBotOnlyFilter>();
     }
 
-    public static void AddEliteRedisCache(this IServiceCollection services)
+    public static IServiceCollection AddEliteRedisCache(this IServiceCollection services)
     {
         var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6380";
-        var multiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
-        {
+        var config = new ConfigurationOptions {
             EndPoints = { redisConnection },
             Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD"),
             AbortOnConnectFail = false,
             ConnectRetry = 5
-        });
+        };
+        var multiplexer = ConnectionMultiplexer.Connect(config);
         
-        services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+        services
+            .AddSingleton<IConnectionMultiplexer>(multiplexer)
+            .AddOutputCache(options => {
+                options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+                
+                options.AddPolicy(CachePolicy.Hours, policy => {
+                    policy.Cache();
+                    policy.Expire(TimeSpan.FromHours(4));
+                    policy.Tag("hours");
+                });
+                
+                options.AddPolicy(CachePolicy.NoCache, policy => {
+                    policy.NoCache();
+                });
+            }).AddStackExchangeRedisOutputCache(options => {
+                options.Configuration = config.ToString();
+                options.InstanceName = "EliteAPI-OutputCache";
+            }).AddStackExchangeRedisCache(options => {
+                options.Configuration = config.ToString();
+                options.InstanceName = "EliteAPI";
+            });
+        
+        return services;
     }
     
     public static void RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
@@ -231,4 +253,9 @@ public static class ServiceExtensions
         // Check if the IP address is from the Docker network or local.
         return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.") || ip.MapToIPv4().ToString().StartsWith("172.");
     }
+}
+
+public static class CachePolicy {
+    public const string NoCache = "NoCache";
+    public const string Hours = "Hours";
 }

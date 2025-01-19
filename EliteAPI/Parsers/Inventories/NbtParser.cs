@@ -1,14 +1,14 @@
 ﻿using System.IO.Compression;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Utilities;
 using McProtoNet.NBT;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EliteAPI.Parsers.Inventories; 
 
 public static class NbtParser {
 
     public static async Task<NbtTag?> DecodeNbt(string? data) {
-        if (data is null || data.IsNullOrEmpty()) return null;
+        if (data is null || string.IsNullOrEmpty(data)) return null;
         
         try {
             var decodedInventory = Convert.FromBase64String(data);

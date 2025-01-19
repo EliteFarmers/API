@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net8</TargetFramework>
+		<TargetFramework>net9</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>920c60f9-4ab4-43bc-89e4-bfd2c78143a3</UserSecretsId>
@@ -9,33 +9,44 @@
 		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
+		<RazorLangVersion>8.0</RazorLangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
-		<PackageReference Include="AWSSDK.S3" Version="3.7.405.9" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.412.2" />
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
-		<PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.10" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
+		<PackageReference Include="FastEndpoints" Version="5.33.0" />
+		<PackageReference Include="FastEndpoints.Generator" Version="5.33.0">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Npgsql" Version="8.0.5" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+		<PackageReference Include="FastEndpoints.Security" Version="5.33.0" />
+		<PackageReference Include="FastEndpoints.Swagger" Version="5.33.0" />
+		<PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="9.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1" />
+		<PackageReference Include="Npgsql" Version="9.0.2" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
 		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.6.0-rc.1" />
-		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.0" />
 		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1" />
 		<PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
-		<PackageReference Include="StackExchange.Redis" Version="2.8.16" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.9.0" />
-		<PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="8.102.2.4" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.0.1" />
+		<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
+		<PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.7" />
 	</ItemGroup>
 
 	<ItemGroup>

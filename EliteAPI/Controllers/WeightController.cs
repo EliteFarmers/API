@@ -154,33 +154,33 @@ public class WeightController(
         return Ok(mapped);
     }
     
-    /// <summary>
-    /// Get crop weight constants
-    /// </summary>
-    /// <remarks>Use /weights/all instead</remarks>
-    /// <returns></returns>
-    [Obsolete("Use /weights/all instead")]
-    [HttpGet]
-    [Route("/[controller]s")]
-    [Route("/v{version:apiVersion}/[controller]s")]
-    [DisableRateLimiting]
-    [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public ActionResult<Dictionary<string, double>> GetCropWeights() {
-        var rawWeights = _weightSettings.CropsPerOneWeight;
-        
-        var weights = new Dictionary<string, double>();
-        
-        foreach (var (key, value) in rawWeights) {
-            var formattedKey = FormatUtils.GetFormattedCropName(key);
-            
-            if (formattedKey is null) continue;
-            
-            weights.Add(formattedKey, value);
-        }
-
-        return Ok(weights);
-    }
+    // /// <summary>
+    // /// Get crop weight constants
+    // /// </summary>
+    // /// <remarks>Use /weights/all instead</remarks>
+    // /// <returns></returns>
+    // [Obsolete("Use /weights/all instead")]
+    // [HttpGet]
+    // [Route("/[controller]s")]
+    // [Route("/v{version:apiVersion}/[controller]s")]
+    // [DisableRateLimiting]
+    // [ResponseCache(Duration = 60 * 60 * 24, Location = ResponseCacheLocation.Any)]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // public ActionResult<Dictionary<string, double>> GetCropWeights() {
+    //     var rawWeights = _weightSettings.CropsPerOneWeight;
+    //     
+    //     var weights = new Dictionary<string, double>();
+    //     
+    //     foreach (var (key, value) in rawWeights) {
+    //         var formattedKey = FormatUtils.GetFormattedCropName(key);
+    //         
+    //         if (formattedKey is null) continue;
+    //         
+    //         weights.Add(formattedKey, value);
+    //     }
+    //
+    //     return Ok(weights);
+    // }
     
     /// <summary>
     /// Get all farming weight constants

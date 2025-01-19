@@ -1,9 +1,13 @@
+using FastEndpoints;
 using System.Net;
+using System.Text.Json;
+using EliteAPI;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Utilities;
+using FastEndpoints.Swagger;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -11,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using Scalar.AspNetCore;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 DotNetEnv.Env.Load();
@@ -19,10 +24,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterEliteConfigFiles();
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(o => {
+    o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+
+builder.Services
+    .AddEliteRedisCache()
+    .AddFastEndpoints(o => {
+        o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All;
+    });
+
+builder.Services.AddIdempotency();
+
+builder.Services.SwaggerDocument(o => {
+    o.DocumentSettings = doc => {
+        doc.MarkNonNullablePropsAsRequired();
+    };
+});
+
 builder.Services.AddEliteServices();
 builder.Services.AddEliteAuthentication(builder.Configuration);
 builder.Services.AddEliteControllers();
-builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
@@ -61,8 +83,10 @@ builder.Services.AddOpenTelemetry()
         x.AddView("http.server.request.duration",
             new ExplicitBucketHistogramConfiguration
             {
-                Boundaries = new[] { 0, 0.005, 0.01, 0.025, 0.05,
-                    0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
+                Boundaries = [
+                    0, 0.005, 0.01, 0.025, 0.05,
+                    0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10
+                ]
             });
         
         x.AddMeter("hypixel.api");
@@ -78,8 +102,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 });
 
 var app = builder.Build();
-app.MapPrometheusScrapingEndpoint();
 
+app.UseOutputCache();
+
+app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
 app.UseResponseCompression();
 app.UseRouting();
@@ -89,13 +115,27 @@ app.UseSwagger(opt => {
     opt.RouteTemplate = "{documentName}/swagger.json";
 });
 
+app.UseOpenApi(c => c.Path = "/openapi/{documentName}.json");
+app.MapScalarApiReference();
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseFastEndpoints(o => {
+    o.Binding.ReflectionCache.AddFromEliteAPI();
+    o.Binding.UsePropertyNamingPolicy = true;
+    o.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+    o.Endpoints.Configurator = endpoints => {
+        if (endpoints.IdempotencyOptions is not null) {
+            endpoints.IdempotencyOptions.CacheDuration = TimeSpan.FromMinutes(1);
+        } 
+    };
+});
+// app.MapControllers();
 
 app.Use(async (context, next) => {
     var tagsFeature = context.Features.Get<IHttpMetricsTagsFeature>();

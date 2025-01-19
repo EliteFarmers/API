@@ -2,7 +2,6 @@
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EliteAPI.Parsers.Farming; 
 
@@ -54,7 +53,7 @@ public static class FarmingToolParser {
         foreach (var item in items) {
             var uuid = item.Uuid;
             
-            if (uuid is null || item.SkyblockId is null || uuid.IsNullOrEmpty()) continue;
+            if (string.IsNullOrEmpty(uuid) || item.SkyblockId is null) continue;
 
             var counter = item.ExtractCounter();
             var cultivating = item.ExtractCultivating();
@@ -88,7 +87,7 @@ public static class FarmingToolParser {
         foreach (var item in items)
         {
             var uuid = item.Uuid;
-            if (uuid is null || uuid.IsNullOrEmpty()) continue;
+            if (uuid is null || string.IsNullOrEmpty(uuid)) continue;
             
             // Skip if the item is already in the dictionary
             if (tools.ContainsKey(uuid)) continue;
