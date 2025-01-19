@@ -41,7 +41,7 @@ public class WeightController(
     public async Task<ActionResult<FarmingWeightAllProfilesDto>> GetPlayersProfilesWeight(string playerUuid, [FromQuery] bool collections = false)
     {
         var uuid = playerUuid.Replace("-", "");
-        await memberService.UpdatePlayerIfNeeded(uuid);
+        await memberService.UpdatePlayerIfNeeded(uuid, 3);
 
         var members = await context.ProfileMembers
             .AsNoTracking()
