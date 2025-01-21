@@ -10,7 +10,7 @@ internal sealed class GetPlayerRankEndpoint(
 {
 	
 	public override void Configure() {
-		Get("/leaderboard/rank/{PlayerUuid}/{ProfileUuid}");
+		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
 

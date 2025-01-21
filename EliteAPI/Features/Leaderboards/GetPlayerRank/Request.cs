@@ -27,11 +27,13 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 }
 
 internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest> {
-	public GetPlayerRankRequestValidator(IOptions<ConfigLeaderboardSettings> lbSettings) {
+	public GetPlayerRankRequestValidator() {
+		Include(new PlayerProfileUuidRequestValidator());
+		var lbSettings = Resolve<IOptions<ConfigLeaderboardSettings>>();
 		RuleFor(x => x.Leaderboard)
 			.NotEmpty()
 			.WithMessage("Leaderboard is required")
-			.When(x => lbSettings.Value.HasLeaderboard(x.Leaderboard))
+			.Must(lbSettings.Value.HasLeaderboard)
 			.WithMessage("Leaderboard does not exist");
 	}
 }

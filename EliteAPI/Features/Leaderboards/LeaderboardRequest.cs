@@ -13,7 +13,8 @@ public class LeaderboardRequest {
 }
 
 internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest> {
-	public LeaderboardRequestValidator(IOptions<ConfigLeaderboardSettings> lbSettings) {
+	public LeaderboardRequestValidator() {
+		var lbSettings = Resolve<IOptions<ConfigLeaderboardSettings>>();
 		RuleFor(x => x.Leaderboard)
 			.NotEmpty()
 			.WithMessage("Leaderboard is required")

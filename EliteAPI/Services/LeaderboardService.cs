@@ -659,8 +659,7 @@ public class LeaderboardService(
                 return null;
             }
             
-            // TODO: Add cooldown override
-            await memberService.UpdateProfileMemberIfNeeded(member.Id);
+            await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 2.5f);
             
             memberId = member.Id.ToString();
         }

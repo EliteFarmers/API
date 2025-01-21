@@ -13,6 +13,7 @@ public class PlayerProfileUuidRequest : PlayerUuidRequest {
 
 internal sealed class PlayerProfileUuidRequestValidator : Validator<PlayerProfileUuidRequest> {
 	public PlayerProfileUuidRequestValidator() {
+		Include(new PlayerUuidRequestValidator());
 		RuleFor(x => x.ProfileUuid)
 			.NotEmpty()
 			.WithMessage("PlayerUuid is required")

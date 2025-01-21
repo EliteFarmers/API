@@ -23,6 +23,8 @@ public class LeaderboardSliceRequest : LeaderboardRequest {
 
 internal sealed class LeaderboardSliceRequestValidator : Validator<LeaderboardSliceRequest> {
 	public LeaderboardSliceRequestValidator(IOptions<ConfigLeaderboardSettings> lbSettings) {
+		Include(new LeaderboardRequestValidator());
+		
 		RuleFor(x => x.Offset)
 			.GreaterThanOrEqualTo(0)
 			.WithMessage("Offset must be greater than or equal to 0");

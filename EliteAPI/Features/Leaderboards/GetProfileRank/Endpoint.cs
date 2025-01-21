@@ -9,7 +9,7 @@ internal sealed class GetProfileRankEndpoint(
 	) : Endpoint<GetProfileRankRequest, LeaderboardPositionDto>
 {
 	public override void Configure() {
-		Get("/leaderboard/rank/{ProfileUuid}");
+		Get("/leaderboard/rank/{Leaderboard}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
 

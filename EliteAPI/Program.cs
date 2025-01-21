@@ -121,6 +121,8 @@ app.UseAuthorization();
 app.UseOutputCache();
 app.MapControllers();
 
+app.UseDefaultExceptionHandler();
+
 app.UseFastEndpoints(o => {
     o.Binding.ReflectionCache.AddFromEliteAPI();
     o.Binding.UsePropertyNamingPolicy = true;
