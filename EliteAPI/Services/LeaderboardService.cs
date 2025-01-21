@@ -15,7 +15,9 @@ public class LeaderboardService(
     DataContext dataContext, 
     IConnectionMultiplexer redis,
     IOptions<ConfigLeaderboardSettings> lbSettings,
-    IBackgroundTaskQueue taskQueue
+    IBackgroundTaskQueue taskQueue,
+    IMemberService memberService,
+    AutoMapper.IMapper mapper
 ) : ILeaderboardService 
 {
     private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
@@ -639,6 +641,55 @@ public class LeaderboardService(
         
         var db = redis.GetDatabase();
         db.SortedSetAddAsync($"lb:{leaderboardId}", memberId, score, When.Exists, CommandFlags.FireAndForget);
+    }
+    
+    public async Task<LeaderboardPositionDto?> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId, bool includeUpcoming, int atRank, CancellationToken c) {
+        if (!TryGetLeaderboardSettings(leaderboardId, out var lb)) return null;
+        
+        var memberId = profileId;
+
+        // Set the memberId to the profile member ID if the leaderboard is not a profile leaderboard
+        if (!lb.Profile) {
+            var member = await dataContext.ProfileMembers
+                .Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
+                .Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
+                .FirstOrDefaultAsync(cancellationToken: c);
+
+            if (member is null || member.Id == Guid.Empty) {
+                return null;
+            }
+            
+            // TODO: Add cooldown override
+            await memberService.UpdateProfileMemberIfNeeded(member.Id);
+            
+            memberId = member.Id.ToString();
+        }
+
+        var (position, score) = await GetLeaderboardPositionAndScore(leaderboardId, memberId);
+        List<LeaderboardEntry>? upcomingPlayers = null;
+        
+        var rank = atRank == -1 ? position : Math.Min(Math.Max(1, atRank), lb.Limit + 1);
+        rank = position != -1 ? Math.Min(position, rank) : rank;
+
+        if (includeUpcoming && rank == -1) {
+            upcomingPlayers = await GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
+        } else if (includeUpcoming && rank > 1) {
+            upcomingPlayers = await GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
+                Math.Min(rank - 1, 5));
+        }
+
+        // Reverse the list so that upcoming players are in ascending order
+        upcomingPlayers?.Reverse();
+        var upcoming = mapper.Map<List<LeaderboardEntryDto>>(upcomingPlayers);
+
+        var result = new LeaderboardPositionDto {
+            Rank = position,
+            Amount = score,
+            UpcomingRank = rank == -1 ? lb.Limit : rank - 1,
+            UpcomingPlayers = upcoming
+        };
+
+        return result;
     }
 }
 

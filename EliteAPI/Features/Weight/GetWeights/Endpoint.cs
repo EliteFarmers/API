@@ -6,20 +6,21 @@ using Microsoft.Extensions.Options;
 namespace EliteAPI.Features.Weight.GetWeights;
 
 [Obsolete("Use /weights/all instead")]
-sealed class GetWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> weightSettings) : EndpointWithoutRequest<Dictionary<string, double>> {
+internal sealed class GetWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> weightSettings) : EndpointWithoutRequest<Dictionary<string, double>> {
 	
 	private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
 	
 	public override void Configure() {
 		Get("/weights");
 		AllowAnonymous();
+		Version(0, deprecateAt: 1);
 
 		Summary(s => {
 			s.Summary = "Get crop weight constants";
 			s.Description = "Get crop weight constants";
 		});
 
-		Options(opt => opt.CacheOutput(o => o.Expire(TimeSpan.FromMinutes(2))));
+		Options(opt => opt.CacheOutput(CachePolicy.Hours));
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {

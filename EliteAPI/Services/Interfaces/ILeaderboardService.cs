@@ -1,4 +1,5 @@
-﻿using EliteAPI.Configuration.Settings;
+﻿using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
 
 namespace EliteAPI.Services.Interfaces; 
@@ -13,6 +14,7 @@ public interface ILeaderboardService {
     public Task RemoveMemberFromAllLeaderboards(string memberId);
     public Task RemoveMemberFromLeaderboards(IEnumerable<string> leaderboardIds, string memberId);
     public Task FetchLeaderboard(string leaderboardId);
+    public Task<LeaderboardPositionDto?> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId, bool includeUpcoming, int atRank, CancellationToken c);
     
-    public bool TryGetLeaderboardSettings(string leaderboardId, out Leaderboard? settings, bool includeProfile = true);
+    public bool TryGetLeaderboardSettings(string leaderboardId, [NotNullWhen(true)] out Leaderboard? settings, bool includeProfile = true);
 }

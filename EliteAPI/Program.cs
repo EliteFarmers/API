@@ -103,20 +103,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 
 var app = builder.Build();
 
-app.UseOutputCache();
-
 app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
 app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
 
-app.UseSwagger(opt => {
-    opt.RouteTemplate = "{documentName}/swagger.json";
-});
-
 app.UseOpenApi(c => c.Path = "/openapi/{documentName}.json");
-app.MapScalarApiReference();
+app.MapScalarApiReference("/");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -124,10 +118,15 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseOutputCache();
+app.MapControllers();
+
 app.UseFastEndpoints(o => {
     o.Binding.ReflectionCache.AddFromEliteAPI();
     o.Binding.UsePropertyNamingPolicy = true;
     o.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    o.Versioning.Prefix = "v";
+    o.Versioning.PrependToRoute = true;
 
     o.Endpoints.Configurator = endpoints => {
         if (endpoints.IdempotencyOptions is not null) {
@@ -135,7 +134,6 @@ app.UseFastEndpoints(o => {
         } 
     };
 });
-// app.MapControllers();
 
 app.Use(async (context, next) => {
     var tagsFeature = context.Features.Get<IHttpMetricsTagsFeature>();

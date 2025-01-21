@@ -15,7 +15,7 @@
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
-		<PackageReference Include="AWSSDK.S3" Version="3.7.412.2" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.405.9" />
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
 		<PackageReference Include="FastEndpoints" Version="5.33.0" />
 		<PackageReference Include="FastEndpoints.Generator" Version="5.33.0">
