@@ -23,13 +23,13 @@ public class MemberService(
 {
     private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
-    public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {
+    public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, float cooldownMultiplier = 1) {
         await UpdatePlayerIfNeeded(playerUuid);
 
         return context.ProfileMembers.Where(p => p.PlayerUuid == playerUuid);
     }
     
-    public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid) {
+    public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid, float cooldownMultiplier = 1) {
         await UpdatePlayerIfNeeded(playerUuid);
 
         var now = DateTimeOffset.UtcNow;
@@ -62,7 +62,7 @@ public class MemberService(
         return await ProfileMemberQuery(uuid);
     }
 
-    public async Task UpdatePlayerIfNeeded(string playerUuid) {
+    public async Task UpdatePlayerIfNeeded(string playerUuid, float cooldownMultiplier = 1) {
         var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
         if (account is null) return;
         
@@ -72,7 +72,7 @@ public class MemberService(
             Profiles = account.ProfilesLastUpdated
         };
 
-        await RefreshNeededData(lastUpdated, account);
+        await RefreshNeededData(lastUpdated, account, cooldownMultiplier);
     }  
     
     public async Task UpdateProfileMemberIfNeeded(Guid memberId) {
@@ -96,21 +96,21 @@ public class MemberService(
         await RefreshNeededData(lastUpdated, account);
     }
     
-    private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account) {
+    private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account, float cooldownMultiplier = 1) {
         var playerUuid = lastUpdated.PlayerUuid;
         var db = redis.GetDatabase();
         
         var updatePlayer = false;
         var updateProfiles = false;
         
-        if (lastUpdated.Profiles.OlderThanSeconds(_coolDowns.SkyblockProfileCooldown) 
-            && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) 
+        if (lastUpdated.Profiles.OlderThanSeconds((int) (_coolDowns.SkyblockProfileCooldown * cooldownMultiplier))
+            && !await db.KeyExistsAsync($"profile:{playerUuid}:updating"))
         {
             db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(60));
             updateProfiles = true;
         }
         
-        if (lastUpdated.PlayerData.OlderThanSeconds(_coolDowns.HypixelPlayerDataCooldown) 
+        if (lastUpdated.PlayerData.OlderThanSeconds((int) (_coolDowns.HypixelPlayerDataCooldown * cooldownMultiplier)) 
             && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) 
         {
             db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(60));
