@@ -16,7 +16,7 @@ internal sealed class DiscordIdRequestValidator : Validator<DiscordIdRequest> {
 		RuleFor(x => x.DiscordId)
 			.NotEmpty()
 			.WithMessage("DiscordId is required")
-			.GreaterThan(0)
-			.WithMessage("DiscordId must be greater than 0");
+			.GreaterThan(10_000_000_000_000_000)
+			.WithMessage("DiscordId must be at least 17 digits long and positive");
 	}
 }
