@@ -1,3 +1,4 @@
+global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Models.Entities.Accounts.ApiUser>;
 using FastEndpoints;
 using System.Net;
 using System.Text.Json;
