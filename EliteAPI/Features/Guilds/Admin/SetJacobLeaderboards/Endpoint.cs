@@ -4,26 +4,26 @@ using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Guilds.Admin.SetEvents;
+namespace EliteAPI.Features.Guilds.Admin.SetJacobLeaderboards;
 
-internal sealed class SetEventFeatureEndpoint(
+internal sealed class SetJacobFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context)
-	: Endpoint<SetEventFeatureRequest>
+	: Endpoint<SetJacobFeatureRequest>
 {
 	public override void Configure() {
-		Post("/guild/{DiscordId}/events");
+		Post("/guild/{DiscordId}/jacob");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
 		Description(e => e.ClearDefaultAccepts());
 		
 		Summary(s => {
-			s.Summary = "Modify guild event permissions";
+			s.Summary = "Modify guild jacob permissions";
 		});
 	}
 
-	public override async Task HandleAsync(SetEventFeatureRequest request, CancellationToken c) 
+	public override async Task HandleAsync(SetJacobFeatureRequest request, CancellationToken c) 
 	{
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
@@ -31,9 +31,9 @@ internal sealed class SetEventFeatureEndpoint(
 			return;
 		}
 
-		guild.Features.EventSettings ??= new GuildEventSettings();
-		guild.Features.EventSettings.MaxMonthlyEvents = request.Max ?? guild.Features.EventSettings.MaxMonthlyEvents;
-		guild.Features.EventsEnabled = request.Enable ?? guild.Features.EventsEnabled;
+		guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
+		guild.Features.JacobLeaderboard.MaxLeaderboards = request.Max ?? guild.Features.JacobLeaderboard.MaxLeaderboards;
+		guild.Features.JacobLeaderboardEnabled = request.Enable ?? guild.Features.JacobLeaderboardEnabled;
 
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
