@@ -1,6 +1,7 @@
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Incoming;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Badges.GetBadges;
@@ -18,6 +19,8 @@ internal sealed class GetBadgesEndpoint(
 		Summary(s => {
 			s.Summary = "Get all badges";
 		});
+		
+		Description(x => x.AutoTagOverride("Badge"));
 		
 		Options(o => {
 			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(2)).Tag("badges"));
