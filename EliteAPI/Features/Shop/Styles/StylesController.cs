@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
-namespace EliteAPI.Controllers.Shop;
+namespace EliteAPI.Features.Shop.Styles;
 
 [ApiController, ApiVersion(1.0)]
 [Route("/product/style")]
