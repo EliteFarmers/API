@@ -16,7 +16,7 @@ internal sealed class UploadCurrentContestsEndpoint(
     IConnectionMultiplexer cache)
 	: Endpoint<UploadCurrentContestsRequest>
 {
-    public const int RequiredIdenticalContestSubmissions = 5;
+    private const int RequiredIdenticalContestSubmissions = 5;
     
 	public override void Configure() {
 		Post("/contests/at/now");
@@ -25,7 +25,16 @@ internal sealed class UploadCurrentContestsEndpoint(
 		Summary(s => {
 			s.Summary = "Upload upcoming contests for the current SkyBlock year";
 			s.Description = "Data used and provided by <see href=\"https://github.com/hannibal002/SkyHanni/\">SkyHanni</see> to display upcoming contests in-game.";
-		});
+            s.ExampleRequest = new UploadCurrentContestsRequest() {
+                Contests = new Dictionary<long, List<string>> {
+                    { 1738390500, ["Cactus", "Carrot", "Melon"] },
+                    { 1738394100, ["Mushroom", "Nether Wart", "Pumpkin"] },
+                    { 1738397700, ["Cocoa Beans", "Potato", "Wheat"] },
+                    { 1738401300, ["Cactus", "Cocoa Beans", "Mushroom"] },
+                    { 1738404900, ["Carrot", "Nether Wart", "Wheat"] }
+                }
+            };
+        });
 	}
 
 	public override async Task HandleAsync(UploadCurrentContestsRequest request, CancellationToken ct) {
