@@ -2,6 +2,7 @@ using System.Text.Json;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Farming;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Utilities;
 using FastEndpoints;
@@ -16,6 +17,7 @@ public interface IContestsService {
 	Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp);
 	Task<JacobContestWithParticipationsDto?> GetContestFromKey(string contestKey);
 	Task<YearlyContestsDto> GetContestsFromYear(int year, bool now = false);
+	Task<Dictionary<string, ContestBracketsDto>?> GetAverageMedalBrackets(long start, long end);
 }
 
 [RegisterService<IContestsService>(LifeTime.Scoped)]
@@ -177,5 +179,57 @@ public class ContestsService(
             Complete = contests.Count == 372,
             Contests = result
         };
+    }
+	 
+    private static readonly JsonSerializerOptions Options = new() {
+	    PropertyNameCaseInsensitive = true
+    };
+    
+    public async Task<Dictionary<string, ContestBracketsDto>?> GetAverageMedalBrackets(long start, long end) {
+	    var medals = await context.Database
+		    .SqlQuery<string>($"""
+				SELECT json_agg(c) AS "Value"
+				FROM (
+				   SELECT
+				       "Crop",
+				       AVG(NULLIF("Diamond", 0)) AS "Diamond",
+				       AVG(NULLIF("Platinum", 0)) AS "Platinum",
+				       AVG(NULLIF("Gold", 0)) AS "Gold",
+				       AVG(NULLIF("Silver", 0)) AS "Silver",
+				       AVG(NULLIF("Bronze", 0)) AS "Bronze"
+				   FROM "JacobContests"
+				   WHERE "Timestamp" >= {start} AND "Timestamp" <= {end}
+				   GROUP BY "Crop"
+				) c
+				""")
+		    .ToListAsync();
+
+	    try {
+		    var parsed = JsonSerializer.Deserialize<List<MedalCutoffsDbDto>>(medals.First(), Options);
+
+		    var dto = parsed?.ToDictionary(
+			    m => ((Crop)m.Crop).SimpleName(),
+			    m => new ContestBracketsDto {
+				    Diamond = (int) (m.Diamond ?? 0),
+				    Platinum = (int) (m.Platinum ?? 0),
+				    Gold = (int) (m.Gold ?? 0),
+				    Silver = (int) (m.Silver ?? 0),
+				    Bronze = (int) (m.Bronze ?? 0)
+			    }) ?? new Dictionary<string, ContestBracketsDto>();
+            
+		    // Add missing crops to the dictionary
+		    if (dto.Count < 9) {
+			    foreach (var crop in Enum.GetValues<Crop>()) {
+				    var name = crop.SimpleName();
+				    dto.TryAdd(name, new ContestBracketsDto());
+			    }
+		    }
+            
+		    return dto;
+	    }
+	    catch 
+	    {
+		    return null;
+	    }
     }
 }

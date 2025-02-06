@@ -8,44 +8,44 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Weight.GetWeightForProfile;
+namespace EliteAPI.Features.Weight.GetWeightForSelected;
 
 using Result = Results<Ok<FarmingWeightDto>, NotFound>;
 
-internal sealed class GetWeightProfilesRequest : PlayerProfileUuidRequest {
+internal sealed class GetWeightSelectedProfileRequest : PlayerUuidRequest {
 	[QueryParam, DefaultValue(false)]
 	public bool? Collections { get; set; } = false;
 }
 
-internal sealed class GetWeightForProfileEndpoint(
+internal sealed class GetWeightForSelectedEndpoint(
 	DataContext context,
 	IMemberService memberService,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetWeightProfilesRequest, Result> {
+) : Endpoint<GetWeightSelectedProfileRequest, Result> {
 	
 	public override void Configure() {
-		Get("/weight/{PlayerUuid}/{ProfileUuid}");
+		Get("/weight/{PlayerUuid}/selected");
 		AllowAnonymous();
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get farming weight for a profile member";
+			s.Summary = "Get farming weight for a player's selected profile";
 		});
 	}
 
-	public override async Task<Result> ExecuteAsync(GetWeightProfilesRequest request, CancellationToken c) {
+	public override async Task<Result> ExecuteAsync(GetWeightSelectedProfileRequest request, CancellationToken c) {
 		var query = await memberService.ProfileMemberQuery(request.PlayerUuidFormatted, 3);
 		if (query is null) return TypedResults.NotFound();
 
 		var weight = await query
-			.Where(x => x.IsSelected && x.ProfileId.Equals(request.ProfileUuidFormatted))
+			.Where(x => x.IsSelected)
 			.Include(x => x.Farming)
 			.FirstOrDefaultAsync(cancellationToken: c);
-
+        
 		if (weight is null) return TypedResults.NotFound();
         
 		var mapped = mapper.Map<FarmingWeightDto>(weight.Farming);
-		if (request.Collections is not true) return TypedResults.Ok(mapped);
+		if (request.Collections is not null) return TypedResults.Ok(mapped);
 
 		mapped.Crops = weight.ExtractCropCollections()
 			.ToDictionary(k => k.Key.ProperName(), v => v.Value);
