@@ -48,4 +48,16 @@ public class SkyblockTimeConversionTests {
         
         actual.Should().Be(formattedDate);
     }
+    
+    [Theory]
+    [InlineData(1560275700, 1560275700)]
+    [InlineData(1560275705 + 60 * 20, 1560275700 + 60 * 20)]
+    [InlineData(1560275740 + 60 * 20 * 5, 1560275700 + 60 * 20 * 5)]
+    [InlineData(1560275705 + 60 * 20 * 30, 1560275700 + 60 * 20 * 30)]
+    [InlineData(1560275701 + 60 * 20 * 31, 1560275700 + 60 * 20 * 31)]
+    public void UnixSecondsToStartOfSkyblockDateTest(long unixSeconds, long expected) {
+        var date = new SkyblockDate(unixSeconds);
+        
+        date.StartOfDayTimestamp().Should().Be(expected);
+    }
 }

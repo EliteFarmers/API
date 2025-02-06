@@ -42,6 +42,9 @@ public class SkyblockDate
 
     public SkyblockDate(DateTime dateTime) : this(new DateTimeOffset(dateTime).ToUnixTimeSeconds()) { }
 
+    public bool IsValid() => Year >= 0 && Month >= 0 && Day >= 0;
+    public long StartOfDayTimestamp() => FormatUtils.GetTimeFromSkyblockDate(Year, Month, Day);
+    
     public string MonthName() => FormatUtils.GetSkyblockMonthName(Month);
     public override string ToString()
     {

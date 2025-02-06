@@ -6,8 +6,7 @@ using FastEndpoints;
 namespace EliteAPI.Features.Profile.GetAllProfileDetails;
 
 internal sealed class GetAllProfileDetailsEndpoint(
-	IProfileService profileService,
-	AutoMapper.IMapper mapper
+	IProfileService profileService
 ) : Endpoint<PlayerUuidRequest, List<ProfileDetailsDto>> {
 	
 	public override void Configure() {

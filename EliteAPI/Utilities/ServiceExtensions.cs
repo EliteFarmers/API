@@ -129,6 +129,7 @@ public static class ServiceExtensions
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IEventTeamService, EventTeamService>();
         services.AddScoped<IMonetizationService, MonetizationService>();
+        services.RegisterServicesFromEliteAPI();
 
         services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();
