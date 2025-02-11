@@ -1,5 +1,4 @@
 using EliteAPI.Data;
-using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,7 @@ internal sealed class LeaveEventRequest {
 internal sealed class LeaveEventEndpoint(
 	DataContext context,
     UserManager userManager)
-	: Endpoint<LeaveEventRequest, EventMemberDto>
+	: Endpoint<LeaveEventRequest>
 {
 	public override void Configure() {
 		Post("/event/{EventId}/leave");

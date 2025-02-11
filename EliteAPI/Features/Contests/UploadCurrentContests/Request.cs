@@ -7,5 +7,5 @@ public class UploadCurrentContestsRequest {
 	/// Upcoming contests
 	/// </summary>
 	[FromBody]
-	public Dictionary<long, List<string>> Contests { get; set; }
+	public required Dictionary<long, List<string>> Contests { get; set; }
 }

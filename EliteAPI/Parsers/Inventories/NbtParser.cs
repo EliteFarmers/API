@@ -128,7 +128,7 @@ public static class NbtParser {
                 NbtTagType.LongArray => tag.LongArrayValue,
                 _ => null
             };
-        } catch (Exception _) {
+        } catch (Exception) {
             return null;
         }
     } 

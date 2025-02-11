@@ -110,6 +110,9 @@ public class EventTeamDto {
 public class EventTeamWithMembersDto : EventTeamDto {
     public List<EventMemberDto> Members { get; set; } = [];
     
+    /// <summary>
+    /// Join code for the team, only populated if authenticated user is the owner
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? JoinCode { get; set; }
 }
@@ -354,5 +357,5 @@ public class CreateEventMemberDto  {
     
     public ulong UserId { get; set; }
     
-    public ProfileMember ProfileMember { get; set; }
+    public required ProfileMember ProfileMember { get; set; }
 }

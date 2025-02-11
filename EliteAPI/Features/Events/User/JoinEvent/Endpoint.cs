@@ -15,7 +15,7 @@ internal sealed class JoinEventEndpoint(
     UserManager userManager,
     IDiscordService discordService,
     IMemberService memberService)
-	: Endpoint<JoinEventRequest, EventMemberDto>
+	: Endpoint<JoinEventRequest>
 {
 	public override void Configure() {
 		Post("/event/{EventId}/join");

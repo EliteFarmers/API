@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using EliteAPI.Data;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Parsers.Farming;
@@ -18,7 +17,6 @@ internal sealed class GetWeightSelectedProfileRequest : PlayerUuidRequest {
 }
 
 internal sealed class GetWeightForSelectedEndpoint(
-	DataContext context,
 	IMemberService memberService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetWeightSelectedProfileRequest, Result> {
