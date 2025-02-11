@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Services.Interfaces;
+namespace EliteAPI.Features.Events.Services;
 
 public interface IEventTeamService {
 	Task<ActionResult> CreateUserTeamAsync(ulong eventId, CreateEventTeamDto team, string userId);

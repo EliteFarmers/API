@@ -1,6 +1,7 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Utilities;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Weight.GetWeights;
@@ -19,7 +20,8 @@ internal sealed class GetWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> w
 			s.Summary = "Get crop weight constants";
 			s.Description = "Get crop weight constants";
 		});
-
+		
+		Description(d => d.AutoTagOverride("Weight"));
 		Options(opt => opt.CacheOutput(CachePolicy.Hours));
 	}
 

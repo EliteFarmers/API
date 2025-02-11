@@ -4,6 +4,7 @@ using Asp.Versioning;
 using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Controllers.Events; 
+namespace EliteAPI.Features.Events; 
 
 [Authorize]
 [ApiController, ApiVersion(1.0)]

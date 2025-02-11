@@ -5,13 +5,14 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Parsers.Events;
-using EliteAPI.Services.Interfaces;
+using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Events.Services;
 
+[RegisterService<IEventTeamService>(LifeTime.Scoped)]
 public class EventTeamService(
 	IEventService eventService,
 	IOptions<ConfigEventSettings> config,

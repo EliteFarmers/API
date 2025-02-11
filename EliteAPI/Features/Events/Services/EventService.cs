@@ -1,16 +1,18 @@
-﻿using AutoMapper;
-using EliteAPI.Data;
+﻿using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Interfaces;
+using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using IMapper = AutoMapper.IMapper;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Events.Services;
 
+[RegisterService<IEventService>(LifeTime.Scoped)]
 public class EventService(
 	DataContext context,
 	IMojangService mojangService,

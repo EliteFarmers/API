@@ -1,6 +1,7 @@
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Guilds.Public.GetGuilds;
@@ -19,6 +20,7 @@ internal sealed class GetPublicGuildsEndpoint(
 			s.Summary = "Get public guilds";
 		});
 		
+		Description(d => d.AutoTagOverride("Guild"));
 		Options(o => {
 			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(2)).Tag("guilds"));
 		});

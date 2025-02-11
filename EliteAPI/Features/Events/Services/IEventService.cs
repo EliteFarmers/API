@@ -3,7 +3,7 @@ using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Services.Interfaces;
+namespace EliteAPI.Features.Events.Services;
 
 public interface IEventService {
 	public Task<List<EventDetailsDto>> GetUpcomingEvents();

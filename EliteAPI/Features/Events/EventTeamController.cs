@@ -4,16 +4,16 @@ using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Parsers.Events;
-using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 
-namespace EliteAPI.Controllers.Events;
+namespace EliteAPI.Features.Events;
 
 [ApiController, ApiVersion(1.0)]
 [Route("event")]

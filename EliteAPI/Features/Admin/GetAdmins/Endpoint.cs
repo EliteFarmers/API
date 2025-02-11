@@ -2,6 +2,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Admin.GetAdmins;
@@ -18,6 +19,8 @@ internal sealed class GetAdminsEndpoint(
 		Summary(s => {
 			s.Summary = "Get list of admins";
 		});
+		
+		Description(d => d.AutoTagOverride("Admin"));
 	}
 
 	public override async Task HandleAsync(CancellationToken c) 

@@ -3,6 +3,7 @@ using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Profile.GetProfileNames;
@@ -20,6 +21,8 @@ internal sealed class GetProfileNamesEndpoint(
 		Summary(s => {
 			s.Summary = "Get names of a player's profiles";
 		});
+		
+		Description(d => d.AutoTagOverride("Profile"));
 	}
 
 	public override async Task HandleAsync(PlayerRequest request, CancellationToken c) {

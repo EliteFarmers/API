@@ -2,7 +2,6 @@ using EliteAPI.Data;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
-using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,8 +20,6 @@ internal sealed class ReorderCategoriesEndpoint(
 		Summary(s => {
 			s.Summary = "Reorder Shop Categories";
 		});
-		
-		Description(d => d.AutoTagOverride("Category"));
 	}
 
 	public override async Task HandleAsync(ReorderIntRequest request, CancellationToken c) {

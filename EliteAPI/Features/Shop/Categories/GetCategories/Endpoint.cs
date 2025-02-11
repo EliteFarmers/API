@@ -3,7 +3,6 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing.Shop;
 using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
-using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.GetCategories;
@@ -22,8 +21,6 @@ internal sealed class GetCategoriesEndpoint(
 		Summary(s => {
 			s.Summary = "Get Shop Categories";
 		});
-		
-		Description(d => d.AutoTagOverride("Category"));
 		
 		Options(o => {
 			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(1)).Tag("categories"));

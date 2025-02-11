@@ -2,6 +2,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Utilities;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Weight.GetAllWeights;
@@ -20,6 +21,7 @@ internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings
 			s.Description = "Get all farming weight constants";
 		});
 
+		Description(d => d.AutoTagOverride("Weight"));
 		Options(opt => opt.CacheOutput(CachePolicy.Hours));
 	}
 

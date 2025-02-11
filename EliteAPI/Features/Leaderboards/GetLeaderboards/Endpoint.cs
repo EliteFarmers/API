@@ -1,6 +1,7 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Utilities;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.GetLeaderboards;
@@ -17,7 +18,9 @@ internal sealed class GetLeaderboardsEndpoint(IOptions<ConfigLeaderboardSettings
 		Summary(s => {
 			s.Summary = "Get leaderboards";
 		});
-
+		
+		
+		Description(d => d.AutoTagOverride("Leaderboard"));
 		Options(opt => opt.CacheOutput(CachePolicy.Hours));
 	}
 

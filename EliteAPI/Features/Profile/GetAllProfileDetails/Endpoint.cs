@@ -2,6 +2,7 @@ using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 
 namespace EliteAPI.Features.Profile.GetAllProfileDetails;
 
@@ -17,6 +18,8 @@ internal sealed class GetAllProfileDetailsEndpoint(
 		Summary(s => {
 			s.Summary = "Get All Profile Details";
 		});
+		
+		Description(d => d.AutoTagOverride("Profile"));
 	}
 
 	public override async Task HandleAsync(PlayerUuidRequest request, CancellationToken c) {
