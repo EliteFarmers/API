@@ -1,4 +1,6 @@
-﻿using EliteAPI.Models.DTOs.Outgoing;
+﻿using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +13,7 @@ public interface IEventService {
 	public Task<ActionResult<EventMember>> CreateEventMember(Event @event, CreateEventMemberDto eventMemberDto);
 	public Task<EventMember?> GetEventMemberByIdAsync(string userId, ulong eventId);
 	public Task<EventMember?> GetEventMemberAsync(string playerUuidOrIgn, ulong eventId);
+	public bool CanCreateEvent(Guild guild, [NotNullWhen(false)] out string? reason);
 
 	/// <summary>
 	/// Initializes the event member with default values if needed

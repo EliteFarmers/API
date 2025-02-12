@@ -1,4 +1,5 @@
-﻿using EliteAPI.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
@@ -34,7 +35,7 @@ public class EventService(
 			.FirstOrDefault(g => g.Id == guildId);
 		
 		if (guild is null) {
-			return new NotFoundObjectResult("Guild not found");
+			return new BadRequestObjectResult("Guild not found");
 		}
 		
 		var startTime = eventDto.StartTime is not null 
@@ -133,6 +134,26 @@ public class EventService(
 		if (stringId is null) return null;
 		
 		return await GetEventMemberByIdAsync(stringId, eventId);
+	}
+
+	public bool CanCreateEvent(Guild guild, [NotNullWhen(false)] out string? reason) {
+		if (!guild.Features.EventsEnabled) {
+			reason = "This guild does not have access to make events!";
+			return false;
+		}
+        
+		if (guild.Features.EventSettings is not null) {
+			// Check if the guild has reached their max amount of events for the month
+			var startOfMonth = new DateTimeOffset(DateTimeOffset.UtcNow.Year, DateTimeOffset.UtcNow.Month, 1, 0, 0, 0, TimeSpan.Zero);
+			var count = guild.Features.EventSettings.CreatedEvents.Count(e => e.CreatedAt > startOfMonth);
+			if (count >= guild.Features.EventSettings.MaxMonthlyEvents) {
+				reason = "You have reached your maximum amount of events for this month!";
+				return false;
+			}
+		}
+
+		reason = null;
+		return true;
 	}
 
 	public async Task InitializeEventMember(EventMember eventMember, ProfileMember member) {
