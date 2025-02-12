@@ -1,0 +1,41 @@
+using EliteAPI.Authentication;
+using EliteAPI.Data;
+using EliteAPI.Models.Common;
+using EliteAPI.Models.Entities.Discord;
+using FastEndpoints;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace EliteAPI.Features.Bot.GetJacobFeature;
+internal sealed class GetJacobFeatureEndpoint(
+	DataContext context
+) : Endpoint<DiscordIdRequest, GuildJacobLeaderboardFeature> {
+	
+	public override void Configure() {
+		Get("/bot/{DiscordId}/jacob");
+		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Version(0);
+
+		Summary(s => {
+			s.Summary = "Get guild jacob";
+		});
+	}
+
+	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
+		var guild = await context.Guilds.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, c);
+		if (guild is null || !guild.Features.JacobLeaderboardEnabled) {
+			await SendNotFoundAsync(c);
+			return;
+		}
+
+		if (guild.Features.JacobLeaderboard is not null) {
+			await SendAsync(guild.Features.JacobLeaderboard, cancellation: c);
+		}
+        
+		guild.Features.JacobLeaderboard = new GuildJacobLeaderboardFeature();
+		context.Guilds.Update(guild);
+		await context.SaveChangesAsync(c);
+		
+		await SendAsync(guild.Features.JacobLeaderboard, cancellation: c);
+	}
+}

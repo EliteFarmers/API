@@ -92,7 +92,7 @@ public class RefreshBotGuildsBackgroundJob(
                 
                 if (guild.Icon is not null && guild.Icon != existingGuild.Icon?.Hash) {
                     await discordService.UpdateGuildIcon(guild.Id, guild.Icon, existingGuild.Icon);
-                    await Task.Delay(500, ct);
+                    await Task.Delay(1500, ct);
                 } else if (guild.Icon is null && existingGuild.Icon is not null) {
                     await objectStorageService.DeleteAsync(existingGuild.Icon.Path, ct);
                     context.Images.Remove(existingGuild.Icon);

@@ -20,7 +20,7 @@ public class GuildAdminHandler(
 		if (httpContext.User.Identity?.IsAuthenticated is not true) return;
 		
 		// Get guild id from route
-		var guildIdObject = httpContext.GetRouteValue("guildId");
+		var guildIdObject = httpContext.GetRouteValue("guildId") ?? httpContext.GetRouteValue("DiscordId");
 		if (guildIdObject is null || !ulong.TryParse(guildIdObject.ToString(), out var guildId)) return;
 		
 		// Check cache for if user has permission

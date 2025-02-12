@@ -23,6 +23,8 @@ services:
   database:
     image: timescale/timescaledb:latest-pg15
     restart: always
+    env_file:
+      - ./EliteAPI/.env
     command: -c 'max_connections=${POSTGRES_MAX_CONNECTIONS:-100}'
     ports:
         - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432' 

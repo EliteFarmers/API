@@ -75,7 +75,7 @@ public class MemberService(
         await RefreshNeededData(lastUpdated, account, cooldownMultiplier);
     }  
     
-    public async Task UpdateProfileMemberIfNeeded(Guid memberId) {
+    public async Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1) {
         var lastUpdated = await context.ProfileMembers
             .AsNoTracking()
             .Where(a => a.Id == memberId)
@@ -93,7 +93,7 @@ public class MemberService(
         var account = await mojangService.GetMinecraftAccountByUuid(lastUpdated.PlayerUuid);
         if (account is null) return;
         
-        await RefreshNeededData(lastUpdated, account);
+        await RefreshNeededData(lastUpdated, account, cooldownMultiplier);
     }
     
     private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account, float cooldownMultiplier = 1) {

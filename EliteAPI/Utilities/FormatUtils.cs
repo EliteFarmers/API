@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
+﻿using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Utilities;
@@ -51,6 +52,9 @@ public static class FormatUtils
     public static Crop? GetCropFromItemId(string itemId) {
         return itemId.TryGetCrop(out var crop) ? crop : null;
     }
+    
+    public static bool IsNullOrEmpty([NotNullWhen(true)] this string? str) => string.IsNullOrEmpty(str);
+    public static bool IsNullOrWhiteSpace([NotNullWhen(true)] this string? str) => string.IsNullOrWhiteSpace(str);
 
     public static string GetFormattedCropName(Crop crop) => crop switch
     {
