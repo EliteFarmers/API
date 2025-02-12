@@ -61,7 +61,7 @@ internal sealed class SetEventBannerEndpoint(
         }
         
         await context.SaveChangesAsync(c);
-        await SendNoContentAsync(c);
+        await SendOkAsync(cancellation: c);
 	}
 }
 

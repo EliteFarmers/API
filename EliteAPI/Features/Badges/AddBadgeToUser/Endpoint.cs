@@ -32,6 +32,6 @@ internal sealed class AddBadgeToUserBadgeEndpoint(
 				break;
 		}
 
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

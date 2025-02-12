@@ -38,6 +38,6 @@ internal sealed class DisableContestPingsPingsEndpoint(
 
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

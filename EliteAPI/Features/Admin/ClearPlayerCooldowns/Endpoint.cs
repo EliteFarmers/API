@@ -47,6 +47,6 @@ internal sealed class ClearPlayerCooldownsEndpoint(
 		await db.KeyDeleteAsync($"player:{account.Id}:updating");
 		await db.KeyDeleteAsync($"profile:{account.Id}:updating");
 
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

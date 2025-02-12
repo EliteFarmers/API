@@ -43,6 +43,6 @@ internal sealed class CreateCategoryEndpoint(
 		
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

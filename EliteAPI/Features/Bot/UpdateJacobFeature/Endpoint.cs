@@ -44,6 +44,6 @@ internal sealed class UpdateJacobFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

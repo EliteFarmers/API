@@ -22,6 +22,6 @@ internal sealed class UpdateGuildEndpoint(
 
 	public override async Task HandleAsync(BotUpdateGuildRequest request, CancellationToken c) {
 		await guildService.UpdateGuildData(request.DiscordIdUlong, request.Guild);
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

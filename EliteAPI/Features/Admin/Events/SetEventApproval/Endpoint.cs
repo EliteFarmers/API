@@ -35,6 +35,6 @@ internal sealed class SetEventApprovalEndpoint(
 		eliteEvent.Approved = request.Approve ?? false;
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

@@ -39,7 +39,7 @@ internal sealed class DeleteContestPingsEndpoint(
 		}
 
 		if (!guild.Features.ContestPingsEnabled) {
-			await SendNoContentAsync(c);
+			await SendOkAsync(cancellation: c);
 			return;
 		}
 
@@ -52,6 +52,6 @@ internal sealed class DeleteContestPingsEndpoint(
 		context.Entry(guild).Property(g => g.Features).IsModified = true;
 		
 		await context.SaveChangesAsync(c);
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

@@ -80,7 +80,7 @@ internal sealed class CreateWeightEventEndpoint(
                     .SetProperty(e => e.EndTime, eliteEvent.EndTime), cancellationToken: c);
         }
 
-        await SendNoContentAsync(c);
+        await SendOkAsync(cancellation: c);
 	}
 }
 

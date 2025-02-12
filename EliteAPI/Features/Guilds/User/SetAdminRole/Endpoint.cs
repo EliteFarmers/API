@@ -37,6 +37,6 @@ internal sealed class SetAdminRoleEndpoint(
 		guild.AdminRole = request.RoleIdUlong;
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

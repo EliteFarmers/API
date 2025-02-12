@@ -61,7 +61,7 @@ internal sealed class DeleteMemberEndpoint(
 		context.EventMembers.Remove(member);
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
 

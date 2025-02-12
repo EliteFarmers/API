@@ -55,6 +55,6 @@ internal sealed class ReorderCategoriesEndpoint(
 		
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

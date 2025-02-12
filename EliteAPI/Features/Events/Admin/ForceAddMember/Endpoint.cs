@@ -22,7 +22,7 @@ internal sealed class ForceAddMemberEndpoint(
 ) : Endpoint<Request> {
 
 	public override void Configure() {
-		Post("/guild/{DiscordId}/events/{EventId}/bans/{PlayerUuid}");
+		Post("/guild/{DiscordId}/events/{EventId}/members/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
@@ -68,7 +68,7 @@ internal sealed class ForceAddMemberEndpoint(
 		});
         
 		await context.SaveChangesAsync(c);
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
 

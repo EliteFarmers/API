@@ -52,7 +52,7 @@ internal sealed class UnbanMemberEndpoint(
 		member.Team = null;
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
 

@@ -172,7 +172,7 @@ internal sealed class UploadCurrentContestsEndpoint(
         var identicalResponses = await db.StringGetAsync(hashKey);
 
         if (!identicalResponses.TryParse(out long val) || val < RequiredIdenticalContestSubmissions) {
-            await SendNoContentAsync(ct);
+            await SendOkAsync(cancellation: ct);
             return;
         }
         
@@ -180,6 +180,6 @@ internal sealed class UploadCurrentContestsEndpoint(
         // Save the request data
         await db.StringSetAsync($"contests:{currentYear}", serializedData, TimeSpan.FromSeconds(secondsUntilNextYear));
 
-		await SendNoContentAsync(ct);
+		await SendOkAsync(cancellation: ct);
 	}
 }

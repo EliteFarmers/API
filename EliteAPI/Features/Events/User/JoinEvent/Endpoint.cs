@@ -119,7 +119,7 @@ internal sealed class JoinEventEndpoint(
             // Init member if needed
             await eventService.InitializeEventMember(member, profileMember);
             
-            await SendNoContentAsync(c);
+            await SendOkAsync(cancellation: c);
             return;
         }
 
@@ -134,6 +134,6 @@ internal sealed class JoinEventEndpoint(
         });
         
         await context.SaveChangesAsync(c);
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

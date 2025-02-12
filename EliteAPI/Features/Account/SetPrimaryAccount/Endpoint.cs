@@ -33,6 +33,6 @@ internal sealed class SetPrimaryAccountEndpoint(
 			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);
 		}
 
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

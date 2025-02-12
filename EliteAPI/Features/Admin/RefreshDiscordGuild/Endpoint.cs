@@ -23,6 +23,6 @@ internal sealed class RefreshDiscordGuildEndpoint(
 	public override async Task HandleAsync(GuildIdRequest request, CancellationToken c) 
 	{
 		await discordService.RefreshDiscordGuild(request.GuildIdUlong, replaceImages: true);
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

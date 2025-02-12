@@ -55,6 +55,6 @@ internal sealed class SendGuildJacobFeatureEndpoint(
 			return;
 		}
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

@@ -50,7 +50,7 @@ internal sealed class CreateTeamEndpoint(
 			return;
 		}
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
 

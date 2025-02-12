@@ -55,7 +55,7 @@ internal sealed class DeleteTeamEndpoint(
 			return;
 		}
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
 

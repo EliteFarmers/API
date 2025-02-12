@@ -39,6 +39,6 @@ internal sealed class DeleteEventApprovalEndpoint(
 		context.Events.Remove(eliteEvent);
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

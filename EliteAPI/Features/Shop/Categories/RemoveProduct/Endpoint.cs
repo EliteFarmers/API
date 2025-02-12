@@ -47,6 +47,6 @@ internal sealed class RemoveProductToCategoryEndpoint(
 		
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

@@ -62,6 +62,6 @@ internal sealed class UpdateCategoryEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

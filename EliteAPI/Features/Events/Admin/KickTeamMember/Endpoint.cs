@@ -49,7 +49,7 @@ internal sealed class KickTeamMemberEndpoint(
 
 		await teamService.KickMemberAsync(request.TeamId, request.Player);
 
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
 

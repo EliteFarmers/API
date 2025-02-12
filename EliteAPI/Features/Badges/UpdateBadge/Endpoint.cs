@@ -55,6 +55,6 @@ internal sealed class UpdateBadgeEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("badges", c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await SendOkAsync(cancellation: c);
 	}
 }

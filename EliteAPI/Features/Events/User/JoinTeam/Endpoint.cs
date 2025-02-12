@@ -44,6 +44,6 @@ internal sealed class JoinTeamEndpoint(
         }
         
         await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }

@@ -44,7 +44,7 @@ internal sealed class UpdateGuildPurchasesEndpoint(
         
 		var entitlements = await monetizationService.GetGuildEntitlementsAsync(request.DiscordIdUlong);
 		if (entitlements is { Count: 0 }) {
-			await SendNoContentAsync(c);
+			await SendOkAsync(cancellation: c);
 			return;
 		}
         
@@ -68,7 +68,7 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 		}
 
 		if (currentLeaderboards == maxLeaderboards && currentEvents == maxEvents) {
-			await SendNoContentAsync(c);
+			await SendOkAsync(cancellation: c);
 			return;
 		}
         
@@ -82,6 +82,6 @@ internal sealed class UpdateGuildPurchasesEndpoint(
         
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(c);
+		await SendOkAsync(cancellation: c);
 	}
 }
