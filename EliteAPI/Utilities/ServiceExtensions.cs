@@ -2,10 +2,8 @@
 using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
-using Asp.Versioning;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
-using EliteAPI.Configuration.Swagger;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Parsers.Skyblock;
@@ -20,11 +18,9 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using StackExchange.Redis;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EliteAPI.Utilities;
 
@@ -93,24 +89,6 @@ public static class ServiceExtensions
             .AddPolicy(ApiUserPolicies.Wiki, policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
             .AddPolicy(ApiUserPolicies.User, policy => policy.RequireRole(ApiUserPolicies.User))
             .AddGuildAdminPolicies();
-    }
-
-    public static void AddEliteControllers(this IServiceCollection services)
-    {
-        services.AddControllers();
-
-        services.AddApiVersioning(options => {
-            options.ReportApiVersions = true;
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ApiVersionReader = new UrlSegmentApiVersionReader();
-        }).AddApiExplorer(options => {
-            options.GroupNameFormat = "'v'VVV";
-            options.SubstituteApiVersionInUrl = true;
-        });
-        
-        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddTransient<IDocumentFilter, DefaultApiVersionFilter>();
-        services.AddSwaggerGen();
     }
 
     public static void AddEliteScopedServices(this IServiceCollection services) {

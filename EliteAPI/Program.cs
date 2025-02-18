@@ -8,15 +8,14 @@ using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Utilities;
-using FastEndpoints.Swagger;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
-using Scalar.AspNetCore;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 DotNetEnv.Env.Load();
@@ -25,8 +24,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterEliteConfigFiles();
 
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(o => {
-    o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+builder.Services.Configure<JsonOptions>(opt => {
+    opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
 
 builder.Services
@@ -36,16 +35,10 @@ builder.Services
     });
 
 builder.Services.AddIdempotency();
-
-builder.Services.SwaggerDocument(o => {
-    o.DocumentSettings = doc => {
-        doc.MarkNonNullablePropsAsRequired();
-    };
-});
+builder.Services.AddEliteSwaggerDocumentation();
 
 builder.Services.AddEliteServices();
 builder.Services.AddEliteAuthentication(builder.Configuration);
-builder.Services.AddEliteControllers();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
@@ -110,8 +103,7 @@ app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
 
-app.UseOpenApi(c => c.Path = "/openapi/{documentName}.json");
-app.MapScalarApiReference("/");
+app.UseEliteOpenApi();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -120,17 +112,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseOutputCache();
-app.MapControllers();
 
 app.UseDefaultExceptionHandler();
 
 app.UseFastEndpoints(o => {
     o.Binding.ReflectionCache.AddFromEliteAPI();
-    o.Binding.UsePropertyNamingPolicy = true;
     o.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+    o.Binding.UsePropertyNamingPolicy = true;
     o.Versioning.Prefix = "v";
     o.Versioning.PrependToRoute = true;
-
+    
     o.Endpoints.Configurator = endpoints => {
         if (endpoints.IdempotencyOptions is not null) {
             endpoints.IdempotencyOptions.CacheDuration = TimeSpan.FromMinutes(1);
