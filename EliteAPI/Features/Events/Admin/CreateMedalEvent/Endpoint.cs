@@ -2,12 +2,13 @@ using EliteAPI.Authentication;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Events.Admin.CreateMedalEvent;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class CreateMedalEventRequest : DiscordIdRequest {
 	[FromBody]
 	public required CreateMedalEventDto Event { get; set; }
 }
@@ -16,7 +17,7 @@ internal sealed class CreateMedalEventEndpoint(
 	IDiscordService discordService,
 	IEventService eventService,
 	AutoMapper.IMapper mapper
-) : Endpoint<Request, EventDetailsDto> {
+) : Endpoint<CreateMedalEventRequest, EventDetailsDto> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/medals");
@@ -28,7 +29,7 @@ internal sealed class CreateMedalEventEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(CreateMedalEventRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await SendNotFoundAsync(c);
@@ -39,6 +40,7 @@ internal sealed class CreateMedalEventEndpoint(
 			ThrowError(reason);
 		}
 
+		request.Event.Type = EventType.Medals;
 		var result = await eventService.CreateEvent(request.Event, request.DiscordIdUlong);
 
 		if (result.Value is null) {
@@ -50,7 +52,7 @@ internal sealed class CreateMedalEventEndpoint(
 	}
 }
 
-internal sealed class CreateMedalEventRequestValidator : Validator<Request> {
+internal sealed class CreateMedalEventRequestValidator : Validator<CreateMedalEventRequest> {
 	public CreateMedalEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

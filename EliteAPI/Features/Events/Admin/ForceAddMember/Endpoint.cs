@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.ForceAddMember;
 
-internal sealed class Request : PlayerUuidRequest {
+internal sealed class ForceAddMemberRequest : PlayerUuidRequest {
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	
@@ -19,7 +19,7 @@ internal sealed class Request : PlayerUuidRequest {
 internal sealed class ForceAddMemberEndpoint(
 	DataContext context,
 	IEventService eventService
-) : Endpoint<Request> {
+) : Endpoint<ForceAddMemberRequest> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/members/{PlayerUuid}");
@@ -31,7 +31,7 @@ internal sealed class ForceAddMemberEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(ForceAddMemberRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
@@ -72,7 +72,7 @@ internal sealed class ForceAddMemberEndpoint(
 	}
 }
 
-internal sealed class ForceAddMemberRequestValidator : Validator<Request> {
+internal sealed class ForceAddMemberRequestValidator : Validator<ForceAddMemberRequest> {
 	public ForceAddMemberRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 	}

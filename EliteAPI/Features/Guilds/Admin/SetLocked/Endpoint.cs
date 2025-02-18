@@ -14,8 +14,6 @@ internal sealed class SetGuildLockedEndpoint(
 		Post("/guild/{DiscordId}/lock");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-
-		Description(e => e.ClearDefaultAccepts());
 		
 		Summary(s => {
 			s.Summary = "Lock or unlock a guild";

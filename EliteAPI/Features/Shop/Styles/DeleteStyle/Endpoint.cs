@@ -6,14 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.DeleteStyle;
 
-internal sealed class Request {
+internal sealed class DeleteStyleRequest {
 	public int StyleId { get; set; }
 }
 
 internal sealed class DeleteStyleEndpoint(
 	DataContext context,
 	IOutputCacheStore outputCacheStore
-) : Endpoint<Request> {
+) : Endpoint<DeleteStyleRequest> {
 	
 	public override void Configure() {
 		Delete("/product/style/{StyleId}");
@@ -25,7 +25,7 @@ internal sealed class DeleteStyleEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(DeleteStyleRequest request, CancellationToken c) {
 		var existing = await context.WeightStyles
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		

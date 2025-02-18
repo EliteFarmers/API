@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetTeams;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class GetTeamsRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
@@ -17,7 +17,7 @@ internal sealed class GetTeamsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper,
 	IEventTeamService teamService
-) : Endpoint<Request, List<EventTeamWithMembersDto>> {
+) : Endpoint<GetTeamsRequest, List<EventTeamWithMembersDto>> {
 
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/teams");
@@ -29,7 +29,7 @@ internal sealed class GetTeamsEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(GetTeamsRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.Where(e => e.GuildId == request.DiscordIdUlong && e.Id == request.EventId) 
 			.AsNoTracking()
@@ -55,7 +55,7 @@ internal sealed class GetTeamsEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
+internal sealed class CreateWeightEventRequestValidator : Validator<GetTeamsRequest> {
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

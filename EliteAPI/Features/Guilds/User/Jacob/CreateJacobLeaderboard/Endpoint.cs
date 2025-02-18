@@ -39,18 +39,19 @@ internal sealed class UpdateGuildJacobFeatureEndpoint(
 			ThrowError("You have reached the maximum amount of leaderboards.", StatusCodes.Status400BadRequest);
 		}
 
+		var lb = request.Leaderboard;
 		var leaderboard = new GuildJacobLeaderboard {
 			Id = (guild.Id + (ulong)Random.Shared.Next(1000000, 9000000)).ToString(),
-			Title = request.Title,
-			ChannelId = request.ChannelId,
-			StartCutoff = request.StartCutoff ?? -1,
-			EndCutoff = request.EndCutoff ?? -1,
-			Active = request.Active ?? true,
-			RequiredRole = request.RequiredRole,
-			BlockedRole = request.BlockedRole,
-			UpdateChannelId = request.UpdateChannelId,
-			UpdateRoleId = request.UpdateRoleId,
-			PingForSmallImprovements = request.PingForSmallImprovements ?? false,
+			Title = lb.Title,
+			ChannelId = lb.ChannelId,
+			StartCutoff = lb.StartCutoff ?? -1,
+			EndCutoff = lb.EndCutoff ?? -1,
+			Active = lb.Active ?? true,
+			RequiredRole = lb.RequiredRole,
+			BlockedRole = lb.BlockedRole,
+			UpdateChannelId = lb.UpdateChannelId,
+			UpdateRoleId = lb.UpdateRoleId,
+			PingForSmallImprovements = lb.PingForSmallImprovements ?? false,
 		};
         
 		if (feature.Leaderboards.Any(l => l.Id.Equals(leaderboard.Id))) {

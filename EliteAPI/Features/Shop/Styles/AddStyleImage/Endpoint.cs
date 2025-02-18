@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.AddStyleImage;
 
-internal sealed class Request {
+internal sealed class AddStyleImageRequest {
 	public int StyleId { get; set; }
 	
 	[FromForm]
@@ -26,7 +26,7 @@ internal sealed class AddStyleImageEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IObjectStorageService objectStorageService
-) : Endpoint<Request> {
+) : Endpoint<AddStyleImageRequest> {
 	
 	public override void Configure() {
 		Post("/product/style/{StyleId}/images");
@@ -40,7 +40,7 @@ internal sealed class AddStyleImageEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(AddStyleImageRequest request, CancellationToken c) {
 		var style = await context.WeightStyles
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		

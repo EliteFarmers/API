@@ -2,12 +2,13 @@ using EliteAPI.Authentication;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Events.Admin.CreateWeightEvent;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class CreateWeightEventRequest : DiscordIdRequest {
 	[FromBody]
 	public required CreateWeightEventDto Event { get; set; }
 }
@@ -16,7 +17,7 @@ internal sealed class CreateWeightEventEndpoint(
 	IDiscordService discordService,
 	IEventService eventService,
 	AutoMapper.IMapper mapper
-) : Endpoint<Request, EventDetailsDto> {
+) : Endpoint<CreateWeightEventRequest, EventDetailsDto> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/weight");
@@ -28,7 +29,7 @@ internal sealed class CreateWeightEventEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(CreateWeightEventRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await SendNotFoundAsync(c);
@@ -39,6 +40,7 @@ internal sealed class CreateWeightEventEndpoint(
 			ThrowError(reason);
 		}
 
+		request.Event.Type = EventType.FarmingWeight;
 		var result = await eventService.CreateEvent(request.Event, request.DiscordIdUlong);
 
 		if (result.Value is null) {
@@ -50,7 +52,7 @@ internal sealed class CreateWeightEventEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
+internal sealed class CreateWeightEventRequestValidator : Validator<CreateWeightEventRequest> {
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

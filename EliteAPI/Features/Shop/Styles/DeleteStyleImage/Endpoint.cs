@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.DeleteStyleImage;
 
-internal sealed class Request {
+internal sealed class DeleteStyleImageRequest {
 	public int StyleId { get; set; }
 	public required string ImagePath { get; set; }
 }
@@ -17,7 +17,7 @@ internal sealed class DeleteStyleImageEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IObjectStorageService objectStorageService
-) : Endpoint<Request> {
+) : Endpoint<DeleteStyleImageRequest> {
 	
 	public override void Configure() {
 		Delete("/product/style/{StyleId}/images/{ImagePath}");
@@ -29,7 +29,7 @@ internal sealed class DeleteStyleImageEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(DeleteStyleImageRequest request, CancellationToken c) {
 		var style = await context.WeightStyles
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		

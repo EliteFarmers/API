@@ -2,6 +2,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Badges.CreateBadge;
@@ -13,13 +14,15 @@ internal sealed class CreateBadgeEndpoint(
 	) : Endpoint<CreateBadgeRequest> 
 {
 	public override void Configure() {
-		Post("/badge/{BadgeId}");
+		Post("/badges");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 		
 		AllowFileUploads();
 		AllowFormData();
-
+		
+		Description(d => d.AutoTagOverride("Badge"));
+		
 		Summary(s => {
 			s.Summary = "Create a badge";
 		});
@@ -28,17 +31,17 @@ internal sealed class CreateBadgeEndpoint(
 	public override async Task HandleAsync(CreateBadgeRequest request, CancellationToken c) 
 	{
 		var newBadge = new Badge {
-			Name = request.Name,
-			Description = request.Description,
-			Requirements = request.Requirements,
-			TieToAccount = request.TieToAccount
+			Name = request.Badge.Name,
+			Description = request.Badge.Description,
+			Requirements = request.Badge.Requirements,
+			TieToAccount = request.Badge.TieToAccount
 		};
         
 		context.Badges.Add(newBadge);
 		await context.SaveChangesAsync(c);
         
-		if (request.Image is not null) {
-			var image = await objectStorageService.UploadImageAsync($"badges/{newBadge.Id}.png", request.Image, token: c);
+		if (request.Badge.Image is not null) {
+			var image = await objectStorageService.UploadImageAsync($"badges/{newBadge.Id}.png", request.Badge.Image, token: c);
            
 			newBadge.Image = image;
 			newBadge.ImageId = image.Id;

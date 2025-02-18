@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.BanMember;
 
-internal sealed class Request : PlayerUuidRequest {
+internal sealed class BanMemberRequest : PlayerUuidRequest {
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	
@@ -20,7 +20,7 @@ internal sealed class Request : PlayerUuidRequest {
 internal sealed class BanMemberEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context
-) : Endpoint<Request, EventMemberBannedDto> {
+) : Endpoint<BanMemberRequest, EventMemberBannedDto> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/bans/{PlayerUuid}");
@@ -32,7 +32,7 @@ internal sealed class BanMemberEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(BanMemberRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
@@ -63,7 +63,7 @@ internal sealed class BanMemberEndpoint(
 	}
 }
 
-internal sealed class BanMemberRequestValidator : Validator<Request> {
+internal sealed class BanMemberRequestValidator : Validator<BanMemberRequest> {
 	public BanMemberRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 		

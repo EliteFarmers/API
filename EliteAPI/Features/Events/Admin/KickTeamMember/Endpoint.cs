@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.KickTeamMember;
 
-internal sealed class Request : PlayerRequest {
+internal sealed class KickTeamMemberRequest : PlayerRequest {
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
@@ -16,7 +16,7 @@ internal sealed class Request : PlayerRequest {
 internal sealed class KickTeamMemberEndpoint(
 	IEventTeamService teamService,
 	DataContext context
-) : Endpoint<Request> {
+) : Endpoint<KickTeamMemberRequest> {
 
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}/members/{Player}");
@@ -28,7 +28,7 @@ internal sealed class KickTeamMemberEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(KickTeamMemberRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
@@ -53,7 +53,7 @@ internal sealed class KickTeamMemberEndpoint(
 	}
 }
 
-internal sealed class KickTeamMemberRequestValidator : Validator<Request> {
+internal sealed class KickTeamMemberRequestValidator : Validator<KickTeamMemberRequest> {
 	public KickTeamMemberRequestValidator() {
 		Include(new PlayerRequestValidator());
 	}

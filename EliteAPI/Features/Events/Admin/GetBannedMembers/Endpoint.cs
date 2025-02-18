@@ -8,14 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetBannedMembers;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class GetBannedMembersRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
 internal sealed class GetBannedMembersEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<Request, List<EventMemberBannedDto>> {
+) : Endpoint<GetBannedMembersRequest, List<EventMemberBannedDto>> {
 
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/bans");
@@ -27,7 +27,7 @@ internal sealed class GetBannedMembersEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(GetBannedMembersRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.Where(e => e.GuildId == request.DiscordIdUlong && e.Id == request.EventId) 
 			.AsNoTracking()
@@ -50,7 +50,7 @@ internal sealed class GetBannedMembersEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
+internal sealed class CreateWeightEventRequestValidator : Validator<GetBannedMembersRequest> {
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

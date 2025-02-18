@@ -15,8 +15,6 @@ internal sealed class SetEventFeatureEndpoint(
 		Post("/guild/{DiscordId}/events");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-
-		Description(e => e.ClearDefaultAccepts());
 		
 		Summary(s => {
 			s.Summary = "Modify guild event permissions";

@@ -40,15 +40,16 @@ internal sealed class UpdateGuildJacobFeatureEndpoint(
 			return;
 		}
 
-		existing.EndCutoff = request.EndCutoff ?? existing.EndCutoff;
-		existing.StartCutoff = request.StartCutoff ?? existing.StartCutoff;
-		existing.ChannelId = request.ChannelId ?? existing.ChannelId;
-		existing.Title = request.Title ?? existing.Title;
-		existing.PingForSmallImprovements = request.PingForSmallImprovements ?? existing.PingForSmallImprovements;
-		existing.RequiredRole = request.RequiredRole ?? existing.RequiredRole;
-		existing.BlockedRole = request.BlockedRole ?? existing.BlockedRole;
-		existing.UpdateChannelId = request.UpdateChannelId ?? existing.UpdateChannelId;
-		existing.UpdateRoleId = request.UpdateRoleId ?? existing.UpdateRoleId;
+		var lb = request.Leaderboard;
+		existing.EndCutoff = lb.EndCutoff ?? existing.EndCutoff;
+		existing.StartCutoff = lb.StartCutoff ?? existing.StartCutoff;
+		existing.ChannelId = lb.ChannelId ?? existing.ChannelId;
+		existing.Title = lb.Title ?? existing.Title;
+		existing.PingForSmallImprovements = lb.PingForSmallImprovements ?? existing.PingForSmallImprovements;
+		existing.RequiredRole = lb.RequiredRole ?? existing.RequiredRole;
+		existing.BlockedRole = lb.BlockedRole ?? existing.BlockedRole;
+		existing.UpdateChannelId = lb.UpdateChannelId ?? existing.UpdateChannelId;
+		existing.UpdateRoleId = lb.UpdateRoleId ?? existing.UpdateRoleId;
 		
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);

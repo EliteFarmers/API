@@ -7,14 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.DeleteEvent;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class DeleteEventRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
 internal sealed class DeleteEventEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService
-) : Endpoint<Request> {
+) : Endpoint<DeleteEventRequest> {
 
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}");
@@ -27,7 +27,7 @@ internal sealed class DeleteEventEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(DeleteEventRequest request, CancellationToken c) {
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
 
@@ -55,8 +55,8 @@ internal sealed class DeleteEventEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
-	public CreateWeightEventRequestValidator() {
+internal sealed class DeleteEventRequestValidator : Validator<DeleteEventRequest> {
+	public DeleteEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}
 }

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.UpdateEvent;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class UpdateEventRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 	[FromBody]
 	public required EditEventDto Event { get; set; }
@@ -19,7 +19,7 @@ internal sealed class CreateWeightEventEndpoint(
 	DataContext context,
 	IEventService eventService,
 	AutoMapper.IMapper mapper
-) : Endpoint<Request, EventDetailsDto> {
+) : Endpoint<UpdateEventRequest, EventDetailsDto> {
 
 	public override void Configure() {
 		Patch("/guild/{DiscordId}/events/{EventId}");
@@ -31,7 +31,7 @@ internal sealed class CreateWeightEventEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(UpdateEventRequest request, CancellationToken c) {
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
         
@@ -84,7 +84,7 @@ internal sealed class CreateWeightEventEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
+internal sealed class CreateWeightEventRequestValidator : Validator<UpdateEventRequest> {
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

@@ -35,11 +35,11 @@ internal sealed class UpdateJacobFeatureEndpoint(
 
 		var feature = guild.Features.JacobLeaderboard;
 
-		feature.BlockedRoles = request.BlockedRoles;
-		feature.BlockedUsers = request.BlockedUsers;
-		feature.RequiredRoles = request.RequiredRoles;
-		feature.ExcludedParticipations = request.ExcludedParticipations;
-		feature.ExcludedTimespans = request.ExcludedTimespans;
+		feature.BlockedRoles = request.Feature.BlockedRoles;
+		feature.BlockedUsers = request.Feature.BlockedUsers;
+		feature.RequiredRoles = request.Feature.RequiredRoles;
+		feature.ExcludedParticipations = request.Feature.ExcludedParticipations;
+		feature.ExcludedTimespans = request.Feature.ExcludedTimespans;
 
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);

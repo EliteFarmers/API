@@ -11,10 +11,10 @@ using Result = Results<Ok<ProfileDetailsDto>, NotFound>;
 internal sealed class GetProfileDetailsEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
-) : Endpoint<PlayerUuidRequest, Result> {
+) : Endpoint<ProfileUuidRequest, Result> {
 	
 	public override void Configure() {
-		Get("/profile/{PlayerUuid}");
+		Get("/profile/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
 
@@ -23,8 +23,8 @@ internal sealed class GetProfileDetailsEndpoint(
 		});
 	}
 
-	public override async Task<Result> ExecuteAsync(PlayerUuidRequest request, CancellationToken c) {
-		var member = await profileService.GetProfile(request.PlayerUuidFormatted);
+	public override async Task<Result> ExecuteAsync(ProfileUuidRequest request, CancellationToken c) {
+		var member = await profileService.GetProfile(request.ProfileUuidFormatted);
 		if (member is null) return TypedResults.NotFound();
 
 		var mapped = mapper.Map<ProfileDetailsDto>(member);

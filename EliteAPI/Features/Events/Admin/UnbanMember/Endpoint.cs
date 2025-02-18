@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.UnbanMember;
 
-internal sealed class Request : PlayerUuidRequest {
+internal sealed class UnbanMemberRequest : PlayerUuidRequest {
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 }
@@ -16,7 +16,7 @@ internal sealed class Request : PlayerUuidRequest {
 internal sealed class UnbanMemberEndpoint(
 	IEventTeamService teamService,
 	DataContext context
-) : Endpoint<Request> {
+) : Endpoint<UnbanMemberRequest> {
 
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/bans/{PlayerUuid}");
@@ -28,7 +28,7 @@ internal sealed class UnbanMemberEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(UnbanMemberRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
@@ -56,7 +56,7 @@ internal sealed class UnbanMemberEndpoint(
 	}
 }
 
-internal sealed class UnbanMemberRequestValidator : Validator<Request> {
+internal sealed class UnbanMemberRequestValidator : Validator<UnbanMemberRequest> {
 	public UnbanMemberRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 	}

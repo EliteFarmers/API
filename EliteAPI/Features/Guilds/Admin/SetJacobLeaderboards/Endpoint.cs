@@ -16,8 +16,6 @@ internal sealed class SetJacobFeatureEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Description(e => e.ClearDefaultAccepts());
-		
 		Summary(s => {
 			s.Summary = "Modify guild jacob permissions";
 		});

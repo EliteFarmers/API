@@ -8,14 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetEventMembers;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class GetEventMembersRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
 internal sealed class GetEventMembersEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<Request, List<AdminEventMemberDto>> {
+) : Endpoint<GetEventMembersRequest, List<AdminEventMemberDto>> {
 
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/members");
@@ -27,7 +27,7 @@ internal sealed class GetEventMembersEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(GetEventMembersRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.Where(e => e.GuildId == request.DiscordIdUlong && e.Id == request.EventId) 
 			.AsNoTracking()
@@ -50,7 +50,7 @@ internal sealed class GetEventMembersEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
+internal sealed class CreateWeightEventRequestValidator : Validator<GetEventMembersRequest> {
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

@@ -6,21 +6,26 @@ namespace EliteAPI.Features.Guilds.User.Jacob.UpdateJacobLeaderboard;
 
 public class UpdateJacobLeaderboardRequest : DiscordIdRequest {
 	public required string LeaderboardId { get; set; }
-	[MaxLength(64)]
-	public string? Title { get; set; }
 
-	public string? ChannelId { get; set; }
+	[FromBody] 
+	public required UpdateJacobLeaderboard Leaderboard { get; set; }
+	
+	public class UpdateJacobLeaderboard {
+		[MaxLength(64)] public string? Title { get; set; }
 
-	public long? StartCutoff { get; set; }
-	public long? EndCutoff { get; set; }
-	public bool? Active { get; set; } = true;
+		public string? ChannelId { get; set; }
 
-	public string? RequiredRole { get; set; }
-	public string? BlockedRole { get; set; }
+		public long? StartCutoff { get; set; }
+		public long? EndCutoff { get; set; }
+		public bool? Active { get; set; } = true;
 
-	public string? UpdateChannelId { get; set; }
-	public string? UpdateRoleId { get; set; }
-	public bool? PingForSmallImprovements { get; set; }
+		public string? RequiredRole { get; set; }
+		public string? BlockedRole { get; set; }
+
+		public string? UpdateChannelId { get; set; }
+		public string? UpdateRoleId { get; set; }
+		public bool? PingForSmallImprovements { get; set; }
+	}
 }
 
 internal sealed class UpdateJacobLeaderboardRequestValidator : Validator<UpdateJacobLeaderboardRequest> {

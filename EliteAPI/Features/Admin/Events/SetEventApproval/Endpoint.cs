@@ -13,8 +13,6 @@ internal sealed class SetEventApprovalEndpoint(
 		Post("/admin/events/{EventId}/approve");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-
-		Description(e => e.ClearDefaultAccepts());
 		
 		Summary(s => {
 			s.Summary = "Set event approval";

@@ -37,16 +37,16 @@ internal sealed class UpdateBadgeEndpoint(
 			return;
 		}
     
-		existingBadge.Name = request.Name ?? existingBadge.Name;
-		existingBadge.Description = request.Description ?? existingBadge.Description;
-		existingBadge.Requirements = request.Requirements ?? existingBadge.Requirements;
+		existingBadge.Name = request.Badge.Name ?? existingBadge.Name;
+		existingBadge.Description = request.Badge.Description ?? existingBadge.Description;
+		existingBadge.Requirements = request.Badge.Requirements ?? existingBadge.Requirements;
     
-		if (request.Image is not null) {
+		if (request.Badge.Image is not null) {
 			if (existingBadge.Image is not null) {
 				await objectStorageService.DeleteAsync(existingBadge.Image.Path, c);
 			}
         
-			var image = await objectStorageService.UploadImageAsync($"badges/{existingBadge.Id}.png", request.Image, token: c);
+			var image = await objectStorageService.UploadImageAsync($"badges/{existingBadge.Id}.png", request.Badge.Image, token: c);
        
 			existingBadge.Image = image;
 			existingBadge.ImageId = image.Id;

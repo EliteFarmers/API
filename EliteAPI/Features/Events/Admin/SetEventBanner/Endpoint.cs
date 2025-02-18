@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.SetEventBanner;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class SetEventBannerRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 	[FromForm]
 	public required EditEventBannerDto Data { get; set; }
@@ -17,7 +17,7 @@ internal sealed class Request : DiscordIdRequest {
 internal sealed class SetEventBannerEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService
-) : Endpoint<Request> {
+) : Endpoint<SetEventBannerRequest> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/banner");
@@ -31,7 +31,7 @@ internal sealed class SetEventBannerEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(SetEventBannerRequest request, CancellationToken c) {
         var eliteEvent = await context.Events
             .FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
         
@@ -65,7 +65,7 @@ internal sealed class SetEventBannerEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<Request> {
+internal sealed class CreateWeightEventRequestValidator : Validator<SetEventBannerRequest> {
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

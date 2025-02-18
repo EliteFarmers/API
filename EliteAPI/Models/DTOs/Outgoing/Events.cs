@@ -328,10 +328,6 @@ public class CreateWeightEventDto : CreateEventDto {
     /// Data specific to the weight event
     /// </summary>
     public WeightEventData? Data { get; set; }
-
-    public CreateWeightEventDto() {
-        Type = EventType.FarmingWeight;
-    }
 }
 
 public class CreateMedalEventDto : CreateEventDto {
@@ -339,10 +335,6 @@ public class CreateMedalEventDto : CreateEventDto {
     /// Data specific to the medal event
     /// </summary>
     public MedalEventData? Data { get; set; }
-
-    public CreateMedalEventDto() {
-        Type = EventType.Medals;
-    }
 }
 
 public class CreateEventMemberDto  {

@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.GetStyle;
 
-internal sealed class Request {
+internal sealed class GetStyleRequest {
 	public int StyleId { get; set; }
 }
 
 internal sealed class GetStyleEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<Request, WeightStyleWithDataDto> {
+) : Endpoint<GetStyleRequest, WeightStyleWithDataDto> {
 	
 	public override void Configure() {
 		Get("/product/style/{StyleId}");
@@ -28,7 +28,7 @@ internal sealed class GetStyleEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(GetStyleRequest request, CancellationToken c) {
 		var existing = await context.WeightStyles
 			.Include(s => s.Images)
 			.Where(s => s.Id == request.StyleId)

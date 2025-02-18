@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.CreateTeam;
 
-internal sealed class Request : DiscordIdRequest {
+internal sealed class CreateTeamRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 	[FastEndpoints.FromBody]
 	public required CreateEventTeamDto Team { get; set; }
@@ -19,7 +19,7 @@ internal sealed class Request : DiscordIdRequest {
 internal sealed class CreateTeamEndpoint(
 	IEventTeamService teamService,
 	DataContext context
-) : Endpoint<Request> {
+) : Endpoint<CreateTeamRequest> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/teams");
@@ -33,7 +33,7 @@ internal sealed class CreateTeamEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(CreateTeamRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		var @event = await context.Events
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
@@ -54,7 +54,7 @@ internal sealed class CreateTeamEndpoint(
 	}
 }
 
-internal sealed class CreateTeamRequestValidator : Validator<Request> {
+internal sealed class CreateTeamRequestValidator : Validator<CreateTeamRequest> {
 	public CreateTeamRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

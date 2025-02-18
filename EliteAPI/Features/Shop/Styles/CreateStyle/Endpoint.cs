@@ -1,5 +1,5 @@
+using System.ComponentModel.DataAnnotations;
 using EliteAPI.Data;
-using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Monetization;
 using FastEndpoints;
@@ -8,16 +8,23 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Shop.Styles.CreateStyle;
 
-internal sealed class Request {
-	[FromBody]
-	public WeightStyleWithDataDto Data { get; set; } = null!;
+internal sealed class CreateStyleRequest {
+	[MaxLength(64)]
+	public string? StyleFormatter { get; set; } = "data";
+	[MaxLength(64)]
+	public string? Name { get; set; }
+	[MaxLength(64)]
+	public string? Collection { get; set; }
+	[MaxLength(1024)]
+	public string? Description { get; set; }
+	public WeightStyleData? Data { get; set; }
 }
 
 internal sealed class CreateStyleEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper,
 	IOutputCacheStore outputCacheStore
-) : Endpoint<Request> {
+) : Endpoint<CreateStyleRequest> {
 	
 	public override void Configure() {
 		Post("/product/style");
@@ -29,19 +36,19 @@ internal sealed class CreateStyleEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(Request request, CancellationToken c) {
+	public override async Task HandleAsync(CreateStyleRequest request, CancellationToken c) {
 		var newStyle = new WeightStyle {
-			Name = request.Data.Name ?? "Unnamed Style",
-			Collection = request.Data.Collection,
-			Description = request.Data.Description
+			Name = request.Name ?? "Unnamed Style",
+			Collection = request.Collection,
+			Description = request.Description
 		};
 		
-		if (request.Data.Data is not null) {
-			newStyle.Data = mapper.Map<WeightStyleData>(request.Data.Data);
+		if (request.Data is not null) {
+			newStyle.Data = mapper.Map<WeightStyleData>(request.Data);
 		}
 
-		if (request.Data.StyleFormatter is not null) {
-			newStyle.StyleFormatter = request.Data.StyleFormatter;
+		if (request.StyleFormatter is not null) {
+			newStyle.StyleFormatter = request.StyleFormatter;
 		}
 		
 		context.WeightStyles.Add(newStyle);
@@ -53,12 +60,12 @@ internal sealed class CreateStyleEndpoint(
 	}
 }
 
-internal sealed class RequestValidator : Validator<Request> {
+internal sealed class RequestValidator : Validator<CreateStyleRequest> {
 	public RequestValidator() {
 		RuleFor(r => r.Data)
 			.NotEmpty();
 
-		RuleFor(r => r.Data.Name)
+		RuleFor(r => r.Name)
 			.NotEmpty()
 			.MaximumLength(64);
 	}
