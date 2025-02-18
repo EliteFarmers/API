@@ -10,7 +10,6 @@ using EliteAPI.Data;
 using EliteAPI.Utilities;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -23,10 +22,6 @@ DotNetEnv.Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterEliteConfigFiles();
-
-builder.Services.Configure<JsonOptions>(opt => {
-    opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-});
 
 builder.Services
     .AddEliteRedisCache()
@@ -103,8 +98,6 @@ app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
 
-app.UseEliteOpenApi();
-
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -130,9 +123,10 @@ app.UseFastEndpoints(o => {
     };
 });
 
+app.UseEliteOpenApi();
+
 app.Use(async (context, next) => {
     var tagsFeature = context.Features.Get<IHttpMetricsTagsFeature>();
-    
     if (tagsFeature is not null) {
         var userAgent = context.Request.Headers.UserAgent.ToString() switch {
             var ua when ua.StartsWith("SkyHanni") => "SkyHanni",

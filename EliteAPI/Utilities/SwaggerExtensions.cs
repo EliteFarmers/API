@@ -1,6 +1,4 @@
 ﻿using FastEndpoints.Swagger;
-using Newtonsoft.Json.Serialization;
-using NJsonSchema.NewtonsoftJson.Generation;
 using NSwag;
 using NSwag.Generation.AspNetCore;
 using Scalar.AspNetCore;
@@ -33,13 +31,6 @@ public static class SwaggerExtensions {
         doc.Version = version;
         
         doc.SchemaSettings.FlattenInheritanceHierarchy = true;
-        if (doc.SchemaSettings is NewtonsoftJsonSchemaGeneratorSettings settings) {
-            settings.SerializerSettings.ContractResolver = new DefaultContractResolver() {
-                NamingStrategy = new CamelCaseNamingStrategy() {
-                    OverrideSpecifiedNames = false
-                }
-            };
-        }
     }
     
     public static WebApplication UseEliteOpenApi(this WebApplication app) {
