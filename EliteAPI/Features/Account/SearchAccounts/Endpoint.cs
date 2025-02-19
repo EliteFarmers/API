@@ -12,6 +12,8 @@ internal sealed class SearchAccountsEndpoint(
 		Get("/account/search");
 		AllowAnonymous();
 		Version(0);
+		
+		Description(d => d.Accepts<SearchRequest>());
 
 		Summary(s => {
 			s.Summary = "Get Minecraft Account";

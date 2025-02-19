@@ -14,6 +14,8 @@ internal sealed class AddBadgeToUserBadgeEndpoint(
 		Policies(ApiUserPolicies.Moderator);
 		Version(0);
 		
+		Description(s => s.Accepts<PlayerBadgeRequest>());
+		
 		Summary(s => {
 			s.Summary = "Add a badge to a user";
 		});

@@ -4,7 +4,7 @@ using FluentValidation;
 namespace EliteAPI.Features.Badges.UpdateBadge;
 
 public class UpdateBadgeRequest : BadgeRequest {
-	[FromBody]
+	[FromForm]
 	public required UpdateBadge Badge { get; set; }
 	public class UpdateBadge {
 		public string? Name { get; set; }
