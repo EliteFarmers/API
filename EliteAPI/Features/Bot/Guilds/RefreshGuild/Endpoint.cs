@@ -22,6 +22,6 @@ internal sealed class RefreshGuildEndpoint(
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		await discordService.RefreshDiscordGuild(request.DiscordIdUlong);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

@@ -49,6 +49,6 @@ internal sealed class UpdateBadgesEndpoint(
 		ThrowIfAnyErrors();
         
 		await context.SaveChangesAsync(c);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

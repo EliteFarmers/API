@@ -16,6 +16,8 @@ internal sealed class SetEventFeatureEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 		
+		Description(x => x.Accepts<SetEventFeatureRequest>());
+		
 		Summary(s => {
 			s.Summary = "Modify guild event permissions";
 		});
@@ -36,6 +38,6 @@ internal sealed class SetEventFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

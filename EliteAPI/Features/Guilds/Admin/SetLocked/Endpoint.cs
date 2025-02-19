@@ -15,6 +15,8 @@ internal sealed class SetGuildLockedEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 		
+		Description(x => x.Accepts<SetGuildLockedRequest>());
+
 		Summary(s => {
 			s.Summary = "Lock or unlock a guild";
 		});
@@ -33,6 +35,6 @@ internal sealed class SetGuildLockedEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

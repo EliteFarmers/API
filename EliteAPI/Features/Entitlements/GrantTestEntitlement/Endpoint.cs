@@ -30,6 +30,6 @@ internal sealed class GrantTestEntitlementEndpoint(
 			return;
 		}
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

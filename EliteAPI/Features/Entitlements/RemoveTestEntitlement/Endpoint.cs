@@ -30,6 +30,6 @@ internal sealed class RemoveTestEntitlementEndpoint(
 			return;
 		}
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

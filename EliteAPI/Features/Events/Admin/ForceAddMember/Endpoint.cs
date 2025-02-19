@@ -68,7 +68,7 @@ internal sealed class ForceAddMemberEndpoint(
 		});
         
 		await context.SaveChangesAsync(c);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }
 

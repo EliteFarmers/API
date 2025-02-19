@@ -43,6 +43,6 @@ internal sealed class AddRoleToUserEndpoint(
 			ThrowError("Failed to add role");
 		}
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

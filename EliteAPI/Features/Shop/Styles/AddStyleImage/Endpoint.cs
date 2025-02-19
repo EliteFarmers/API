@@ -72,6 +72,6 @@ internal sealed class AddStyleImageEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("styles", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

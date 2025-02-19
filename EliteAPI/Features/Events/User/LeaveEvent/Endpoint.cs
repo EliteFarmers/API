@@ -68,6 +68,6 @@ internal sealed class LeaveEventEndpoint(
         }
 
         await context.SaveChangesAsync(c);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

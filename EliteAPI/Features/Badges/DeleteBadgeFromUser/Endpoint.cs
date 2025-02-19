@@ -32,6 +32,6 @@ internal sealed class DeleteBadgeFromUserBadgeEndpoint(
 				break;
 		}
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

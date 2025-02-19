@@ -42,6 +42,6 @@ internal sealed class UpdateTeamJoinCodeEndpoint(
 				return;
 		}
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

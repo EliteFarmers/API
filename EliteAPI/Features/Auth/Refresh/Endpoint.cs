@@ -10,6 +10,7 @@ internal sealed class RefreshEndpoint(
 {
 	public override void Configure() {
 		Post("/auth/refresh");
+		AllowAnonymous();
 		Version(0);
 
 		Summary(s => {

@@ -45,6 +45,6 @@ internal sealed class DeleteGuildJacobFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

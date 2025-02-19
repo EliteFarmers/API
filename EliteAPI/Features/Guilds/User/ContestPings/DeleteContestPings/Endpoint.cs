@@ -15,7 +15,7 @@ internal sealed class DeleteContestPingsEndpoint(
 		Delete("/user/guild/{DiscordId}/contestpings");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
-
+		
 		Summary(s => {
 			s.Summary = "Delete contest pings for a guild";
 		});
@@ -39,7 +39,7 @@ internal sealed class DeleteContestPingsEndpoint(
 		}
 
 		if (!guild.Features.ContestPingsEnabled) {
-			await SendOkAsync(cancellation: c);
+			await SendNoContentAsync(cancellation: c);
 			return;
 		}
 
@@ -52,6 +52,6 @@ internal sealed class DeleteContestPingsEndpoint(
 		context.Entry(guild).Property(g => g.Features).IsModified = true;
 		
 		await context.SaveChangesAsync(c);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

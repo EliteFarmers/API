@@ -56,7 +56,7 @@ internal sealed class CreateStyleEndpoint(
 		
 		await outputCacheStore.EvictByTagAsync("styles", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }
 

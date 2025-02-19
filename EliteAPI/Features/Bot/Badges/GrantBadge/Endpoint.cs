@@ -21,6 +21,6 @@ internal sealed class GrantBadgeEndpoint(
 
 	public override async Task HandleAsync(BotGrantBadgeRequest request, CancellationToken c) {
 		await badgeService.AddBadgeToUser(request.Player, request.BadgeId);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

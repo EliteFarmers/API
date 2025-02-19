@@ -57,6 +57,6 @@ internal sealed class DeleteContestPingsEndpoint(
 		context.Entry(guild).Property(g => g.Features).IsModified = true;
 
 		await context.SaveChangesAsync(c);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

@@ -39,6 +39,6 @@ internal sealed class SetInviteEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

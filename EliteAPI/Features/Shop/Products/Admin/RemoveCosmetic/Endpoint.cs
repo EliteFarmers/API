@@ -56,6 +56,6 @@ internal sealed class RemoveCosmeticToProductEndpoint(
 
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

@@ -35,6 +35,6 @@ internal sealed class UpdateProductEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

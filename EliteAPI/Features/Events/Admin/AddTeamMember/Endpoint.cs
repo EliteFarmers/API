@@ -49,7 +49,7 @@ internal sealed class AddTeamMemberEndpoint(
 
 		await teamService.AddMemberToTeamAsync(request.TeamId, request.Player);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }
 

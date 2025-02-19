@@ -43,6 +43,6 @@ internal sealed class DeleteBadgeEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("badges", c);
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

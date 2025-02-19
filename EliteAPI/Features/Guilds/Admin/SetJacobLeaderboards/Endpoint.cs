@@ -16,6 +16,8 @@ internal sealed class SetJacobFeatureEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
+		Description(x => x.Accepts<SetJacobFeatureRequest>());
+
 		Summary(s => {
 			s.Summary = "Modify guild jacob permissions";
 		});
@@ -36,6 +38,6 @@ internal sealed class SetJacobFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

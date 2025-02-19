@@ -39,6 +39,6 @@ internal sealed class LeaveTeamEndpoint(
         }
         
         await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

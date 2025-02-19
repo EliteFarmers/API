@@ -50,7 +50,7 @@ internal sealed class AddCosmeticToProductEndpoint(
 		}
 		
 		if (product.ProductWeightStyles.Exists(w => w.WeightStyleId == request.CosmeticId)) {
-			await SendOkAsync(cancellation: c);
+			await SendNoContentAsync(cancellation: c);
 			return;
 		}
 
@@ -69,6 +69,6 @@ internal sealed class AddCosmeticToProductEndpoint(
 
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

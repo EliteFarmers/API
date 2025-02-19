@@ -58,6 +58,6 @@ internal sealed class DeleteProductImageEndpoint(
 		
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

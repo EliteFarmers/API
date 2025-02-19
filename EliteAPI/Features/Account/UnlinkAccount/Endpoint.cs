@@ -33,6 +33,6 @@ internal sealed class UnlinkAccountEndpoint(
 			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);
 		}
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

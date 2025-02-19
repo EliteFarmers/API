@@ -10,11 +10,12 @@ internal sealed class LoginEndpoint(
 {
 	public override void Configure() {
 		Post("/auth/login");
+		AllowAnonymous();
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get logged in account";
-			s.Description = "Get the account of the currently logged in user";
+			s.Summary = "Log in";
+			s.Description = "Log in with discord credentials";
 		});
 	}
 

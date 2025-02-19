@@ -14,6 +14,8 @@ internal sealed class SetGuildPublicEndpoint(
 		Post("/guild/{DiscordId}/public");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
+		
+		Description(x => x.Accepts<SetGuildPublicRequest>());
 
 		Summary(s => {
 			s.Summary = "Set a guild to public or private";
@@ -33,6 +35,6 @@ internal sealed class SetGuildPublicEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

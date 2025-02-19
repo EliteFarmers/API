@@ -58,6 +58,6 @@ internal sealed class DeleteStyleImageEndpoint(
 		
 		await cacheStore.EvictByTagAsync("styles", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

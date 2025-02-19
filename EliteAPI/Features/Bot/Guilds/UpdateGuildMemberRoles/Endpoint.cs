@@ -39,6 +39,6 @@ internal sealed class UpdateGuildMemberRolesEndpoint(
 		context.GuildMembers.Update(member);
 		await context.SaveChangesAsync(c);
 		
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

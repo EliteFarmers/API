@@ -42,7 +42,7 @@ internal sealed class AddProductToCategoryEndpoint(
 			.ToListAsync(cancellationToken: c);
 		
 		if (existing.Exists(e => e.ProductId == (ulong) request.ProductId)) {
-			await SendOkAsync(cancellation: c);
+			await SendNoContentAsync(cancellation: c);
 			return;
 		}
 
@@ -77,6 +77,6 @@ internal sealed class AddProductToCategoryEndpoint(
 		
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }

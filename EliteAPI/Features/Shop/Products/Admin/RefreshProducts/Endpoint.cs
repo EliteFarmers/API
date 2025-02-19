@@ -36,6 +36,6 @@ internal sealed class RefreshProductsEndpoint(
 		
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendOkAsync(cancellation: c);
+		await SendNoContentAsync(cancellation: c);
 	}
 }
