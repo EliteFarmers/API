@@ -1,6 +1,7 @@
 global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Models.Entities.Accounts.ApiUser>;
 using FastEndpoints;
 using System.Net;
+using System.Security.Claims;
 using System.Text.Json;
 using EliteAPI;
 using EliteAPI.Authentication;
@@ -22,18 +23,15 @@ DotNetEnv.Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterEliteConfigFiles();
+builder.Services.AddEliteAuthentication(builder.Configuration);
 
-builder.Services
-    .AddEliteRedisCache()
-    .AddFastEndpoints(o => {
-        o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All;
-    });
-
+builder.Services.AddEliteRedisCache();
 builder.Services.AddIdempotency();
+builder.Services.AddResponseCaching();
+
 builder.Services.AddEliteSwaggerDocumentation();
 
 builder.Services.AddEliteServices();
-builder.Services.AddEliteAuthentication(builder.Configuration);
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
@@ -90,10 +88,15 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
     opt.KnownNetworks.Add(new IPNetwork(IPAddress.IPv6Any, 0));
 });
 
+builder.Services.AddFastEndpoints(o => {
+    o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All;
+});
+
 var app = builder.Build();
 
 app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
+app.UseResponseCaching();
 app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
@@ -121,6 +124,9 @@ app.UseFastEndpoints(o => {
             endpoints.IdempotencyOptions.CacheDuration = TimeSpan.FromMinutes(1);
         } 
     };
+
+    o.Security.RoleClaimType = ClaimTypes.Role;
+    o.Security.NameClaimType = ClaimTypes.Name;
 });
 
 app.UseEliteOpenApi();

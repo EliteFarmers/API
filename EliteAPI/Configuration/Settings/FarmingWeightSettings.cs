@@ -124,9 +124,9 @@ public class PestDropChance {
         if (!usePrecomputed) {
             return toSubtract;
         }
-        
-        Precomputed[fortune] = toSubtract;
-        return Precomputed[fortune];
+
+        Precomputed.TryAdd(fortune, toSubtract);
+        return toSubtract;
     }
     
     public Dictionary<int, double> GetPrecomputed(ConfigFarmingWeightSettings? weightConfig = null) {

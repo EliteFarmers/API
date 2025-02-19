@@ -1,20 +1,21 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using EliteAPI.Background.Discord;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
+using FastEndpoints;
+using FastEndpoints.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using Quartz;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Auth;
 
+[RegisterService<IAuthService>(LifeTime.Scoped)]
 public class AuthService(
 	IDiscordService discordService, 
-	UserManager<ApiUser> userManager, 
+	UserManager userManager,
 	IConfiguration configuration,
 	ISchedulerFactory schedulerFactory,
 	DataContext context) 
@@ -126,11 +127,6 @@ public class AuthService(
 	}
 
 	public async Task<(string token, DateTimeOffset expiry)> GenerateJwtToken(ApiUser user) {
-		var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
-		var expiresAt = configuration["Jwt:TokenExpirationInMinutes"] is { } expiration
-			? DateTimeOffset.UtcNow.AddMinutes(int.Parse(expiration))
-			: DateTimeOffset.UtcNow.AddMinutes(30);
-
 		// Load user accounts (and minecraft accounts)
 		await context.Entry(user).Reference(x => x.Account).LoadAsync();
 		
@@ -151,17 +147,16 @@ public class AuthService(
 		var roles = await userManager.GetRolesAsync(user);
 		claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-	
-		var token = new JwtSecurityToken(
-			claims: claims,
-			notBefore: DateTime.UtcNow,
-			expires: expiresAt.DateTime,
-			signingCredentials: credentials
-		);
-	
-		return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
+		var expiresAt = configuration["Jwt:TokenExpirationInMinutes"] is { } expiration
+			? DateTime.UtcNow.AddMinutes(int.Parse(expiration))
+			: DateTime.UtcNow.AddMinutes(30);
+		
+		var token = JwtBearer.CreateToken(o => {
+			o.User.Claims.AddRange(claims);
+			o.ExpireAt = expiresAt;
+		});
+
+		return (token, expiresAt);
 	}
 
 	private async Task<IEnumerable<IdentityError>> RegisterUser(EliteAccount account, DiscordLoginDto dto) {

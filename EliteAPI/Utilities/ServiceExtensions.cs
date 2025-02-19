@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Net;
-using System.Text;
 using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
@@ -11,14 +10,13 @@ using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FastEndpoints.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using StackExchange.Redis;
 
@@ -26,7 +24,7 @@ namespace EliteAPI.Utilities;
 
 public static class ServiceExtensions
 {
-    public static void AddEliteServices(this IServiceCollection services) {
+    public static IServiceCollection AddEliteServices(this IServiceCollection services) {
         // Add AutoMapper
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -51,54 +49,54 @@ public static class ServiceExtensions
                 EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
                 ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
             });
+        
+        return services;
     }
-    
-    public static void AddEliteAuthentication(this IServiceCollection services, IConfiguration configuration) {
+
+    public static IServiceCollection AddEliteAuthentication(this IServiceCollection services,
+        IConfiguration configuration) {
         var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
 
         services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
-        
+
         services.AddIdentityCore<ApiUser>()
             .AddRoles<IdentityRole>()
             .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<DataContext>();
-        
-        services.AddAuthentication(options => 
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
 
-        services.AddAuthorizationBuilder()
-            .AddPolicy(ApiUserPolicies.Admin, policy => policy.RequireRole(ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.Moderator, policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.Support, policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.Wiki, policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.User, policy => policy.RequireRole(ApiUserPolicies.User))
-            .AddGuildAdminPolicies();
+        services.AddAuthenticationJwtBearer(options => {
+            options.SigningKey = secret;
+        });
+        
+        services.Configure<JwtCreationOptions>(options => {
+            options.SigningKey = secret;
+        });
+
+        services.AddAuthorization(options => {
+            options.AddPolicy(ApiUserPolicies.Admin, 
+                policy => policy.RequireRole(ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.Moderator,
+                policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.Support,
+                policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.Wiki,
+                policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.User, 
+                policy => policy.RequireRole(ApiUserPolicies.User));
+            options.AddGuildAdminPolicies();
+        });
+
+        return services;
     }
 
-    public static void AddEliteScopedServices(this IServiceCollection services) {
+    public static IServiceCollection AddEliteScopedServices(this IServiceCollection services) {
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IHypixelService, HypixelService>();
         services.AddScoped<IMojangService, MojangService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IProfileService, ProfileService>();
-        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDiscordService, DiscordService>();
         services.AddScoped<ILeaderboardService, LeaderboardService>();
         services.AddScoped<IGuildService, GuildService>();
@@ -110,6 +108,8 @@ public static class ServiceExtensions
         services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordBotOnlyFilter>();
+        
+        return services;
     }
 
     public static IServiceCollection AddEliteRedisCache(this IServiceCollection services)
@@ -148,7 +148,7 @@ public static class ServiceExtensions
         return services;
     }
     
-    public static void RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
+    public static IConfigurationBuilder RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
     {
         configurationBuilder.Sources.AddRange(new List<JsonConfigurationSource>
         {
@@ -159,9 +159,11 @@ public static class ServiceExtensions
             new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
             new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false }
         });
+        
+        return configurationBuilder;
     }
 
-    public static void RegisterEliteConfigFiles(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder RegisterEliteConfigFiles(this WebApplicationBuilder builder)
     {
         builder.Configuration.RegisterEliteConfigFiles();
 
@@ -178,9 +180,11 @@ public static class ServiceExtensions
 
         builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
             .Bind(ConfigGlobalRateLimitSettings.Settings);
+        
+        return builder;
     }
 
-    public static void AddEliteRateLimiting(this IServiceCollection services) {
+    public static IServiceCollection AddEliteRateLimiting(this IServiceCollection services) {
         var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
             
         services.AddRateLimiter(limiterOptions => {
@@ -223,6 +227,8 @@ public static class ServiceExtensions
                     });
             });
         });
+        
+        return services;
     }
 
     public static bool IsFromDockerNetwork(this IPAddress ip)
