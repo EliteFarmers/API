@@ -14,7 +14,7 @@ internal sealed class LinkAccountEndpoint(
 		Post("/account/{Player}");
 		Version(0);
 
-		Description(x => x.ClearDefaultAccepts());
+		Description(s => s.Accepts<PlayerRequest>());
 		
 		Summary(s => {
 			s.Summary = "Link Account";

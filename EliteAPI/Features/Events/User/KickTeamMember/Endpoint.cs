@@ -15,6 +15,8 @@ internal sealed class KickTeamMemberEndpoint(
 		Delete("/event/{EventId}/team/{TeamId}/member/{Player}");
 		Version(0);
 
+		Description(s => s.Accepts<KickTeamMemberRequest>());
+		
 		Summary(s => {
 			s.Summary = "Kick a team member";
 			s.Description = "Kicked members can rejoin the team if they have the join code.";

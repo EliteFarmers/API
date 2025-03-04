@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Features.Events.User.LeaveEvent;
 
 internal sealed class LeaveEventRequest {
+	[BindFrom("eventId")]
     public ulong EventId { get; init; }
 }
 
@@ -17,6 +18,8 @@ internal sealed class LeaveEventEndpoint(
 	public override void Configure() {
 		Post("/event/{EventId}/leave");
 		Version(0);
+
+		Description(s => s.Accepts<LeaveEventRequest>());
 
 		Summary(s => {
 			s.Summary = "Join an event";

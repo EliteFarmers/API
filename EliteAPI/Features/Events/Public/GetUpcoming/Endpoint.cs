@@ -19,7 +19,10 @@ internal sealed class GetUpcomingEventsEndpoint(
 		});
 		
 		Description(d => d.AutoTagOverride("Event"));
-		Options(opt => opt.CacheOutput(o => o.Expire(TimeSpan.FromMinutes(10))));
+		Options(opt => opt.CacheOutput(o => o
+			.Expire(TimeSpan.FromMinutes(10))
+			.Tag("upcoming-events"))
+		);
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {

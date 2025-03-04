@@ -12,6 +12,8 @@ internal sealed class GetProfileRankEndpoint(
 		Get("/leaderboard/rank/{Leaderboard}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
+		
+		Description(s => s.Accepts<GetProfileRankRequest>());
 
 		Summary(s => {
 			s.Summary = "Get a Profiles's Leaderboard Rank";

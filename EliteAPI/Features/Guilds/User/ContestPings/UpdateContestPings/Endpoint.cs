@@ -43,11 +43,11 @@ internal sealed class DeleteContestPingsEndpoint(
 
 		var pings = guild.Features.ContestPings ?? new ContestPingsFeature();
 
-		pings.Enabled = request.Enabled;
-		pings.ChannelId = request.ChannelId;
-		pings.DelaySeconds = request.DelaySeconds;
-		pings.AlwaysPingRole = request.AlwaysPingRole;
-		pings.CropPingRoles = request.CropPingRoles;
+		pings.Enabled = request.Settings.Enabled;
+		pings.ChannelId = request.Settings.ChannelId;
+		pings.DelaySeconds = request.Settings.DelaySeconds;
+		pings.AlwaysPingRole = request.Settings.AlwaysPingRole;
+		pings.CropPingRoles = request.Settings.CropPingRoles;
 
 		if (pings is { Enabled: true, DisabledReason: not null }) {
 			pings.DisabledReason = null;

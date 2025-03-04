@@ -16,7 +16,7 @@ internal sealed class SearchAccountsEndpoint(
 		Description(d => d.Accepts<SearchRequest>());
 
 		Summary(s => {
-			s.Summary = "Get Minecraft Account";
+			s.Summary = "Search for Minecraft Account";
 		});
 	}
 

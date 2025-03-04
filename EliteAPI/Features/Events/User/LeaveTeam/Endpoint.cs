@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace EliteAPI.Features.Events.User.LeaveTeam;
 
 internal sealed class LeaveTeamRequest {
+	[BindFrom("eventId")]
     public ulong EventId { get; set; }
+	[BindFrom("teamId")]
     public int TeamId { get; set; }
 }
 
@@ -19,6 +21,8 @@ internal sealed class LeaveTeamEndpoint(
 	public override void Configure() {
 		Post("/event/{EventId}/team/{TeamId}/leave");
 		Version(0);
+
+		Description(s => s.Accepts<LeaveTeamRequest>());
 
 		Summary(s => {
 			s.Summary = "Leave a team";

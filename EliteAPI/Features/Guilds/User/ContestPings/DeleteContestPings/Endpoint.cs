@@ -16,10 +16,11 @@ internal sealed class DeleteContestPingsEndpoint(
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		
+		Description(x => x.Accepts<DisableContestPingsRequest>());
+		
 		Summary(s => {
 			s.Summary = "Delete contest pings for a guild";
 		});
-		
 	}
 
 	public override async Task HandleAsync(DisableContestPingsRequest request, CancellationToken c) {

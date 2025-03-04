@@ -27,6 +27,8 @@ internal sealed class GetWeightForProfilesEndpoint(
 		Get("/weight/{PlayerUuid}");
 		AllowAnonymous();
 		Version(0);
+		
+		Description(x => x.Accepts<GetWeightForProfilesRequest>());
 
 		Summary(s => {
 			s.Summary = "Get farming weight for all profiles of a player";

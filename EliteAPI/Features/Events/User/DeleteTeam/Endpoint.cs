@@ -20,7 +20,7 @@ internal sealed class DeleteTeamEndpoint(
 	public override void Configure() {
 		Delete("/event/{EventId}/team/{TeamId}");
 		Version(0);
-
+		
 		Summary(s => {
 			s.Summary = "Delete team";
 		});

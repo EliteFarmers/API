@@ -6,7 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.GetLeaderboards;
 
-internal sealed class GetLeaderboardsEndpoint(IOptions<ConfigLeaderboardSettings> lbSettings) : EndpointWithoutRequest<ConfigLeaderboardSettings> {
+internal sealed class GetLeaderboardsEndpoint(
+	IOptions<ConfigLeaderboardSettings> lbSettings) 
+	: EndpointWithoutRequest<ConfigLeaderboardSettings> {
 	
 	private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
 	

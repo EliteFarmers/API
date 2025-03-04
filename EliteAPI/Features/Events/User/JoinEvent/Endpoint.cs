@@ -20,6 +20,8 @@ internal sealed class JoinEventEndpoint(
 	public override void Configure() {
 		Post("/event/{EventId}/join");
 		Version(0);
+        
+        Description(x => x.Accepts<JoinEventRequest>());
 
 		Summary(s => {
 			s.Summary = "Join an event";

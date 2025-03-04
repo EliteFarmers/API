@@ -14,6 +14,8 @@ internal sealed class GetLeaderboardEndpoint(
 		Get("/leaderboard/{Leaderboard}");
 		AllowAnonymous();
 		Version(0);
+		
+		Description(s => s.Accepts<LeaderboardSliceRequest>());
 
 		Summary(s => {
 			s.Summary = "Get Leaderboard";
@@ -27,7 +29,7 @@ internal sealed class GetLeaderboardEndpoint(
 		var entries = await lbService.GetLeaderboardSlice(request.Leaderboard, request.OffsetFormatted, request.LimitFormatted);
 
 		var leaderboard = new LeaderboardDto {
-			Id = lb.Id,
+			Id = request.Leaderboard,
 			Title = lb.Title,
 			Limit = request.LimitFormatted,
 			Offset = request.OffsetFormatted,

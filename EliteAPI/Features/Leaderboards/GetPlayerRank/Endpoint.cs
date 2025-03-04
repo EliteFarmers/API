@@ -13,6 +13,8 @@ internal sealed class GetPlayerRankEndpoint(
 		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
+		
+		Description(s => s.Accepts<GetPlayerRankRequest>());
 
 		Summary(s => {
 			s.Summary = "Get a Player's Leaderboard Rank";

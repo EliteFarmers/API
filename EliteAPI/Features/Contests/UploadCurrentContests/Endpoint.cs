@@ -14,7 +14,7 @@ namespace EliteAPI.Features.Contests.UploadCurrentContests;
 internal sealed class UploadCurrentContestsEndpoint(
     DataContext context,
     IConnectionMultiplexer cache)
-	: Endpoint<UploadCurrentContestsRequest>
+	: Endpoint<Dictionary<long, List<string>>>
 {
     private const int RequiredIdenticalContestSubmissions = 5;
     
@@ -25,29 +25,27 @@ internal sealed class UploadCurrentContestsEndpoint(
 		Summary(s => {
 			s.Summary = "Upload upcoming contests for the current SkyBlock year";
 			s.Description = "Data used and provided by <see href=\"https://github.com/hannibal002/SkyHanni/\">SkyHanni</see> to display upcoming contests in-game.";
-            s.ExampleRequest = new UploadCurrentContestsRequest() {
-                Contests = new Dictionary<long, List<string>> {
-                    { 1738390500, ["Cactus", "Carrot", "Melon"] },
-                    { 1738394100, ["Mushroom", "Nether Wart", "Pumpkin"] },
-                    { 1738397700, ["Cocoa Beans", "Potato", "Wheat"] },
-                    { 1738401300, ["Cactus", "Cocoa Beans", "Mushroom"] },
-                    { 1738404900, ["Carrot", "Nether Wart", "Wheat"] }
-                }
+            s.ExampleRequest = new Dictionary<long, List<string>> {
+                { 1738390500, ["Cactus", "Carrot", "Melon"] },
+                { 1738394100, ["Mushroom", "Nether Wart", "Pumpkin"] },
+                { 1738397700, ["Cocoa Beans", "Potato", "Wheat"] },
+                { 1738401300, ["Cactus", "Cocoa Beans", "Mushroom"] },
+                { 1738404900, ["Carrot", "Nether Wart", "Wheat"] }
             };
         });
 	}
 
-	public override async Task HandleAsync(UploadCurrentContestsRequest request, CancellationToken ct) {
+	public override async Task HandleAsync(Dictionary<long, List<string>> request, CancellationToken ct) {
 		var currentDate = new SkyblockDate(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         var currentYear = currentDate.Year;
         
         var db = cache.GetDatabase();
         
-        if (currentDate.Month > 8) {
-            ThrowError("Contests cannot be submitted this late in the year!");
-        }
+        // if (currentDate.Month > 8) {
+        //     ThrowError("Contests cannot be submitted this late in the year!");
+        // }
         
-        var body = request.Contests;
+        var body = request;
         var bodyKeys = body.Keys.Distinct().OrderBy(k => k).ToList();
         
         if (bodyKeys.Count != 124) {
@@ -60,7 +58,7 @@ internal sealed class UploadCurrentContestsEndpoint(
         if (firstKey > 1000000000000) {
             body = new Dictionary<long, List<string>>();
             foreach (var key in bodyKeys) {
-                body[key / 1000] = request.Contests[key];
+                body[key / 1000] = request[key];
             }
             
             bodyKeys = body.Keys.Distinct().OrderBy(k => k).ToList();

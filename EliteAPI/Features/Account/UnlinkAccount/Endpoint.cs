@@ -14,8 +14,6 @@ internal sealed class UnlinkAccountEndpoint(
 		Delete("/account/{Player}");
 		Version(0);
 
-		Description(x => x.ClearDefaultAccepts());
-		
 		Summary(s => {
 			s.Summary = "Unlink Account";
 		});

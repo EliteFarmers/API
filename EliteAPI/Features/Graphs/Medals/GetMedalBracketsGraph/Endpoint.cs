@@ -14,6 +14,8 @@ internal sealed class GetMedalBracketsGraphEndpoint(
 		AllowAnonymous();
 		ResponseCache(600);
 		
+		Description(s => s.Accepts<GetMedalBracketsGraphRequest>());
+		
 		Summary(s => {
 			s.Summary = "Get average medal brackets for multiple SkyBlock years";
 		});

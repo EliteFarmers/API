@@ -54,7 +54,7 @@ public class ContestsService(
 
 			var contestDto = data.First(d => d.Crop.Equals(crop));
 
-			contestDto.Participations = stripped;
+			contestDto.Participations = stripped.OrderByDescending(p => p.Collected).ToList();
 			contestDto.CalculateBrackets();
 		}
 
@@ -126,7 +126,7 @@ public class ContestsService(
         
 		var stripped = mapper.Map<List<StrippedContestParticipationDto>>(participations);
         
-		data.Participations = stripped;
+		data.Participations = stripped.OrderByDescending(p => p.Collected).ToList();
 		return data;
 	}
 	

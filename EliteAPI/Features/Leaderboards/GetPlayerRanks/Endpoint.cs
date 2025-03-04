@@ -17,7 +17,7 @@ internal sealed class GetPlayerRanksEndpoint(
 		Get("/leaderboard/ranks/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
-
+		
 		Summary(s => {
 			s.Summary = "Get a Player's Leaderboard Ranks";
 		});

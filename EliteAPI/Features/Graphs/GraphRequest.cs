@@ -51,16 +51,15 @@ internal sealed class GraphRequestValidator : Validator<GraphRequest> {
 			.WithMessage("Days must be less than 30.");
 		
 		RuleFor(r => r.PerDay)
-			.GreaterThan(0)
-			.LessThanOrEqualTo(4)
-			.WithMessage("PerDay must be greater than 0 and less than 4.");
-		
+			.InclusiveBetween(1, 4)
+			.WithMessage("PerDay must be greater than 0 and less than 5.");
+
 		RuleFor(r => r.Start)
-			.GreaterThan(r => r.End)
+			.LessThanOrEqualTo(r => r.End)
 			.WithMessage("Evaluated start time cannot be greater than end time.");
 		
 		RuleFor(r => r.Start)
-			.GreaterThan(r => r.End.AddDays(-30))
+			.GreaterThanOrEqualTo(r => r.End.AddDays(-30.01))
 			.WithMessage("Evaluated time range cannot be greater than 30 days.");
 	}
 }

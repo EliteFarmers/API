@@ -23,6 +23,8 @@ internal sealed class GetCurrentMedalBracketsEndpoint(
 		Get("/graph/medals/now");
 		AllowAnonymous();
 		ResponseCache(600);
+
+		Description(s => s.Accepts<GetCurrentMedalBracketsRequest>());
 		
 		Summary(s => {
 			s.Summary = "Get current average medal brackets";

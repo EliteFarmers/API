@@ -25,6 +25,8 @@ internal sealed class ForceAddMemberEndpoint(
 		Post("/guild/{DiscordId}/events/{EventId}/members/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
+		
+		Description(x => x.Accepts<ForceAddMemberRequest>());
 
 		Summary(s => {
 			s.Summary = "Ban an Event Member";

@@ -25,6 +25,8 @@ internal sealed class DeleteMemberEndpoint(
 		Delete("/guild/{DiscordId}/events/{EventId}/members/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
+		
+		Description(x => x.Accepts<DeleteMemberRequest>());
 
 		Summary(s => {
 			s.Summary = "Delete an Event Member";

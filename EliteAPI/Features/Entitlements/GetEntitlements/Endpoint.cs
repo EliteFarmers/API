@@ -16,6 +16,8 @@ internal sealed class GetEntitlementsEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 		
+		Description(x => x.Accepts<GetEntitlementsRequest>());
+		
 		Summary(s => {
 			s.Summary = "Get all entitlements for a user or guild";
 		});

@@ -2,11 +2,13 @@ using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Guilds.Admin.SetPublic;
 
 internal sealed class SetGuildPublicEndpoint(
 	IDiscordService discordService,
+	IOutputCacheStore cacheStore,
 	DataContext context)
 	: Endpoint<SetGuildPublicRequest>
 {
@@ -34,6 +36,8 @@ internal sealed class SetGuildPublicEndpoint(
 		
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
+		
+		await cacheStore.EvictByTagAsync("guilds", c);
 		
 		await SendNoContentAsync(cancellation: c);
 	}

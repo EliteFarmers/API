@@ -13,6 +13,8 @@ internal sealed class GetContestsInYearEndpoint(
 		Get("/contests/at/{Year:int}");
 		AllowAnonymous();
 		ResponseCache(600);
+
+		Description(s => s.Accepts<GetContestsInYearRequest>());
 		
 		Summary(s => {
 			s.Summary = "Get all contests in a SkyBlock year";

@@ -9,6 +9,7 @@ namespace EliteAPI.Features.Events.User.CreateTeam;
 
 internal sealed class CreateTeamRequest
 {
+	[BindFrom("eventId")]
     public ulong EventId { get; set; }
     [FastEndpoints.FromBody]
     public required CreateEventTeamDto Team { get; set; }
@@ -22,6 +23,8 @@ internal sealed class CreateTeamEndpoint(
 	public override void Configure() {
 		Post("/event/{EventId}/teams");
 		Version(0);
+		
+		Description(x => x.Accepts<CreateTeamRequest>());
 
 		Summary(s => {
 			s.Summary = "Create a team";

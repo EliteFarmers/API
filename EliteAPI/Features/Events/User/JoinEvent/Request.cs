@@ -5,6 +5,7 @@ using FluentValidation;
 namespace EliteAPI.Features.Events.User.JoinEvent;
 
 internal sealed class JoinEventRequest {
+	[BindFrom("eventId")]
 	public ulong EventId { get; set; }
 	[QueryParam]
 	public string? PlayerUuid { get; set; }
