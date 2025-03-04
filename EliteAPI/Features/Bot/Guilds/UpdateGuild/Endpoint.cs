@@ -2,7 +2,6 @@ using EliteAPI.Authentication;
 using EliteAPI.Models.Common;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Bot.Guilds.UpdateGuild;
 
@@ -12,7 +11,8 @@ internal sealed class UpdateGuildEndpoint(
 	
 	public override void Configure() {
 		Patch("/bot/guild/{DiscordId}");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => {

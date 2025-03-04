@@ -2,7 +2,6 @@ using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Discord;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Bot.DisableContestPings;
@@ -13,8 +12,11 @@ internal sealed class DisableContestPingsPingsEndpoint(
 	
 	public override void Configure() {
 		Delete("/bot/contestpings/{DiscordId}");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
+		
+		Description(x => x.Accepts<DisableContestPingsRequest>());
 
 		Summary(s => {
 			s.Summary = "Disable contest pings for a guild";

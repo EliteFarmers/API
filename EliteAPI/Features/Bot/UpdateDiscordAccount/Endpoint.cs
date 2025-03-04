@@ -5,7 +5,6 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Bot.UpdateDiscordAccount;
 
@@ -17,7 +16,8 @@ internal sealed class UpdateDiscordAccountEndpoint(
 	
 	public override void Configure() {
 		Patch("/bot/account");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => {

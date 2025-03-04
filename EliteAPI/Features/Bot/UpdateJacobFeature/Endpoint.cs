@@ -4,7 +4,6 @@ using EliteAPI.Features.Guilds.User.Jacob.UpdateJacob;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Bot.UpdateJacobFeature;
 
@@ -15,7 +14,8 @@ internal sealed class UpdateJacobFeatureEndpoint(
 
 	public override void Configure() {
 		Put("/bot/{DiscordId}/jacob");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => { s.Summary = "Update guild jacob feature"; });

@@ -1,7 +1,6 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Bot.Guilds.UpdateGuildMemberRoles;
@@ -12,7 +11,8 @@ internal sealed class UpdateGuildMemberRolesEndpoint(
 	
 	public override void Configure() {
 		Post("/bot/guild/{DiscordId}/members/{UserId}/roles");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => {

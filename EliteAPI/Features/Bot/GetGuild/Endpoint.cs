@@ -3,7 +3,6 @@ using EliteAPI.Data;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Bot.GetGuild;
@@ -15,7 +14,8 @@ internal sealed class GetBotGuildEndpoint(
 	
 	public override void Configure() {
 		Get("/bot/{DiscordId}");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => {

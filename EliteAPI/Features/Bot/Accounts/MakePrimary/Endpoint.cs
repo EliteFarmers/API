@@ -12,7 +12,8 @@ internal sealed class MakePrimaryAccountEndpoint(
 	
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/{Player}/primary");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => {

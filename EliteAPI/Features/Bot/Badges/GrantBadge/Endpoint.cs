@@ -1,7 +1,6 @@
 using EliteAPI.Authentication;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Bot.Badges.GrantBadge;
 
@@ -11,7 +10,8 @@ internal sealed class GrantBadgeEndpoint(
 	
 	public override void Configure() {
 		Post("/bot/badges/{Player}/{BadgeId}");
-		Options(o => o.WithMetadata(new ServiceFilterAttribute(typeof(DiscordBotOnlyFilter))));
+		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
+		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
 		Summary(s => {
