@@ -52,7 +52,7 @@ public static class SwaggerExtensions {
             """
             A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data.
             <br>
-            Use of this API requires following the [Elite API TOS](https://elitebot.dev/apiterms). This API is not affiliated with Hypixel or Mojang."
+            Use of this API requires following the [Elite API TOS](https://elitebot.dev/apiterms). This API is not affiliated with Hypixel or Mojang.
             """;
         
         var info = new OpenApiInfo
