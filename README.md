@@ -17,20 +17,24 @@ We are not affiliated with Mojang or Hypixel in any way.
 Contributions are welcome!
 
 ### Prerequisites
-- .NET 8.0 SDK
+- .NET 9.0 SDK
 - Docker (unless you run the other services some other way)
 - A Discord Application and Bot Token
   - [Create a Discord Application](https://discord.com/developers/applications)
 - A Hypixel API Key
   - [Get a Hypixel API Key](https://developer.hypixel.net/)
+- Optional: S3 Bucket for storing images
+  - Cloudflare R2 also works for this
 - Recommended: JetBrains Rider or Visual Studio
+
+### Libraries
+This API is built using [Fast Endpoints](https://fast-endpoints.com/). The documentation for Fast Endpoints is useful if you need to modify or add endpoints.
 
 ### General Guidelines
 1. New features should only be added if they are relevant and useful to the [Website](https://github.com/EliteFarmers/Website) or the [Discord Bot](https://github.com/EliteFarmers/Bot).
     1. Feel free to open an issue or join the [Discord](https://elitebot.dev/support) to discuss the feature before starting work on it!
     2. This generally means that new features should be related to farming in Hypixel Skyblock, or the Elite Farmers community.
 2. Code should follow the existing style and conventions.
-    1. I am aware the project structure isn't perfect and steps should be taken to improve it, but please don't try to change everything without discussing it first.
 3. Run the tests before submitting a PR, and please consider adding tests for new features.
 
 ### Running the API Locally
