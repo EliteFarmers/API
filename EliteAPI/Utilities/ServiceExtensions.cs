@@ -1,11 +1,8 @@
 ﻿using System.Globalization;
 using System.Net;
-using System.Text;
 using System.Threading.RateLimiting;
-using Asp.Versioning;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
-using EliteAPI.Configuration.Swagger;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Parsers.Skyblock;
@@ -13,24 +10,21 @@ using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FastEndpoints.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration.Json;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
 using StackExchange.Redis;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EliteAPI.Utilities;
 
 public static class ServiceExtensions
 {
-    public static void AddEliteServices(this IServiceCollection services) {
+    public static IServiceCollection AddEliteServices(this IServiceCollection services) {
         // Add AutoMapper
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -55,101 +49,106 @@ public static class ServiceExtensions
                 EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
                 ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
             });
+        
+        return services;
     }
-    
-    public static void AddEliteAuthentication(this IServiceCollection services, IConfiguration configuration) {
+
+    public static IServiceCollection AddEliteAuthentication(this IServiceCollection services,
+        IConfiguration configuration) {
         var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
 
         services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
-        
+
         services.AddIdentityCore<ApiUser>()
             .AddRoles<IdentityRole>()
             .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<DataContext>();
-        
-        services.AddAuthentication(options => 
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
 
-        services.AddAuthorizationBuilder()
-            .AddPolicy(ApiUserPolicies.Admin, policy => policy.RequireRole(ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.Moderator, policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.Support, policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.Wiki, policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin))
-            .AddPolicy(ApiUserPolicies.User, policy => policy.RequireRole(ApiUserPolicies.User))
-            .AddGuildAdminPolicies();
-    }
-
-    public static void AddEliteControllers(this IServiceCollection services)
-    {
-        services.AddControllers();
-
-        services.AddApiVersioning(options => {
-            options.ReportApiVersions = true;
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ApiVersionReader = new UrlSegmentApiVersionReader();
-        }).AddApiExplorer(options => {
-            options.GroupNameFormat = "'v'VVV";
-            options.SubstituteApiVersionInUrl = true;
+        services.AddAuthenticationJwtBearer(options => {
+            options.SigningKey = secret;
         });
         
-        services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        services.AddTransient<IDocumentFilter, DefaultApiVersionFilter>();
-        services.AddSwaggerGen();
+        services.Configure<JwtCreationOptions>(options => {
+            options.SigningKey = secret;
+        });
+
+        services.AddAuthorization(options => {
+            options.AddPolicy(ApiUserPolicies.Admin, 
+                policy => policy.RequireRole(ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.Moderator,
+                policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.Support,
+                policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.Wiki,
+                policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+            options.AddPolicy(ApiUserPolicies.User, 
+                policy => policy.RequireRole(ApiUserPolicies.User));
+            options.AddGuildAdminPolicies();
+        });
+
+        return services;
     }
 
-    public static void AddEliteScopedServices(this IServiceCollection services) {
+    public static IServiceCollection AddEliteScopedServices(this IServiceCollection services) {
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IHypixelService, HypixelService>();
         services.AddScoped<IMojangService, MojangService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IProfileService, ProfileService>();
-        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDiscordService, DiscordService>();
         services.AddScoped<ILeaderboardService, LeaderboardService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.AddScoped<IBadgeService, BadgeService>();
-        services.AddScoped<IEventService, EventService>();
-        services.AddScoped<IEventTeamService, EventTeamService>();
         services.AddScoped<IMonetizationService, MonetizationService>();
+        services.RegisterServicesFromEliteAPI();
 
         services.AddScoped<LocalOnlyMiddleware>();
         services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordBotOnlyFilter>();
+        
+        return services;
     }
 
-    public static void AddEliteRedisCache(this IServiceCollection services)
+    public static IServiceCollection AddEliteRedisCache(this IServiceCollection services)
     {
         var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6380";
-        var multiplexer = ConnectionMultiplexer.Connect(new ConfigurationOptions
-        {
+        var config = new ConfigurationOptions {
             EndPoints = { redisConnection },
             Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD"),
             AbortOnConnectFail = false,
             ConnectRetry = 5
-        });
+        };
+        var multiplexer = ConnectionMultiplexer.Connect(config);
         
-        services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+        services
+            .AddSingleton<IConnectionMultiplexer>(multiplexer)
+            .AddOutputCache(options => {
+                options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
+                
+                options.AddPolicy(CachePolicy.Hours, policy => {
+                    policy.Cache();
+                    policy.Expire(TimeSpan.FromHours(4));
+                    policy.Tag("hours");
+                });
+                
+                options.AddPolicy(CachePolicy.NoCache, policy => {
+                    policy.NoCache();
+                });
+            }).AddStackExchangeRedisOutputCache(options => {
+                options.Configuration = config.ToString();
+                options.InstanceName = "EliteAPI-OutputCache";
+            }).AddStackExchangeRedisCache(options => {
+                options.Configuration = config.ToString();
+                options.InstanceName = "EliteAPI";
+            });
+        
+        return services;
     }
     
-    public static void RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
+    public static IConfigurationBuilder RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
     {
         configurationBuilder.Sources.AddRange(new List<JsonConfigurationSource>
         {
@@ -160,9 +159,11 @@ public static class ServiceExtensions
             new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
             new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false }
         });
+        
+        return configurationBuilder;
     }
 
-    public static void RegisterEliteConfigFiles(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder RegisterEliteConfigFiles(this WebApplicationBuilder builder)
     {
         builder.Configuration.RegisterEliteConfigFiles();
 
@@ -179,9 +180,11 @@ public static class ServiceExtensions
 
         builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
             .Bind(ConfigGlobalRateLimitSettings.Settings);
+        
+        return builder;
     }
 
-    public static void AddEliteRateLimiting(this IServiceCollection services) {
+    public static IServiceCollection AddEliteRateLimiting(this IServiceCollection services) {
         var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
             
         services.AddRateLimiter(limiterOptions => {
@@ -224,6 +227,8 @@ public static class ServiceExtensions
                     });
             });
         });
+        
+        return services;
     }
 
     public static bool IsFromDockerNetwork(this IPAddress ip)
@@ -231,4 +236,9 @@ public static class ServiceExtensions
         // Check if the IP address is from the Docker network or local.
         return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.") || ip.MapToIPv4().ToString().StartsWith("172.");
     }
+}
+
+public static class CachePolicy {
+    public const string NoCache = "NoCache";
+    public const string Hours = "Hours";
 }

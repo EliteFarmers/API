@@ -21,8 +21,8 @@ public class GuildAdminAuthorizeAttribute : AuthorizeAttribute
 
 public static class GuildAdminPolicies 
 {
-	public static AuthorizationBuilder AddGuildAdminPolicies(this AuthorizationBuilder builder) {
-		foreach (GuildPermission permission in Enum.GetValues(typeof(GuildPermission))) {
+	public static AuthorizationOptions AddGuildAdminPolicies(this AuthorizationOptions builder) {
+		foreach (var permission in Enum.GetValues<GuildPermission>()) {
 			builder.AddPolicy($"{GuildAdminAuthorizeAttribute.PolicyPrefix}{Enum.GetName(permission)}", policy => {
 				policy.RequireAuthenticatedUser();
 				policy.Requirements.Add(new GuildAdminRequirement(permission));

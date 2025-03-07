@@ -4,7 +4,8 @@ public static class TimeExtensions
 {
     public static bool IsValidJacobContestTime(this long unixTimeSeconds, int fromYear = -1)
     {
-        var correctMinute = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).Minute == 15;
+        var time = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds);
+        var correctMinute = time is { Minute: 15, Second: 0, Millisecond: 0 };
         if (fromYear == -1) return correctMinute;
         
         return correctMinute && new SkyblockDate(unixTimeSeconds).Year == fromYear;

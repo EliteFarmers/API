@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Configuration.Settings; 
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace EliteAPI.Configuration.Settings; 
 
 public class ConfigLeaderboardSettings {
     public int CompleteRefreshInterval { get; set; }
@@ -8,6 +10,31 @@ public class ConfigLeaderboardSettings {
     public Dictionary<string, Leaderboard> SkillLeaderboards { get; set; } = new();
     public Dictionary<string, Leaderboard> PestLeaderboards { get; set; } = new();
     public Dictionary<string, Leaderboard> ProfileLeaderboards { get; set; } = new();
+
+    public Leaderboard? GetLeaderboardSettings(string leaderboardId, bool includeProfile = true) {
+        if (CollectionLeaderboards.TryGetValue(leaderboardId, out var lb)
+            || SkillLeaderboards.TryGetValue(leaderboardId, out lb)
+            || Leaderboards.TryGetValue(leaderboardId, out lb)
+            || PestLeaderboards.TryGetValue(leaderboardId, out lb)
+            || (includeProfile && ProfileLeaderboards.TryGetValue(leaderboardId, out lb))) {
+            return lb;
+        }
+
+        return null;
+    }
+
+    public bool TryGetLeaderboardSettings(string leaderboardId, [NotNullWhen(true)] out Leaderboard? settings, bool includeProfile = true) {
+        settings = GetLeaderboardSettings(leaderboardId, includeProfile);
+        return settings != null;
+    }
+    
+    public bool HasLeaderboard(string leaderboardId) {
+        return CollectionLeaderboards.ContainsKey(leaderboardId)
+               || SkillLeaderboards.ContainsKey(leaderboardId)
+               || Leaderboards.ContainsKey(leaderboardId)
+               || PestLeaderboards.ContainsKey(leaderboardId)
+               || ProfileLeaderboards.ContainsKey(leaderboardId);
+    }
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global

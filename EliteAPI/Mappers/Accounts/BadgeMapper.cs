@@ -14,9 +14,6 @@ public class BadgeMapper : Profile {
             .ForMember(b => b.Requirements, opt => opt.MapFrom(b => b.Requirements))
             .ReverseMap();
         
-        CreateMap<Badge, EditBadgeDto>();
-        CreateMap<EditBadgeDto, Badge>();
-        
         CreateMap<UserBadge, UserBadgeDto>()
             .ForMember(b => b.Id, opt => opt.MapFrom(b => b.BadgeId))
             .ForMember(b => b.Image, opt => opt.MapFrom(b => b.Badge.Image))

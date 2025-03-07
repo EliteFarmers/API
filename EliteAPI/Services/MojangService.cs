@@ -104,7 +104,7 @@ public partial class MojangService(
 
             return await FetchMinecraftAccountByUuid(data.Id);
         }
-        catch (Exception _)
+        catch (Exception)
         {
             logger.LogWarning("Failed to fetch Minecraft account \"{Ign}\" by IGN", ign);
         }
@@ -154,7 +154,7 @@ public partial class MojangService(
 
             return data;
         }
-        catch (Exception _)
+        catch (Exception)
         {
             logger.LogWarning("Failed to fetch Minecraft account \"{Uuid}\" by UUID", uuid);
         }

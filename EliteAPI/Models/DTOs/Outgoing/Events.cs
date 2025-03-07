@@ -110,6 +110,9 @@ public class EventTeamDto {
 public class EventTeamWithMembersDto : EventTeamDto {
     public List<EventMemberDto> Members { get; set; } = [];
     
+    /// <summary>
+    /// Join code for the team, only populated if authenticated user is the owner
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? JoinCode { get; set; }
 }
@@ -325,10 +328,6 @@ public class CreateWeightEventDto : CreateEventDto {
     /// Data specific to the weight event
     /// </summary>
     public WeightEventData? Data { get; set; }
-
-    public CreateWeightEventDto() {
-        Type = EventType.FarmingWeight;
-    }
 }
 
 public class CreateMedalEventDto : CreateEventDto {
@@ -336,10 +335,6 @@ public class CreateMedalEventDto : CreateEventDto {
     /// Data specific to the medal event
     /// </summary>
     public MedalEventData? Data { get; set; }
-
-    public CreateMedalEventDto() {
-        Type = EventType.Medals;
-    }
 }
 
 public class CreateEventMemberDto  {
@@ -354,5 +349,5 @@ public class CreateEventMemberDto  {
     
     public ulong UserId { get; set; }
     
-    public ProfileMember ProfileMember { get; set; }
+    public required ProfileMember ProfileMember { get; set; }
 }

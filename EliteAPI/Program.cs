@@ -1,4 +1,9 @@
+global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Models.Entities.Accounts.ApiUser>;
+using FastEndpoints;
 using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
+using EliteAPI;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
@@ -18,11 +23,15 @@ DotNetEnv.Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterEliteConfigFiles();
+builder.Services.AddEliteAuthentication(builder.Configuration);
+
+builder.Services.AddEliteRedisCache();
+builder.Services.AddIdempotency();
+builder.Services.AddResponseCaching();
+
+builder.Services.AddEliteSwaggerDocumentation();
 
 builder.Services.AddEliteServices();
-builder.Services.AddEliteAuthentication(builder.Configuration);
-builder.Services.AddEliteControllers();
-builder.Services.AddEliteRedisCache();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
@@ -61,8 +70,10 @@ builder.Services.AddOpenTelemetry()
         x.AddView("http.server.request.duration",
             new ExplicitBucketHistogramConfiguration
             {
-                Boundaries = new[] { 0, 0.005, 0.01, 0.025, 0.05,
-                    0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10 }
+                Boundaries = [
+                    0, 0.005, 0.01, 0.025, 0.05,
+                    0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10
+                ]
             });
         
         x.AddMeter("hypixel.api");
@@ -77,17 +88,18 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
     opt.KnownNetworks.Add(new IPNetwork(IPAddress.IPv6Any, 0));
 });
 
-var app = builder.Build();
-app.MapPrometheusScrapingEndpoint();
+builder.Services.AddFastEndpoints(o => {
+    o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All;
+});
 
+var app = builder.Build();
+
+app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
+app.UseResponseCaching();
 app.UseResponseCompression();
 app.UseRouting();
 app.UseRateLimiter();
-
-app.UseSwagger(opt => {
-    opt.RouteTemplate = "{documentName}/swagger.json";
-});
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -95,11 +107,32 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseOutputCache();
+
+app.UseDefaultExceptionHandler();
+
+app.UseFastEndpoints(o => {
+    o.Binding.ReflectionCache.AddFromEliteAPI();
+    o.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+    o.Binding.UsePropertyNamingPolicy = true;
+    o.Versioning.Prefix = "v";
+    o.Versioning.PrependToRoute = true;
+    
+    o.Endpoints.Configurator = endpoints => {
+        if (endpoints.IdempotencyOptions is not null) {
+            endpoints.IdempotencyOptions.CacheDuration = TimeSpan.FromMinutes(1);
+        } 
+    };
+
+    o.Security.RoleClaimType = ClaimTypes.Role;
+    o.Security.NameClaimType = ClaimTypes.Name;
+});
+
+app.UseEliteOpenApi();
 
 app.Use(async (context, next) => {
     var tagsFeature = context.Features.Get<IHttpMetricsTagsFeature>();
-    
     if (tagsFeature is not null) {
         var userAgent = context.Request.Headers.UserAgent.ToString() switch {
             var ua when ua.StartsWith("SkyHanni") => "SkyHanni",
