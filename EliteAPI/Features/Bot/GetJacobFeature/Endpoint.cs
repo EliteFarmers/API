@@ -30,6 +30,7 @@ internal sealed class GetJacobFeatureEndpoint(
 
 		if (guild.Features.JacobLeaderboard is not null) {
 			await SendAsync(guild.Features.JacobLeaderboard, cancellation: c);
+			return;
 		}
         
 		guild.Features.JacobLeaderboard = new GuildJacobLeaderboardFeature();
