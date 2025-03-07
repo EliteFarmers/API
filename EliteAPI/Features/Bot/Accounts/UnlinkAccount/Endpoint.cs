@@ -15,6 +15,8 @@ internal sealed class UnlinkAccountEndpoint(
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
 		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
+		
+		Description(x => x.Accepts<DiscordIdPlayerRequest>());
 
 		Summary(s => {
 			s.Summary = "Unlink Account";
