@@ -15,6 +15,8 @@ internal sealed class SendGuildJacobFeatureEndpoint(
 		Post("/user/guild/{DiscordId}/jacob/{LeaderboardId}/send");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
+		
+		Description(x => x.Accepts<SendJacobLeaderboardRequest>());
 
 		Summary(s => {
 			s.Summary = "Send a Jacob leaderboard to Discord";
