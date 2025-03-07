@@ -40,6 +40,7 @@ internal sealed class UpdateJacobFeatureEndpoint(
 		feature.RequiredRoles = request.Feature.RequiredRoles;
 		feature.ExcludedParticipations = request.Feature.ExcludedParticipations;
 		feature.ExcludedTimespans = request.Feature.ExcludedTimespans;
+		feature.Leaderboards = request.Feature.Leaderboards;
 
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
