@@ -14,7 +14,6 @@ internal sealed class GetSkillGraphsEndpoint(
 	public override void Configure() {
 		Get("/graph/{PlayerUuid}/{ProfileUuid}/skills");
 		AllowAnonymous();
-		ResponseCache(600, varyByQueryKeys: ["start", "end", "perDay"]);
 		
 		Summary(s => {
 			s.Summary = "Get Skill XP Over Time";
