@@ -14,7 +14,7 @@ internal sealed class GetCropGraphsEndpoint(
 	public override void Configure() {
 		Get("/graph/{PlayerUuid}/{ProfileUuid}/crops");
 		AllowAnonymous();
-		ResponseCache(600);
+		ResponseCache(600, varyByQueryKeys: ["start", "end", "perDay"]);
 		
 		Summary(s => {
 			s.Summary = "Get Crop Collections Over Time";
