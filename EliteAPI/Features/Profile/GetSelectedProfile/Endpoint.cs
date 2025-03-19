@@ -1,3 +1,4 @@
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Services.Interfaces;
@@ -10,7 +11,8 @@ using Result = Results<Ok<ProfileMemberDto>, NotFound>;
 
 internal sealed class GetSelectedProfileEndpoint(
 	IProfileService profileService,
-	AutoMapper.IMapper mapper
+	AutoMapper.IMapper mapper,
+	ILbService lbService
 ) : Endpoint<PlayerUuidRequest, Result> {
 	
 	public override void Configure() {
@@ -28,6 +30,9 @@ internal sealed class GetSelectedProfileEndpoint(
 		if (member is null) return TypedResults.NotFound();
 
 		var mapped = mapper.Map<ProfileMemberDto>(member);
+		// TODO: Temporary loading of leaderboards
+		mapped.Leaderboards = (await lbService.GetPlayerLeaderboardEntriesWithRankAsync(member.Id))
+			.Concat(await lbService.GetProfileLeaderboardEntriesWithRankAsync(member.ProfileId)).ToList();
 		return TypedResults.Ok(mapped);
 	}
 }

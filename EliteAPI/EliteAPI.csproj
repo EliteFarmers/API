@@ -42,6 +42,7 @@
 		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.1" />
 		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1" />
 		<PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+		<PackageReference Include="Riok.Mapperly" Version="4.1.1" ExcludeAssets="runtime" PrivateAssets="all" />
 		<PackageReference Include="Scalar.AspNetCore" Version="2.0.12" />
 		<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using EliteAPI.Features.Leaderboards.Services;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -55,6 +56,7 @@ public class ProfileMemberDto
     public SkillsDto Skills { get; set; } = new();
     public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
     public List<ProfileEventMemberDto> Events { get; set; } = [];
+    public List<PlayerLeaderboardEntryWithRankDto> Leaderboards { get; set; } = [];
 
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; }

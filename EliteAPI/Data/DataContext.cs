@@ -1,4 +1,5 @@
-﻿using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
@@ -71,6 +72,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<UserBadge> UserBadges { get; set; } = null!;
     public DbSet<Profile> Profiles { get; set; } = null!;
     public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
+    public DbSet<ProfileMemberMetadata> ProfileMemberMetadata { get; set; } = null!;
     public DbSet<Garden> Gardens { get; set; } = null!;
     public DbSet<PlayerData> PlayerData { get; set; } = null!;
     public DbSet<JacobData> JacobData { get; set; } = null!;
@@ -111,4 +113,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     // Timescale HyperTables
     public DbSet<SkillExperience> SkillExperiences { get; set; } = null!;
     public DbSet<CropCollection> CropCollections { get; set; } = null!;
+    
+    // Leaderboards
+    public DbSet<Leaderboard> Leaderboards { get; set; } = null!;
+    public DbSet<LeaderboardEntry> LeaderboardEntries { get; set; } = null!;
+    public DbSet<LeaderboardSnapshot> LeaderboardSnapshots { get; set; } = null!;
+    public DbSet<LeaderboardSnapshotEntry> LeaderboardSnapshotEntries { get; set; } = null!;
 }

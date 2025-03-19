@@ -3,6 +3,8 @@ using AutoMapper;
 using EliteAPI.Background.Profiles;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Leaderboards.Services;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
@@ -25,6 +27,7 @@ public class ProfileParser(
     IOptions<ChocolateFactorySettings> cfOptions,
     IOptions<ConfigCooldownSettings> coolDowns,
     ILogger<ProfileParser> logger,
+    ILbService lbService,
     ILeaderboardService leaderboardService,
     ISchedulerFactory schedulerFactory,
     IMessageService messageService,
@@ -47,6 +50,7 @@ public class ProfileParser(
                 .ThenInclude(p => p.JacobContest)
                 .Include(p => p.EventEntries)
                 .Include(p => p.ChocolateFactory)
+                .Include(p => p.Metadata)
                 .AsSplitQuery()
                 .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
         );
@@ -205,6 +209,17 @@ public class ProfileParser(
             
             // Only update if null (profile names can differ between members)
             existing.ProfileName ??= profile.ProfileName;
+            existing.Metadata ??= new ProfileMemberMetadata {
+                Name = existing.MinecraftAccount.Name ?? playerId,
+                Uuid = existing.MinecraftAccount.Id,
+                Profile = profile.ProfileName,
+                ProfileUuid = profile.ProfileId,
+                SkyblockExperience = existing.SkyblockXp
+            };
+            
+            existing.Metadata.Name = existing.MinecraftAccount.Name ?? playerId;
+            existing.Metadata.Profile = profile.ProfileName;
+            existing.Metadata.SkyblockExperience = existing.SkyblockXp;
             
             existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             
@@ -228,6 +243,13 @@ public class ProfileParser(
             Profile = profile,
             ProfileId = profile.ProfileId,
             ProfileName = profile.ProfileName,
+            
+            Metadata = new ProfileMemberMetadata {
+                Name = playerId,
+                Uuid = minecraftAccount.Id,
+                Profile = profile.ProfileName,
+                ProfileUuid = profile.ProfileId,
+            },
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
             IsSelected = selected,
@@ -335,6 +357,8 @@ public class ProfileParser(
         await ParseJacobContests(member.PlayerUuid, member.ProfileId, member.Id, incomingData.Jacob);
 
         UpdateLeaderboards(member, previousApi);
+
+        await lbService.UpdateMemberLeaderboardsAsync(member, CancellationToken.None);
     }
     
     private void UpdateLeaderboards(ProfileMember member, ApiAccess previousApi) {

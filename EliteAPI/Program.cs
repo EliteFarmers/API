@@ -8,6 +8,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Utilities;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
@@ -160,7 +161,7 @@ using (var scope = app.Services.CreateScope())
 
     var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     logging.LogInformation("Starting EliteAPI...");
-
+    
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try
     {
@@ -170,6 +171,9 @@ using (var scope = app.Services.CreateScope())
     {
         Console.Error.WriteLine(e);
     }
+    
+    var lbRegistration = scope.ServiceProvider.GetRequiredService<ILeaderboardRegistrationService>();
+    await lbRegistration.RegisterLeaderboardsAsync(CancellationToken.None);
 }
 
 app.Run();

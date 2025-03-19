@@ -1,4 +1,5 @@
 ﻿using EliteAPI.Data;
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.Interfaces;

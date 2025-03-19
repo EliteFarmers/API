@@ -98,7 +98,6 @@ public static class ServiceExtensions
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IDiscordService, DiscordService>();
-        services.AddScoped<ILeaderboardService, LeaderboardService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.AddScoped<IBadgeService, BadgeService>();
