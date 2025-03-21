@@ -44,7 +44,7 @@
 		<PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
 		<PackageReference Include="Scalar.AspNetCore" Version="2.0.12" />
 		<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
 		<PackageReference Include="Z.EntityFramework.Extensions.EFCore" Version="9.103.7.1" />
 	</ItemGroup>
