@@ -22,3 +22,21 @@ public class CropNetherWartLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestoneNetherWartLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Nether Wart Milestone Collection",
+		ShortTitle = "Nether Wart Milestone",
+		Slug = "netherwart-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.NetherWart;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}

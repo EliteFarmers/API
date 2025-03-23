@@ -22,3 +22,21 @@ public class CropPumpkinLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestonePumpkinLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Pumpkin Milestone Collection",
+		ShortTitle = "Pumpkin Milestone",
+		Slug = "pumpkin-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.Pumpkin;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}

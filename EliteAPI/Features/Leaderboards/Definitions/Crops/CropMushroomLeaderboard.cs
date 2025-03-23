@@ -22,3 +22,21 @@ public class CropMushroomLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestoneMushroomLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Mushroom Milestone Collection",
+		ShortTitle = "Mushroom Milestone",
+		Slug = "mushroom-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.Mushroom;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}

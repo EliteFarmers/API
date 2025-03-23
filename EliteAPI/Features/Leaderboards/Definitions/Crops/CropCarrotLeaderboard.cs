@@ -22,3 +22,21 @@ public class CropCarrotLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestoneCarrotLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Carrot Milestone Collection",
+		ShortTitle = "Carrot Milestone",
+		Slug = "carrot-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.Carrot;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}

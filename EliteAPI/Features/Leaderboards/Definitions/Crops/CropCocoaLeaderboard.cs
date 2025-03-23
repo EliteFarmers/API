@@ -22,3 +22,21 @@ public class CropCocoaLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestoneCocoaLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Cocoa Bean Milestone Collection",
+		ShortTitle = "Cocoa Bean Milestone",
+		Slug = "cocoa-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.CocoaBeans;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}

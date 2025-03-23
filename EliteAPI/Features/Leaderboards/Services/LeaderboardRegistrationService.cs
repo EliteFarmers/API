@@ -14,46 +14,12 @@ public interface ILeaderboardRegistrationService {
 [RegisterService<ILeaderboardRegistrationService>(LifeTime.Singleton)]
 public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILeaderboardRegistrationService
 {
-	public List<ILeaderboardDefinition> Leaderboards { get; } = [
-		new FarmingWeightLeaderboard(),
-		new GardenXpLeaderboard(),
-		new JacobContestsLeaderboard(),
-		new JacobFirstPlaceContestsLeaderboard(),
-		new JacobMedalsBronzeLeaderboard(),
-		new JacobMedalsSilverLeaderboard(),
-		new JacobMedalsGoldLeaderboard(),
-		new JacobMedalsPlatinumLeaderboard(),
-		new JacobMedalsDiamondLeaderboard(),
-		new SkyblockLevelLeaderboard(),
-		new TotalChocolateLeaderboard(),
-		new VisitorsAcceptedLeaderboard(),
-		new CropCactusLeaderboard(),
-		new CropCarrotLeaderboard(),
-		new CropCocoaLeaderboard(),
-		new CropMelonLeaderboard(),
-		new CropMushroomLeaderboard(),
-		new CropNetherWartLeaderboard(),
-		new CropPotatoLeaderboard(),
-		new CropPumpkinLeaderboard(),
-		new CropSugarCaneLeaderboard(),
-		new CropWheatLeaderboard(),
-		new PestMiteLeaderboard(),
-		new PestCricketLeaderboard(),
-		new PestMothLeaderboard(),
-		new PestEarthwormLeaderboard(),
-		new PestSlugLeaderboard(),
-		new PestBeetleLeaderboard(),
-		new PestLocustLeaderboard(),
-		new PestRatLeaderboard(),
-		new PestMosquitoLeaderboard(),
-		new PestFlyLeaderboard(),
-		new PestFieldMouseLeaderboard()
-	];
-
 	public async Task RegisterLeaderboardsAsync(CancellationToken c) {
 		using var scope = provider.CreateScope();
 		var context = scope.ServiceProvider.GetRequiredService<DataContext>();
 		var logger = scope.ServiceProvider.GetRequiredService<ILogger<LeaderboardRegistrationService>>();
+		
+		var registered = new Dictionary<string, bool>();
 		
 		var start = DateTime.UtcNow;
 		foreach (var leaderboard in Leaderboards) {
@@ -84,6 +50,10 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 			var existing = await context.Leaderboards
 				.FirstOrDefaultAsync(lb => lb.Slug.Equals(slug), cancellationToken: c);
 
+			if (!registered.TryAdd(slug, true)) {
+				throw new InvalidOperationException($"Leaderboard with slug {slug} is already registered");
+			}
+
 			if (existing is not null) {
 				existing.ShortTitle = leaderboard.Info.ShortTitle;
 				existing.Title = leaderboard.Info.Title;
@@ -103,4 +73,62 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 			await context.Leaderboards.AddAsync(newLeaderboard, c);
 		}
 	}
+	
+	public List<ILeaderboardDefinition> Leaderboards { get; } = [
+		new FarmingWeightLeaderboard(),
+		new FarmingWeightMonthlyLeaderboard(),
+		new GardenXpLeaderboard(),
+		new JacobContestsLeaderboard(),
+		new JacobFirstPlaceContestsLeaderboard(),
+		new JacobMedalsBronzeLeaderboard(),
+		new JacobMedalsSilverLeaderboard(),
+		new JacobMedalsGoldLeaderboard(),
+		new JacobMedalsPlatinumLeaderboard(),
+		new JacobMedalsDiamondLeaderboard(),
+		new SkyblockLevelLeaderboard(),
+		new TotalChocolateLeaderboard(),
+		new VisitorsAcceptedLeaderboard(),
+		new CropCactusLeaderboard(),
+		new CropCarrotLeaderboard(),
+		new CropCocoaLeaderboard(),
+		new CropMelonLeaderboard(),
+		new CropMushroomLeaderboard(),
+		new CropNetherWartLeaderboard(),
+		new CropPotatoLeaderboard(),
+		new CropPumpkinLeaderboard(),
+		new CropSugarCaneLeaderboard(),
+		new CropWheatLeaderboard(),
+		new MilestoneCactusLeaderboard(),
+		new MilestoneCarrotLeaderboard(),
+		new MilestoneCocoaLeaderboard(),
+		new MilestoneMelonLeaderboard(),
+		new MilestoneMushroomLeaderboard(),
+		new MilestoneNetherWartLeaderboard(),
+		new MilestonePotatoLeaderboard(),
+		new MilestonePumpkinLeaderboard(),
+		new MilestoneSugarCaneLeaderboard(),
+		new MilestoneWheatLeaderboard(),
+		new PestMiteLeaderboard(),
+		new PestCricketLeaderboard(),
+		new PestMothLeaderboard(),
+		new PestEarthwormLeaderboard(),
+		new PestSlugLeaderboard(),
+		new PestBeetleLeaderboard(),
+		new PestLocustLeaderboard(),
+		new PestRatLeaderboard(),
+		new PestMosquitoLeaderboard(),
+		new PestFlyLeaderboard(),
+		new PestFieldMouseLeaderboard(),
+		new SkillAlchemyLeaderboard(),
+		new SkillCarpentryLeaderboard(),
+		new SkillCombatLeaderboard(),
+		new SkillEnchantingLeaderboard(),
+		new SkillFarmingLeaderboard(),
+		new SkillFishingLeaderboard(),
+		new SkillForagingLeaderboard(),
+		new SkillMiningLeaderboard(),
+		new SkillRunecraftingLeaderboard(),
+		new SkillSocialLeaderboard(),
+		new SkillTamingLeaderboard()
+	];
 }

@@ -22,3 +22,21 @@ public class CropPotatoLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestonePotatoLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Potato Milestone Collection",
+		ShortTitle = "Potato Milestone",
+		Slug = "potato-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.Potato;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}

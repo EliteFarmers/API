@@ -22,3 +22,21 @@ public class CropWheatLeaderboard : IMemberLeaderboardDefinition {
 		return crop;
 	}
 }
+
+public class MilestoneWheatLeaderboard : IProfileLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Wheat Milestone Collection",
+		ShortTitle = "Wheat Milestone",
+		Slug = "wheat-milestone",
+		Category = "Milstones",
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+		var crop = garden.Crops.Wheat;
+		
+		if (crop == 0) return null;
+		return crop;
+	}
+}
