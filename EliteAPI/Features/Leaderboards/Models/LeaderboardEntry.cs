@@ -15,7 +15,9 @@ public class LeaderboardEntry
 	public string? IntervalIdentifier { get; set; }
 
 	public string? ProfileId { get; set; }
+	public EliteAPI.Models.Entities.Hypixel.Profile? Profile { get; set; }
 	public Guid? ProfileMemberId { get; set; }
+	public EliteAPI.Models.Entities.Hypixel.ProfileMember? ProfileMember { get; set; }
 	
 	public decimal InitialScore { get; set; }
 	public decimal Score { get; set; }

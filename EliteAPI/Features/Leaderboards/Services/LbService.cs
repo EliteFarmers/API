@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Features.Leaderboards.Services;
 
 public interface ILbService {
+	Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId);
+	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
 	Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c);
 	Task UpdateGardenLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Garden member, CancellationToken c);
@@ -24,6 +27,56 @@ public class LbService(
 	DataContext context) 
 	: ILbService 
 {
+	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {
+		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return (null, null);
+		
+		var lb = await context.Leaderboards
+			.AsNoTracking()
+			.FirstOrDefaultAsync(lb => lb.Slug == leaderboardId);
+		
+		return (lb, definition);
+	}
+
+	public async Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
+		var (lb, definition) = await GetLeaderboard(leaderboardId);
+		if (lb is null || definition is null) return [];
+
+		if (definition is IMemberLeaderboardDefinition) {
+			return await context.LeaderboardEntries.AsNoTracking()
+				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileMemberId != null)
+				.OrderByDescending(e => e.Score)
+				.Skip(offset)
+				.Take(limit)
+				.Select(e => new LeaderboardEntryDto {
+					Uuid = e.ProfileMember!.PlayerUuid,
+					Profile = e.ProfileMember.ProfileName,
+					Amount = (double) e.Score,
+					Ign = e.ProfileMember.MinecraftAccount.Name
+				}).ToListAsync();
+		} 
+		
+		if (definition is IProfileLeaderboardDefinition) {
+			return await context.LeaderboardEntries.AsNoTracking()
+				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileId != null)
+				.Include(e => e.Profile)
+				.OrderByDescending(e => e.Score)
+				.Skip(offset)
+				.Take(limit)
+				.Select(e => new LeaderboardEntryDto {
+					Uuid = e.Profile!.ProfileId,
+					Profile = e.Profile!.ProfileName,
+					Amount = (double) e.Score,
+					Members = e.Profile.Members.Select(m => new ProfileLeaderboardMemberDto {
+						Ign = m.MinecraftAccount.Name,
+						Uuid = m.PlayerUuid,
+						Xp = m.SkyblockXp
+					}).OrderByDescending(s => s.Xp).ToList()
+				}).ToListAsync();
+		}
+		
+		return [];
+	}
+
 	public async Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c) {
 		var time = DateTime.UtcNow;
 		foreach (var leaderboard in registrationService.Leaderboards) {

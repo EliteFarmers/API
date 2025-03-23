@@ -31,6 +31,8 @@ internal sealed class LeaderboardSliceRequestValidator : Validator<LeaderboardSl
 		
 		RuleFor(x => x.Limit)
 			.GreaterThanOrEqualTo(0)
-			.WithMessage("Limit must be greater than or equal to 0");
+			.WithMessage("Limit must be greater than or equal to 0")
+			.LessThanOrEqualTo(10_000)
+			.WithMessage("Limit must be less than or equal to 10,000");
 	}
 }

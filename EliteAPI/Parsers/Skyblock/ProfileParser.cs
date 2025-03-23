@@ -226,6 +226,10 @@ public class ProfileParser(
             existing.MinecraftAccount.ProfilesLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             context.MinecraftAccounts.Update(existing.MinecraftAccount);
             context.Entry(existing).State = EntityState.Modified;
+
+            if (existing.WasRemoved == false) {
+                profile.IsDeleted = false;
+            }
             
             await UpdateProfileMember(profile, existing, memberData);
             
@@ -262,6 +266,10 @@ public class ProfileParser(
         minecraftAccount.ProfilesLastUpdated = playerId == requesterUuid 
             ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : 0;
 
+        if (member.WasRemoved == false) {
+            profile.IsDeleted = false;
+        }
+
         await UpdateProfileMember(profile, member, memberData);
 
         try
@@ -272,6 +280,13 @@ public class ProfileParser(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to save profile member {ProfileMemberId} to database", member.Id);
+        }
+
+        // Set if the profile is deleted
+        if (shouldRemove && !profile.IsDeleted) {
+            await context.Profiles
+                .Where(p => p.ProfileId == profile.ProfileId && p.Members.All(m => m.WasRemoved))
+                .ExecuteUpdateAsync(p => p.SetProperty(pr => pr.IsDeleted, true));
         }
     }
 

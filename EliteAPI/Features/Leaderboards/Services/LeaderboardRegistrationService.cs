@@ -8,6 +8,7 @@ namespace EliteAPI.Features.Leaderboards.Services;
 
 public interface ILeaderboardRegistrationService {
 	public List<ILeaderboardDefinition> Leaderboards { get; }
+	public Dictionary<string, ILeaderboardDefinition> LeaderboardsById { get; }
 	Task RegisterLeaderboardsAsync(CancellationToken c);
 }
 
@@ -18,9 +19,7 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		using var scope = provider.CreateScope();
 		var context = scope.ServiceProvider.GetRequiredService<DataContext>();
 		var logger = scope.ServiceProvider.GetRequiredService<ILogger<LeaderboardRegistrationService>>();
-		
-		var registered = new Dictionary<string, bool>();
-		
+
 		var start = DateTime.UtcNow;
 		foreach (var leaderboard in Leaderboards) {
 			await UpdateLeaderboard(leaderboard);
@@ -50,7 +49,7 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 			var existing = await context.Leaderboards
 				.FirstOrDefaultAsync(lb => lb.Slug.Equals(slug), cancellationToken: c);
 
-			if (!registered.TryAdd(slug, true)) {
+			if (!LeaderboardsById.TryAdd(slug, leaderboard)) {
 				throw new InvalidOperationException($"Leaderboard with slug {slug} is already registered");
 			}
 
@@ -74,6 +73,7 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		}
 	}
 	
+	public Dictionary<string, ILeaderboardDefinition> LeaderboardsById { get; } = new Dictionary<string, ILeaderboardDefinition>();
 	public List<ILeaderboardDefinition> Leaderboards { get; } = [
 		new FarmingWeightLeaderboard(),
 		new FarmingWeightMonthlyLeaderboard(),
