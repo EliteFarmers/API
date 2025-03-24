@@ -43,7 +43,7 @@ public class LbService(
 
 		if (definition is IMemberLeaderboardDefinition) {
 			return await context.LeaderboardEntries.AsNoTracking()
-				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileMemberId != null)
+				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileMemberId != null && !e.IsRemoved)
 				.OrderByDescending(e => e.Score)
 				.Skip(offset)
 				.Take(limit)
@@ -51,13 +51,14 @@ public class LbService(
 					Uuid = e.ProfileMember!.PlayerUuid,
 					Profile = e.ProfileMember.ProfileName,
 					Amount = (double) e.Score,
+					Removed = e.IsRemoved,
 					Ign = e.ProfileMember.MinecraftAccount.Name
 				}).ToListAsync();
 		} 
 		
 		if (definition is IProfileLeaderboardDefinition) {
 			return await context.LeaderboardEntries.AsNoTracking()
-				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileId != null)
+				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileId != null && !e.IsRemoved)
 				.Include(e => e.Profile)
 				.OrderByDescending(e => e.Score)
 				.Skip(offset)
@@ -66,6 +67,7 @@ public class LbService(
 					Uuid = e.Profile!.ProfileId,
 					Profile = e.Profile!.ProfileName,
 					Amount = (double) e.Score,
+					Removed = e.IsRemoved,
 					Members = e.Profile.Members.Select(m => new ProfileLeaderboardMemberDto {
 						Ign = m.MinecraftAccount.Name,
 						Uuid = m.PlayerUuid,
@@ -109,18 +111,25 @@ public class LbService(
 			
 			if (definition is IMemberLeaderboardDefinition memberLb) {
 				var score = memberLb.GetScoreFromMember(member);
-				if (score is null) continue;
-
+				
 				if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+					entry.IsRemoved = member.WasRemoved;
+					
+					if (score is null) {
+						updatedEntries.Add(entry);
+						continue;
+					}
+					
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore 
 						: score.ToDecimal(CultureInfo.InvariantCulture);
 					
 					entry.Score = newScore;
-					entry.IsRemoved = member.WasRemoved;
 					updatedEntries.Add(entry);
 					continue;
 				}
+				
+				if (score is null) continue;
 				
 				var newEntry = new Models.LeaderboardEntry() {
 					LeaderboardId = lb.LeaderboardId,
@@ -217,19 +226,26 @@ public class LbService(
 			var score =
 				(profile is not null ? profileLb.GetScoreFromProfile(profile) : null)
 				?? (profile?.Garden is not null ? profileLb.GetScoreFromGarden(profile.Garden) : null);
-			if (score is null) continue;
 				
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+				entry.IsRemoved = profile!.IsDeleted;
+					
+				if (score is null) {
+					updatedEntries.Add(entry);
+					continue;
+				}
+					
 				var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 					? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore 
 					: score.ToDecimal(CultureInfo.InvariantCulture);
 					
 				entry.Score = newScore;
-				entry.IsRemoved = profile?.IsDeleted ?? entry.IsRemoved;
 				updatedEntries.Add(entry);
 				continue;
 			}
-				
+			
+			if (score is null) continue;
+
 			var newEntry = new Models.LeaderboardEntry() {
 				LeaderboardId = lb.LeaderboardId,
 				IntervalIdentifier = intervalIdentifier,
@@ -274,8 +290,12 @@ public class LbService(
 
 	public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId)
     {
+	    var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Current);
+	    var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+	    
         var playerEntries = await context.LeaderboardEntries
-            .Where(le => le.ProfileMemberId == profileMemberId)
+            .Where(le => le.ProfileMemberId == profileMemberId
+				&& (le.IntervalIdentifier == monthlyInterval || le.IntervalIdentifier == weeklyInterval || le.IntervalIdentifier == null))
             .Select(le => new
             {
                 le.LeaderboardId,
@@ -310,7 +330,9 @@ public class LbService(
                 InitialAmount = (double) entry.InitialScore,
                 Rank = rank,
                 Title = entry.Leaderboard.Title,
-	            Slug = entry.Leaderboard.Slug
+	            Slug = entry.Leaderboard.Slug,
+	            Short = entry.Leaderboard.ShortTitle,
+	            Type = entry.Leaderboard.ScoreDataType
             });
         }
 
@@ -319,8 +341,12 @@ public class LbService(
 	
 	public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(string profileId)
 	{
+		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Current);
+		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+		
 		var playerEntries = await context.LeaderboardEntries
-			.Where(le => le.ProfileId == profileId)
+			.Where(le => le.ProfileId == profileId
+				&& (le.IntervalIdentifier == monthlyInterval || le.IntervalIdentifier == weeklyInterval || le.IntervalIdentifier == null))
 			.Select(le => new
 			{
 				le.LeaderboardId,
@@ -358,7 +384,9 @@ public class LbService(
 				// IsRemoved = entry.IsRemoved,
 				Rank = rank,
 				Title = entry.Leaderboard.Title,
-				Slug = entry.Leaderboard.Slug
+				Slug = entry.Leaderboard.Slug,
+				Short = entry.Leaderboard.ShortTitle,
+				Type = entry.Leaderboard.ScoreDataType
 			});
 		}
 
@@ -369,6 +397,8 @@ public class LbService(
 public class PlayerLeaderboardEntryWithRankDto
 {	
 	public required string Title { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? Short { get; set; }
 	public required string Slug { get; set; }
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public bool? Profile { get; set; }
@@ -379,6 +409,7 @@ public class PlayerLeaderboardEntryWithRankDto
 	public double Amount { get; set; }
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public double InitialAmount { get; set; }
-	// public DateTimeOffset EntryTimestamp { get; set; }
-	// public bool IsRemoved { get; set; }
+	
+	[JsonConverter(typeof(JsonStringEnumConverter<LeaderboardScoreDataType>))]
+	public LeaderboardScoreDataType Type { get; set; }
 }

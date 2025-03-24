@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Hypixel;
 
@@ -33,4 +34,35 @@ public interface IProfileLeaderboardDefinition : ILeaderboardDefinition
 	IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
 		return null;
 	}
+}
+
+public class LeaderboardInfoDto {
+	/// <summary>
+	/// Leaderboard title
+	/// </summary>
+	public required string Title { get; set; }
+	/// <summary>
+	/// Leaderboard short title
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? Short { get; set; }
+	/// <summary>
+	/// Leaderboard category
+	/// </summary>
+	public required string Category { get; set; }
+	/// <summary>
+	/// If true, the leaderboard is profile based
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public bool Profile { get; set; }
+	/// <summary>
+	/// Interval type of the leaderboard
+	/// </summary>
+	[JsonConverter(typeof(JsonStringEnumConverter<LeaderboardType>))]
+	public LeaderboardType IntervalType { get; set; }
+	/// <summary>
+	/// Score data type of the leaderboard
+	/// </summary>
+	[JsonConverter(typeof(JsonStringEnumConverter<LeaderboardScoreDataType>))]
+	public LeaderboardScoreDataType ScoreDataType { get; set; }
 }

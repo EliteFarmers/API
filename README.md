@@ -53,7 +53,7 @@ This API is built using [Fast Endpoints](https://fast-endpoints.com/). The docum
 3. Fill in the `ELITE_API_URL` environment variable in the Website or Bot with http://localhost:5164/.
 4. The Website and Bot should now be using your local API.
 
-When making changes to responses or adding new endpoints, download the API spec (http://localhost:5164/v1/swagger.json) and run `pnpm run generate-api-types` in the bot/website to update the typings.
+When making changes to responses or adding new endpoints, download the API spec (http://localhost:5164/openapi/v1.json) and run `pnpm run generate-api-types` in the bot/website to update the typings.
 
 ### Making Database Changes
 

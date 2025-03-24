@@ -1,17 +1,19 @@
-using EliteAPI.Configuration.Settings;
+using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using FastEndpoints.Swagger;
-using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetLeaderboards;
 
+internal sealed class LeaderboardsResponse {
+	public required Dictionary<string, LeaderboardInfoDto> Leaderboards { get; set; }
+}
+
 internal sealed class GetLeaderboardsEndpoint(
-	IOptions<ConfigLeaderboardSettings> lbSettings) 
-	: EndpointWithoutRequest<ConfigLeaderboardSettings> {
-	
-	private readonly ConfigLeaderboardSettings _settings = lbSettings.Value;
-	
+	ILeaderboardRegistrationService lbRegistrationService)
+	: EndpointWithoutRequest<LeaderboardsResponse> 
+{
 	public override void Configure() {
 		Get("/leaderboards");
 		AllowAnonymous();
@@ -27,6 +29,22 @@ internal sealed class GetLeaderboardsEndpoint(
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
-		await SendAsync(_settings, cancellation: c);
+		var leaderboards = lbRegistrationService.LeaderboardsById
+			.ToDictionary(l => l.Key, l => new LeaderboardInfoDto {
+				Title = l.Value.Info.Title,
+				Short = l.Value.Info.ShortTitle,
+				Category = l.Value.Info.Category,
+				Profile = l.Value is IProfileLeaderboardDefinition,
+				IntervalType = l.Key.EndsWith("-monthly") 
+					? LeaderboardType.Monthly 
+					: l.Key.EndsWith("-weekly") 
+						? LeaderboardType.Weekly 
+						: LeaderboardType.Current,
+				ScoreDataType = l.Value.Info.ScoreDataType
+			});
+		
+		await SendAsync(new LeaderboardsResponse() {
+			Leaderboards = leaderboards,
+		}, cancellation: c);
 	}
 }

@@ -38,6 +38,9 @@ public class LeaderboardEntryDto {
     /// </summary>
     public double Amount { get; init; }
     
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Removed { get; init; }
+    
     /// <summary>
     /// List of members if profile leaderboard
     /// </summary>

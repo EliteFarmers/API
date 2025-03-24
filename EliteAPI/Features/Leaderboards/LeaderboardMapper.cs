@@ -9,6 +9,7 @@ namespace EliteAPI.Features.Leaderboards;
 public static partial class LeaderboardMapper {
 	[MapperIgnoreSource(nameof(LeaderboardEntry.MemberId))]
 	[MapperIgnoreTarget(nameof(LeaderboardEntryDto.MembersSerializationHelper))]
+	[MapperIgnoreTarget(nameof(LeaderboardEntryDto.Removed))]
 	public static partial LeaderboardEntryDto MapToDto(this LeaderboardEntry entry);
 	
 	public static partial LeaderboardEntryWithRankDto MapToDto(this LeaderboardEntryWithRankDto entry);
@@ -18,6 +19,7 @@ public static partial class LeaderboardMapper {
 	[MapperIgnoreTarget(nameof(LeaderboardDto.Offset))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.MaxEntries))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.Entries))]
+	[MapperIgnoreTarget(nameof(LeaderboardDto.ShortTitle))]
 	public static partial LeaderboardDto MapToDto(this Leaderboard leaderboard);
 	
 	public static partial ProfileLeaderboardMemberDto MapToDto(this ProfileLeaderboardMember dto);
