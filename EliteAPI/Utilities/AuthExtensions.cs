@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using EliteAPI.Models.Entities.Accounts;
 
 namespace EliteAPI.Utilities;
 
@@ -8,7 +9,7 @@ public static class AuthExtensions {
 			return null;
 		}
 
-		return user.FindFirstValue(ClaimTypes.NameIdentifier);
+		return user.FindFirstValue(ClaimNames.NameId);
 	}
 	
 	public static ulong? GetDiscordId(this ClaimsPrincipal user) {
@@ -16,7 +17,7 @@ public static class AuthExtensions {
 			return null;
 		}
 
-		if (!ulong.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var id)) {
+		if (!ulong.TryParse(user.FindFirstValue(ClaimNames.NameId), out var id)) {
 			return null;
 		}
 

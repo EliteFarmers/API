@@ -86,7 +86,7 @@ public class AuthService(
 		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(dto.AccessToken);
 		
 		var userId = tokenContent.Claims.ToList()
-			.FirstOrDefault(q => q.Type == ClaimTypes.NameIdentifier)?.Value;
+			.FirstOrDefault(q => q.Type == ClaimNames.NameId)?.Value;
 		if (userId is null) return null;
 
 		return await VerifyRefreshToken(userId, dto.RefreshToken);
@@ -134,18 +134,18 @@ public class AuthService(
 			?? user.Account.MinecraftAccounts.FirstOrDefault();
 		
 		var claims = new List<Claim> {
-			new(ClaimTypes.Name, user.UserName ?? string.Empty),
-			new(ClaimTypes.NameIdentifier, user.Id),
-			new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-			new(ApiUserClaims.Avatar, user.Account.Avatar ?? string.Empty),
-			new(ApiUserClaims.Ign, primaryAccount?.Name ?? string.Empty),
-			new(ApiUserClaims.Uuid, primaryAccount?.Id ?? string.Empty),
-			new(ApiUserClaims.DiscordAccessExpires, user.DiscordAccessTokenExpires.ToUnixTimeSeconds().ToString())
+			new(ClaimNames.Name, user.UserName ?? string.Empty),
+			new(ClaimNames.NameId, user.Id),
+			new(ClaimNames.Jti, Guid.NewGuid().ToString()),
+			new(ClaimNames.Avatar, user.Account.Avatar ?? string.Empty),
+			new(ClaimNames.Ign, primaryAccount?.Name ?? string.Empty),
+			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty),
+			new(ClaimNames.DiscordAccessExpires, user.DiscordAccessTokenExpires.ToUnixTimeSeconds().ToString())
 		};
 		
 		// Add roles to the claims
 		var roles = await userManager.GetRolesAsync(user);
-		claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+		claims.AddRange(roles.Select(role => new Claim(ClaimNames.Role, role)));
 
 		var expiresAt = configuration["Jwt:TokenExpirationInMinutes"] is { } expiration
 			? DateTime.UtcNow.AddMinutes(int.Parse(expiration))

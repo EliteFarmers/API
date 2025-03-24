@@ -59,7 +59,11 @@ public static class ServiceExtensions
 
         services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
 
-        services.AddIdentityCore<ApiUser>()
+        services.AddIdentityCore<ApiUser>(o => {
+                o.ClaimsIdentity.RoleClaimType = ClaimNames.Role;
+                o.ClaimsIdentity.UserIdClaimType = ClaimNames.NameId;
+                o.ClaimsIdentity.UserNameClaimType = ClaimNames.Name;
+            })
             .AddRoles<IdentityRole>()
             .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
             .AddDefaultTokenProviders()

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using EliteAPI.Models.Entities.Discord;
 using Microsoft.AspNetCore.Identity;
@@ -23,7 +24,13 @@ public class ApiUser : IdentityUser {
 	public EliteAccount Account { get; set; } = null!;
 }
 
-public static class ApiUserClaims {
+public static class ClaimNames {
+	public const string Role = "role";
+	public const string Name = JwtRegisteredClaimNames.Name;
+	public const string Email = JwtRegisteredClaimNames.Email;
+	public const string NameId = JwtRegisteredClaimNames.NameId;
+	public const string Jti	= JwtRegisteredClaimNames.Jti;
+	
 	public const string Avatar = "Avatar";
 	public const string Ign = "Ign";
 	public const string Uuid = "Uuid";
@@ -40,7 +47,7 @@ public static class ApiUserPolicies {
 
 public static class ApiUserExtensions {
 	public static bool AccessTokenExpired(this ClaimsPrincipal user) {
-		var value = user.FindFirstValue(ApiUserClaims.DiscordAccessExpires);
+		var value = user.FindFirstValue(ClaimNames.DiscordAccessExpires);
 		if (value is null || !long.TryParse(value, out var seconds)) return true;
 		
 		return seconds < DateTimeOffset.UtcNow.ToUnixTimeSeconds();
