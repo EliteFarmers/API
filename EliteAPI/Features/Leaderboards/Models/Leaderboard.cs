@@ -65,5 +65,7 @@ public class LeaderboardConfiguration : IEntityTypeConfiguration<Leaderboard>
 		builder.Property(ld => ld.ScoreDataType).IsRequired().HasConversion<string>().HasMaxLength(50);
 		
 		builder.HasOne(ld => ld.Icon).WithMany().HasForeignKey(ld => ld.IconId);
+		
+		builder.HasIndex(ld => ld.Slug).IsUnique();
 	}
 }

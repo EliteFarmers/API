@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using AutoMapper;
+using EFCore.BulkExtensions;
 using EliteAPI.Background.Profiles;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
@@ -163,6 +164,8 @@ public class ProfileParser(
         } else if (existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
             await UpdateGardenData(profileId);
         }
+
+        await lbService.UpdateProfileLeaderboardsAsync(profileObj, CancellationToken.None);
 
         try
         {
@@ -468,7 +471,7 @@ public class ProfileParser(
                 Mouse = member.Farming.Pests.Mouse
             };
             
-            await context.CropCollections.SingleInsertAsync(cropCollection);
+            await context.BulkInsertAsync([ cropCollection ]);
 
             // Update leaderboard positions
             var memberId = member.Id.ToString();
@@ -504,7 +507,7 @@ public class ProfileParser(
                 ProfileMember = member,
             };
             
-            await context.SkillExperiences.SingleInsertAsync(skillExp);
+            await context.BulkInsertAsync([ skillExp ]);
             
             // Update leaderboard positions
             var memberId = member.Id.ToString();

@@ -10,7 +10,6 @@ using EliteAPI.Models.Entities.Timescale;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using Z.EntityFramework.Extensions;
 
 namespace EliteAPI.Data;
 
@@ -20,8 +19,6 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        EntityFrameworkManager.IsCommunity = true;
-        
         base.OnConfiguring(optionsBuilder);
         
         // Get connection string from config "PostgresConnection"

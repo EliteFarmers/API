@@ -7,12 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRanks;
 
+[Obsolete]
 internal sealed class GetPlayerRanksEndpoint(
 	DataContext dataContext,
 	ILeaderboardService lbService
 	) : Endpoint<PlayerProfileUuidRequest, LeaderboardPositionsDto> 
 {
-	
 	public override void Configure() {
 		Get("/leaderboard/ranks/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();

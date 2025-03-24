@@ -83,6 +83,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("IconId");
 
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
                     b.ToTable("Leaderboards");
                 });
 
@@ -2032,7 +2035,19 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.Profile", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId");
+
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
+                        .WithMany()
+                        .HasForeignKey("ProfileMemberId");
+
                     b.Navigation("Leaderboard");
+
+                    b.Navigation("Profile");
+
+                    b.Navigation("ProfileMember");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshot", b =>

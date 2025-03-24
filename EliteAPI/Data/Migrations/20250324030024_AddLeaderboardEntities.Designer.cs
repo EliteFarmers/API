@@ -21,7 +21,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250317005552_AddLeaderboardEntities")]
+    [Migration("20250324030024_AddLeaderboardEntities")]
     partial class AddLeaderboardEntities
     {
         /// <inheritdoc />
@@ -85,6 +85,9 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("LeaderboardId");
 
                     b.HasIndex("IconId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
 
                     b.ToTable("Leaderboards");
                 });
@@ -2035,7 +2038,19 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.Profile", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId");
+
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
+                        .WithMany()
+                        .HasForeignKey("ProfileMemberId");
+
                     b.Navigation("Leaderboard");
+
+                    b.Navigation("Profile");
+
+                    b.Navigation("ProfileMember");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshot", b =>

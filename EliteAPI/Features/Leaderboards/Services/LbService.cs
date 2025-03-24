@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
+using EFCore.BulkExtensions;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -14,7 +15,6 @@ public interface ILbService {
 	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
 	Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c);
-	Task UpdateGardenLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Garden member, CancellationToken c);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(string profileId);
 	string? GetCurrentIdentifier(LeaderboardType type);
@@ -79,163 +79,182 @@ public class LbService(
 
 	public async Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c) {
 		var time = DateTime.UtcNow;
-		foreach (var leaderboard in registrationService.Leaderboards) {
-			if (c.IsCancellationRequested) break;
-			if (leaderboard is IMemberLeaderboardDefinition memberLb) {
-				var score = memberLb.GetScoreFromMember(member);
-				await UpdateMemberScore(memberLb, member, score, c);
-			} else if (leaderboard is IProfileLeaderboardDefinition profileLb) {
-				var score = profileLb.GetScoreFromProfile(member.Profile) 
-		            ?? (member.Profile.Garden is not null
-			            ? profileLb.GetScoreFromGarden(member.Profile.Garden)
-			            : null);
-				await UpdateProfileScore(profileLb, member.Profile, score, c);
-			}
-		}
-		await context.SaveChangesAsync(c);
-		logger.LogInformation("Updating member leaderboards for {Player} on {Profile} took {Time}", member.PlayerUuid, member.Profile.ProfileId, DateTime.UtcNow.Subtract(time));
-	}
-
-	public async Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c) {
-		throw new NotImplementedException();
-	}
-
-	public async Task UpdateGardenLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Garden member, CancellationToken c) {
-		throw new NotImplementedException();
-	}
-	
-	private async Task UpdateMemberScore(IMemberLeaderboardDefinition leaderboard, ProfileMember member, IConvertible? score, CancellationToken c) {
-		foreach (var type in leaderboard.Info.IntervalType) {
-			var slug = type switch {
-				LeaderboardType.Current => leaderboard.Info.Slug,
-				LeaderboardType.Monthly => $"{leaderboard.Info.Slug}-monthly",
-				LeaderboardType.Weekly => $"{leaderboard.Info.Slug}-weekly",
-				_ => throw new ArgumentOutOfRangeException(nameof(type))
-			};
-			var identifier = GetCurrentIdentifier(type);
-			
-			if (score is null) {
-				// If score is null, we can assume the member has been removed or otherwise skip creating/updating an entry
-				await context.LeaderboardEntries
-					.Where(e => 
-						e.Leaderboard.Slug == slug 
-						&& e.ProfileMemberId == member.Id
-						&& e.IsRemoved == false
-						&& e.IntervalIdentifier == identifier)
-					.ExecuteUpdateAsync(e => 
-						e.SetProperty(l => l.IsRemoved, true),
-						cancellationToken: c);
-				continue;
-			}
-			
-			var entry = await context.LeaderboardEntries
-				.Include(e => e.Leaderboard)
-				.FirstOrDefaultAsync(e => 
-						e.Leaderboard.Slug == slug 
-						&& e.ProfileMemberId == member.Id
-						&& e.IntervalIdentifier == identifier, 
-					cancellationToken: c);
 		
-			var entryScore = identifier is not null 
-				? leaderboard.Info.UseIncreaseForInterval
-					? score.ToDecimal(CultureInfo.InvariantCulture) - (entry?.InitialScore ?? 0)
-					: score.ToDecimal(CultureInfo.InvariantCulture)
-				: score.ToDecimal(CultureInfo.InvariantCulture);
-			var initalScore = identifier is not null && leaderboard.Info.UseIncreaseForInterval
-				? entry?.InitialScore ?? score.ToDecimal(CultureInfo.InvariantCulture)
-				: 0;
+		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Current);
+		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+		
+		var leaderboardsIdsBySlug = await context.Leaderboards
+			.AsNoTracking()
+			.Select(lb => new { lb.Slug, lb.LeaderboardId })
+			.ToDictionaryAsync(lb => lb.Slug, c);
+		
+		var existingEntries = await context.LeaderboardEntries
+			.AsNoTracking()
+			.Where(e => 
+				e.ProfileId == member.Profile.ProfileId || e.ProfileMemberId == member.Id
+				&& (e.IntervalIdentifier == monthlyInterval || e.IntervalIdentifier == weeklyInterval || e.IntervalIdentifier == null))
+			.ToDictionaryAsync(e => e.LeaderboardId, c);
+
+		var updatedEntries = new List<Models.LeaderboardEntry>();
+		
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			var useIncrease = definition.Info.UseIncreaseForInterval;
+			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
+
+			var intervalIdentifier = slug switch {
+				_ when slug.EndsWith("-monthly") => monthlyInterval,
+				_ when slug.EndsWith("-weekly") => weeklyInterval,
+				_ => null
+			};
 			
-			if (entry is null) {
-				var lb = await context.Leaderboards
-					.FirstOrDefaultAsync(lb => lb.Slug == slug, c);
-				if (lb is null) return;
+			if (definition is IMemberLeaderboardDefinition memberLb) {
+				var score = memberLb.GetScoreFromMember(member);
+				if (score is null) continue;
+
+				if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
+						? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore 
+						: score.ToDecimal(CultureInfo.InvariantCulture);
+					
+					entry.Score = newScore;
+					entry.IsRemoved = member.WasRemoved;
+					updatedEntries.Add(entry);
+					continue;
+				}
 				
-				entry = new Models.LeaderboardEntry() {
+				var newEntry = new Models.LeaderboardEntry() {
 					LeaderboardId = lb.LeaderboardId,
-					IntervalIdentifier = identifier,
+					IntervalIdentifier = intervalIdentifier,
 					
 					ProfileMemberId = member.Id,
 				 
-					InitialScore = initalScore,
-					Score = entryScore,
+					InitialScore = useIncrease && intervalIdentifier is not null ? score.ToDecimal(CultureInfo.InvariantCulture) : 0,
+					Score = useIncrease && intervalIdentifier is not null ? 0 : score.ToDecimal(CultureInfo.InvariantCulture),
 				
 					IsRemoved = member.WasRemoved,
 					ProfileType = member.Profile?.GameMode
 				};
-				context.LeaderboardEntries.Add(entry);
-			} else {
-				entry.Score = entryScore;
-				entry.IsRemoved = member.WasRemoved;
+				
+				updatedEntries.Add(newEntry);
+			} else if (definition is IProfileLeaderboardDefinition profileLb) {
+				var score =
+					(member.Profile is not null ? profileLb.GetScoreFromProfile(member.Profile) : null)
+				    ?? (member.Profile?.Garden is not null ? profileLb.GetScoreFromGarden(member.Profile.Garden) : null);
+				if (score is null) continue;
+				
+				if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
+						? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore 
+						: score.ToDecimal(CultureInfo.InvariantCulture);
+					
+					entry.Score = newScore;
+					entry.IsRemoved = member.WasRemoved;
+					updatedEntries.Add(entry);
+					continue;
+				}
+				
+				var newEntry = new Models.LeaderboardEntry() {
+					LeaderboardId = lb.LeaderboardId,
+					IntervalIdentifier = intervalIdentifier,
+					
+					ProfileId = member.ProfileId,
+				 
+					InitialScore = useIncrease && intervalIdentifier is not null ? score.ToDecimal(CultureInfo.InvariantCulture) : 0,
+					Score = useIncrease && intervalIdentifier is not null ? 0 : score.ToDecimal(CultureInfo.InvariantCulture),
+				
+					IsRemoved = member.WasRemoved,
+					ProfileType = member.Profile?.GameMode
+				};
+				
+				updatedEntries.Add(newEntry);
 			}
-			// TODO: Add leaderboard entry history
 		}
+
+		if (updatedEntries.Count != 0) {
+			await context.BulkInsertOrUpdateAsync(updatedEntries, cancellationToken: c);
+			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
+		}
+		
+		logger.LogInformation("Updating member leaderboards for {Player} on {Profile} took {Time}ms", 
+			member.PlayerUuid, 
+			member.Profile?.ProfileId, 
+			DateTime.UtcNow.Subtract(time).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
+		);
 	}
-	
-	private async Task UpdateProfileScore(IProfileLeaderboardDefinition leaderboard, EliteAPI.Models.Entities.Hypixel.Profile profile, IConvertible? score, CancellationToken c) {
-		foreach (var type in leaderboard.Info.IntervalType) {
-			var slug = type switch {
-				LeaderboardType.Current => leaderboard.Info.Slug,
-				LeaderboardType.Monthly => $"{leaderboard.Info.Slug}-monthly",
-				LeaderboardType.Weekly => $"{leaderboard.Info.Slug}-weekly",
-				_ => throw new ArgumentOutOfRangeException(nameof(type))
+
+	public async Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c) {
+		var time = DateTime.UtcNow;
+		
+		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Current);
+		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+		
+		var leaderboardsIdsBySlug = await context.Leaderboards
+			.AsNoTracking()
+			.Select(lb => new { lb.Slug, lb.LeaderboardId })
+			.ToDictionaryAsync(lb => lb.Slug, c);
+		
+		var existingEntries = await context.LeaderboardEntries
+			.AsNoTracking()
+			.Where(e => 
+				e.ProfileId == profile.ProfileId
+				&& (e.IntervalIdentifier == monthlyInterval || e.IntervalIdentifier == weeklyInterval || e.IntervalIdentifier == null))
+			.ToDictionaryAsync(e => e.LeaderboardId, c);
+
+		var updatedEntries = new List<Models.LeaderboardEntry>();
+		
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			var useIncrease = definition.Info.UseIncreaseForInterval;
+			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
+
+			var intervalIdentifier = slug switch {
+				_ when slug.EndsWith("-monthly") => monthlyInterval,
+				_ when slug.EndsWith("-weekly") => weeklyInterval,
+				_ => null
 			};
-			var identifier = GetCurrentIdentifier(type);
+
+			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
 			
-			if (score is null) {
-				// If score is null, we can assume the member has been removed or otherwise skip creating/updating an entry
-				await context.LeaderboardEntries
-					.Where(e => 
-						e.Leaderboard.Slug == slug 
-						&& e.ProfileId == profile.ProfileId
-						&& e.IsRemoved == false
-						&& e.IntervalIdentifier == identifier)
-					.ExecuteUpdateAsync(e => 
-						e.SetProperty(l => l.IsRemoved, true),
-						cancellationToken: c);
+			var score =
+				(profile is not null ? profileLb.GetScoreFromProfile(profile) : null)
+				?? (profile?.Garden is not null ? profileLb.GetScoreFromGarden(profile.Garden) : null);
+			if (score is null) continue;
+				
+			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+				var newScore = (entry.IntervalIdentifier is not null && useIncrease)
+					? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore 
+					: score.ToDecimal(CultureInfo.InvariantCulture);
+					
+				entry.Score = newScore;
+				entry.IsRemoved = profile?.IsDeleted ?? entry.IsRemoved;
+				updatedEntries.Add(entry);
 				continue;
 			}
-			
-			var entry = await context.LeaderboardEntries
-				.Include(e => e.Leaderboard)
-				.FirstOrDefaultAsync(e => 
-						e.Leaderboard.Slug == slug 
-						&& e.ProfileId == profile.ProfileId
-						&& e.IntervalIdentifier == identifier, 
-					cancellationToken: c);
-		
-			var entryScore = identifier is not null 
-				? leaderboard.Info.UseIncreaseForInterval
-					? score.ToDecimal(CultureInfo.InvariantCulture) - (entry?.InitialScore ?? 0)
-					: score.ToDecimal(CultureInfo.InvariantCulture)
-				: score.ToDecimal(CultureInfo.InvariantCulture);
-			var initalScore = identifier is not null && leaderboard.Info.UseIncreaseForInterval
-				? entry?.InitialScore ?? score.ToDecimal(CultureInfo.InvariantCulture)
-				: 0;
-			
-			if (entry is null) {
-				var lb = await context.Leaderboards
-					.FirstOrDefaultAsync(lb => lb.Slug == slug, c);
-				if (lb is null) return;
 				
-				entry = new Models.LeaderboardEntry() {
-					LeaderboardId = lb.LeaderboardId,
-					IntervalIdentifier = identifier,
+			var newEntry = new Models.LeaderboardEntry() {
+				LeaderboardId = lb.LeaderboardId,
+				IntervalIdentifier = intervalIdentifier,
 					
-					ProfileId = profile.ProfileId,
+				ProfileId = profile!.ProfileId,
 				 
-					InitialScore = initalScore,
-					Score = entryScore,
+				InitialScore = useIncrease && intervalIdentifier is not null ? score.ToDecimal(CultureInfo.InvariantCulture) : 0,
+				Score = useIncrease && intervalIdentifier is not null ? 0 : score.ToDecimal(CultureInfo.InvariantCulture),
 				
-					IsRemoved = profile.IsDeleted,
-					ProfileType = profile.GameMode
-				};
-				context.LeaderboardEntries.Add(entry);
-			} else {
-				entry.Score = entryScore;
-				entry.IsRemoved = profile.IsDeleted;
-			}
-			// TODO: Add leaderboard entry history
+				IsRemoved = profile.IsDeleted,
+				ProfileType = profile.GameMode
+			};
+				
+			updatedEntries.Add(newEntry);
 		}
+
+		if (updatedEntries.Count != 0) {
+			await context.BulkInsertOrUpdateAsync(updatedEntries, cancellationToken: c);
+			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
+		}
+		
+		logger.LogInformation("Updating profile leaderboards for {Profile} took {Time}ms", 
+			profile!.ProfileId,
+			DateTime.UtcNow.Subtract(time).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
+		);
 	}
 	
 	public string? GetCurrentIdentifier(LeaderboardType type) {
@@ -287,10 +306,8 @@ public class LbService(
             results.Add(new PlayerLeaderboardEntryWithRankDto
             {
                 IntervalIdentifier = entry.IntervalIdentifier,
-                Score = (double) entry.Score,
-                InitialScore = (double) entry.InitialScore,
-                // EntryTimestamp = entry.EntryTimestamp,
-                // IsRemoved = entry.IsRemoved,
+                Amount = (double) entry.Score,
+                InitialAmount = (double) entry.InitialScore,
                 Rank = rank,
                 Title = entry.Leaderboard.Title,
 	            Slug = entry.Leaderboard.Slug
@@ -334,8 +351,9 @@ public class LbService(
 			results.Add(new PlayerLeaderboardEntryWithRankDto
 			{
 				IntervalIdentifier = entry.IntervalIdentifier,
-				Score = (double) entry.Score,
-				InitialScore = (double) entry.InitialScore,
+				Amount = (double) entry.Score,
+				InitialAmount = (double) entry.InitialScore,
+				Profile = true,
 				// EntryTimestamp = entry.EntryTimestamp,
 				// IsRemoved = entry.IsRemoved,
 				Rank = rank,
@@ -352,13 +370,15 @@ public class PlayerLeaderboardEntryWithRankDto
 {	
 	public required string Title { get; set; }
 	public required string Slug { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public bool? Profile { get; set; }
 	public int Rank { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? IntervalIdentifier { get; set; }
-	public double Score { get; set; }
+	public double Amount { get; set; }
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public double InitialScore { get; set; }
+	public double InitialAmount { get; set; }
 	// public DateTimeOffset EntryTimestamp { get; set; }
 	// public bool IsRemoved { get; set; }
 }

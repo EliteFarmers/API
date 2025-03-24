@@ -89,6 +89,16 @@ namespace EliteAPI.Data.Migrations
                         principalTable: "Leaderboards",
                         principalColumn: "LeaderboardId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LeaderboardEntries_ProfileMembers_ProfileMemberId",
+                        column: x => x.ProfileMemberId,
+                        principalTable: "ProfileMembers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_LeaderboardEntries_Profiles_ProfileId",
+                        column: x => x.ProfileId,
+                        principalTable: "Profiles",
+                        principalColumn: "ProfileId");
                 });
 
             migrationBuilder.CreateTable(
@@ -170,6 +180,12 @@ namespace EliteAPI.Data.Migrations
                 name: "IX_Leaderboards_IconId",
                 table: "Leaderboards",
                 column: "IconId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Leaderboards_Slug",
+                table: "Leaderboards",
+                column: "Slug",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_LeaderboardSnapshotEntries_LeaderboardSnapshotId_Score",
