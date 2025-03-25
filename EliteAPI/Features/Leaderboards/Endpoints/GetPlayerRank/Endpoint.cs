@@ -5,12 +5,13 @@ using FastEndpoints;
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRank;
 
 internal sealed class GetPlayerRankEndpoint(
-	ILeaderboardService lbService
+	ILeaderboardService lbService,
+	ILbService newLbService
 	) : Endpoint<GetPlayerRankRequest, LeaderboardPositionDto>
 {
 	
 	public override void Configure() {
-		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");
+		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}", "/leaderboard/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
 		
@@ -22,19 +23,43 @@ internal sealed class GetPlayerRankEndpoint(
 	}
 
 	public override async Task HandleAsync(GetPlayerRankRequest request, CancellationToken c) {
-		var result = await lbService.GetLeaderboardRank(
+#pragma warning disable CS0618 // Type or member is obsolete
+		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) {
+			request.Upcoming = 5;
+		}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+		if (request.New is not true) {
+			var result = await lbService.GetLeaderboardRank(
+				leaderboardId: request.Leaderboard,
+				playerUuid: request.PlayerUuidFormatted,
+				profileId: request.ProfileUuidFormatted,
+				includeUpcoming: request.Upcoming > 0,
+				atRank: request.AtRank ?? -1,
+				c: c
+			);
+
+			if (result is null) {
+				ThrowError("Player not found", StatusCodes.Status404NotFound);
+			}
+
+			await SendAsync(result, cancellation: c);
+			return;
+		}
+		
+		var newResult = await newLbService.GetLeaderboardRank(
 			leaderboardId: request.Leaderboard,
 			playerUuid: request.PlayerUuidFormatted,
 			profileId: request.ProfileUuidFormatted,
-			includeUpcoming: request.IncludeUpcoming ?? false,
+			upcoming: request.Upcoming,
 			atRank: request.AtRank ?? -1,
 			c: c
 		);
-
-		if (result is null) {
+		
+		if (newResult is null) {
 			ThrowError("Player not found", StatusCodes.Status404NotFound);
 		}
 		
-		await SendAsync(result, cancellation: c);
+		await SendAsync(newResult, cancellation: c);
 	}
 }

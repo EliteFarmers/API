@@ -21,7 +21,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250324030024_AddLeaderboardEntities")]
+    [Migration("20250325000842_AddLeaderboardEntities")]
     partial class AddLeaderboardEntities
     {
         /// <inheritdoc />
@@ -99,11 +99,6 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeaderboardEntryId"));
-
-                    b.Property<DateTimeOffset>("EntryTimestamp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
 
                     b.Property<decimal>("InitialScore")
                         .ValueGeneratedOnAdd()

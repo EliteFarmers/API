@@ -27,8 +27,6 @@ public class LeaderboardEntry
 	/// Profile type to filter by, null for dominant "classic" profile type
 	/// </summary>
 	public string? ProfileType { get; set; }
-
-	public DateTimeOffset EntryTimestamp { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<LeaderboardEntry>
@@ -60,9 +58,6 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 		builder.Property(le => le.ProfileType)
 			.HasMaxLength(100);
 		
-		builder.Property(le => le.EntryTimestamp)
-			.HasDefaultValueSql("now()");
-
 		builder.HasIndex(le => new { le.LeaderboardId, le.IntervalIdentifier, le.Score })
 			.IsDescending(false, false, true);
 		

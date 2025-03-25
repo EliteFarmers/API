@@ -76,8 +76,7 @@ namespace EliteAPI.Data.Migrations
                     InitialScore = table.Column<decimal>(type: "numeric(24,4)", nullable: false, defaultValue: 0m),
                     Score = table.Column<decimal>(type: "numeric(24,4)", nullable: false),
                     IsRemoved = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    ProfileType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    EntryTimestamp = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()")
+                    ProfileType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {

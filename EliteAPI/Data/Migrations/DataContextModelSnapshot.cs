@@ -97,11 +97,6 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeaderboardEntryId"));
 
-                    b.Property<DateTimeOffset>("EntryTimestamp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
                     b.Property<decimal>("InitialScore")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("decimal(24, 4)")

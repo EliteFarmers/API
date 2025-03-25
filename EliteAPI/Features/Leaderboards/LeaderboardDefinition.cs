@@ -66,3 +66,13 @@ public class LeaderboardInfoDto {
 	[JsonConverter(typeof(JsonStringEnumConverter<LeaderboardScoreDataType>))]
 	public LeaderboardScoreDataType ScoreDataType { get; set; }
 }
+
+public static class LeaderboardDefintionExtensions {
+	public static bool IsProfileLeaderboard(this ILeaderboardDefinition lb) {
+		return lb is IProfileLeaderboardDefinition;
+	}
+	
+	public static bool IsMemberLeaderboard(this ILeaderboardDefinition lb) {
+		return lb is IMemberLeaderboardDefinition;
+	}
+}
