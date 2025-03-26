@@ -12,6 +12,12 @@ public class HypixelJobsConfiguration : IConfigureOptions<QuartzOptions> {
 			builder.StoreDurably();
 		});
 		
+		// Process Remaining Members
+		options.AddJob<ProcessRemainingMembersBackgroundJob>(builder => {
+			builder.WithIdentity(ProcessRemainingMembersBackgroundJob.Key);
+			builder.StoreDurably();
+		});
+		
 		// Refresh Garden
 		options.AddJob<RefreshGardenBackgroundJob>(builder => {
 			builder.WithIdentity(RefreshGardenBackgroundJob.Key);

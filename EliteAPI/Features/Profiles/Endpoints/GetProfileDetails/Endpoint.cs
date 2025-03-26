@@ -4,7 +4,7 @@ using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace EliteAPI.Features.Profile.GetProfileDetails;
+namespace EliteAPI.Features.Profiles.Endpoints.GetProfileDetails;
 
 using Result = Results<Ok<ProfileDetailsDto>, NotFound>;
 

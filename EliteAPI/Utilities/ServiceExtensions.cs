@@ -5,7 +5,6 @@ using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Parsers.Skyblock;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
@@ -109,7 +108,6 @@ public static class ServiceExtensions
         services.RegisterServicesFromEliteAPI();
 
         services.AddScoped<LocalOnlyMiddleware>();
-        services.AddScoped<ProfileParser>();
         services.AddScoped<DiscordBotOnlyFilter>();
         
         return services;

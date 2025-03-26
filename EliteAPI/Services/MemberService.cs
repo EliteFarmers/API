@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Parsers.Skyblock;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -136,7 +136,7 @@ public class MemberService(
 
     public async Task RefreshProfiles(string playerUuid) {
         using var scope = provider.CreateScope();
-        var parser = scope.ServiceProvider.GetRequiredService<ProfileParser>();
+        var processor = scope.ServiceProvider.GetRequiredService<IProfileProcessorService>();
         var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
         
         var data = await hypixelService.FetchProfiles(playerUuid);
@@ -148,10 +148,10 @@ public class MemberService(
         }
         
         try {
-            await parser.TransformProfilesResponse(data.Value, playerUuid);
+            await processor.ProcessProfilesWaitForOnePlayer(data.Value, playerUuid);
         } catch (Exception e) {
             var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
-            logger.LogError(e, "Failed to transform profiles for {PlayerUuid}", playerUuid);
+            logger.LogError(e, "Failed to process profiles for {PlayerUuid}", playerUuid);
         }
     }
     
