@@ -4,7 +4,7 @@ using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 
-namespace EliteAPI.Features.Profile.GetAllProfileDetails;
+namespace EliteAPI.Features.Profiles.Endpoints.GetAllProfileDetails;
 
 internal sealed class GetAllProfileDetailsEndpoint(
 	IProfileService profileService

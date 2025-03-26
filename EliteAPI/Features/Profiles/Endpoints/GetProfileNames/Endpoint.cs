@@ -6,7 +6,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Profile.GetProfileNames;
+namespace EliteAPI.Features.Profiles.Endpoints.GetProfileNames;
 
 internal sealed class GetProfileNamesEndpoint(
 	DataContext context,

@@ -1,92 +1,132 @@
-﻿using System.Text.Json.Nodes;
-using AutoMapper;
+using System.Text.Json.Nodes;
 using EFCore.BulkExtensions;
 using EliteAPI.Background.Profiles;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Leaderboards.Services;
-using Microsoft.EntityFrameworkCore;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
+using EliteAPI.Parsers.Events;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Parsers.Profiles;
-using EliteAPI.Parsers.Events;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using FastEndpoints;
 using HypixelAPI.DTOs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
-using Profile = EliteAPI.Models.Entities.Hypixel.Profile;
 
-namespace EliteAPI.Parsers.Skyblock;
+namespace EliteAPI.Features.Profiles.Services;
 
-public class ProfileParser(
-    DataContext context, 
-    IMojangService mojangService,
-    IOptions<ConfigLeaderboardSettings> lbOptions,
-    IOptions<ChocolateFactorySettings> cfOptions,
-    IOptions<ConfigCooldownSettings> coolDowns,
-    ILogger<ProfileParser> logger,
-    ILbService lbService,
-    ILeaderboardService leaderboardService,
-    ISchedulerFactory schedulerFactory,
-    IMessageService messageService,
-    IMapper mapper) 
+public interface IProfileProcessorService {
+	/// <summary>
+	/// Processes the response from the Hypixel API
+	/// </summary>
+	/// <param name="data">Hypixel API Response</param>
+	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	/// <returns></returns>
+	Task<List<ProfileResponse>> ProcessProfilesResponse(ProfilesResponse data, string? requestedPlayerUuid);
+	
+	/// <summary>
+	/// Processes the response from the Hypixel API, only waiting for a single player to finish processing
+	/// </summary>
+	/// <param name="data">Hypixel API Response</param>
+	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	/// <returns></returns>
+	Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid);
+	
+	/// <summary>
+	/// Processes profile members from the Hypixel API, for all but one player
+	/// </summary>
+	/// <param name="data">Hypixel API Response</param>
+	/// <param name="excludedPlayerUuid">The player uuid that will be skipped</param>
+	/// <returns></returns>
+	Task ProcessRemainingMembers(ProfilesResponse data, string excludedPlayerUuid);
+	
+	/// <summary>
+	/// Processes a profile from the Hypixel API
+	/// </summary>
+	///	<param name="profileData">The profile to process</param>
+	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	Task<(Profile? profile, Dictionary<string, ProfileMemberResponse> members)> ProcessProfileData(ProfileResponse profileData, string? requestedPlayerUuid);
+	
+	Task UpdateGardenData(string profileId);
+
+	/// <summary>
+	/// Processes a member from the Hypixel API
+	/// </summary>
+	/// <param name="profile">The profile to process</param>
+	/// <param name="memberData">The member data to process</param>
+	/// <param name="playerUuid">The player uuid of the member</param>
+	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	/// <param name="profileData">Raw profile data</param>
+	Task ProcessMemberData(Profile profile, ProfileMemberResponse memberData, string playerUuid, string requestedPlayerUuid, ProfileResponse? profileData = null);
+}
+
+[RegisterService<IProfileProcessorService>(LifeTime.Scoped)]
+public class ProfileProcessorService(
+	DataContext context,
+	ILogger<ProfileProcessorService> logger,
+	IMojangService mojangService,
+	IMessageService messageService,
+	ILbService lbService,
+	ILeaderboardService leaderboardService,
+	IContestsProcessorService contestsProcessorService,
+	ISchedulerFactory schedulerFactory,
+	IOptions<ChocolateFactorySettings> cfOptions,
+	IOptions<ConfigCooldownSettings> coolDowns,
+	AutoMapper.IMapper mapper
+	) : IProfileProcessorService 
 {
-    private readonly ConfigLeaderboardSettings _lbSettings = lbOptions.Value;
-    private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
-    private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
-    
-    private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
-        EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>            
-            c.ProfileMembers
-                .Include(p => p.MinecraftAccount)
-                .Include(p => p.Profile)
-                .ThenInclude(p => p.Garden)
-                .Include(p => p.Skills)
-                .Include(p => p.Farming)
-                .Include(p => p.JacobData)
-                .ThenInclude(j => j.Contests)
-                .ThenInclude(p => p.JacobContest)
-                .Include(p => p.EventEntries)
-                .Include(p => p.ChocolateFactory)
-                .Include(p => p.Metadata)
-                .AsSplitQuery()
-                .FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
-        );
+	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
+	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
+	
+	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
+		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>            
+			c.ProfileMembers
+				.Include(p => p.MinecraftAccount)
+				.Include(p => p.Profile)
+				.ThenInclude(p => p.Garden)
+				.Include(p => p.Skills)
+				.Include(p => p.Farming)
+				.Include(p => p.JacobData)
+				.ThenInclude(j => j.Contests)
+				.ThenInclude(p => p.JacobContest)
+				.Include(p => p.EventEntries)
+				.Include(p => p.ChocolateFactory)
+				.Include(p => p.Metadata)
+				.AsSplitQuery()
+				.FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
+		);
 
-    public async Task TransformProfilesResponse(ProfilesResponse data, string? playerUuid) {
-        if (!data.Success) {
-            logger.LogWarning("Received unsuccessful profiles response from {PlayerUuid}", playerUuid);
-            return;
+	public async Task<List<ProfileResponse>> ProcessProfilesResponse(ProfilesResponse data, string? requestedPlayerUuid) {
+		if (!data.Success) {
+            logger.LogWarning("Received unsuccessful profiles response from {PlayerUuid}", requestedPlayerUuid);
+            return [];
         }
 
         if (data.Profiles is not { Length: > 0 }) {
             // Mark player as removed from all of their profiles if they have none in the response
             await context.ProfileMembers
                 .Include(p => p.Profile)
-                .Where(p => p.PlayerUuid.Equals(playerUuid))
+                .Where(p => p.PlayerUuid.Equals(requestedPlayerUuid))
                 .ExecuteUpdateAsync(member =>
                     member
                         .SetProperty(m => m.WasRemoved, true)
                         .SetProperty(m => m.IsSelected, false)
                 );
-            return;
+            return [];
         }
-
-        // Parse each profile
-        foreach (var profile in data.Profiles) {
-            await TransformSingleProfile(profile, playerUuid);
-        }
-
+        
         var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
 
         // Get profiles that aren't in the response
         var wipedProfiles = await context.ProfileMembers
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
-            .Where(p => p.PlayerUuid.Equals(playerUuid) && !profileIds.Contains(p.ProfileId) && !p.WasRemoved)
+            .Where(p => p.PlayerUuid.Equals(requestedPlayerUuid) && !profileIds.Contains(p.ProfileId) && !p.WasRemoved)
             .Select(p => new { p.Id, p.PlayerUuid, p.ProfileId, p.Profile.GameMode, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
             .ToListAsync();
         
@@ -107,85 +147,133 @@ public class ProfileParser(
                 );
         }
         
-        await context.SaveChangesAsync();
-    }
+        return data.Profiles.ToList();
+	}
 
-    private async Task TransformSingleProfile(ProfileResponse profile, string? playerUuid)
-    {
-        var members = profile.Members;
-        if (members.Count == 0) return;
+	public async Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid) {
+		var profiles = await ProcessProfilesResponse(data, requestedPlayerUuid);
+		if (profiles.Count == 0) return;
 
-        var profileId = profile.ProfileId.Replace("-", "");
+		foreach (var profileData in profiles) {
+			var (profile, members) = await ProcessProfileData(profileData, requestedPlayerUuid);
+			if (profile is null) continue;
+			
+			if (!members.TryGetValue(requestedPlayerUuid, out var member)) continue;
+			
+			await ProcessMemberData(profile, member, requestedPlayerUuid, requestedPlayerUuid, profileData);
+		}
+		
+		await context.SaveChangesAsync();
+		
+		// Send remaining members to background job
+		var jobData = new JobDataMap {
+			{ "playerUuid", requestedPlayerUuid },
+			{ "data", data }
+		};
+
+		var scheduler = await schedulerFactory.GetScheduler();
+		await scheduler.TriggerJob(ProcessRemainingMembersBackgroundJob.Key, jobData);
+	}
+
+	public async Task ProcessRemainingMembers(ProfilesResponse data, string excludedPlayerUuid) {
+		var profiles = data.Profiles?.ToList();
+		if (profiles is null || profiles.Count == 0) return;
+
+		foreach (var profileData in profiles) {
+			var members = profileData.Members.ToDictionary(
+				pair => pair.Key.Replace("-", ""), // Strip hyphens from UUIDs
+				pair => pair.Value);
+			if (members.Count == 0) continue;
+			
+			var profileId = profileData.ProfileId.Replace("-", "");
+			var profile = await context.Profiles
+				.Include(p => p.Garden)
+				.FirstOrDefaultAsync(p => p.ProfileId == profileId);
+			
+			if (profile is null) {
+				logger.LogWarning("Profile {ProfileId} was not found when processing remaining members!", profileId);
+				continue;
+			}
+
+			foreach (var (playerUuid, member) in members) {
+				if (playerUuid == excludedPlayerUuid) continue;
+				await ProcessMemberData(profile, member, playerUuid, excludedPlayerUuid, profileData);
+			}
+		}
+		
+		await context.SaveChangesAsync();
+	}
+
+	public async Task<(Profile? profile, Dictionary<string, ProfileMemberResponse> members)> ProcessProfileData(ProfileResponse profileData, string? requestedPlayerUuid) {
+		var members = profileData.Members.ToDictionary(
+			pair => pair.Key.Replace("-", ""), // Strip hyphens from UUIDs
+			pair => pair.Value);
+        if (members.Count == 0) return (null, members);
+
+        var profileId = profileData.ProfileId.Replace("-", "");
         var existing = await context.Profiles
             .Include(p => p.Garden)
             .FirstOrDefaultAsync(p => p.ProfileId == profileId);
 
-        var profileObj = existing ?? new Profile
+        var profile = existing ?? new Profile
         {
             ProfileId = profileId,
-            ProfileName = profile.CuteName,
-            GameMode = profile.GameMode,
+            ProfileName = profileData.CuteName,
+            GameMode = profileData.GameMode,
             Members = [],
             IsDeleted = false
         };
         
-        profileObj.BankBalance = profile.Banking?.Balance ?? 0.0;
+        profile.BankBalance = profileData.Banking?.Balance ?? 0.0;
 
-        if (existing is not null)
-        {
-            profileObj.GameMode = profile.GameMode;
-            profileObj.ProfileName = profile.CuteName;
-            profileObj.IsDeleted = false;
-        }
-        else
-        {
-            try
-            {
-                context.Profiles.Add(profileObj);
-                await context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to add profile {ProfileId} to database", profileId);
-            }
+        foreach (var member in members.Values) {
+	        profile.CombineMinions(member.PlayerData?.CraftedGenerators);
         }
 
-        foreach (var (key, memberData) in members)
-        {
-            // Hyphens shouldn't be included anyway, but just in case Hypixel pulls another fast one
-            var playerId = key.Replace("-", "");
-
-            var selected = playerUuid?.Equals(playerId) == true && profile.Selected;
-            await TransformMemberResponse(playerId, memberData, profileObj, selected, playerUuid ?? "Unknown");
+        if (existing is not null) { 
+	        profile.GameMode = profileData.GameMode;
+            profile.ProfileName = profileData.CuteName;
+        } else {
+	        context.Profiles.Add(profile);
         }
-
-        if (existing?.Garden is null) {
-            await UpdateGardenData(profileId);
-        } else if (existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
-            await UpdateGardenData(profileId);
-        }
-
-        await lbService.UpdateProfileLeaderboardsAsync(profileObj, CancellationToken.None);
-
-        try
-        {
+        
+        try {
             await context.SaveChangesAsync();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.LogError(e, "Failed to save profile {ProfileId} to database", profileId);
         }
-    }
-
-    private async Task TransformMemberResponse(string playerId, ProfileMemberResponse memberData, Profile profile, bool selected, string requesterUuid)
-    {
-        var existing = await _fetchProfileMemberData(context, playerId, profile.ProfileId);
         
-        // Should remove if deleted or co op invitation is not accepted
+        await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
+        
+        if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) 
+        {
+	        await UpdateGardenData(profileId);
+        }
+
+        return (profile, members);
+	}
+
+	public async Task UpdateGardenData(string profileId) {
+		var data = new JobDataMap {
+			{ "ProfileId", profileId }
+		};
+
+		var scheduler = await schedulerFactory.GetScheduler();
+		await scheduler.TriggerJob(RefreshGardenBackgroundJob.Key, data);
+	}
+
+	public async Task ProcessMemberData(Profile profile, ProfileMemberResponse memberData, string playerUuid, string requestedPlayerUuid, ProfileResponse? profileData = null) 
+	{
+		var existing = await _fetchProfileMemberData(context, playerUuid, profile.ProfileId);
+        
+        // Should remove if deleted or coop invitation is not accepted
         var shouldRemove = memberData.Profile?.DeletionNotice is not null || memberData.Profile?.CoopInvitation is { Confirmed: false };
         
         // Exit early if removed, and still should be removed
+        // This means that we already processed the member when it was removed, and the data is still the same
         if (existing?.WasRemoved == true && shouldRemove) return;
+        
+        var isSelected = profileData?.Selected is true && playerUuid == requestedPlayerUuid;
         
         if (existing is not null)
         {
@@ -198,29 +286,29 @@ public class ProfileParser(
                 await leaderboardService.RemoveMemberFromAllLeaderboards(existing.Id.ToString());
                 
                 messageService.SendWipedMessage(
-                    playerId, 
+                    playerUuid, 
                     existing.MinecraftAccount.Name ?? "", 
                     existing.ProfileId,
                     existing.MinecraftAccount.AccountId?.ToString() ?? "");
             }
             
             // Only update if the player is the requester
-            if (playerId == requesterUuid) {
-                existing.IsSelected = selected;
+            if (playerUuid == requestedPlayerUuid) {
+                existing.IsSelected = isSelected;
                 existing.ProfileName = profile.ProfileName;
             }
             
             // Only update if null (profile names can differ between members)
             existing.ProfileName ??= profile.ProfileName;
             existing.Metadata ??= new ProfileMemberMetadata {
-                Name = existing.MinecraftAccount.Name ?? playerId,
+                Name = existing.MinecraftAccount.Name ?? playerUuid,
                 Uuid = existing.MinecraftAccount.Id,
                 Profile = profile.ProfileName,
                 ProfileUuid = profile.ProfileId,
                 SkyblockExperience = existing.SkyblockXp
             };
             
-            existing.Metadata.Name = existing.MinecraftAccount.Name ?? playerId;
+            existing.Metadata.Name = existing.MinecraftAccount.Name ?? playerUuid;
             existing.Metadata.Profile = profile.ProfileName;
             existing.Metadata.SkyblockExperience = existing.SkyblockXp;
             
@@ -239,34 +327,34 @@ public class ProfileParser(
             return;
         }
         
-        var minecraftAccount = await mojangService.GetMinecraftAccountByUuid(playerId);
+        var minecraftAccount = await mojangService.GetMinecraftAccountByUuid(playerUuid);
         if (minecraftAccount is null) return;
 
         var member = new ProfileMember
         {
             Id = Guid.NewGuid(),
-            PlayerUuid = playerId,
+            PlayerUuid = playerUuid,
             
             Profile = profile,
             ProfileId = profile.ProfileId,
             ProfileName = profile.ProfileName,
             
             Metadata = new ProfileMemberMetadata {
-                Name = playerId,
+                Name = playerUuid,
                 Uuid = minecraftAccount.Id,
                 Profile = profile.ProfileName,
                 ProfileUuid = profile.ProfileId,
             },
 
             LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-            IsSelected = selected,
+            IsSelected = isSelected,
             WasRemoved = memberData.Profile?.DeletionNotice is not null
         };
         
         context.ProfileMembers.Add(member);
         profile.Members.Add(member);
 
-        minecraftAccount.ProfilesLastUpdated = playerId == requesterUuid 
+        minecraftAccount.ProfilesLastUpdated = playerUuid == requestedPlayerUuid 
             ? DateTimeOffset.UtcNow.ToUnixTimeSeconds() : 0;
 
         if (member.WasRemoved == false) {
@@ -342,7 +430,6 @@ public class ProfileParser(
         }
 
         await AddTimeScaleRecords(member);
-        profile.CombineMinions(incomingData.PlayerData?.CraftedGenerators);
         
         await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
 
@@ -429,16 +516,6 @@ public class ProfileParser(
         await scheduler.TriggerJob(ProcessContestsBackgroundJob.Key, data);
     }
     
-    private async Task UpdateGardenData(string profileId) 
-    {
-        var data = new JobDataMap {
-            { "ProfileId", profileId }
-        };
-
-        var scheduler = await schedulerFactory.GetScheduler();
-        await scheduler.TriggerJob(RefreshGardenBackgroundJob.Key, data);
-    }
-
     private async Task AddTimeScaleRecords(ProfileMember member) {
         if (member.Api.Collections) {
             var cropCollection = new CropCollection {
