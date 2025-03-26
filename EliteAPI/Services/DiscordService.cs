@@ -231,7 +231,7 @@ public class DiscordService(
             var old = DateTimeOffset.UtcNow.AddSeconds(-_coolDowns.UserGuildsCooldown);
             await context.GuildMembers
                 .Where(gm => gm.AccountId == user.Id && gm.LastUpdated < old)
-                .DeleteFromQueryAsync();
+                .ExecuteDeleteAsync();
             
             user.GuildsLastUpdated = DateTimeOffset.UtcNow;
             await userManager.UpdateAsync(user);

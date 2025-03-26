@@ -1,5 +1,6 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
 using EliteAPI.Services.Interfaces;

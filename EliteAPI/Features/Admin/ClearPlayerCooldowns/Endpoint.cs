@@ -19,6 +19,8 @@ internal sealed class ClearPlayerCooldownsEndpoint(
 		Policies(ApiUserPolicies.Moderator);
 		Version(0);
 		
+		Description(x => x.Accepts<PlayerRequest>());
+		
 		Summary(s => {
 			s.Summary = "Reset a player's cooldowns";
 			s.Description = "This enables a player's data from Hypixel to be refreshed on the next request.";

@@ -5,6 +5,7 @@ namespace EliteAPI.Models.DTOs.Outgoing;
 public class LeaderboardDto {
     public required string Id { get; set; }
     public required string Title { get; set; }
+    public string? ShortTitle { get; set; }
     public int Limit { get; set; }
     public int Offset { get; set; }
     public int MaxEntries { get; set; }
@@ -36,6 +37,9 @@ public class LeaderboardEntryDto {
     /// Score of the entry
     /// </summary>
     public double Amount { get; init; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Removed { get; init; }
     
     /// <summary>
     /// List of members if profile leaderboard

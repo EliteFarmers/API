@@ -59,7 +59,11 @@ public static class ServiceExtensions
 
         services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
 
-        services.AddIdentityCore<ApiUser>()
+        services.AddIdentityCore<ApiUser>(o => {
+                o.ClaimsIdentity.RoleClaimType = ClaimNames.Role;
+                o.ClaimsIdentity.UserIdClaimType = ClaimNames.NameId;
+                o.ClaimsIdentity.UserNameClaimType = ClaimNames.Name;
+            })
             .AddRoles<IdentityRole>()
             .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
             .AddDefaultTokenProviders()
@@ -98,7 +102,6 @@ public static class ServiceExtensions
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IDiscordService, DiscordService>();
-        services.AddScoped<ILeaderboardService, LeaderboardService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.AddScoped<IBadgeService, BadgeService>();

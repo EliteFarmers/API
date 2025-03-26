@@ -29,12 +29,12 @@ internal sealed class GetSelfEndpoint(
 		}
 		
 		await SendAsync(new AuthSessionDto {
-			Id = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
-			Username = User.FindFirstValue(ClaimTypes.Name) ?? string.Empty,
-			Avatar = User.FindFirstValue(ApiUserClaims.Avatar) ?? string.Empty,
-			Ign = User.FindFirstValue(ApiUserClaims.Ign) ?? string.Empty,
-			Uuid = User.FindFirstValue(ApiUserClaims.Uuid) ?? string.Empty,
-			Roles = User.Claims.Where(l => l.Type == ClaimTypes.Role).Select(a => a.Value).ToArray()
+			Id = User.FindFirstValue(ClaimNames.NameId) ?? string.Empty,
+			Username = User.FindFirstValue(ClaimNames.Name) ?? string.Empty,
+			Avatar = User.FindFirstValue(ClaimNames.Avatar) ?? string.Empty,
+			Ign = User.FindFirstValue(ClaimNames.Ign) ?? string.Empty,
+			Uuid = User.FindFirstValue(ClaimNames.Uuid) ?? string.Empty,
+			Roles = User.Claims.Where(l => l.Type == ClaimNames.Role).Select(a => a.Value).ToArray()
 		}, cancellation: c);
 	}
 }

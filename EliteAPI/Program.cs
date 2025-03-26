@@ -1,13 +1,14 @@
 global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Models.Entities.Accounts.ApiUser>;
 using FastEndpoints;
 using System.Net;
-using System.Security.Claims;
 using System.Text.Json;
 using EliteAPI;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Utilities;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
@@ -125,8 +126,8 @@ app.UseFastEndpoints(o => {
         } 
     };
 
-    o.Security.RoleClaimType = ClaimTypes.Role;
-    o.Security.NameClaimType = ClaimTypes.Name;
+    o.Security.RoleClaimType = ClaimNames.Role;
+    o.Security.NameClaimType = ClaimNames.Name;
 });
 
 app.UseEliteOpenApi();
@@ -160,7 +161,7 @@ using (var scope = app.Services.CreateScope())
 
     var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     logging.LogInformation("Starting EliteAPI...");
-
+    
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try
     {
@@ -170,6 +171,9 @@ using (var scope = app.Services.CreateScope())
     {
         Console.Error.WriteLine(e);
     }
+    
+    var lbRegistration = scope.ServiceProvider.GetRequiredService<ILeaderboardRegistrationService>();
+    await lbRegistration.RegisterLeaderboardsAsync(CancellationToken.None);
 }
 
 app.Run();

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.Entities.Hypixel;
@@ -40,6 +41,7 @@ public class ProfileMember : IDisposable
     public Skills Skills { get; set; } = new();
     public Farming.Farming Farming { get; set; } = new();
     public ChocolateFactory ChocolateFactory { get; set; } = new();
+    public ProfileMemberMetadata? Metadata { get; set; }
     // public Inventories Inventories { get; set; } = new(); // Likely to be added in the future
 
     public bool IsSelected { get; set; } = false;

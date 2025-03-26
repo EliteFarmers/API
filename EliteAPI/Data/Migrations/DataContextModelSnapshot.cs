@@ -27,10 +27,230 @@ namespace EliteAPI.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.Leaderboard", b =>
+                {
+                    b.Property<int>("LeaderboardId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeaderboardId"));
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("EntryType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("IconId")
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<string>("IntervalType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Property")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ScoreDataType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ShortTitle")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("LeaderboardId");
+
+                    b.HasIndex("IconId");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("Leaderboards");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardEntry", b =>
+                {
+                    b.Property<int>("LeaderboardEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeaderboardEntryId"));
+
+                    b.Property<decimal>("InitialScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(24, 4)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<string>("IntervalIdentifier")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsRemoved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("LeaderboardId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProfileType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(24, 4)");
+
+                    b.HasKey("LeaderboardEntryId");
+
+                    b.HasIndex("IsRemoved");
+
+                    b.HasIndex("ProfileId");
+
+                    b.HasIndex("ProfileMemberId");
+
+                    b.HasIndex("LeaderboardId", "IntervalIdentifier", "Score")
+                        .IsDescending(false, false, true);
+
+                    b.HasIndex("ProfileType", "LeaderboardId", "IntervalIdentifier");
+
+                    b.ToTable("LeaderboardEntries");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshot", b =>
+                {
+                    b.Property<int>("LeaderboardSnapshotId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeaderboardSnapshotId"));
+
+                    b.Property<string>("IntervalIdentifier")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("LeaderboardId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("SnapshotTimestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("LeaderboardSnapshotId");
+
+                    b.HasIndex("LeaderboardId", "IntervalIdentifier");
+
+                    b.HasIndex(new[] { "LeaderboardId", "SnapshotTimestamp", "IntervalIdentifier" }, "IX_LeaderboardSnapshots_Definition_Timestamp_Interval")
+                        .IsUnique();
+
+                    b.ToTable("LeaderboardSnapshots");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshotEntry", b =>
+                {
+                    b.Property<int>("LeaderboardSnapshotEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LeaderboardSnapshotEntryId"));
+
+                    b.Property<DateTimeOffset>("EntryTimestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("InitialScore")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("IntervalIdentifier")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LeaderboardSnapshotId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProfileId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProfileType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("decimal(24, 4)");
+
+                    b.HasKey("LeaderboardSnapshotEntryId");
+
+                    b.HasIndex("LeaderboardSnapshotId", "Score");
+
+                    b.HasIndex("ProfileType", "LeaderboardSnapshotId");
+
+                    b.ToTable("LeaderboardSnapshotEntries", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaderboardSnapshotEntries_ProfileOrMember", "((\"ProfileId\" IS NOT NULL AND \"ProfileMemberId\" IS NULL) OR (\"ProfileId\" IS NULL AND \"ProfileMemberId\" IS NOT NULL))");
+                        });
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.ProfileMemberMetadata", b =>
+                {
+                    b.Property<Guid>("ProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Prefix")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Profile")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfileUuid")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SkyblockExperience")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Uuid")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ProfileMemberId");
+
+                    b.ToTable("ProfileMemberMetadata");
+                });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.ApiUser", b =>
                 {
@@ -411,7 +631,7 @@ namespace EliteAPI.Data.Migrations
                     b.Property<decimal>("Permissions")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal[]>("Roles")
+                    b.PrimitiveCollection<decimal[]>("Roles")
                         .IsRequired()
                         .HasColumnType("numeric(20,0)[]");
 
@@ -1790,6 +2010,122 @@ namespace EliteAPI.Data.Migrations
                     b.HasDiscriminator().HasValue(2);
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.Leaderboard", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Images.Image", "Icon")
+                        .WithMany()
+                        .HasForeignKey("IconId");
+
+                    b.Navigation("Icon");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardEntry", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Leaderboards.Models.Leaderboard", "Leaderboard")
+                        .WithMany()
+                        .HasForeignKey("LeaderboardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.Profile", "Profile")
+                        .WithMany()
+                        .HasForeignKey("ProfileId");
+
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
+                        .WithMany()
+                        .HasForeignKey("ProfileMemberId");
+
+                    b.Navigation("Leaderboard");
+
+                    b.Navigation("Profile");
+
+                    b.Navigation("ProfileMember");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshot", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Leaderboards.Models.Leaderboard", "Leaderboard")
+                        .WithMany()
+                        .HasForeignKey("LeaderboardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Leaderboard");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshotEntry", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshot", "LeaderboardSnapshot")
+                        .WithMany()
+                        .HasForeignKey("LeaderboardSnapshotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LeaderboardSnapshot");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.ProfileMemberMetadata", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
+                        .WithOne("Metadata")
+                        .HasForeignKey("EliteAPI.Features.Leaderboards.Models.ProfileMemberMetadata", "ProfileMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("EliteAPI.Features.Leaderboards.Models.ProfileMemberMetadataCosmetics", "Cosmetics", b1 =>
+                        {
+                            b1.Property<Guid>("ProfileMemberMetadataProfileMemberId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("ProfileMemberMetadataProfileMemberId");
+
+                            b1.ToTable("ProfileMemberMetadata");
+
+                            b1.ToJson("Cosmetics");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProfileMemberMetadataProfileMemberId");
+
+                            b1.OwnsOne("EliteAPI.Features.Leaderboards.Models.ProfileMemberLeaderboardCosmetics", "Leaderboard", b2 =>
+                                {
+                                    b2.Property<Guid>("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId")
+                                        .HasColumnType("uuid")
+                                        .HasColumnName("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemb~");
+
+                                    b2.Property<string>("BackgroundColor")
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("BackgroundImage")
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("BorderColor")
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("OverlayImage")
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("RankColor")
+                                        .HasColumnType("text");
+
+                                    b2.Property<string>("TextColor")
+                                        .HasColumnType("text");
+
+                                    b2.HasKey("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId");
+
+                                    b2.ToTable("ProfileMemberMetadata");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId");
+                                });
+
+                            b1.Navigation("Leaderboard");
+                        });
+
+                    b.Navigation("Cosmetics");
+
+                    b.Navigation("ProfileMember");
+                });
+
             modelBuilder.Entity("EliteAPI.Models.Entities.Accounts.ApiUser", b =>
                 {
                     b.HasOne("EliteAPI.Models.Entities.Accounts.EliteAccount", "Account")
@@ -2703,6 +3039,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.Navigation("JacobData")
                         .IsRequired();
+
+                    b.Navigation("Metadata");
 
                     b.Navigation("Skills")
                         .IsRequired();
