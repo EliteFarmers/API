@@ -140,10 +140,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileType", "LeaderboardId", "IntervalIdentifier");
 
-                    b.ToTable("LeaderboardEntries", t =>
-                        {
-                            t.HasCheckConstraint("CK_LeaderboardEntries_ProfileOrMember", "((\"ProfileId\" IS NOT NULL AND \"ProfileMemberId\" IS NULL) OR (\"ProfileId\" IS NULL AND \"ProfileMemberId\" IS NOT NULL))");
-                        });
+                    b.ToTable("LeaderboardEntries");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshot", b =>

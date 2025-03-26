@@ -81,7 +81,6 @@ namespace EliteAPI.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_LeaderboardEntries", x => x.LeaderboardEntryId);
-                    table.CheckConstraint("CK_LeaderboardEntries_ProfileOrMember", "((\"ProfileId\" IS NOT NULL AND \"ProfileMemberId\" IS NULL) OR (\"ProfileId\" IS NULL AND \"ProfileMemberId\" IS NOT NULL))");
                     table.ForeignKey(
                         name: "FK_LeaderboardEntries_Leaderboards_LeaderboardId",
                         column: x => x.LeaderboardId,

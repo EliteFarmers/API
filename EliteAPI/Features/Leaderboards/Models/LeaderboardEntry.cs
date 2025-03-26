@@ -66,12 +66,5 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 		
 		builder.HasIndex(le => le.ProfileId);
 		builder.HasIndex(le => le.ProfileMemberId);
-		
-		builder.ToTable(table => table
-			.HasCheckConstraint(
-				"CK_LeaderboardEntries_ProfileOrMember", 
-				"((\"ProfileId\" IS NOT NULL AND \"ProfileMemberId\" IS NULL) OR (\"ProfileId\" IS NULL AND \"ProfileMemberId\" IS NOT NULL))"
-			)
-		);
 	}
 }
