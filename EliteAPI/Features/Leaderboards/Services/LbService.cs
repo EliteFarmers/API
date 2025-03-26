@@ -105,6 +105,7 @@ public class LbService(
 			.ToDictionaryAsync(e => e.LeaderboardId, c);
 
 		var updatedEntries = new List<Models.LeaderboardEntry>();
+		var newEntries = new List<Models.LeaderboardEntry>();
 		
 		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
 			var useIncrease = definition.Info.UseIncreaseForInterval;
@@ -149,12 +150,20 @@ public class LbService(
 				ProfileType = member.Profile?.GameMode
 			};
 			
-			updatedEntries.Add(newEntry);
+			newEntries.Add(newEntry);
 		}
 
 		if (updatedEntries.Count != 0) {
-			await context.BulkInsertOrUpdateAsync(updatedEntries, cancellationToken: c);
+			await context.BulkUpdateAsync(updatedEntries, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
+		}
+		
+		if (newEntries.Count != 0) {
+			var options = new BulkConfig() {
+				ConflictOption = ConflictOption.Ignore
+			};
+			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			logger.LogInformation("Inserted {Count} new leaderboard entries", newEntries.Count);
 		}
 		
 		logger.LogInformation("Updating member leaderboards for {Player} on {Profile} took {Time}ms", 
@@ -184,6 +193,7 @@ public class LbService(
 			.ToDictionaryAsync(e => e.LeaderboardId, c);
 
 		var updatedEntries = new List<Models.LeaderboardEntry>();
+		var newEntries = new List<Models.LeaderboardEntry>();
 		
 		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
 			var useIncrease = definition.Info.UseIncreaseForInterval;
@@ -231,12 +241,20 @@ public class LbService(
 				ProfileType = profile.GameMode
 			};
 				
-			updatedEntries.Add(newEntry);
+			newEntries.Add(newEntry);
 		}
 
 		if (updatedEntries.Count != 0) {
-			await context.BulkInsertOrUpdateAsync(updatedEntries, cancellationToken: c);
+			await context.BulkUpdateAsync(updatedEntries, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
+		}
+		
+		if (newEntries.Count != 0) {
+			var options = new BulkConfig() {
+				ConflictOption = ConflictOption.Ignore
+			};
+			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			logger.LogInformation("Inserted {Count} new leaderboard entries", newEntries.Count);
 		}
 		
 		logger.LogInformation("Updating profile leaderboards for {Profile} took {Time}ms", 
