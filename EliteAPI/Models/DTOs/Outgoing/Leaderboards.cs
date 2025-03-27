@@ -47,6 +47,12 @@ public class LeaderboardEntryDto {
     public bool Removed { get; init; }
     
     /// <summary>
+    /// Initial score of the entry
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public double InitialAmount { get; set; }
+    
+    /// <summary>
     /// List of members if profile leaderboard
     /// </summary>
     [JsonIgnore]

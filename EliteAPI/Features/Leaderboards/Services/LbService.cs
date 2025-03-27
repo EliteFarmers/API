@@ -55,6 +55,7 @@ public class LbService(
 					Uuid = e.ProfileMember!.PlayerUuid,
 					Profile = e.ProfileMember.ProfileName,
 					Amount = (double) e.Score,
+					InitialAmount = (double) e.InitialScore,
 					Removed = e.IsRemoved,
 					Ign = e.ProfileMember.MinecraftAccount.Name
 				}).ToListAsync();
@@ -71,6 +72,7 @@ public class LbService(
 					Uuid = e.Profile!.ProfileId,
 					Profile = e.Profile!.ProfileName,
 					Amount = (double) e.Score,
+					InitialAmount = (double) e.InitialScore,
 					Removed = e.IsRemoved,
 					Members = e.Profile.Members
 						.Where(m => !m.WasRemoved)
