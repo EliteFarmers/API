@@ -110,6 +110,8 @@ public class LbService(
 		var newEntries = new List<Models.LeaderboardEntry>();
 		
 		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			if (definition is not IMemberLeaderboardDefinition memberLb) continue;
+			
 			var useIncrease = definition.Info.UseIncreaseForInterval;
 			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
 
@@ -120,13 +122,12 @@ public class LbService(
 				_ => null
 			};
 
-			if (definition is not IMemberLeaderboardDefinition memberLb) continue;
 			var score = memberLb.GetScoreFromMember(member, type);
 				
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				entry.IsRemoved = member.WasRemoved;
 
-				if (score <= 0) {
+				if (score >= 0) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score - entry.InitialScore
 						: score;
@@ -199,6 +200,8 @@ public class LbService(
 		var newEntries = new List<Models.LeaderboardEntry>();
 		
 		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
+			
 			var useIncrease = definition.Info.UseIncreaseForInterval;
 			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
 
@@ -208,8 +211,6 @@ public class LbService(
 				LeaderboardType.Weekly => weeklyInterval,
 				_ => null
 			};
-
-			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
 			
 			var score = profileLb.GetScoreFromProfile(profile, type);
 			if (score == -1 && profile.Garden is not null) {
@@ -219,7 +220,7 @@ public class LbService(
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				entry.IsRemoved = profile.IsDeleted;
 					
-				if (score <= 0) {
+				if (score >= 0) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score - entry.InitialScore 
 						: score;
