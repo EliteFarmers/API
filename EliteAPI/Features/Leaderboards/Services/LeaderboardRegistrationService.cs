@@ -58,6 +58,29 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 				existing.Title = leaderboard.Info.Title;
 				existing.IntervalType = type;
 				existing.ScoreDataType = leaderboard.Info.ScoreDataType;
+
+				if (leaderboard.Info.MinimumScore > existing.MinimumScore) {
+					var count = 0;
+					if (type == LeaderboardType.Current) {
+						count = await context.LeaderboardEntries
+							.Where(s =>
+								s.LeaderboardId == existing.LeaderboardId
+								&& s.IntervalIdentifier == null
+								&& s.Score < leaderboard.Info.MinimumScore)
+							.ExecuteDeleteAsync(cancellationToken: c);
+					} else {
+						count += await context.LeaderboardEntries
+							.Where(s =>
+								s.LeaderboardId == existing.LeaderboardId
+								&& s.IntervalIdentifier != null
+								&& s.InitialScore < leaderboard.Info.MinimumScore)
+							.ExecuteDeleteAsync(cancellationToken: c);
+					}
+					
+					logger.LogInformation("Deleted {Count} entries from \"{Slug}\" leaderboard that had less than the minimum score", count, slug);
+				}
+				
+				existing.MinimumScore = leaderboard.Info.MinimumScore;
 				return;
 			}
 
@@ -66,7 +89,8 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 				ShortTitle = leaderboard.Info.ShortTitle,
 				Slug = slug,
 				IntervalType = type,
-				ScoreDataType = leaderboard.Info.ScoreDataType
+				ScoreDataType = leaderboard.Info.ScoreDataType,
+				MinimumScore = leaderboard.Info.MinimumScore
 			};
 
 			await context.Leaderboards.AddAsync(newLeaderboard, c);
@@ -76,7 +100,6 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 	public Dictionary<string, ILeaderboardDefinition> LeaderboardsById { get; } = new Dictionary<string, ILeaderboardDefinition>();
 	public List<ILeaderboardDefinition> Leaderboards { get; } = [
 		new FarmingWeightLeaderboard(),
-		new FarmingWeightMonthlyLeaderboard(),
 		new GardenXpLeaderboard(),
 		new JacobContestsLeaderboard(),
 		new JacobFirstPlaceContestsLeaderboard(),
@@ -108,6 +131,7 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		new MilestonePumpkinLeaderboard(),
 		new MilestoneSugarCaneLeaderboard(),
 		new MilestoneWheatLeaderboard(),
+		new TotalPestKillsLeaderboard(),
 		new PestMiteLeaderboard(),
 		new PestCricketLeaderboard(),
 		new PestMothLeaderboard(),

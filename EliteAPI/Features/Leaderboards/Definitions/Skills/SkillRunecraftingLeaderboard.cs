@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
@@ -8,14 +9,12 @@ public class SkillRunecraftingLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Runecrafting",
 		Slug = "runecrafting",
 		Category = "Skills",
+		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		var skill = member.Skills.Runecrafting;
-		
-		if (skill == 0) return null;
-		return skill;
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		return (decimal) member.Skills.Runecrafting;
 	}
 }

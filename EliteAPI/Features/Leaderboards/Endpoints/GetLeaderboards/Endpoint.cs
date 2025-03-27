@@ -1,4 +1,3 @@
-using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Utilities;
 using FastEndpoints;
@@ -35,11 +34,8 @@ internal sealed class GetLeaderboardsEndpoint(
 				Short = l.Value.Info.ShortTitle,
 				Category = l.Value.Info.Category,
 				Profile = l.Value is IProfileLeaderboardDefinition,
-				IntervalType = l.Key.EndsWith("-monthly") 
-					? LeaderboardType.Monthly 
-					: l.Key.EndsWith("-weekly") 
-						? LeaderboardType.Weekly 
-						: LeaderboardType.Current,
+				MinimumScore = l.Value.Info.MinimumScore,
+				IntervalType = LbService.GetTypeFromSlug(l.Key),
 				ScoreDataType = l.Value.Info.ScoreDataType
 			});
 		

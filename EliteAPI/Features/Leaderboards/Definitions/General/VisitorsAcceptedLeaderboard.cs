@@ -8,12 +8,12 @@ public class VisitorsAcceptedLeaderboard : IProfileLeaderboardDefinition {
 		ShortTitle = "Visitors Accepted",
 		Slug = "visitors-accepted",
 		Category = "General",
+		MinimumScore = 500,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 	
-	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
-		if (garden.CompletedVisitors == 0) return null;
+	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		return garden.CompletedVisitors;
 	}
 }

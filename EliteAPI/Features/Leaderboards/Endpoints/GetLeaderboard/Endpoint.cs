@@ -10,7 +10,6 @@ internal sealed class GetLeaderboardEndpoint(
 	ILeaderboardRegistrationService leaderboardRegistrationService
 	) : Endpoint<LeaderboardSliceRequest, LeaderboardDto> 
 {
-	
 	public override void Configure() {
 		Get("/leaderboard/{Leaderboard}");
 		AllowAnonymous();
@@ -34,6 +33,7 @@ internal sealed class GetLeaderboardEndpoint(
 				ShortTitle = newLb.Info.ShortTitle,
 				Limit = request.LimitFormatted,
 				Offset = request.OffsetFormatted,
+				MinimumScore = newLb.Info.MinimumScore,
 				MaxEntries = -1,
 				Profile = newLb is IProfileLeaderboardDefinition,
 				Entries = newEntries

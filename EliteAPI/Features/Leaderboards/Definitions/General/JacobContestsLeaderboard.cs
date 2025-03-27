@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
@@ -8,13 +9,12 @@ public class JacobContestsLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Jacob Contests",
 		Slug = "participations",
 		Category = "General",
+		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		if (member.JacobData.Participations == 0) return null;
-		
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		return member.JacobData.Participations;
 	}
 }

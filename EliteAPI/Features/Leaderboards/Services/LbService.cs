@@ -13,7 +13,7 @@ namespace EliteAPI.Features.Leaderboards.Services;
 
 public interface ILbService {
 	Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId);
-	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20);
+	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
 	Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId);
@@ -41,10 +41,10 @@ public class LbService(
 		return (lb, definition);
 	}
 
-	public async Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20) {
+	public async Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved) {
 		var (lb, definition) = await GetLeaderboard(leaderboardId);
 		if (lb is null || definition is null) return [];
-
+		
 		if (definition is IMemberLeaderboardDefinition) {
 			return await context.LeaderboardEntries.AsNoTracking()
 				.Where(e => e.LeaderboardId == lb.LeaderboardId && e.ProfileMemberId != null && !e.IsRemoved)
@@ -94,7 +94,7 @@ public class LbService(
 		
 		var leaderboardsIdsBySlug = await context.Leaderboards
 			.AsNoTracking()
-			.Select(lb => new { lb.Slug, lb.LeaderboardId })
+			.Select(lb => new { lb.Slug, lb.LeaderboardId, lb.MinimumScore })
 			.ToDictionaryAsync(lb => lb.Slug, c);
 		
 		var existingEntries = await context.LeaderboardEntries
@@ -111,22 +111,23 @@ public class LbService(
 			var useIncrease = definition.Info.UseIncreaseForInterval;
 			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
 
-			var intervalIdentifier = slug switch {
-				_ when slug.EndsWith("-monthly") => monthlyInterval,
-				_ when slug.EndsWith("-weekly") => weeklyInterval,
+			var type = GetTypeFromSlug(slug);
+			var intervalIdentifier = type switch {
+				LeaderboardType.Monthly => monthlyInterval,
+				LeaderboardType.Weekly => weeklyInterval,
 				_ => null
 			};
 
 			if (definition is not IMemberLeaderboardDefinition memberLb) continue;
-			var score = memberLb.GetScoreFromMember(member);
+			var score = memberLb.GetScoreFromMember(member, type);
 				
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				entry.IsRemoved = member.WasRemoved;
 
-				if (score is not null) {
+				if (score <= 0) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
-						? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore
-						: score.ToDecimal(CultureInfo.InvariantCulture);
+						? score - entry.InitialScore
+						: score;
 
 					entry.Score = newScore;
 				}
@@ -134,17 +135,17 @@ public class LbService(
 				updatedEntries.Add(entry);
 				continue;
 			}
-				
-			if (score is null) continue;
+			
+			if (score <= 0 || score < lb.MinimumScore) continue;
 				
 			var newEntry = new Models.LeaderboardEntry() {
 				LeaderboardId = lb.LeaderboardId,
 				IntervalIdentifier = intervalIdentifier,
-					
+				
 				ProfileMemberId = member.Id,
 				 
-				InitialScore = useIncrease && intervalIdentifier is not null ? score.ToDecimal(CultureInfo.InvariantCulture) : 0,
-				Score = useIncrease && intervalIdentifier is not null ? 0 : score.ToDecimal(CultureInfo.InvariantCulture),
+				InitialScore = useIncrease && intervalIdentifier is not null ? score : 0,
+				Score = useIncrease && intervalIdentifier is not null ? 0 : score,
 				
 				IsRemoved = member.WasRemoved,
 				ProfileType = member.Profile?.GameMode
@@ -182,7 +183,7 @@ public class LbService(
 		
 		var leaderboardsIdsBySlug = await context.Leaderboards
 			.AsNoTracking()
-			.Select(lb => new { lb.Slug, lb.LeaderboardId })
+			.Select(lb => new { lb.Slug, lb.LeaderboardId, lb.MinimumScore })
 			.ToDictionaryAsync(lb => lb.Slug, c);
 		
 		var existingEntries = await context.LeaderboardEntries
@@ -199,25 +200,27 @@ public class LbService(
 			var useIncrease = definition.Info.UseIncreaseForInterval;
 			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
 
-			var intervalIdentifier = slug switch {
-				_ when slug.EndsWith("-monthly") => monthlyInterval,
-				_ when slug.EndsWith("-weekly") => weeklyInterval,
+			var type = GetTypeFromSlug(slug);
+			var intervalIdentifier = type switch {
+				LeaderboardType.Monthly => monthlyInterval,
+				LeaderboardType.Weekly => weeklyInterval,
 				_ => null
 			};
 
 			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
 			
-			var score =
-				(profile is not null ? profileLb.GetScoreFromProfile(profile) : null)
-				?? (profile?.Garden is not null ? profileLb.GetScoreFromGarden(profile.Garden) : null);
-				
+			var score = profileLb.GetScoreFromProfile(profile, type);
+			if (score == -1 && profile.Garden is not null) {
+				score = profileLb.GetScoreFromGarden(profile.Garden, type);
+			}
+
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
-				entry.IsRemoved = profile!.IsDeleted;
+				entry.IsRemoved = profile.IsDeleted;
 					
-				if (score is not null) {
+				if (score <= 0) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
-						? score.ToDecimal(CultureInfo.InvariantCulture) - entry.InitialScore 
-						: score.ToDecimal(CultureInfo.InvariantCulture);
+						? score - entry.InitialScore 
+						: score;
 					
 					entry.Score = newScore;
 				}
@@ -226,16 +229,16 @@ public class LbService(
 				continue;
 			}
 			
-			if (score is null) continue;
+			if (score <= 0 || score < lb.MinimumScore) continue;
 
-			var newEntry = new Models.LeaderboardEntry() {
+			var newEntry = new Models.LeaderboardEntry {
 				LeaderboardId = lb.LeaderboardId,
 				IntervalIdentifier = intervalIdentifier,
 					
-				ProfileId = profile!.ProfileId,
+				ProfileId = profile.ProfileId,
 				 
-				InitialScore = useIncrease && intervalIdentifier is not null ? score.ToDecimal(CultureInfo.InvariantCulture) : 0,
-				Score = useIncrease && intervalIdentifier is not null ? 0 : score.ToDecimal(CultureInfo.InvariantCulture),
+				InitialScore = useIncrease && intervalIdentifier is not null ? score : 0,
+				Score = useIncrease && intervalIdentifier is not null ? 0 : score,
 				
 				IsRemoved = profile.IsDeleted,
 				ProfileType = profile.GameMode
@@ -380,6 +383,14 @@ public class LbService(
 		}
 	}
 
+	public static LeaderboardType GetTypeFromSlug(string slug) {
+		return slug switch {
+			_ when slug.EndsWith("-monthly") => LeaderboardType.Monthly,
+			_ when slug.EndsWith("-weekly") => LeaderboardType.Weekly,
+			_ => LeaderboardType.Current
+		};
+	}
+
 	public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId)
     {
 	    var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
@@ -500,4 +511,10 @@ public class PlayerLeaderboardEntryWithRankDto
 	
 	[JsonConverter(typeof(JsonStringEnumConverter<LeaderboardScoreDataType>))]
 	public LeaderboardScoreDataType Type { get; set; }
+}
+
+public enum RemovedFilter {
+	NotRemoved = 0,
+	Removed = 1,
+	All = 2
 }

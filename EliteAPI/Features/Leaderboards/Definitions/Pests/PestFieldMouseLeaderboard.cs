@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
@@ -8,14 +9,12 @@ public class PestFieldMouseLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Field Mouse",
 		Slug = "mouse",
 		Category = "Pests",
+		MinimumScore = 50,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		var pest = member.Farming.Pests.Mouse;
-		
-		if (pest == 0) return null;
-		return pest;
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		return member.Farming.Pests.Mouse;
 	}
 }

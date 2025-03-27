@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
@@ -9,16 +10,17 @@ public class CropWheatLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Wheat",
 		Slug = "wheat",
 		Category = "Crops",
+		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 	
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 		var crop = member.Collections.RootElement.TryGetProperty(CropId.Wheat, out var value) 
 			? value.GetInt64() 
 			: 0;
 		
-		if (crop == 0) return null;
 		return crop;
 	}
 }
@@ -28,15 +30,15 @@ public class MilestoneWheatLeaderboard : IProfileLeaderboardDefinition {
 		Title = "Wheat Milestone Collection",
 		ShortTitle = "Wheat Milestone",
 		Slug = "wheat-milestone",
-		Category = "Milstones",
+		Category = "Milestones",
+		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
-	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
+	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		var crop = garden.Crops.Wheat;
 		
-		if (crop == 0) return null;
 		return crop;
 	}
 }

@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
@@ -8,13 +9,12 @@ public class SkyblockLevelLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Skyblock Level",
 		Slug = "skyblockxp",
 		Category = "General",
+		MinimumScore = 5_000, // Skyblock level 50
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		if (member.SkyblockXp == 0) return null;
-		
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		return member.SkyblockXp;
 	}
 }

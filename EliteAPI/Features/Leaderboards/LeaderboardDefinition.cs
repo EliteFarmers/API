@@ -14,25 +14,26 @@ public class LeaderboardInfo {
 	public required string Slug { get; set; }
 	public required string Category { get; set; }
 	public bool UseIncreaseForInterval { get; set; } = true;
+	public decimal MinimumScore { get; set; } = 0;
 	public List<LeaderboardType> IntervalType { get; set; } = [];
 	public LeaderboardScoreDataType ScoreDataType { get; set; }
 }
 
 public interface IMemberLeaderboardDefinition : ILeaderboardDefinition 
 {
-	IConvertible? GetScoreFromMember(ProfileMember member) {
-		return null;
+	decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		return -1;
 	}
 }
 
 public interface IProfileLeaderboardDefinition : ILeaderboardDefinition 
 {
-	IConvertible? GetScoreFromProfile(EliteAPI.Models.Entities.Hypixel.Profile profile) {
-		return null;
+	decimal GetScoreFromProfile(Profile profile, LeaderboardType type) {
+		return -1;
 	}
 	
-	IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
-		return null;
+	decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
+		return -1;
 	}
 }
 
@@ -55,6 +56,12 @@ public class LeaderboardInfoDto {
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public bool Profile { get; set; }
+	
+	/// <summary>
+	/// Minimum score required to be on the leaderboard
+	/// </summary>
+	public decimal MinimumScore { get; set; }
+	
 	/// <summary>
 	/// Interval type of the leaderboard
 	/// </summary>

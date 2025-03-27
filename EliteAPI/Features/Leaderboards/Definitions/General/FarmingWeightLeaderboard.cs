@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
@@ -8,32 +9,17 @@ public class FarmingWeightLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Farming Weight",
 		Slug = "farmingweight",
 		Category = "General",
-		IntervalType = [LeaderboardType.Current],
+		MinimumScore = 1_000,
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 	
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		if (member.Farming.TotalWeight is 0 or < 0.001) return null;
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		if (type == LeaderboardType.Current) {
+			return (decimal) member.Farming.TotalWeight;
+		}
 		
-		return member.Farming.TotalWeight;
-	}
-}
-
-public class FarmingWeightMonthlyLeaderboard : IMemberLeaderboardDefinition {
-	public LeaderboardInfo Info { get; } = new() {
-		Title = "Farming Weight",
-		ShortTitle = "Farming Weight",
-		Slug = "farmingweight",
-		Category = "General",
-		IntervalType = [LeaderboardType.Monthly],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
-	};
-	
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		if (member.Farming.TotalWeight is 0 or < 0.001) return null;
 		var cropWeight = member.Farming.CropWeight.Values.Sum(c => c);
-		
-		if (cropWeight is 0 or < 0.001) return null;
-		return cropWeight;
+		return (decimal) cropWeight;
 	}
 }

@@ -8,12 +8,12 @@ public class GardenXpLeaderboard : IProfileLeaderboardDefinition {
 		ShortTitle = "Garden XP",
 		Slug = "garden",
 		Category = "General",
-		IntervalType = [LeaderboardType.Current],
+		MinimumScore = 10_000,
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 	
-	public IConvertible? GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden) {
-		if (garden.GardenExperience == 0) return null;
+	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		return garden.GardenExperience;
 	}
 }

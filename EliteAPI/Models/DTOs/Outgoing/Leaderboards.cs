@@ -10,6 +10,11 @@ public class LeaderboardDto {
     public int Offset { get; set; }
     public int MaxEntries { get; set; }
     
+    /// <summary>
+    /// The minimum score required to be on the leaderboard
+    /// </summary>
+    public decimal MinimumScore { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool Profile { get; set; }
     public List<LeaderboardEntryDto> Entries { get; set; } = new();

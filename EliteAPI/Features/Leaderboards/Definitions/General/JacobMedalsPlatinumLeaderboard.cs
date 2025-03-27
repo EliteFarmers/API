@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
@@ -8,12 +9,12 @@ public class JacobMedalsPlatinumLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Platinum Medals",
 		Slug = "platinummedals",
 		Category = "General",
+		MinimumScore = 50,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
-	public IConvertible? GetScoreFromMember(EliteAPI.Models.Entities.Hypixel.ProfileMember member) {
-		var count = member.JacobData.EarnedMedals.Platinum;
-		return (count == 0) ? null : count;
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		return member.JacobData.EarnedMedals.Platinum;
 	}
 }
