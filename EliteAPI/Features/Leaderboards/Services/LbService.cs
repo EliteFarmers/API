@@ -21,6 +21,7 @@ public interface ILbService {
 	Task<PlayerLeaderboardEntryWithRankDto?> GetLeaderboardEntryAsync(string leaderboardSlug, string memberOrProfileId, string? intervalIdentifier = null);
 	Task<LeaderboardPositionDto?> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId, int? upcoming = null, int? atRank = null, CancellationToken? c = null);
 	string? GetCurrentIdentifier(LeaderboardType type);
+	(long start, long end) GetCurrentTimeRange(LeaderboardType type);
 }
 
 [RegisterService<ILbService>(LifeTime.Scoped)]
@@ -381,6 +382,33 @@ public class LbService(
 				return $"{now.Year}-W{week}";
 			case LeaderboardType.Monthly:
 				return DateTime.UtcNow.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+			default:
+				throw new ArgumentOutOfRangeException(nameof(type), type, null);
+		}
+	}
+	
+	public (long start, long end) GetCurrentTimeRange(LeaderboardType type) {
+		switch (type) {
+			case LeaderboardType.Current:
+				return (0, 0);
+			case LeaderboardType.Weekly:
+				var nowUtc = DateTime.UtcNow;
+				var isoYear = ISOWeek.GetYear(nowUtc);
+				var isoWeekNumber = ISOWeek.GetWeekOfYear(nowUtc);
+
+				var startOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Monday).ToUniversalTime();
+				var endOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Sunday).ToUniversalTime();
+
+				var startTimestamp = ((DateTimeOffset)startOfWeekUtc).ToUnixTimeSeconds();
+				var endTimestamp = ((DateTimeOffset)endOfWeekUtc).ToUnixTimeSeconds();
+
+				return (startTimestamp, endTimestamp);
+			case LeaderboardType.Monthly:
+				var now = DateTimeOffset.UtcNow;
+				var startOfMonth = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, now.Offset);
+				var endOfMonth = startOfMonth.AddMonths(1);
+				
+				return (startOfMonth.ToUnixTimeSeconds(), endOfMonth.ToUnixTimeSeconds());
 			default:
 				throw new ArgumentOutOfRangeException(nameof(type), type, null);
 		}

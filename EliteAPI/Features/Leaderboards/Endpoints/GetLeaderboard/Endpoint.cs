@@ -27,6 +27,9 @@ internal sealed class GetLeaderboardEndpoint(
 			var newEntries = await newLbService.GetLeaderboardSlice(request.Leaderboard, request.OffsetFormatted,
 				request.LimitFormatted);
 
+			var type = LbService.GetTypeFromSlug(request.Leaderboard);
+			var time = newLbService.GetCurrentTimeRange(type);
+
 			var newLeaderboard = new LeaderboardDto {
 				Id = request.Leaderboard,
 				Title = newLb.Info.Title,
@@ -34,6 +37,8 @@ internal sealed class GetLeaderboardEndpoint(
 				Limit = request.LimitFormatted,
 				Offset = request.OffsetFormatted,
 				MinimumScore = newLb.Info.MinimumScore,
+				StartsAt = time.start,
+				EndsAt = time.end,
 				MaxEntries = -1,
 				Profile = newLb is IProfileLeaderboardDefinition,
 				Entries = newEntries

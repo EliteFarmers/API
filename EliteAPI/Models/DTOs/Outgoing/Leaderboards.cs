@@ -16,6 +16,12 @@ public class LeaderboardDto {
     public decimal MinimumScore { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public long StartsAt { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public long EndsAt { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool Profile { get; set; }
     public List<LeaderboardEntryDto> Entries { get; set; } = new();
 }

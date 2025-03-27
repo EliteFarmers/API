@@ -675,8 +675,8 @@ public class LeaderboardService(
         if (includeUpcoming && rank == -1) {
             upcomingPlayers = await GetLeaderboardSlice(leaderboardId, lb.Limit - 1, 1);
         } else if (includeUpcoming && rank > 1) {
-            upcomingPlayers = await GetLeaderboardSlice(leaderboardId, Math.Max(rank - 6, 0),
-                Math.Min(rank - 1, 5));
+            upcomingPlayers = await GetLeaderboardSlice(leaderboardId, Math.Max(rank - 11, 0),
+                Math.Min(rank - 1, 10));
         }
 
         // Reverse the list so that upcoming players are in ascending order

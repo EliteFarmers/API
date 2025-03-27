@@ -25,7 +25,7 @@ internal sealed class GetPlayerRankEndpoint(
 	public override async Task HandleAsync(GetPlayerRankRequest request, CancellationToken c) {
 #pragma warning disable CS0618 // Type or member is obsolete
 		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) {
-			request.Upcoming = 5;
+			request.Upcoming = 10;
 		}
 #pragma warning restore CS0618 // Type or member is obsolete
 
