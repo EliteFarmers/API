@@ -73,7 +73,6 @@ public class ProfileProcessorService(
 	IMessageService messageService,
 	ILbService lbService,
 	ILeaderboardService leaderboardService,
-	IContestsProcessorService contestsProcessorService,
 	ISchedulerFactory schedulerFactory,
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
@@ -106,48 +105,48 @@ public class ProfileProcessorService(
             logger.LogWarning("Received unsuccessful profiles response from {PlayerUuid}", requestedPlayerUuid);
             return [];
         }
-
-        if (data.Profiles is not { Length: > 0 }) {
-            // Mark player as removed from all of their profiles if they have none in the response
-            await context.ProfileMembers
-                .Include(p => p.Profile)
-                .Where(p => p.PlayerUuid.Equals(requestedPlayerUuid))
-                .ExecuteUpdateAsync(member =>
-                    member
-                        .SetProperty(m => m.WasRemoved, true)
-                        .SetProperty(m => m.IsSelected, false)
-                );
-            return [];
-        }
-        
-        var profileIds = data.Profiles.Select(p => p.ProfileId.Replace("-", "")).ToList();
+		
+        var profileIds = (data.Profiles ?? []).Select(p => p.ProfileId.Replace("-", "")).ToList();
 
         // Get profiles that aren't in the response
         var wipedProfiles = await context.ProfileMembers
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
-            .Where(p => p.PlayerUuid.Equals(requestedPlayerUuid) && !profileIds.Contains(p.ProfileId) && !p.WasRemoved)
-            .Select(p => new { p.Id, p.PlayerUuid, p.ProfileId, p.Profile.GameMode, Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId })
+            .Where(p => p.PlayerUuid.Equals(requestedPlayerUuid) && !profileIds.Contains(p.ProfileId))
+            .Select(p => new {
+	            p.Id, 
+	            p.PlayerUuid,
+	            p.ProfileId,
+	            p.Profile.GameMode,
+	            Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId,
+	            p.WasRemoved,
+	            p.IsSelected
+            })
             .ToListAsync();
         
         // Mark profiles as removed
         foreach (var wiped in wipedProfiles) {
             if (profileIds.Contains(wiped.ProfileId)) continue; // Shouldn't be necessary, but just in case
             
-            if (wiped.GameMode != "bingo") {
+            if (wiped.GameMode != "bingo" && !wiped.WasRemoved) {
                 messageService.SendWipedMessage(wiped.PlayerUuid, wiped.Ign, wiped.ProfileId, wiped.DiscordId?.ToString() ?? "");
             }
-            
-            await context.ProfileMembers
-                .Where(m => m.Id == wiped.Id)
-                .ExecuteUpdateAsync(member =>
-                    member
-                        .SetProperty(m => m.WasRemoved, true)
-                        .SetProperty(m => m.IsSelected, false)
-                );
+
+            if (!wiped.WasRemoved || wiped.IsSelected) {
+	            await context.ProfileMembers
+		            .Where(m => m.Id == wiped.Id)
+		            .ExecuteUpdateAsync(member => member
+			            .SetProperty(m => m.WasRemoved, true)
+			            .SetProperty(m => m.IsSelected, false)
+		            );
+            }
+
+            await context.LeaderboardEntries
+	            .Where(e => e.ProfileMemberId == wiped.Id)
+	            .ExecuteUpdateAsync(e => e.SetProperty(le => le.IsRemoved, true));
         }
         
-        return data.Profiles.ToList();
+        return data.Profiles?.ToList() ?? [];
 	}
 
 	public async Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid) {
