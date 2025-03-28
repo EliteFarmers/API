@@ -32,10 +32,10 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 	public int? AtRank { get; set; } = -1;
 	
 	/// <summary>
-	/// Use new leaderboard backend (will be default in the future)
+	/// Use new leaderboard backend (will be removed in the future)
 	///	</summary>
-	[QueryParam]
-	public bool? New { get; set; } = false;
+	[QueryParam, DefaultValue(true)]
+	public bool? New { get; set; } = true;
 }
 
 internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest> {

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Leaderboards.Services;
 using FastEndpoints;
@@ -15,8 +16,8 @@ public class LeaderboardRequest {
 	/// <summary>
 	/// Use new leaderboard backend (will be default in the future)
 	/// </summary>
-	[QueryParam]
-	public bool? New { get; set; } = false;
+	[QueryParam, DefaultValue(true)]
+	public bool? New { get; set; } = true;
 }
 
 internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest> {
