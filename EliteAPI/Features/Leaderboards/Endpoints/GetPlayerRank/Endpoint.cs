@@ -57,7 +57,14 @@ internal sealed class GetPlayerRankEndpoint(
 		);
 		
 		if (newResult is null) {
-			ThrowError("Player not found", StatusCodes.Status404NotFound);
+			var last = await newLbService.GetLastLeaderboardEntry(request.Leaderboard);
+			await SendAsync(new LeaderboardPositionDto {
+				Rank = -1,
+				Amount = 0,
+				UpcomingRank = last?.Rank ?? 10_000,
+				UpcomingPlayers = request.Upcoming > 0 && last is not null ? [last] : null,
+			}, cancellation: c);
+			return;
 		}
 		
 		await SendAsync(newResult, cancellation: c);

@@ -39,7 +39,7 @@ internal sealed class GetLeaderboardEndpoint(
 				MinimumScore = newLb.Info.MinimumScore,
 				StartsAt = time.start,
 				EndsAt = time.end,
-				MaxEntries = -1,
+				MaxEntries = (await newLbService.GetLastLeaderboardEntry(request.Leaderboard))?.Rank ?? -1,
 				Profile = newLb is IProfileLeaderboardDefinition,
 				Entries = newEntries
 			};

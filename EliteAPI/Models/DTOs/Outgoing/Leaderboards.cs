@@ -74,7 +74,7 @@ public class LeaderboardEntryDto {
 }
 
 public class LeaderboardEntryWithRankDto : LeaderboardEntryDto {
-    public int Rank { get; init; } = -1;
+    public int Rank { get; set; } = -1;
 }
 
 public class ProfileLeaderboardMemberDto {
