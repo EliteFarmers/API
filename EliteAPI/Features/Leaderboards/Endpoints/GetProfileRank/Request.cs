@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using EliteAPI.Configuration.Settings;
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Common;
 using FastEndpoints;
 using FluentValidation;
@@ -42,10 +43,12 @@ internal sealed class GetProfileRankRequestValidator : Validator<GetProfileRankR
 	public GetProfileRankRequestValidator() {
 		Include(new ProfileUuidRequestValidator());
 		var lbSettings = Resolve<IOptions<ConfigLeaderboardSettings>>();
+		var newLbService = Resolve<ILeaderboardRegistrationService>();
 		RuleFor(x => x.Leaderboard)
 			.NotEmpty()
 			.WithMessage("Leaderboard is required")
-			.Must(lbSettings.Value.HasLeaderboard)
+			.When(x => lbSettings.Value.HasLeaderboard(x.Leaderboard) 
+			           || (x.New is true && newLbService.LeaderboardsById.ContainsKey(x.Leaderboard)))
 			.WithMessage("Leaderboard does not exist");
 		
 		RuleFor(x => x.Upcoming)
