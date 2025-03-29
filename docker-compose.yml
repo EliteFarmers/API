@@ -36,7 +36,7 @@ services:
     networks:
         - eliteapi-network
   cache:
-    image: redis:7.4.1
+    image: redis:7.4.2
     restart: always
     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
     ports:
@@ -76,7 +76,7 @@ services:
     networks:
         - eliteapi-network
   rabbit:
-    image: rabbitmq:3.8-alpine
+    image: rabbitmq:3.13-alpine
     restart: unless-stopped
     env_file:
       - .env
