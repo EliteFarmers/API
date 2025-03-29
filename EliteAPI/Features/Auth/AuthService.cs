@@ -1,9 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using EliteAPI.Background.Discord;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Services;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -13,7 +15,7 @@ using Quartz;
 namespace EliteAPI.Features.Auth;
 
 [RegisterService<IAuthService>(LifeTime.Scoped)]
-public class AuthService(
+public partial class AuthService(
 	IDiscordService discordService, 
 	UserManager userManager,
 	IConfiguration configuration,
@@ -24,8 +26,16 @@ public class AuthService(
 	private const string LoginProvider = "EliteAPI";
 	private const string RefreshToken = "RefreshToken";
 	
+	[GeneratedRegex("^[0-9]$")]
+	private static partial Regex DiscordIdRegex();
+	
 	public async Task<AuthResponseDto?> LoginAsync(DiscordLoginDto dto) {
-		var account = await discordService.GetDiscordUser(dto.AccessToken);
+		var login = await discordService.FetchRefreshToken(dto.Code, dto.RedirectUri);
+		if (login is null) {
+			return null;
+		}
+		
+		var account = await discordService.GetDiscordUser(login.AccessToken);
 		
 		if (account is null) {
 			return null;
@@ -35,7 +45,7 @@ public class AuthService(
 		
 		// Register the user if they do not exist
 		if (user is null) {
-			var errors = await RegisterUser(account, dto);
+			var errors = await RegisterUser(account, login);
 			
 			if (errors.Any()) {
 				return null;
@@ -54,7 +64,7 @@ public class AuthService(
 			user.UserName = account.Username;
 		}
 		
-		UpdateUserDiscordTokens(user, dto);
+		UpdateUserDiscordTokens(user, login);
 		
 		await userManager.UpdateAsync(user);
 			
@@ -63,7 +73,7 @@ public class AuthService(
 		return new AuthResponseDto {
 			AccessToken = token,
 			ExpiresIn = expiry.ToUnixTimeSeconds().ToString(),
-			RefreshToken = await GenerateRefreshToken(user)
+			RefreshToken = await GenerateRefreshToken(user),
 		};
 	}
 
@@ -82,8 +92,12 @@ public class AuthService(
 	}
 
 	public async Task<AuthResponseDto?> VerifyRefreshToken(AuthRefreshDto dto) {
+		if (DiscordIdRegex().IsMatch(dto.UserId)) {
+			return await VerifyRefreshToken(dto.UserId, dto.RefreshToken);
+		}
+		
 		var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(dto.AccessToken);
+		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(dto.UserId);
 		
 		var userId = tokenContent.Claims.ToList()
 			.FirstOrDefault(q => q.Type == ClaimNames.NameId)?.Value;
@@ -105,18 +119,7 @@ public class AuthService(
 		}
 		
 		// Update stored discord tokens
-		if (user.DiscordRefreshToken is not null) {
-			var response = await discordService.RefreshDiscordUser(user.DiscordRefreshToken);
-			
-			if (response is not null) {
-				user.DiscordAccessToken = response.AccessToken;
-				user.DiscordAccessTokenExpires = response.AccessTokenExpires;
-				user.DiscordRefreshToken = response.RefreshToken;
-				user.DiscordRefreshTokenExpires = user.DiscordAccessTokenExpires.AddDays(20);
-				
-				await userManager.UpdateAsync(user);
-			}
-		}
+		await discordService.RefreshDiscordUserIfNeeded(user);
 		
 		var (token, expiry) = await GenerateJwtToken(user);
 		return new AuthResponseDto {
@@ -140,7 +143,6 @@ public class AuthService(
 			new(ClaimNames.Avatar, user.Account.Avatar ?? string.Empty),
 			new(ClaimNames.Ign, primaryAccount?.Name ?? string.Empty),
 			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty),
-			new(ClaimNames.DiscordAccessExpires, user.DiscordAccessTokenExpires.ToUnixTimeSeconds().ToString())
 		};
 		
 		// Add roles to the claims
@@ -159,7 +161,7 @@ public class AuthService(
 		return (token, expiresAt);
 	}
 
-	private async Task<IEnumerable<IdentityError>> RegisterUser(EliteAccount account, DiscordLoginDto dto) {
+	private async Task<IEnumerable<IdentityError>> RegisterUser(EliteAccount account, DiscordUpdateResponse dto) {
 		var user = new ApiUser {
 			Id = account.Id.ToString(),
 			AccountId = account.Id,
@@ -179,15 +181,11 @@ public class AuthService(
 		return result.Errors;
 	}
 	
-	private static void UpdateUserDiscordTokens(ApiUser user, DiscordLoginDto dto) {
-		var accessExpires = long.TryParse(dto.ExpiresIn, out var expiresIn)
-			? DateTimeOffset.UtcNow.AddMilliseconds(expiresIn - 5000) // Subtract 5 seconds to add wiggle room for refreshing
-			: DateTimeOffset.UtcNow.AddMinutes(8);
-
+	private static void UpdateUserDiscordTokens(ApiUser user, DiscordUpdateResponse dto) {
 		user.DiscordAccessToken = dto.AccessToken;
-		user.DiscordAccessTokenExpires = accessExpires;
+		user.DiscordAccessTokenExpires = dto.AccessTokenExpires;
 		user.DiscordRefreshToken = dto.RefreshToken;
-		user.DiscordAccessTokenExpires = accessExpires.AddDays(20);
+		user.DiscordAccessTokenExpires = dto.RefreshTokenExpires;
 	}
 	
 	public async Task TriggerAuthTokenRefresh(string userId) {

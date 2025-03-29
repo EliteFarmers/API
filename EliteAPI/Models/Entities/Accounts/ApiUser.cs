@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using EliteAPI.Models.Entities.Discord;
 using Microsoft.AspNetCore.Identity;
 
@@ -34,7 +33,6 @@ public static class ClaimNames {
 	public const string Avatar = "Avatar";
 	public const string Ign = "Ign";
 	public const string Uuid = "Uuid";
-	public const string DiscordAccessExpires = "Dexp";
 }
 
 public static class ApiUserPolicies {
@@ -43,13 +41,4 @@ public static class ApiUserPolicies {
 	public const string Support = "Support";
 	public const string Wiki = "Wiki";
 	public const string User = "User";
-}
-
-public static class ApiUserExtensions {
-	public static bool AccessTokenExpired(this ClaimsPrincipal user) {
-		var value = user.FindFirstValue(ClaimNames.DiscordAccessExpires);
-		if (value is null || !long.TryParse(value, out var seconds)) return true;
-		
-		return seconds < DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-	}
 }

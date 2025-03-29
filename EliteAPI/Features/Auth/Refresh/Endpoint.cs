@@ -1,5 +1,4 @@
 using EliteAPI.Models.DTOs.Auth;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.Refresh;

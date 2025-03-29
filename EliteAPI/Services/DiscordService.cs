@@ -12,10 +12,10 @@ using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Images;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
+using StackExchange.Redis;
 
 namespace EliteAPI.Services;
 
@@ -24,9 +24,10 @@ public class DiscordService(
     DataContext context,
     ISchedulerFactory schedular,
     ILogger<DiscordService> logger,
-    UserManager<ApiUser> userManager,
+    UserManager userManager,
     IMapper mapper,
     IOptions<ConfigCooldownSettings> coolDowns,
+    IConnectionMultiplexer redis,
     IObjectStorageService objectStorageService)
     : IDiscordService 
 {
@@ -57,14 +58,14 @@ public class DiscordService(
             return refreshed;
         }
 
-        if (accessToken is not null && refreshToken is null)
-        {
-            var refresh = await FetchRefreshToken(accessToken);
-            if (refresh is null) return null;
-
-            refresh.Account = await FetchDiscordUser(refresh.AccessToken);
-            return refresh;
-        }
+        // if (accessToken is not null && refreshToken is null)
+        // {
+        //     var refresh = await FetchRefreshToken(accessToken);
+        //     if (refresh is null) return null;
+        //
+        //     refresh.Account = await FetchDiscordUser(refresh.AccessToken);
+        //     return refresh;
+        // }
 
         if (accessToken is null) return null;
         
@@ -122,6 +123,42 @@ public class DiscordService(
         }
     }
 
+    public async Task RefreshDiscordUserIfNeeded(ApiUser user) {
+        if (user.DiscordRefreshToken is null ||
+            user.DiscordAccessTokenExpires > DateTimeOffset.UtcNow.AddMinutes(1)) return;
+        
+        var db = redis.GetDatabase();
+        var key = $"discord:refresh:{user.Id}";
+        var lockToken = Guid.NewGuid().ToString();
+
+        // Ensure this can only run once at a time
+        if (!await db.LockTakeAsync(key, lockToken, TimeSpan.FromMinutes(1))) return;
+        
+        try {
+            logger.LogInformation("Refreshing auth token for user {UserId}", user.Id);
+            await Refresh();
+        }  catch (Exception e) {
+            logger.LogError(e, "Failed to refresh auth token for user {UserId}", user.Id);
+        } finally {
+            // Release the lock
+            await db.LockReleaseAsync(key, lockToken);
+        }
+        return;
+        
+        async Task Refresh() {
+            var response = await RefreshDiscordUser(user.DiscordRefreshToken);
+
+            if (response is not null) {
+                user.DiscordAccessToken = response.AccessToken;
+                user.DiscordAccessTokenExpires = response.AccessTokenExpires;
+                user.DiscordRefreshToken = response.RefreshToken;
+                user.DiscordRefreshTokenExpires = user.DiscordAccessTokenExpires.AddYears(1);
+
+                await userManager.UpdateAsync(user);
+            }
+        }
+    }
+
     public async Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken)
     {
         var client = httpClientFactory.CreateClient(ClientName);
@@ -153,10 +190,9 @@ public class DiscordService(
         }
     }
 
-    public async Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken)
+    public async Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken, string redirectUri)
     {
         var client = httpClientFactory.CreateClient(ClientName);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // application/x-www-form-urlencoded
         var body = new Dictionary<string, string>()
@@ -166,6 +202,7 @@ public class DiscordService(
             { "grant_type", "authorization_code" },
             { "code", accessToken },
             { "scope", Scopes },
+            { "redirect_uri", redirectUri }
         };
 
         var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
@@ -197,6 +234,7 @@ public class DiscordService(
     }
 
     public async Task<List<GuildMember>> FetchUserGuilds(ApiUser user) {
+        await RefreshDiscordUserIfNeeded(user);
         const string url = DiscordBaseUrl + "/users/@me/guilds";
 
         var client = httpClientFactory.CreateClient(ClientName);
@@ -614,9 +652,9 @@ public class DiscordService(
         if (tokenResponse?.AccessToken is null || tokenResponse.RefreshToken is null || tokenResponse.Error is not null) return null;
 
         var accessTokenExpires = tokenResponse.ExpiresIn > 0 
-            ? DateTimeOffset.UtcNow.AddMilliseconds(tokenResponse.ExpiresIn) 
-            : DateTimeOffset.UtcNow.AddMinutes(8);
-        var refreshTokenExpires = DateTimeOffset.UtcNow.AddDays(30);
+            ? DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn) 
+            : DateTimeOffset.UtcNow.AddDays(6);
+        var refreshTokenExpires = DateTimeOffset.UtcNow.AddYears(1);
 
         return new DiscordUpdateResponse()
         {
@@ -632,9 +670,9 @@ public class DiscordService(
 public class DiscordUpdateResponse
 {
     public required string AccessToken { get; set; }
-    public DateTimeOffset AccessTokenExpires { get; set; } = DateTimeOffset.UtcNow.AddMinutes(9);
+    public DateTimeOffset AccessTokenExpires { get; set; }
     public required string RefreshToken { get; set; }
-    public DateTimeOffset RefreshTokenExpires { get; set; } = DateTimeOffset.UtcNow.AddDays(30);
+    public DateTimeOffset RefreshTokenExpires { get; set; }
     public EliteAccount? Account { get; set; }
 }
 

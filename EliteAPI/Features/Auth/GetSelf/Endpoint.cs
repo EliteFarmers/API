@@ -1,8 +1,6 @@
 using System.Security.Claims;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Services.Interfaces;
-using EliteAPI.Utilities;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.GetSelf;
@@ -23,11 +21,6 @@ internal sealed class GetSelfEndpoint(
 
 	public override async Task HandleAsync(CancellationToken c) 
 	{
-		var id = User.GetId();
-		if (id is not null && User.AccessTokenExpired()) {
-			await authService.TriggerAuthTokenRefresh(id);
-		}
-		
 		await SendAsync(new AuthSessionDto {
 			Id = User.FindFirstValue(ClaimNames.NameId) ?? string.Empty,
 			Username = User.FindFirstValue(ClaimNames.Name) ?? string.Empty,

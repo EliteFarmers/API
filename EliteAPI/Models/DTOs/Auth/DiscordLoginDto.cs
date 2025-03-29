@@ -4,22 +4,16 @@ namespace EliteAPI.Models.DTOs.Auth;
 
 public class DiscordLoginDto {
 	/// <summary>
-	/// Discord access token from OAuth2
+	/// Discord login code from OAuth2
 	/// </summary>
-	[JsonPropertyName("access_token")]
-	public required string AccessToken { get; set; }
+	[JsonPropertyName("code")]
+	public required string Code { get; set; }
 	
 	/// <summary>
-	/// Unix timestamp in seconds
+	/// Redirect URI from OAuth2
 	/// </summary>
-	[JsonPropertyName("expires_in")]
-	public required string ExpiresIn { get; set; }
-	
-	/// <summary>
-	/// Discord refresh token from OAuth2
-	/// </summary>
-	[JsonPropertyName("refresh_token")]
-	public required string RefreshToken { get; set; }
+	[JsonPropertyName("redirect_uri")]
+	public required string RedirectUri { get; set; }
 }
 
 public class AuthResponseDto {
@@ -47,8 +41,8 @@ public class AuthRefreshDto {
 	/// <summary>
 	/// User ID
 	/// </summary>
-	[JsonPropertyName("access_token")]
-	public required string AccessToken { get; set; }
+	[JsonPropertyName("user_id")]
+	public required string UserId { get; set; }
 	
 	/// <summary>
 	/// Refresh token for the user

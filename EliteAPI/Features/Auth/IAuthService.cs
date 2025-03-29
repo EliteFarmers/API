@@ -1,7 +1,7 @@
 ﻿using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Models.Entities.Accounts;
 
-namespace EliteAPI.Services.Interfaces;
+namespace EliteAPI.Features.Auth;
 
 public interface IAuthService {
 	Task<AuthResponseDto?> LoginAsync(DiscordLoginDto dto);

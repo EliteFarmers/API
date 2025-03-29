@@ -11,8 +11,9 @@ public interface IDiscordService
 {
     Task<DiscordUpdateResponse?> GetDiscordUser(string? accessToken, string? refreshToken);
     Task<EliteAccount?> GetDiscordUser(string accessToken);
+    Task RefreshDiscordUserIfNeeded(ApiUser user);
     Task<DiscordUpdateResponse?> RefreshDiscordUser(string refreshToken);
-    Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken);
+    Task<DiscordUpdateResponse?> FetchRefreshToken(string accessToken, string redirectUri);
     Task<string> GetGuildMemberPermissions(ulong guildId, ulong userId, string accessToken);
     Task<List<GuildMemberDto>> GetUsersGuilds(string userId);
     Task<List<GuildMember>> FetchUserGuilds(ApiUser user);
