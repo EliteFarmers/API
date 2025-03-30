@@ -14,7 +14,7 @@ internal sealed class UpdateProductEndpoint(
 ) : Endpoint<UpdateProductRequest> {
 	
 	public override void Configure() {
-		Patch("/product/{ProductId}");
+		Patch("/product/{DiscordId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
