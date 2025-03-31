@@ -10,6 +10,7 @@ public class ProfileMapper : Profile
     public ProfileMapper()
     {
         CreateMap<Models.Entities.Hypixel.Profile, ProfileDetailsDto>()
+            .ForMember(x => x.Deleted, opt => opt.MapFrom(x => x.IsDeleted))
             .ForMember(x => x.Members, opt => opt.MapFrom(x => x.Members));
     }
 }

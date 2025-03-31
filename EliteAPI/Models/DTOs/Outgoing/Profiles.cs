@@ -9,6 +9,8 @@ public class ProfileDetailsDto
     public string GameMode { get; set; } = "classic";
     public bool Selected { get; set; }
     public double BankBalance { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Deleted { get; set; } = false;
     public List<MemberDetailsDto> Members { get; set; } = new();
 }
 
