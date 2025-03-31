@@ -110,28 +110,25 @@ public class ProfileProcessorService(
 
         // Get profiles that aren't in the response
         var wipedProfiles = await context.ProfileMembers
+	        .AsNoTracking()
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
             .Where(p => p.PlayerUuid.Equals(requestedPlayerUuid) && !profileIds.Contains(p.ProfileId))
-            .Select(p => new {
-	            p.Id, 
-	            p.PlayerUuid,
-	            p.ProfileId,
-	            p.Profile.GameMode,
-	            Ign = p.MinecraftAccount.Name, DiscordId = p.MinecraftAccount.AccountId,
-	            p.WasRemoved,
-	            p.IsSelected
-            })
             .ToListAsync();
         
         // Mark profiles as removed
         foreach (var wiped in wipedProfiles) {
             if (profileIds.Contains(wiped.ProfileId)) continue; // Shouldn't be necessary, but just in case
             
-            if (wiped.GameMode != "bingo" && !wiped.WasRemoved) {
-                messageService.SendWipedMessage(wiped.PlayerUuid, wiped.Ign, wiped.ProfileId, wiped.DiscordId?.ToString() ?? "");
+            if (wiped.Profile.GameMode != "bingo" && !wiped.WasRemoved) {
+                messageService.SendWipedMessage(
+	                wiped.PlayerUuid, 
+	                wiped.MinecraftAccount.Name, 
+	                wiped.ProfileId, 
+	                wiped.MinecraftAccount.AccountId?.ToString() ?? "");
             }
 
+            // Ensure member is marked as deleted
             if (!wiped.WasRemoved || wiped.IsSelected) {
 	            await context.ProfileMembers
 		            .Where(m => m.Id == wiped.Id)
@@ -141,12 +138,32 @@ public class ProfileProcessorService(
 		            );
             }
 
+            // Ensure profile is marked as deleted if all members are removed
+            if (!wiped.Profile.IsDeleted) {
+	            var count = await context.Profiles
+		            .Where(p => p.ProfileId == wiped.ProfileId && p.Members.All(m => m.WasRemoved))
+		            .ExecuteUpdateAsync(p => p.SetProperty(pr => pr.IsDeleted, true));
+
+	            // Mark profile leaderboard entries as removed if the profile was updated
+	            if (count > 0) {
+		            await MarkProfileLeaderboardEntriesAsDeleted(wiped.ProfileId);
+	            }
+            } else {
+	            await MarkProfileLeaderboardEntriesAsDeleted(wiped.ProfileId);
+            }
+
             await context.LeaderboardEntries
 	            .Where(e => e.ProfileMemberId == wiped.Id)
 	            .ExecuteUpdateAsync(e => e.SetProperty(le => le.IsRemoved, true));
         }
         
         return data.Profiles?.ToList() ?? [];
+	}
+
+	private async Task MarkProfileLeaderboardEntriesAsDeleted(string profileId) {
+		await context.LeaderboardEntries
+			.Where(e => e.ProfileId == profileId)
+			.ExecuteUpdateAsync(e => e.SetProperty(le => le.IsRemoved, true));
 	}
 
 	public async Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid) {
@@ -374,9 +391,13 @@ public class ProfileProcessorService(
 
         // Set if the profile is deleted
         if (shouldRemove && !profile.IsDeleted) {
-            await context.Profiles
+            var updated = await context.Profiles
                 .Where(p => p.ProfileId == profile.ProfileId && p.Members.All(m => m.WasRemoved))
                 .ExecuteUpdateAsync(p => p.SetProperty(pr => pr.IsDeleted, true));
+            
+            if (updated > 0) {
+				await MarkProfileLeaderboardEntriesAsDeleted(profile.ProfileId);
+            }
         }
     }
 
