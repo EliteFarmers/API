@@ -127,7 +127,8 @@ public enum Pest {
     Locust = 6,
     Rat = 7,
     Mosquito = 8,
-    Fly = 9
+    Fly = 9,
+    Mouse = 10,
 }
 
 public enum ContestMedal

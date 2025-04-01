@@ -17,7 +17,7 @@ internal sealed class GetGuildEventEndpoint(
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get all events for a guild";
+			s.Summary = "Get an event for a guild";
 		});
 	}
 

@@ -5,22 +5,23 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
+using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Features.Events.Admin.CreateWeightEvent;
+namespace EliteAPI.Features.Events.Admin.CreateEventMedals;
 
-internal sealed class CreateWeightEventRequest : DiscordIdRequest {
-	[FromBody]
-	public required CreateWeightEventDto Event { get; set; }
+internal sealed class CreateMedalEventRequest : DiscordIdRequest {
+	[FastEndpoints.FromBody]
+	public required CreateMedalEventDto Event { get; set; }
 }
 
-internal sealed class CreateWeightEventEndpoint(
+internal sealed class CreateMedalEventEndpoint(
 	IDiscordService discordService,
 	IEventService eventService,
 	AutoMapper.IMapper mapper
-) : Endpoint<CreateWeightEventRequest, EventDetailsDto> {
+) : Endpoint<CreateMedalEventRequest, EventDetailsDto> {
 
 	public override void Configure() {
-		Post("/guild/{DiscordId}/events/weight");
+		Post("/guild/{DiscordId}/events/medals");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
@@ -29,7 +30,7 @@ internal sealed class CreateWeightEventEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(CreateWeightEventRequest request, CancellationToken c) {
+	public override async Task HandleAsync(CreateMedalEventRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await SendNotFoundAsync(c);
@@ -40,11 +41,11 @@ internal sealed class CreateWeightEventEndpoint(
 			ThrowError(reason);
 		}
 
-		request.Event.Type = EventType.FarmingWeight;
+		request.Event.Type = EventType.Medals;
 		var result = await eventService.CreateEvent(request.Event, request.DiscordIdUlong);
 
-		if (result.Value is null) {
-			ThrowError(result.Result?.ToString() ?? "Failed to create event");
+		if (result.Result is BadRequestObjectResult badRequest) {
+			ThrowError(badRequest.Value?.ToString() ?? "Failed to create event!");
 		}
 
 		var mapped = mapper.Map<EventDetailsDto>(result.Value);
@@ -52,8 +53,8 @@ internal sealed class CreateWeightEventEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<CreateWeightEventRequest> {
-	public CreateWeightEventRequestValidator() {
+internal sealed class CreateMedalEventRequestValidator : Validator<CreateMedalEventRequest> {
+	public CreateMedalEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}
 }

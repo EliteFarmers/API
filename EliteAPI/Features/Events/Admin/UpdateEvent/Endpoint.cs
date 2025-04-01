@@ -55,14 +55,21 @@ internal sealed class CreateWeightEventEndpoint(
         eliteEvent.RequiredRole = incoming.RequiredRole ?? eliteEvent.RequiredRole;
         eliteEvent.BlockedRole = incoming.BlockedRole ?? eliteEvent.BlockedRole;
         
-        if (eliteEvent is MedalEvent medalEvent && incoming.MedalData is not null) {
-            medalEvent.Data = incoming.MedalData;
+        switch (eliteEvent) {
+	        case MedalEvent medalEvent when incoming.MedalData is not null:
+		        medalEvent.Data = incoming.MedalData;
+		        break;
+	        case WeightEvent weightEvent when incoming.WeightData is not null:
+		        weightEvent.Data = incoming.WeightData;
+		        break;
+	        case PestEvent pestEvent when incoming.PestData is not null:
+		        pestEvent.Data = incoming.PestData;
+		        break;
+	        case CollectionEvent collectionEvent when incoming.CollectionData is not null:
+		        collectionEvent.Data = incoming.CollectionData;
+		        break;
         }
-        
-        if (eliteEvent is WeightEvent weightEvent && incoming.WeightData is not null) {
-            weightEvent.Data = incoming.WeightData;
-        }
-        
+
         // Update all related event members if the start or end time has changed
         var updateStart = startTime is not null && startTime != eliteEvent.StartTime;
         var updateEnd = endTime is not null && endTime != eliteEvent.EndTime;

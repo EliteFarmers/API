@@ -35,6 +35,26 @@ public class EventMappers : Profile {
             .ForMember(e => e.Banner, opt => opt.MapFrom(e => e.Banner))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
             .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
+        
+        CreateMap<PestEvent, EventDetailsDto>()
+            .ForMember(e => e.Id, opt => opt.MapFrom(e => e.Id.ToString()))
+            .ForMember(e => e.StartTime, opt => opt.MapFrom(e => e.StartTime.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
+            .ForMember(e => e.Banner, opt => opt.MapFrom(e => e.Banner))
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
+            .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
+        
+        CreateMap<CollectionEvent, EventDetailsDto>()
+            .ForMember(e => e.Id, opt => opt.MapFrom(e => e.Id.ToString()))
+            .ForMember(e => e.StartTime, opt => opt.MapFrom(e => e.StartTime.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.EndTime, opt => opt.MapFrom(e => e.EndTime.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.JoinUntilTime, opt => opt.MapFrom(e => e.JoinUntilTime.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.GuildId, opt => opt.MapFrom(e => e.GuildId.ToString()))
+            .ForMember(e => e.Banner, opt => opt.MapFrom(e => e.Banner))
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data))
+            .ForMember(e => e.Mode, opt => opt.MapFrom(e => e.GetMode()));
     }
 }
 
@@ -111,6 +131,28 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
 
+        CreateMap<PestEventMember, EventMemberDetailsDto>()
+            .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
+            .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
+            .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
+            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
+            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
+
+        CreateMap<CollectionEventMember, EventMemberDetailsDto>()
+            .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
+            .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
+            .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
+            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
+            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
+        
         CreateMap<EventMember, AdminEventMemberDto>()
             .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
@@ -122,6 +164,28 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
         
         CreateMap<MedalEventMember, AdminEventMemberDto>()
+            .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
+            .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
+            .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
+            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
+            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
+        
+        CreateMap<PestEventMember, AdminEventMemberDto>()
+            .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
+            .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
+            .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))
+            .ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
+            .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
+            .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
+            .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
+            .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
+        
+        CreateMap<CollectionEventMember, AdminEventMemberDto>()
             .ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))
             .ForMember(e => e.PlayerName, opt => opt.MapFrom(e => e.ProfileMember.MinecraftAccount.Name))
             .ForMember(e => e.ProfileId, opt => opt.MapFrom(e => e.ProfileMember.ProfileId))

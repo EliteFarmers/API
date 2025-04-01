@@ -57,6 +57,14 @@ internal sealed class JoinEventEndpoint(
             ThrowError("You need to be in the event's Discord server in order to join!");
         }
         
+        if (eliteEvent.RequiredRole is not null && !userGuild.Roles.Contains(eliteEvent.RequiredRole)) {
+            ThrowError("You need to have the required role in the event's Discord server in order to join!");
+        }
+        
+        if (eliteEvent.BlockedRole is not null && userGuild.Roles.Contains(eliteEvent.BlockedRole)) {
+            ThrowError("You have a blocked role in the event's Discord server and cannot join!");
+        }
+        
         var selectedAccount = request.PlayerUuidFormatted.IsNullOrEmpty()
             ? account.MinecraftAccounts.FirstOrDefault(a => a.Selected)
             : account.MinecraftAccounts.FirstOrDefault(a => a.Id == request.PlayerUuidFormatted);

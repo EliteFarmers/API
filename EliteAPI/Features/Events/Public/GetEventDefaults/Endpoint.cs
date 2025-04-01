@@ -24,8 +24,8 @@ internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDef
 	public override async Task HandleAsync(CancellationToken c) {
 		var result = new EventDefaultsDto {
 			CropWeights = FarmingWeightConfig.Settings.EventCropWeights,
-			// This should be moved to a config file eventually
-			MedalValues = new MedalEventData().MedalWeights
+			MedalValues = new MedalEventData().MedalWeights,
+			PestWeights = new PestEventData().PestWeights,
 		};
 
 		await SendAsync(result, cancellation: c);

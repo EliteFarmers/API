@@ -53,10 +53,12 @@ public class EventMemberEntityConfiguration : IEntityTypeConfiguration<EventMemb
 	public void Configure(EntityTypeBuilder<EventMember> builder)
 	{
 		builder.HasIndex(e => new { e.EventId, e.UserId }).IsUnique();
-		
+
 		builder.HasDiscriminator(e => e.Type)
 			.HasValue<EventMember>(EventType.None)
 			.HasValue<WeightEventMember>(EventType.FarmingWeight)
-			.HasValue<MedalEventMember>(EventType.Medals);
+			.HasValue<MedalEventMember>(EventType.Medals)
+			.HasValue<PestEventMember>(EventType.Pests)
+			.HasValue<CollectionEventMember>(EventType.Collection);
 	}
 }

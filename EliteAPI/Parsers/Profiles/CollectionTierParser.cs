@@ -35,5 +35,19 @@ public static class CollectionTierParser
         }
 
         return collections;
-    }   
+    }
+
+    public static long GetCollection(this ProfileMember member, string collectionKey) {
+        var collection = member.Collections.RootElement.TryGetProperty(collectionKey, out var value)
+            ? value.GetInt64() 
+            : 0;
+        
+        return collection;
+    }
+
+    public static bool TryGetCollection(this ProfileMember member, string collectionKey, out long value) {
+        var found = member.Collections.RootElement.TryGetProperty(collectionKey, out var val);
+        value = found ? val.GetInt64() : 0;
+        return found;
+    }
 }

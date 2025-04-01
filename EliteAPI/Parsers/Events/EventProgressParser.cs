@@ -37,9 +37,59 @@ public static class EventProgressParser {
         // This isn't perfect as it uses the status from the last update
         eventMember.UpdateEstimatedTimeActive();
         eventMember.LastUpdated = currentTime;
+
+        switch (@event.Type) {
+            case EventType.None:
+            case EventType.FarmingWeight:
+                if (eventMember is WeightEventMember m && @event is WeightEvent weightEvent) {
+                    if (!member.Api.Collections || !member.Api.Inventories) {
+                        ApiAccessDisqualifyMember();
+                        return;
+                    }
+                    
+                    m.UpdateFarmingWeight(weightEvent, member);
+                }
+                break;
+            case EventType.Collection:
+                if (eventMember is CollectionEventMember collectionMember && @event is CollectionEvent collectionEvent) {
+                    if (!member.Api.Collections) {
+                        ApiAccessDisqualifyMember();
+                        return;
+                    }
+                    
+                    collectionMember.UpdateScore(collectionEvent, member);
+                }
+                break;
+            case EventType.Experience:
+                break;
+            case EventType.Medals:
+                if (eventMember is MedalEventMember medalMember && @event is MedalEvent medalEvent) {
+                    if (!member.Api.Collections) {
+                        ApiAccessDisqualifyMember();
+                        return;
+                    }
+                    
+                    medalMember.UpdateMedalProgress(medalEvent, member);
+                }
+                break;
+            case EventType.Pests:
+                if (!member.Api.Collections) {
+                    ApiAccessDisqualifyMember();
+                    return;
+                }
+                
+                if (eventMember is PestEventMember pestsMember && @event is PestEvent pestsEvent) {
+                    pestsMember.UpdateScore(pestsEvent, member);
+                }
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
         
-        // Disqualify the member if they disabled API access during the event
-        if (!member.Api.Collections || !member.Api.Inventories) {
+        context.Entry(eventMember).State = EntityState.Modified;
+        return;
+        
+        void ApiAccessDisqualifyMember() {
             eventMember.Status = EventMemberStatus.Disqualified;
             eventMember.Notes = "API access was disabled during the event.";
             
@@ -52,31 +102,7 @@ public static class EventProgressParser {
                     context.Entry(eventMember.Team).State = EntityState.Deleted;
                 }
             }
-            
-            return;
         }
-
-        switch (@event.Type) {
-            case EventType.None:
-            case EventType.FarmingWeight:
-                if (eventMember is WeightEventMember m && @event is WeightEvent weightEvent) {
-                    m.UpdateFarmingWeight(weightEvent, member);
-                }
-                break;
-            case EventType.Collection:
-                break;
-            case EventType.Experience:
-                break;
-            case EventType.Medals:
-                if (eventMember is MedalEventMember medalMember && @event is MedalEvent medalEvent) {
-                    medalMember.UpdateMedalProgress(medalEvent, member);
-                }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-        
-        context.Entry(eventMember).State = EntityState.Modified;
     }
     
     private static void UpdateEstimatedTimeActive(this EventMember eventMember) {
@@ -84,5 +110,5 @@ public static class EventProgressParser {
         
         // Add difference in seconds to estimated time active
         eventMember.EstimatedTimeActive += (long)(DateTimeOffset.UtcNow - eventMember.LastUpdated).TotalSeconds;
-    } 
+    }
 }

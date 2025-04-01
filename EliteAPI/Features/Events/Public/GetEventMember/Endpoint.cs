@@ -3,6 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Models.Entities.Events;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +44,15 @@ internal sealed class GetEventMembersEndpoint(
 		}
         
 		var mapped = mapper.Map<EventMemberDto>(member);
-        
+
+		mapped.Data = member switch {
+			WeightEventMember m => m.Data,
+			MedalEventMember m => m.Data,
+			CollectionEventMember m => m.Data,
+			PestEventMember m => m.Data,
+			_ => mapped.Data
+		};
+		
 		// If the user is the member or a moderator, send the notes
 		if (User.GetId() is { } id && (id == member.UserId.ToString() || User.IsInRole(ApiUserPolicies.Moderator))) {
 			await SendAsync(mapped, cancellation: c);

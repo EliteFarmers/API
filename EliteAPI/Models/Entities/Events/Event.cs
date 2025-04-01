@@ -13,6 +13,7 @@ public enum EventType {
     Collection = 2,
     Experience = 3,
     Medals = 4,
+    Pests = 5,
 }
 
 public class Event 
@@ -23,7 +24,7 @@ public class Event
     public EventType Type { get; set; } = EventType.None;
     
     [MaxLength(64)]
-    public required string Name { get; set; }
+    public string Name { get; set; } = "Unnamed Event";
     
     public bool Approved { get; set; }
     
@@ -64,11 +65,13 @@ public class EventEntityConfiguration : IEntityTypeConfiguration<Event>
     public void Configure(EntityTypeBuilder<Event> builder)
     {
         builder.Navigation(e => e.Banner).AutoInclude();
-        
+
         builder.HasDiscriminator(e => e.Type)
             .HasValue<Event>(EventType.None)
             .HasValue<WeightEvent>(EventType.FarmingWeight)
-            .HasValue<MedalEvent>(EventType.Medals);
+            .HasValue<MedalEvent>(EventType.Medals)
+            .HasValue<PestEvent>(EventType.Pests)
+            .HasValue<CollectionEvent>(EventType.Collection);
     }
 }
 

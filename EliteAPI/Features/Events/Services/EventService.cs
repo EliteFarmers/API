@@ -80,6 +80,8 @@ public class EventService(
 		var eliteEvent = eventDto.Type switch {
 			EventType.FarmingWeight => CreateWeightEvent(eventDto, guildId),
 			EventType.Medals => CreateMedalsEvent(eventDto, guildId),
+			EventType.Pests => CreatePestEvent(eventDto, guildId),
+			EventType.Collection => CreateCollectionEvent(eventDto, guildId),
 			_ => null
 		};
 
@@ -109,6 +111,10 @@ public class EventService(
 				return await CreateWeightEventMember(weightEvent, eventMemberDto);
 			case MedalEvent medalEvent:
 				return await CreateMedalsEventMember(medalEvent, eventMemberDto);
+			case PestEvent pestEvent:
+				return await CreatePestsEventMember(pestEvent, eventMemberDto);
+			case CollectionEvent collectionEvent:
+				return await CreateCollectionEventMember(collectionEvent, eventMemberDto);
 		}
 		return new BadRequestObjectResult("Invalid event type");
 	}
@@ -209,56 +215,77 @@ public class EventService(
 		return member;
 	}
 	
-	private ActionResult<Event> CreateWeightEvent(CreateEventDto eventDto, ulong guildId) {
-		var startTime = eventDto.StartTime is not null 
-			? DateTimeOffset.FromUnixTimeSeconds(eventDto.StartTime.Value)
-			: (DateTimeOffset?) null;
-		var endTime = eventDto.EndTime is not null 
-			? DateTimeOffset.FromUnixTimeSeconds(eventDto.EndTime.Value) 
-			: (DateTimeOffset?) null;
-		var joinUntilTime = eventDto.JoinTime is not null 
-			? DateTimeOffset.FromUnixTimeSeconds(eventDto.JoinTime.Value) 
-			: endTime;
-		
-		if (endTime is null || startTime is null || joinUntilTime is null) {
-			return new BadRequestObjectResult("Invalid start or end time");
-		}
-		
-		var eliteEvent = new WeightEvent {
-			Id = guildId + (ulong) new Random().Next(100000000, 999999999),
-			Type = EventType.FarmingWeight,
+	private async Task<ActionResult<EventMember>> CreatePestsEventMember(Event pestEvent, CreateEventMemberDto eventMemberDto) {
+		var member = new PestEventMember() {
+			EventId = pestEvent.Id,
+			ProfileMemberId = eventMemberDto.ProfileMemberId,
+			UserId = eventMemberDto.UserId,
 			
-			Name = eventDto.Name ?? "Untitled Event",
-			Description = eventDto.Description,
-			Rules = eventDto.Rules,
-			PrizeInfo = eventDto.PrizeInfo,
-			Public = true, // For now, all events are public
-
-			StartTime = startTime.Value,
-			EndTime = endTime.Value,
-			JoinUntilTime = joinUntilTime.Value,
+			Status = pestEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive,
+			Score = eventMemberDto.Score,
 			
-			DynamicStartTime = eventDto.DynamicStartTime ?? false,
-			Active = false,
-			
-			RequiredRole = eventDto.RequiredRole,
-			BlockedRole = eventDto.BlockedRole,
-			
-			MaxTeams = eventDto.MaxTeams,
-			MaxTeamMembers = eventDto.MaxTeamMembers,
-			
-			GuildId = guildId,
+			LastUpdated = DateTimeOffset.UtcNow,
+			StartTime = eventMemberDto.StartTime,
+			EndTime = eventMemberDto.EndTime
 		};
-
-		if (!PopulateEventData(eliteEvent, eventDto)) {
-			return new BadRequestObjectResult("Invalid event data");
-		}
-		AddEvent(eliteEvent);
 		
-		return eliteEvent;
+		AddEventMember(member);
+		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await context.SaveChangesAsync();
+		
+		return member;
+	}
+	
+	private async Task<ActionResult<EventMember>> CreateCollectionEventMember(Event pestEvent, CreateEventMemberDto eventMemberDto) {
+		var member = new CollectionEventMember() {
+			EventId = pestEvent.Id,
+			ProfileMemberId = eventMemberDto.ProfileMemberId,
+			UserId = eventMemberDto.UserId,
+			
+			Status = pestEvent.Active ? EventMemberStatus.Active : EventMemberStatus.Inactive,
+			Score = eventMemberDto.Score,
+			
+			LastUpdated = DateTimeOffset.UtcNow,
+			StartTime = eventMemberDto.StartTime,
+			EndTime = eventMemberDto.EndTime
+		};
+		
+		AddEventMember(member);
+		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await context.SaveChangesAsync();
+		
+		return member;
+	}
+	
+	private ActionResult<Event> CreateWeightEvent(CreateEventDto eventDto, ulong guildId) {
+		var eliteEvent = new MedalEvent {
+			Type = EventType.Medals,
+		};
+		return SetEventValuesAndAdd(eliteEvent, eventDto, guildId);
 	} 
 	
 	private ActionResult<Event> CreateMedalsEvent(CreateEventDto eventDto, ulong guildId) {
+		var eliteEvent = new MedalEvent {
+			Type = EventType.Medals,
+		};
+		return SetEventValuesAndAdd(eliteEvent, eventDto, guildId);
+	}
+	
+	private ActionResult<Event> CreatePestEvent(CreateEventDto eventDto, ulong guildId) {
+		var eliteEvent = new PestEvent {
+			Type = EventType.Pests,
+		};
+		return SetEventValuesAndAdd(eliteEvent, eventDto, guildId);
+	}
+	
+	private ActionResult<Event> CreateCollectionEvent(CreateEventDto eventDto, ulong guildId) {
+		var eliteEvent = new CollectionEvent() {
+			Type = EventType.Collection,
+		};
+		return SetEventValuesAndAdd(eliteEvent, eventDto, guildId);
+	}
+
+	private ActionResult<Event> SetEventValuesAndAdd(Event @event, CreateEventDto eventDto, ulong guildId) {
 		var startTime = eventDto.StartTime is not null 
 			? DateTimeOffset.FromUnixTimeSeconds(eventDto.StartTime.Value)
 			: (DateTimeOffset?) null;
@@ -273,38 +300,36 @@ public class EventService(
 			return new BadRequestObjectResult("Invalid start or end time");
 		}
 		
-		var eliteEvent = new MedalEvent {
-			Id = guildId + (ulong) new Random().Next(100000000, 999999999),
-			Type = EventType.Medals,
-			
-			Name = eventDto.Name ?? "Untitled Event",
-			Description = eventDto.Description,
-			Rules = eventDto.Rules,
-			PrizeInfo = eventDto.PrizeInfo,
-			Public = true, // For now, all events are public
+		@event.Id = guildId + (ulong) new Random().Next(100000000, 999999999);
+		
+		@event.Name = eventDto.Name ?? "Untitled Event";
+		@event.Description = eventDto.Description;
+		@event.Rules = eventDto.Rules;
+		@event.PrizeInfo = eventDto.PrizeInfo;
+		@event.Public = true; // For now, all events are public
 	
-			StartTime = startTime.Value,
-			EndTime = endTime.Value,
-			JoinUntilTime = joinUntilTime.Value,
+		@event.StartTime = startTime.Value;
+		@event.EndTime = endTime.Value;
+		@event.JoinUntilTime = joinUntilTime.Value;
 			
-			DynamicStartTime = eventDto.DynamicStartTime ?? false,
-			Active = false,
+		@event.DynamicStartTime = eventDto.DynamicStartTime ?? false;
+		@event.Active = false;
 			
-			RequiredRole = eventDto.RequiredRole,
-			BlockedRole = eventDto.BlockedRole,
+		@event.RequiredRole = eventDto.RequiredRole;
+		@event.BlockedRole = eventDto.BlockedRole;
 			
-			MaxTeams = eventDto.MaxTeams,
-			MaxTeamMembers = eventDto.MaxTeamMembers,
+		@event.MaxTeams = eventDto.MaxTeams;
+		@event.MaxTeamMembers = eventDto.MaxTeamMembers;
 			
-			GuildId = guildId,
-		};
-
-		if (!PopulateEventData(eliteEvent, eventDto)) {
+		@event.GuildId = guildId;
+		
+		if (!PopulateEventData(@event, eventDto)) {
 			return new BadRequestObjectResult("Invalid event data");
 		}
-		AddEvent(eliteEvent);
 		
-		return eliteEvent;
+		AddEvent(@event);
+		
+		return @event;
 	}
 	
 	private static bool PopulateEventData(Event @event, CreateEventDto eventDto) {
@@ -319,6 +344,16 @@ public class EventService(
 				if (@event is MedalEvent medalEvent) {
                     medalEvent.Data = (eventDto is CreateMedalEventDto medalDto ? medalDto.Data : null) ?? medalEvent.Data;
                 }
+				break;
+			case EventType.Pests:
+				if (@event is PestEvent pestEvent) {
+					pestEvent.Data = (eventDto is CreatePestEventDto pestDto ? pestDto.Data : null) ?? pestEvent.Data;
+				}
+				break;
+			case EventType.Collection:
+				if (@event is CollectionEvent collectionEvent) {
+					collectionEvent.Data = (eventDto is CreateCollectionEventDto collectionDto ? collectionDto.Data : null) ?? collectionEvent.Data;
+				}
 				break;
 			default:
 				return false;
@@ -335,6 +370,9 @@ public class EventService(
 			case MedalEvent medalEvent:
 				context.MedalEvents.Add(medalEvent);
 				break;
+			case PestEvent pestEvent:
+				context.PestEvents.Add(pestEvent);
+				break;
 			default:
 				context.Events.Add(@event);
 				break;
@@ -348,6 +386,12 @@ public class EventService(
 				break;
 			case MedalEventMember medalEvent:
 				context.MedalEventMembers.Add(medalEvent);
+				break;
+			case PestEventMember pestEvent:
+				context.PestEventMembers.Add(pestEvent);
+				break;
+			case CollectionEventMember collectionEvent:
+				context.CollectionEventMembers.Add(collectionEvent);
 				break;
 			default:
 				context.EventMembers.Add(member);
