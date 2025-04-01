@@ -19,7 +19,8 @@ public interface IEventService {
 	/// Initializes the event member with default values if needed
 	/// </summary>
 	/// <param name="eventMember"></param>
+	/// <param name="event"></param>
 	/// <param name="member"></param>
 	/// <returns></returns>
-	public Task InitializeEventMember(EventMember eventMember, ProfileMember member);
+	public Task InitializeEventMember(EventMember eventMember, Event @event, ProfileMember member);
 }

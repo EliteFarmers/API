@@ -162,14 +162,23 @@ public class EventService(
 		return true;
 	}
 
-	public async Task InitializeEventMember(EventMember eventMember, ProfileMember member) {
+	public async Task InitializeEventMember(EventMember eventMember, Event @event, ProfileMember member) {
 		// Don't do anything if the data isn't past the event start time
 		if (DateTimeOffset.FromUnixTimeSeconds(member.LastUpdated) < eventMember.StartTime) return;
 		
-		// Only weight event has an initialization step so far
-		if (eventMember is WeightEventMember weightEventMember) {
-			weightEventMember.Initialize(member);
-			await context.SaveChangesAsync();
+		switch (eventMember) {
+			case WeightEventMember weightEventMember:
+				weightEventMember.Initialize(member);
+				await context.SaveChangesAsync();
+				break;
+			case PestEventMember pestEventMember:
+				pestEventMember.Initialize(member);
+				await context.SaveChangesAsync();
+				break;
+			case CollectionEventMember collectionEventMember when @event is CollectionEvent collectionEvent:
+				collectionEventMember.Initialize(collectionEvent, member);
+				await context.SaveChangesAsync();
+				break;
 		}
 	}
 
@@ -188,7 +197,7 @@ public class EventService(
 		}; 
 		
 		AddEventMember(member);
-		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await InitializeEventMember(member, weightEvent, eventMemberDto.ProfileMember);
 		await context.SaveChangesAsync();
 		
 		return member;
@@ -209,7 +218,7 @@ public class EventService(
 		};
 		
 		AddEventMember(member);
-		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await InitializeEventMember(member, medalEvent, eventMemberDto.ProfileMember);
 		await context.SaveChangesAsync();
 		
 		return member;
@@ -230,7 +239,7 @@ public class EventService(
 		};
 		
 		AddEventMember(member);
-		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await InitializeEventMember(member, pestEvent, eventMemberDto.ProfileMember);
 		await context.SaveChangesAsync();
 		
 		return member;
@@ -251,7 +260,7 @@ public class EventService(
 		};
 		
 		AddEventMember(member);
-		await InitializeEventMember(member, eventMemberDto.ProfileMember);
+		await InitializeEventMember(member, pestEvent, eventMemberDto.ProfileMember);
 		await context.SaveChangesAsync();
 		
 		return member;
