@@ -14,6 +14,8 @@ internal sealed class RefreshDiscordGuildEndpoint(
 		Policies(ApiUserPolicies.Moderator);
 		Version(0);
 		
+		Description(s => s.Accepts<GuildIdRequest>());
+		
 		Summary(s => {
 			s.Summary = "Refresh a guild";
 			s.Description = "This fetches the latest data from Discord for the specified guild";
