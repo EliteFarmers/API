@@ -95,8 +95,27 @@ public class LeaderboardPositionsDto {
 }
 
 public class LeaderboardPositionDto {
+    /// <summary>
+    /// Current rank of the player (-1 if not on leaderboard)
+    /// </summary>
     public int Rank { get; set; }
+    /// <summary>
+    /// Current score of the player (0 if not on leaderboard)
+    /// </summary>
     public double Amount { get; set; }
+    /// <summary>
+    /// The minimum amount required to be on the leaderboard. If this is a time based leaderboard,
+    /// this score is instead required on the normal leaderboard before the player can be on the
+    /// time based leaderboard
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public double MinAmount { get; set; }
+    /// <summary>
+    /// The starting rank of the returned upcoming players list
+    /// </summary>
     public int UpcomingRank { get; set; }
+    /// <summary>
+    /// List of upcoming players
+    /// </summary>
     public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
 }

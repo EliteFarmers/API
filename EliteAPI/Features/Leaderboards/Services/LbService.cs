@@ -458,6 +458,7 @@ public class LbService(
 		var result = new LeaderboardPositionDto {
 			Rank = position,
 			Amount = entry.Amount,
+			MinAmount = (double) definition.Info.MinimumScore,
 			UpcomingRank = rank == -1 ? -1 : rank - 1,
 			UpcomingPlayers = upcomingPlayers ?? [],
 		};
