@@ -1,3 +1,4 @@
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
@@ -5,10 +6,18 @@ using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Services;
 
-public class AccountService(DataContext context, IMemberService memberService) : IAccountService {
+public class AccountService(
+    DataContext context, 
+    IMemberService memberService,
+    IOptions<ConfigCooldownSettings> coolDowns) 
+    : IAccountService 
+{
+    private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
+    
     public Task<EliteAccount?> GetAccountByIgnOrUuid(string ignOrUuid) {
         return ignOrUuid.Length == 32 ? GetAccountByMinecraftUuid(ignOrUuid) : GetAccountByIgn(ignOrUuid);
     }
@@ -69,7 +78,7 @@ public class AccountService(DataContext context, IMemberService memberService) :
             .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
             .FirstOrDefaultAsync();
 
-        if (playerData is not null && playerData.LastUpdated.OlderThanSeconds(120)) {
+        if (playerData is not null && playerData.LastUpdated.OlderThanSeconds(_coolDowns.HypixelPlayerDataLinkingCooldown)) {
             await memberService.RefreshPlayerData(id);
             
             playerData = await context.PlayerData

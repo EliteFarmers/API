@@ -114,14 +114,14 @@ public class MemberService(
         if (lastUpdated.Profiles.OlderThanSeconds((int) (_coolDowns.SkyblockProfileCooldown * cooldownMultiplier))
             && !await db.KeyExistsAsync($"profile:{playerUuid}:updating"))
         {
-            db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(60));
+            db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
             updateProfiles = true;
         }
         
         if (lastUpdated.PlayerData.OlderThanSeconds((int) (_coolDowns.HypixelPlayerDataCooldown * cooldownMultiplier)) 
             && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) 
         {
-            db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(60));
+            db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
             updatePlayer = true;
         }
 

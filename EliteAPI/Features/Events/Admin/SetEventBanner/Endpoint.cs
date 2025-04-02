@@ -45,12 +45,14 @@ internal sealed class SetEventBannerEndpoint(
         }
         
         var newImage = await objectStorageService.UploadImageAsync(
-	        path: $"guilds/{request.DiscordIdUlong}/events/{eliteEvent.Id}/banner.png", 
+	        path: $"guilds/{request.DiscordIdUlong}/events/{eliteEvent.Id}/{Guid.NewGuid().ToString()}.png", 
 	        file: request.Data.Image, 
 	        token: c
 	    );
         
         if (eliteEvent.Banner is not null) {
+	        await objectStorageService.DeleteAsync(eliteEvent.Banner.Path, c);
+
 	        eliteEvent.Banner.Metadata = newImage.Metadata;
 	        eliteEvent.Banner.Hash = newImage.Hash;
 	        eliteEvent.Banner.Title = newImage.Title;
