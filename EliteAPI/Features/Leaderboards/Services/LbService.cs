@@ -17,6 +17,7 @@ public interface ILbService {
 	Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId);
 	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null);
 	Task<LeaderboardEntryWithRankDto?> GetLastLeaderboardEntry(string leaderboardId, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null);
+	double GetLeaderboardMinScore(string leaderboardId);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
 	Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId);
@@ -179,6 +180,11 @@ public class LbService(
 		}
 
 		return null;
+	}
+
+	public double GetLeaderboardMinScore(string leaderboardId) {
+		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return 0;
+		return (double) definition.Info.MinimumScore;
 	}
 
 	public async Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c) {
