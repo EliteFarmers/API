@@ -18,6 +18,8 @@ internal sealed class UpdateTeamJoinCodeEndpoint(
 	public override void Configure() {
 		Post("/event/{EventId}/team/{TeamId}/code");
 		Version(0);
+		
+		Description(s => s.Accepts<UpdateTeamJoinCodeRequest>());
 
 		Summary(s => {
 			s.Summary = "Generate new team join code";
