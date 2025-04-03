@@ -126,6 +126,8 @@ internal sealed class JoinEventEndpoint(
             member.Status = eventActive ? EventMemberStatus.Active : EventMemberStatus.Inactive;
             context.Entry(member).State = EntityState.Modified;
             
+            await context.SaveChangesAsync(c);
+            
             // Init member if needed
             await eventService.InitializeEventMember(member, eliteEvent, profileMember);
             
