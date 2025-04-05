@@ -15,39 +15,39 @@
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
-		<PackageReference Include="AWSSDK.S3" Version="3.7.405.9" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.416.1" />
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
 		<PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="9.0.1" />
-		<PackageReference Include="FastEndpoints" Version="5.34.0" />
-		<PackageReference Include="FastEndpoints.Generator" Version="5.34.0">
+		<PackageReference Include="FastEndpoints" Version="5.35.0" />
+		<PackageReference Include="FastEndpoints.Generator" Version="5.35.0">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="FastEndpoints.Security" Version="5.34.0" />
-		<PackageReference Include="FastEndpoints.Swagger" Version="5.34.0" />
+		<PackageReference Include="FastEndpoints.Security" Version="5.35.0" />
+		<PackageReference Include="FastEndpoints.Swagger" Version="5.35.0" />
 		<PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
-		<PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="9.0.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.2">
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
+		<PackageReference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="9.0.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.2" />
-		<PackageReference Include="Npgsql" Version="9.0.2" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.1" />
+		<PackageReference Include="Npgsql" Version="9.0.3" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.2" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
 		<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.6.0-rc.1" />
-		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.1" />
-		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.2" />
+		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.14.0" />
 		<PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
-		<PackageReference Include="Riok.Mapperly" Version="4.1.1" ExcludeAssets="runtime" PrivateAssets="all" />
-		<PackageReference Include="Scalar.AspNetCore" Version="2.0.12" />
-		<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
+		<PackageReference Include="Riok.Mapperly" Version="4.2.0" ExcludeAssets="runtime" PrivateAssets="all" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.1.4" />
+		<PackageReference Include="StackExchange.Redis" Version="2.8.31" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.2" />
+		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.3.2" />
 	</ItemGroup>
 
 	<ItemGroup>
