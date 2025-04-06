@@ -168,7 +168,9 @@ public class EventTeamService(
 			.AsNoTracking().AsSplitQuery()
 			.ToListAsync();
 
-		return teams.OrderByDescending(t => t.Score).ToList();
+		return teams.OrderByDescending(t => t.Score)
+			.ThenByDescending(t => t.Members.Count)
+			.ToList();
 	}
 
 	public async Task<ActionResult> JoinTeamValidateAsync(int teamId, string userId, string code) {
