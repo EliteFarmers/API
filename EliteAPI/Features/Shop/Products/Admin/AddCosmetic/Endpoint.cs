@@ -31,6 +31,8 @@ internal sealed class AddCosmeticToProductEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
+		Description(s => s.Accepts<AddCosmeticToProductRequest>());
+
 		Summary(s => {
 			s.Summary = "Add Cosmetic to Product";
 		});

@@ -27,7 +27,11 @@ internal sealed class DeleteProductImageEndpoint(
 	}
 
 	public override async Task HandleAsync(DeleteProductImageRequest request, CancellationToken c) {
-		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, cancellationToken: c);
+		var product = await context.Products
+			.Include(p => p.Thumbnail)
+			.Include(p => p.Images)
+			.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, cancellationToken: c);
+		
 		if (product is null) {
 			await SendNotFoundAsync(cancellation: c);
 			return;

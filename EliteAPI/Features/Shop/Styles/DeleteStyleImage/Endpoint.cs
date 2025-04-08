@@ -31,6 +31,8 @@ internal sealed class DeleteStyleImageEndpoint(
 
 	public override async Task HandleAsync(DeleteStyleImageRequest request, CancellationToken c) {
 		var style = await context.WeightStyles
+			.Include(s => s.Images)
+			.Include(s => s.Image)
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		
 		if (style is null) {
