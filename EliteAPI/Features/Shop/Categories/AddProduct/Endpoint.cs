@@ -28,6 +28,8 @@ internal sealed class AddProductToCategoryEndpoint(
 		Post("/shop/category/{CategoryId}/product/{ProductId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
+		
+		Description(s => s.Accepts<AddProductToCategoryRequest>());
 
 		Summary(s => {
 			s.Summary = "Add Product to Shop Category";

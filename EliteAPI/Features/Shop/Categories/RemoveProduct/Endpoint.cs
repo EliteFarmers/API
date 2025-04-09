@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.RemoveProduct;
 
-internal sealed class RemoveProductToCategoryRequest {
+internal sealed class RemoveProductFromCategoryRequest {
 	/// <summary>
 	/// Id of the category to add the product to
 	/// </summary>
@@ -21,19 +21,21 @@ internal sealed class RemoveProductToCategoryRequest {
 internal sealed class RemoveProductToCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<RemoveProductToCategoryRequest> {
+) : Endpoint<RemoveProductFromCategoryRequest> {
 	
 	public override void Configure() {
 		Delete("/shop/category/{CategoryId}/product/{ProductId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
+		
+		Description(s => s.Accepts<RemoveProductFromCategoryRequest>());
 
 		Summary(s => {
 			s.Summary = "Remove Product from Shop Category";
 		});
 	}
 
-	public override async Task HandleAsync(RemoveProductToCategoryRequest request, CancellationToken c) {
+	public override async Task HandleAsync(RemoveProductFromCategoryRequest request, CancellationToken c) {
 		var existing = await context.ProductCategories
 			.FirstOrDefaultAsync(e => e.CategoryId == request.CategoryId && e.ProductId == (ulong) request.ProductId, cancellationToken: c);
 		
