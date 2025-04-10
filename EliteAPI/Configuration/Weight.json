@@ -25,6 +25,7 @@
       "SUGAR_CANE": "198885.45",
       "WHEAT": "100000"
     },
+    "MinimumWeightForTracking": 1000,
     "Farming60Bonus": 250,
     "Farming50Bonus": 100,
     "AnitaBuffBonusMultiplier": 2,

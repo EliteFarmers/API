@@ -14,7 +14,7 @@ public class ConfigFarmingWeightSettings
 {
     public List<string> CropItemIds { get; set; } = [];
     public List<string> FarmingMinions { get; set; } = [];
-
+    public int MinimumWeightForTracking { get; set; } = 1_000;
     public Dictionary<Crop, double> CropWeights { get; set; } = new();
     private Dictionary<string, double> _cropsPerOneWeight = new();
     public Dictionary<string, double> CropsPerOneWeight {

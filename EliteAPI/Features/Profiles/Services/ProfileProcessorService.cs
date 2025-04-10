@@ -76,11 +76,13 @@ public class ProfileProcessorService(
 	ISchedulerFactory schedulerFactory,
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
+	IOptions<ConfigFarmingWeightSettings> farmingWeightOptions,
 	AutoMapper.IMapper mapper
 	) : IProfileProcessorService 
 {
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
+	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
 	
 	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData = 
 		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>            
@@ -537,7 +539,7 @@ public class ProfileProcessorService(
     }
     
     private async Task AddTimeScaleRecords(ProfileMember member) {
-        if (member.Api.Collections) {
+        if (member.Api.Collections || member.Farming.TotalWeight > _farmingWeightOptions.MinimumWeightForTracking) {
             var cropCollection = new CropCollection {
                 Time = DateTimeOffset.UtcNow,
                 ProfileMemberId = member.Id,
