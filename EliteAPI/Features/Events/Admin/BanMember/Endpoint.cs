@@ -20,7 +20,7 @@ internal sealed class BanMemberRequest : PlayerUuidRequest {
 internal sealed class BanMemberEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context
-) : Endpoint<BanMemberRequest, EventMemberBannedDto> {
+) : Endpoint<BanMemberRequest, AdminEventMemberDto> {
 
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/bans/{PlayerUuid}");
@@ -58,7 +58,7 @@ internal sealed class BanMemberEndpoint(
         
 		await context.SaveChangesAsync(c);
         
-		var result = mapper.Map<EventMemberBannedDto>(member);
+		var result = mapper.Map<AdminEventMemberDto>(member);
 		await SendAsync(result, cancellation: c);
 	}
 }

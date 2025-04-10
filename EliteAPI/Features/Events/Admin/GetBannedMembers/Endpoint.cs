@@ -15,7 +15,7 @@ internal sealed class GetBannedMembersRequest : DiscordIdRequest {
 internal sealed class GetBannedMembersEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetBannedMembersRequest, List<EventMemberBannedDto>> {
+) : Endpoint<GetBannedMembersRequest, List<AdminEventMemberDto>> {
 
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/bans");
@@ -45,7 +45,7 @@ internal sealed class GetBannedMembersEndpoint(
 			             (em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left))
 			.ToListAsync(cancellationToken: c);
         
-		var result = mapper.Map<List<EventMemberBannedDto>>(members);
+		var result = mapper.Map<List<AdminEventMemberDto>>(members);
 		await SendAsync(result, cancellation: c);
 	}
 }

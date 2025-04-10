@@ -26,7 +26,7 @@ internal sealed class CreateMedalEventEndpoint(
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Create Weight Event";
+			s.Summary = "Create Medal Event";
 		});
 	}
 

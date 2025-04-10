@@ -201,19 +201,6 @@ public class AdminEventMemberDto : EventMemberDetailsDto {
     public int Id { get; set; }
 }
 
-public class EventMemberBannedDto {
-    public int Id { get; set; }
-    public string? PlayerUuid { get; set; }
-    public string? PlayerName { get; set; }
-    
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? TeamId { get; set; }
-    public string? Score { get; set; }
-    public string? Notes { get; set; }
-    
-    public string? LastUpdated { get; set; }
-}
-
 public class EditEventDto {
     public string? Name { get; set; }
     public string? Type { get; set; }
