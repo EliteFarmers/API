@@ -54,6 +54,7 @@
 		<Folder Include="Data\Grafana\Datasources\" />
 		<Folder Include="Data\Grafana\Dashboards\" />
 		<Folder Include="Data\Prometheus\" />
+		<Folder Include="Features\Events\Admin\Members\" />
 	</ItemGroup>
 
 	<ItemGroup>

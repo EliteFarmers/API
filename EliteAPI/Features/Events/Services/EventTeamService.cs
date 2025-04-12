@@ -84,9 +84,15 @@ public class EventTeamService(
 		var newTeam = new EventTeam {
 			Name = newName,
 			Color = team.Color,
-			UserId = "admin",
+			UserId = userId,
 			EventId = eventId
 		};
+		
+		var member = await eventService.GetEventMemberByIdAsync(userId, eventId);
+		if (member is not null) {
+			member.Team = newTeam;
+			context.EventMembers.Update(member);
+		}
 
 		context.EventTeams.Add(newTeam);
 		await context.SaveChangesAsync();
@@ -132,6 +138,10 @@ public class EventTeamService(
 		if (team is null) {
 			return new BadRequestObjectResult("Invalid team id");
 		}
+		
+		await context.EventMembers.Where(m => m.TeamId == team.Id).ExecuteUpdateAsync(
+			u => u.SetProperty(m => m.TeamId, (int?) null)
+		);
 		
 		context.Entry(team).State = EntityState.Deleted;
 		await context.SaveChangesAsync();
@@ -300,7 +310,7 @@ public class EventTeamService(
 			return new BadRequestObjectResult("Invalid team id");
 		}
 		
-		var member = await eventService.GetEventMemberByIdAsync(playerUuidOrIgn, team.EventId);
+		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
 		if (member?.TeamId != teamId) {
 			return new BadRequestObjectResult("This player is not in this team");
 		}
@@ -312,6 +322,50 @@ public class EventTeamService(
 		member.TeamId = null;
 		context.Entry(member).State = EntityState.Modified;
 		
+		await context.SaveChangesAsync();
+		
+		return new OkResult();
+	}
+
+	public async Task<ActionResult> SetTeamOwnerValidateAsync(int teamId, string userId, string playerUuidOrIgn) {
+		var team = await GetTeamAsync(teamId);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		if (team.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
+			return new BadRequestObjectResult("Event has already started");
+		}
+		
+		var requesterMember = await eventService.GetEventMemberByIdAsync(userId, team.EventId);
+		if (requesterMember?.TeamId != teamId) {
+			return new BadRequestObjectResult("You are not in this team");
+		}
+		
+		if (requesterMember.UserId.ToString() != team.UserId) {
+			return new BadRequestObjectResult("You are not the team owner");
+		}
+		
+		return await SetTeamOwnerAsync(teamId, playerUuidOrIgn);
+	}
+
+	public async Task<ActionResult> SetTeamOwnerAsync(int teamId, string playerUuidOrIgn) {
+		var team = await GetTeamAsync(teamId);
+		if (team is null) {
+			return new BadRequestObjectResult("Invalid team id");
+		}
+		
+		var member = await eventService.GetEventMemberAsync(playerUuidOrIgn, team.EventId);
+		if (member?.TeamId != teamId) {
+			return new BadRequestObjectResult("This player is not in this team");
+		}
+		
+		if (member.UserId.ToString() == team.UserId) {
+			return new BadRequestObjectResult("This player is already the owner of this team");
+		}
+		
+		team.UserId = member.UserId.ToString();
+		context.Entry(team).State = EntityState.Modified;
 		await context.SaveChangesAsync();
 		
 		return new OkResult();

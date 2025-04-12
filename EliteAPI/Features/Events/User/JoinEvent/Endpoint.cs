@@ -134,18 +134,23 @@ internal sealed class JoinEventEndpoint(
             await SendNoContentAsync(cancellation: c);
             return;
         }
-
-        await eventService.CreateEventMember(eliteEvent, new CreateEventMemberDto {
-            EventId = eliteEvent.Id,
-            ProfileMemberId = profileMember.Id,
-            UserId = account.Id,
-            Score = 0,
-            StartTime = eliteEvent.StartTime,
-            EndTime = eliteEvent.EndTime,
-            ProfileMember = profileMember
-        });
         
-        await context.SaveChangesAsync(c);
+        try {
+            await eventService.CreateEventMember(eliteEvent, new CreateEventMemberDto {
+                EventId = eliteEvent.Id,
+                ProfileMemberId = profileMember.Id,
+                UserId = account.Id,
+                Score = 0,
+                StartTime = eliteEvent.StartTime,
+                EndTime = eliteEvent.EndTime,
+                ProfileMember = profileMember
+            });
+
+            await context.SaveChangesAsync(c);
+        } catch (DbUpdateException) {
+            ThrowError("Player (or linked account) is already in the event.");
+        }
+
 		await SendNoContentAsync(cancellation: c);
 	}
 }

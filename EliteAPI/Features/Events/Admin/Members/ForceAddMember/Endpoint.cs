@@ -58,18 +58,22 @@ internal sealed class ForceAddMemberEndpoint(
 		if (existing is not null) {
 			ThrowError("Player is already in the event.");
 		}
-        
-		await eventService.CreateEventMember(@event, new CreateEventMemberDto {
-			EventId = @event.Id,
-			ProfileMemberId = member.Id,
-			UserId = member.MinecraftAccount.AccountId.Value,
-			Score = 0,
-			StartTime = @event.StartTime,
-			EndTime = @event.EndTime,
-			ProfileMember = member
-		});
-        
-		await context.SaveChangesAsync(c);
+
+		try {
+			await eventService.CreateEventMember(@event, new CreateEventMemberDto {
+				EventId = @event.Id,
+				ProfileMemberId = member.Id,
+				UserId = member.MinecraftAccount.AccountId.Value,
+				Score = 0,
+				StartTime = @event.StartTime,
+				EndTime = @event.EndTime,
+				ProfileMember = member
+			});
+			await context.SaveChangesAsync(c);
+		} catch (DbUpdateException) {
+			ThrowError("Player (or linked account) is already in the event.");
+		}
+		
 		await SendNoContentAsync(cancellation: c);
 	}
 }

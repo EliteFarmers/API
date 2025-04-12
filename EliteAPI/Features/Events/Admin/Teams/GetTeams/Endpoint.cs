@@ -48,6 +48,7 @@ internal sealed class GetTeamsEndpoint(
 			Score = t.Members.Sum(m => m.Score).ToString(CultureInfo.InvariantCulture),
 			JoinCode = t.JoinCode,
 			OwnerId = t.UserId,
+			OwnerUuid = t.GetOwnerUuid(),
 			Members = mapper.Map<List<EventMemberDto>>(t.Members)
 		}).ToList();
 		

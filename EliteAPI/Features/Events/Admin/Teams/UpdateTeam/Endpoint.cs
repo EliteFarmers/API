@@ -1,14 +1,15 @@
+using EliteAPI.Authentication;
 using EliteAPI.Features.Events.Services;
+using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 
-namespace EliteAPI.Features.Events.User.UpdateTeam;
+namespace EliteAPI.Features.Events.Admin.UpdateTeam;
 
-internal sealed class UpdateTeamRequest
+internal sealed class AdminUpdateTeamRequest : DiscordIdRequest
 {
     public ulong EventId { get; set; }
     public int TeamId { get; set; }
@@ -19,10 +20,11 @@ internal sealed class UpdateTeamRequest
 internal sealed class UpdateTeamEndpoint(
 	IOutputCacheStore cacheStore,
     IEventTeamService teamService)
-	: Endpoint<UpdateTeamRequest>
+	: Endpoint<AdminUpdateTeamRequest>
 {
 	public override void Configure() {
-		Patch("/event/{EventId}/team/{TeamId}");
+		Patch("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}");
+		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
 		Summary(s => {
@@ -30,25 +32,31 @@ internal sealed class UpdateTeamEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(UpdateTeamRequest request, CancellationToken c) {
+	public override async Task HandleAsync(AdminUpdateTeamRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		if (userId is null) {
 			await SendUnauthorizedAsync(c);
 			return;
 		}
 
-		var admin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
-		var response = await teamService.UpdateTeamAsync(request.TeamId, request.Team, userId, admin);
+		var response = await teamService.UpdateTeamAsync(request.TeamId, request.Team, userId, true);
 
 		if (response is BadRequestObjectResult bad) {
 			ThrowError(bad.Value?.ToString() ?? "Failed to update team");
 		}
-
+		
 		if (request.Team.ChangeCode is true) {
 			await teamService.RegenerateJoinCodeAsync(request.TeamId, userId);
 		}
 		
 		await cacheStore.EvictByTagAsync("event-teams", c);
 		await SendNoContentAsync(cancellation: c);
+	}
+}
+
+internal sealed class UpdateTeamRequestValidator : Validator<AdminUpdateTeamRequest>
+{
+	public UpdateTeamRequestValidator() {
+		Include(new DiscordIdRequestValidator());
 	}
 }

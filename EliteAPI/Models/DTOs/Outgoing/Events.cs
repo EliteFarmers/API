@@ -142,6 +142,11 @@ public class UpdateEventTeamDto {
     
     [MaxLength(7)]
     public string? Color { get; set; }
+    
+    /// <summary>
+    /// If join code should be changed
+    /// </summary>
+    public bool? ChangeCode { get; set; } = false;
 }
 
 public class EventMemberDto {
@@ -199,6 +204,10 @@ public class EventMemberDetailsDto {
 
 public class AdminEventMemberDto : EventMemberDetailsDto {
     public int Id { get; set; }
+    public string? AccountId { get; set; }
+    
+    [MaxLength(128)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Notes { get; set; }
 }
 
 public class EditEventDto {

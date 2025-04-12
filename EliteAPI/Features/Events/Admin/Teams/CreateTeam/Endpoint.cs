@@ -6,6 +6,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.CreateTeam;
@@ -14,11 +15,14 @@ internal sealed class CreateTeamRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 	[FastEndpoints.FromBody]
 	public required CreateEventTeamDto Team { get; set; }
+	[QueryParam]
+	public string? UserId { get; set; }
 }
 
 internal sealed class CreateTeamEndpoint(
 	IEventTeamService teamService,
-	DataContext context
+	DataContext context,
+	IOutputCacheStore cacheStore
 ) : Endpoint<CreateTeamRequest> {
 
 	public override void Configure() {
@@ -43,13 +47,14 @@ internal sealed class CreateTeamEndpoint(
 			return;
 		}
 		
-		var result = await teamService.CreateAdminTeamAsync(request.EventId, request.Team, userId);
+		var result = await teamService.CreateAdminTeamAsync(request.EventId, request.Team, request.UserId ?? userId);
 		
 		if (result is BadRequestObjectResult badRequest) {
 			await SendAsync(badRequest.Value?.ToString(), cancellation: c);
 			return;
 		}
 
+		await cacheStore.EvictByTagAsync("event-teams", c);
 		await SendNoContentAsync(cancellation: c);
 	}
 }

@@ -3,32 +3,36 @@ using EliteAPI.Data;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.Common;
 using FastEndpoints;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Events.Admin.AddTeamMember;
+namespace EliteAPI.Features.Events.Admin.KickTeamMember;
 
-internal sealed class AddTeamMemberRequest : PlayerRequest {
+internal sealed class KickTeamMemberRequest : PlayerRequest {
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 }
 
-internal sealed class AddTeamMemberEndpoint(
+internal sealed class KickTeamMemberEndpoint(
 	IEventTeamService teamService,
-	DataContext context
-) : Endpoint<AddTeamMemberRequest> {
+	DataContext context,
+	IOutputCacheStore cacheStore
+) : Endpoint<KickTeamMemberRequest> {
 
 	public override void Configure() {
-		Post("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}/members/{Player}");
+		Delete("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}/members/{Player}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
+		
+		Description(s => s.Accepts<KickTeamMemberRequest>());
 
 		Summary(s => {
-			s.Summary = "Add an Event Member to a Team";
+			s.Summary = "Kick an Event Team Member";
 		});
 	}
 
-	public override async Task HandleAsync(AddTeamMemberRequest request, CancellationToken c) {
+	public override async Task HandleAsync(KickTeamMemberRequest request, CancellationToken c) {
 		var @event = await context.Events
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
@@ -47,14 +51,15 @@ internal sealed class AddTeamMemberEndpoint(
 			return;
 		}
 
-		await teamService.AddMemberToTeamAsync(request.TeamId, request.Player);
+		await teamService.KickMemberAsync(request.TeamId, request.Player);
 
+		await cacheStore.EvictByTagAsync("event-teams", c);
 		await SendNoContentAsync(cancellation: c);
 	}
 }
 
-internal sealed class AddTeamMemberRequestValidator : Validator<AddTeamMemberRequest> {
-	public AddTeamMemberRequestValidator() {
+internal sealed class KickTeamMemberRequestValidator : Validator<KickTeamMemberRequest> {
+	public KickTeamMemberRequestValidator() {
 		Include(new PlayerRequestValidator());
 	}
 }
