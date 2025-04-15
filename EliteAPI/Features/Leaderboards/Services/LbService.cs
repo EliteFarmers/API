@@ -106,7 +106,7 @@ public class LbService(
 					Ign = e.ProfileMember.MinecraftAccount.Name
 				}).FirstOrDefaultAsync();
 			
-			rank = entry?.Removed is not false ? -1 : await context.LeaderboardEntries
+			rank = await context.LeaderboardEntries
 				.FromLeaderboard(lb.LeaderboardId, true)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.CountAsync() + 1;
@@ -134,7 +134,7 @@ public class LbService(
 						}).OrderByDescending(s => s.Xp).ToList()
 				}).FirstOrDefaultAsync();
 			
-			rank = entry?.Removed is not false ? -1 : await context.LeaderboardEntries
+			rank = await context.LeaderboardEntries
 				.FromLeaderboard(lb.LeaderboardId, false)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.CountAsync() + 1;
