@@ -37,6 +37,29 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 	///	</summary>
 	[QueryParam, DefaultValue(true)]
 	public bool? New { get; set; } = true;
+	
+	/// <summary>
+	/// Time interval key of a monthly leaderboard. Format: yyyy-MM
+	/// </summary>
+	[QueryParam, DefaultValue(null)]
+	public string? Interval { get; set; } = null;
+	
+	/// <summary>
+	/// Game mode to filter leaderboard by. Leave empty to get all modes.
+	/// Options: "ironman", "island", "classic"
+	/// </summary>
+	[QueryParam, DefaultValue(null)]
+	public string? Mode { get; set; } = null;
+	
+	/// <summary>
+	/// Removed filter to get leaderboard entries that have been removed from the leaderboard.
+	/// Default is profiles that have not been removed/wiped.
+	/// 0 = Not Removed
+	/// 1 = Removed
+	/// 2 = All
+	/// </summary>
+	[QueryParam, DefaultValue(RemovedFilter.NotRemoved)]
+	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
 }
 
 internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest> {
@@ -55,5 +78,10 @@ internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankReq
 			.GreaterThanOrEqualTo(0)
 			.LessThanOrEqualTo(100)
 			.WithMessage("Upcoming must be between 0 and 100");
+		
+		RuleFor(x => x.Interval)
+			.Matches(@"^\d{4}-\d{2}$")
+			.When(x => x.Interval is not null)
+			.WithMessage("Interval is invalid. Expected format: yyyy-MM");
 	}
 }

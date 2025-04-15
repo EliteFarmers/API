@@ -1,3 +1,5 @@
+using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,7 +20,7 @@ public class LeaderboardEntry
 	public EliteAPI.Models.Entities.Hypixel.Profile? Profile { get; set; }
 	public Guid? ProfileMemberId { get; set; }
 	public EliteAPI.Models.Entities.Hypixel.ProfileMember? ProfileMember { get; set; }
-	
+
 	public decimal InitialScore { get; set; }
 	public decimal Score { get; set; }
 	
@@ -66,5 +68,78 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 		
 		builder.HasIndex(le => le.ProfileId);
 		builder.HasIndex(le => le.ProfileMemberId);
+	}
+}
+
+public static class LeaderboardEntryExtensions {
+	
+	public static IQueryable<LeaderboardEntry> FromLeaderboard(this IQueryable<LeaderboardEntry> query, int leaderboardId, bool? memberLeaderboard = null) {
+		if (memberLeaderboard is null) {
+			return query.Where(e => e.LeaderboardId == leaderboardId);
+		}
+		return memberLeaderboard is true
+			? query.Where(e => e.LeaderboardId == leaderboardId && e.ProfileMemberId != null) 
+			: query.Where(e => e.LeaderboardId == leaderboardId && e.ProfileId != null);
+	}
+	
+	public static IQueryable<LeaderboardEntry> EntryFilter(this IQueryable<LeaderboardEntry> query, string? interval = null, RemovedFilter? removedFilter = RemovedFilter.NotRemoved, string? gameMode = null) {
+		if (interval is not null) {
+			query = query.Where(e => e.IntervalIdentifier == interval);
+		} else {
+			var monthlyInterval = LbService.GetCurrentIdentifier(LeaderboardType.Monthly);
+			var weeklyInterval = LbService.GetCurrentIdentifier(LeaderboardType.Weekly);
+			query = query.Where(e => 
+					e.IntervalIdentifier == null 
+	             || e.IntervalIdentifier == monthlyInterval 
+	             || e.IntervalIdentifier == weeklyInterval);
+		}
+		
+		query = removedFilter switch {
+			RemovedFilter.NotRemoved => query.Where(e => !e.IsRemoved),
+			RemovedFilter.Removed => query.Where(e => e.IsRemoved),
+			_ => query
+		};
+
+		query = gameMode switch {
+			"classic" => query.Where(e => e.ProfileType == null),
+			"ironman" => query.Where(e => e.ProfileType == "ironman"),
+			"island" => query.Where(e => e.ProfileType == "island"),
+			_ => query
+		};
+		
+		return query;
+	}
+
+	public static IQueryable<LeaderboardEntryDto> MapToProfileLeaderboardEntries(this IQueryable<LeaderboardEntry> query) {
+		return query
+			.Include(e => e.Profile)
+			.Select(e => new LeaderboardEntryDto {
+				Uuid = e.Profile!.ProfileId,
+				Profile = e.Profile!.ProfileName,
+				Amount = (double)e.Score,
+				InitialAmount = (double)e.InitialScore,
+				Removed = e.IsRemoved,
+				Mode = e.ProfileType,
+				Members = e.Profile.Members
+					.Where(m => !m.WasRemoved)
+					.Select(m => new ProfileLeaderboardMemberDto {
+						Ign = m.MinecraftAccount.Name,
+						Uuid = m.PlayerUuid,
+						Xp = m.SkyblockXp
+					}).OrderByDescending(s => s.Xp).ToList()
+			});
+	}
+	
+	public static IQueryable<LeaderboardEntryDto> MapToMemberLeaderboardEntries(this IQueryable<LeaderboardEntry> query, bool includeMeta = false) {
+		return query.Select(e => new LeaderboardEntryDto {
+			Uuid = e.ProfileMember!.PlayerUuid,
+			Profile = e.ProfileMember.ProfileName,
+			Amount = (double)e.Score,
+			InitialAmount = (double)e.InitialScore,
+			Removed = e.IsRemoved,
+			Mode = e.ProfileType,
+			Ign = e.ProfileMember.MinecraftAccount.Name,
+			Meta = includeMeta && e.ProfileMember.Metadata != null ? e.ProfileMember.Metadata.Cosmetics.MapToDto() : null
+		});
 	}
 }

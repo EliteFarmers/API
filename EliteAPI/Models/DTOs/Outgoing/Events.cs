@@ -162,7 +162,6 @@ public class EventMemberDto {
     public string? Score { get; set; }
     public object? Data { get; set; }
     public string? LastUpdated { get; set; }
-    
     public bool Disqualified { get; set; }
     
     [MaxLength(128)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -205,6 +204,8 @@ public class EventMemberDetailsDto {
 public class AdminEventMemberDto : EventMemberDetailsDto {
     public int Id { get; set; }
     public string? AccountId { get; set; }
+    
+    public string? EstimatedTimeActive { get; set; }
     
     [MaxLength(128)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Notes { get; set; }

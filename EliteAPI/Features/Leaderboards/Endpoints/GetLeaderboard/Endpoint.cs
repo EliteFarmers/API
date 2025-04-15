@@ -24,22 +24,34 @@ internal sealed class GetLeaderboardEndpoint(
 
 	public override async Task HandleAsync(LeaderboardSliceRequest request, CancellationToken c) {
 		if (request.New is true && leaderboardRegistrationService.LeaderboardsById.TryGetValue(request.Leaderboard, out var newLb)) {
-			var newEntries = await newLbService.GetLeaderboardSlice(request.Leaderboard, request.OffsetFormatted,
-				request.LimitFormatted);
+			var newEntries = await newLbService.GetLeaderboardSlice(
+				request.Leaderboard, 
+				request.OffsetFormatted,
+				request.LimitFormatted,
+				removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
+				gameMode: request.Mode,
+				identifier: request.Interval);
 
 			var type = LbService.GetTypeFromSlug(request.Leaderboard);
 			var time = newLbService.GetCurrentTimeRange(type);
+			
+			var lastEntry = await newLbService.GetLastLeaderboardEntry(
+				request.Leaderboard,
+				removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
+				gameMode: request.Mode,
+				identifier: request.Interval);
 
 			var newLeaderboard = new LeaderboardDto {
 				Id = request.Leaderboard,
 				Title = newLb.Info.Title,
 				ShortTitle = newLb.Info.ShortTitle,
+				Interval = request.Interval ?? LbService.GetCurrentIdentifier(type),
 				Limit = request.LimitFormatted,
 				Offset = request.OffsetFormatted,
 				MinimumScore = newLb.Info.MinimumScore,
 				StartsAt = time.start,
 				EndsAt = time.end,
-				MaxEntries = (await newLbService.GetLastLeaderboardEntry(request.Leaderboard))?.Rank ?? -1,
+				MaxEntries = lastEntry?.Rank ?? -1, 
 				Profile = newLb is IProfileLeaderboardDefinition,
 				Entries = newEntries
 			};

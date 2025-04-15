@@ -52,11 +52,18 @@ internal sealed class GetProfileRankEndpoint(
 			profileId: request.ProfileUuidFormatted,
 			upcoming: request.Upcoming,
 			atRank: request.AtRank ?? -1,
+			identifier: request.Interval,
+			gameMode: request.Mode,
+			removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
 			c: c
 		);
 		
 		if (newResult is null) {
-			var last = await newLbService.GetLastLeaderboardEntry(request.Leaderboard);
+			var last = await newLbService.GetLastLeaderboardEntry(
+				request.Leaderboard,
+				removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
+				gameMode: request.Mode,
+				identifier: request.Interval);
 			await SendAsync(new LeaderboardPositionDto {
 				Rank = -1,
 				Amount = 0,

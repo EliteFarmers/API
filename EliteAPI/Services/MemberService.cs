@@ -34,7 +34,9 @@ public class MemberService(
     public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, float cooldownMultiplier = 1) {
         await UpdatePlayerIfNeeded(playerUuid);
 
-        return context.ProfileMembers.Where(p => p.PlayerUuid == playerUuid);
+        return context.ProfileMembers
+            .Where(p => p.PlayerUuid == playerUuid)
+            .Include(p => p.Metadata);
     }
     
     public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid, float cooldownMultiplier = 1) {
@@ -44,6 +46,7 @@ public class MemberService(
         return context.ProfileMembers
             .AsNoTracking()
             .Where(p => p.PlayerUuid == playerUuid)
+            .Include(p => p.Metadata)
             .Include(p => p.MinecraftAccount)
             .Include(p => p.Profile)
             .ThenInclude(p => p.Garden)

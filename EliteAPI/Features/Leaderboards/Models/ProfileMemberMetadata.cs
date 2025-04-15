@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
@@ -45,11 +46,30 @@ public class ProfileMemberMetadataConfiguration : IEntityTypeConfiguration<Profi
 }
 
 public class ProfileMemberMetadataCosmetics {
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), MaxLength(16)]
+	public string? Prefix { get; set; }
+	
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), MaxLength(16)]
+	public string? Suffix { get; set; }
+	
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public ProfileMemberLeaderboardCosmetics? Leaderboard { get; set; } 
+	public MemberLeaderboardCosmeticsDto? Leaderboard { get; set; } 
 }
 
-public class ProfileMemberLeaderboardCosmetics {
+public class MemberCosmeticsDto {
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), MaxLength(16)]
+	public string? Prefix { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull), MaxLength(16)]
+	public string? Suffix { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public MemberLeaderboardCosmeticsDto? Leaderboard { get; set; }
+}
+
+public class MemberLeaderboardCosmeticsDto {
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public int? StyleId { get; set; }
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? BackgroundColor { get; set; }
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

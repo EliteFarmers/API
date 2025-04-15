@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using EliteAPI.Features.Leaderboards.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -6,6 +7,8 @@ public class LeaderboardDto {
     public required string Id { get; set; }
     public required string Title { get; set; }
     public string? ShortTitle { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Interval { get; set; }
     public int Limit { get; set; }
     public int Offset { get; set; }
     public int MaxEntries { get; set; }
@@ -59,6 +62,12 @@ public class LeaderboardEntryDto {
     public double InitialAmount { get; set; }
     
     /// <summary>
+    /// Game mode of the entry. Classic profiles are considered default/null.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? Mode { get; set; }
+    
+    /// <summary>
     /// List of members if profile leaderboard
     /// </summary>
     [JsonIgnore]
@@ -71,6 +80,12 @@ public class LeaderboardEntryDto {
         get => Members?.Count > 0 ? Members : null;
         set => Members = value ?? null;
     }
+    
+    /// <summary>
+    /// Metadata of the entry
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MemberCosmeticsDto? Meta { get; set; }
 }
 
 public class LeaderboardEntryWithRankDto : LeaderboardEntryDto {

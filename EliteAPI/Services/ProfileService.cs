@@ -29,6 +29,8 @@ public class ProfileService(
             .ThenInclude(m => m.MinecraftAccount)
             .Include(p => p.Members)
             .ThenInclude(m => m.Farming)
+            .Include(p => p.Members)
+            .ThenInclude(m => m.Metadata)
             .FirstOrDefaultAsync(p => p.ProfileId.Equals(profileId));
     }
 
@@ -80,6 +82,8 @@ public class ProfileService(
             .ThenInclude(m => m.MinecraftAccount)
             .Include(p => p.Members)
             .ThenInclude(m => m.Farming)
+            .Include(p => p.Members)
+            .ThenInclude(m => m.Metadata)
             .Where(p => profileIds.Contains(p.ProfileId))
             .ToListAsync();
         

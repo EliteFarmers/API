@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using EliteAPI.Features.Leaderboards.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -29,6 +30,9 @@ public class MemberDetailsDto
     public string? ProfileName { get; set; }
     public bool Active { get; set; } = true;
     public double FarmingWeight { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public MemberCosmeticsDto? Meta { get; set; }
 }
 
 public class ProfileMemberDto
@@ -42,6 +46,9 @@ public class ProfileMemberDto
     public int SkyblockXp { get; set; }
     public double Purse { get; set; }
     public double BankBalance { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public MemberCosmeticsDto? Meta { get; set; }
 
     public Dictionary<string, long> Collections { get; set; } = new();
     public Dictionary<string, int> CollectionTiers { get; set; } = new();

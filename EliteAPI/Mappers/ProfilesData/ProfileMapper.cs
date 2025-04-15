@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using EliteAPI.Features.Leaderboards;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
@@ -35,6 +36,7 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.Unparsed, opt => opt.MapFrom(x => x.Unparsed))
             .ForMember(x => x.ChocolateFactory, opt => opt.MapFrom(x => x.ChocolateFactory))
             .ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api))
+            .ForMember(x => x.Meta, opt => opt.MapFrom(x => x.Metadata == null ? null : x.Metadata.Cosmetics.MapToDto()))
             .ForMember(x => x.Events, opt => opt.MapFrom(x => x.EventEntries));
 
         CreateMap<ProfileMember, MemberDetailsDto>()
@@ -42,6 +44,7 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.ProfileName, opt => opt.MapFrom(x => x.ProfileName ?? x.Profile.ProfileName))
             .ForMember(x => x.Username, opt => opt.MapFrom(x => x.MinecraftAccount.Name))
             .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming.TotalWeight))
+            .ForMember(x => x.Meta, opt => opt.MapFrom(x => x.Metadata == null ? null : x.Metadata.Cosmetics.MapToDto()))
             .ForMember(x => x.Active, opt => opt.MapFrom(x => !x.WasRemoved));
     }
 }
