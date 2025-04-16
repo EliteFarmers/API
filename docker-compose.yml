@@ -76,7 +76,7 @@ services:
     networks:
         - eliteapi-network
   rabbit:
-    image: rabbitmq:3.8-alpine
+    image: rabbitmq:4.1-alpine
     restart: unless-stopped
     env_file:
       - .env
