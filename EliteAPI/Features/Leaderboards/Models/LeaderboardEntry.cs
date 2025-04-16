@@ -110,7 +110,7 @@ public static class LeaderboardEntryExtensions {
 		return query;
 	}
 
-	public static IQueryable<LeaderboardEntryDto> MapToProfileLeaderboardEntries(this IQueryable<LeaderboardEntry> query) {
+	public static IQueryable<LeaderboardEntryDto> MapToProfileLeaderboardEntries(this IQueryable<LeaderboardEntry> query, RemovedFilter removedFilter = RemovedFilter.NotRemoved) {
 		return query
 			.Include(e => e.Profile)
 			.Select(e => new LeaderboardEntryDto {
@@ -121,11 +121,15 @@ public static class LeaderboardEntryExtensions {
 				Removed = e.IsRemoved,
 				Mode = e.ProfileType,
 				Members = e.Profile.Members
-					.Where(m => !m.WasRemoved)
+					.Where(m => 
+						(removedFilter == RemovedFilter.NotRemoved && m.WasRemoved == false)
+						|| (removedFilter == RemovedFilter.Removed && m.WasRemoved == true)
+						|| removedFilter == RemovedFilter.All)
 					.Select(m => new ProfileLeaderboardMemberDto {
 						Ign = m.MinecraftAccount.Name,
 						Uuid = m.PlayerUuid,
-						Xp = m.SkyblockXp
+						Xp = m.SkyblockXp,
+						Removed = m.WasRemoved
 					}).OrderByDescending(s => s.Xp).ToList()
 			});
 	}

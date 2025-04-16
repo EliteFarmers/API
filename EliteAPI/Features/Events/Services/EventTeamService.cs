@@ -164,6 +164,9 @@ public class EventTeamService(
 			.Include(t => t.Event)
 			.Include(t => t.Members)
 			.ThenInclude(m => m.ProfileMember)
+			.ThenInclude(p => p.Metadata)
+			.Include(t => t.Members)
+			.ThenInclude(m => m.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)
 			.AsNoTracking().AsSplitQuery()
 			.FirstOrDefaultAsync(t => t.UserId == userId && t.EventId == eventId);
@@ -171,6 +174,9 @@ public class EventTeamService(
 
 	public async Task<List<EventTeam>> GetEventTeamsAsync(ulong eventId) {
 		var teams = await context.EventTeams
+			.Include(t => t.Members)
+			.ThenInclude(m => m.ProfileMember)
+			.ThenInclude(p => p.Metadata)
 			.Include(t => t.Members)
 			.ThenInclude(m => m.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)

@@ -41,6 +41,8 @@ internal sealed class GetEventMembersEndpoint(
 		var members = await context.EventMembers.AsNoTracking()
 			.Include(e => e.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)
+			.Include(e => e.ProfileMember)
+			.ThenInclude(p => p.Metadata)
 			.AsNoTracking()
 			.Where(e => e.EventId == request.EventId 
 			            && e.Status != EventMemberStatus.Disqualified 

@@ -99,6 +99,9 @@ public class ProfileLeaderboardMemberDto {
     /// Skyblock xp of the player (used for sorting)
     /// </summary>
     public int Xp { get; init; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Removed { get; set; }
 }
 
 public class LeaderboardPositionsDto {

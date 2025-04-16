@@ -40,7 +40,10 @@ internal sealed class GetEventMembersEndpoint(
 		
 		var members = await context.EventMembers
 			.Include(m => m.ProfileMember)
-			.ThenInclude(p => p.MinecraftAccount).AsNoTracking()
+			.ThenInclude(p => p.MinecraftAccount)
+			.Include(m => m.ProfileMember)
+			.ThenInclude(p => p.Metadata)
+			.AsNoTracking()
 			.Where(em => em.EventId == @event.Id &&
 			             (em.Status == EventMemberStatus.Active || em.Status == EventMemberStatus.Inactive))
 			.ToListAsync(cancellationToken: c);

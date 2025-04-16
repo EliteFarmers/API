@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Images;
@@ -166,6 +167,12 @@ public class EventMemberDto {
     
     [MaxLength(128)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Notes { get; set; }
+    
+    /// <summary>
+    /// Metadata of the entry
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MemberCosmeticsDto? Meta { get; set; }
 }
 
 public class ProfileEventMemberDto {
@@ -199,6 +206,12 @@ public class EventMemberDetailsDto {
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Data { get; set; } = null;
+    
+    /// <summary>
+    /// Metadata of the entry
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MemberCosmeticsDto? Meta { get; set; }
 }
 
 public class AdminEventMemberDto : EventMemberDetailsDto {

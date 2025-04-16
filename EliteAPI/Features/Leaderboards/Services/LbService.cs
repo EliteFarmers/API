@@ -68,7 +68,7 @@ public class LbService(
 				.OrderByDescending(e => e.Score)
 				.Skip(offset)
 				.Take(limit)
-				.MapToProfileLeaderboardEntries()
+				.MapToProfileLeaderboardEntries(removedFilter)
 				.ToListAsync();
 		}
 		
@@ -126,11 +126,15 @@ public class LbService(
 					Mode = e.ProfileType,
 					Removed = e.IsRemoved,
 					Members = e.Profile.Members
-						.Where(m => !m.WasRemoved)
+						.Where(m => 
+							(removedFilter == RemovedFilter.NotRemoved && m.WasRemoved == false)
+							|| (removedFilter == RemovedFilter.Removed && m.WasRemoved == true)
+							|| removedFilter == RemovedFilter.All)
 						.Select(m => new ProfileLeaderboardMemberDto {
 							Ign = m.MinecraftAccount.Name,
 							Uuid = m.PlayerUuid,
-							Xp = m.SkyblockXp
+							Xp = m.SkyblockXp,
+							Removed = m.WasRemoved
 						}).OrderByDescending(s => s.Xp).ToList()
 				}).FirstOrDefaultAsync();
 			

@@ -40,7 +40,10 @@ internal sealed class GetBannedMembersEndpoint(
 		
 		var members = await context.EventMembers
 			.Include(m => m.ProfileMember)
-			.ThenInclude(p => p.MinecraftAccount).AsNoTracking()
+			.ThenInclude(p => p.MinecraftAccount)
+			.Include(m => m.ProfileMember)
+			.ThenInclude(p => p.Metadata)
+			.AsNoTracking()
 			.Where(em => em.EventId == @event.Id &&
 			             (em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left))
 			.ToListAsync(cancellationToken: c);
