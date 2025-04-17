@@ -375,12 +375,9 @@ public class LbService(
 	
 		// Calculate the rank for this specific entry
 		var rank = entry.IsRemoved ? -1 : await context.LeaderboardEntries
-			.Where(otherEntry =>
-				otherEntry.LeaderboardId == entry.LeaderboardId &&
-				otherEntry.IntervalIdentifier == entry.IntervalIdentifier &&
-				otherEntry.Score > entry.Score &&
-				otherEntry.IsRemoved == false
-			)
+			.FromLeaderboard(entry.LeaderboardId, definition.IsMemberLeaderboard())
+			.EntryFilter(interval: identifier, removedFilter: removedFilter, gameMode: gameMode)
+			.Where(otherEntry => otherEntry.Score > entry.Score)
 			.CountAsync() + 1; // Rank is 1 + the number of entries with a higher score
 
 		return new PlayerLeaderboardEntryWithRankDto
