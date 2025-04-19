@@ -202,7 +202,7 @@ public class LbService(
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				entry.IsRemoved = member.WasRemoved;
 
-				if (score >= 0) {
+				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score - entry.InitialScore
 						: score;
@@ -295,7 +295,7 @@ public class LbService(
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				entry.IsRemoved = profile.IsDeleted;
 					
-				if (score >= 0) {
+				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score - entry.InitialScore 
 						: score;
