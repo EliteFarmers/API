@@ -122,6 +122,11 @@ public class LeaderboardPositionDto {
     /// </summary>
     public double Amount { get; set; }
     /// <summary>
+    /// The starting amount of the leaderboard entry for interval based leaderboards
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public double InitialAmount { get; set; }
+    /// <summary>
     /// The minimum amount required to be on the leaderboard. If this is a time based leaderboard,
     /// this score is instead required on the normal leaderboard before the player can be on the
     /// time based leaderboard
