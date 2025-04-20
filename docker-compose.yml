@@ -75,19 +75,6 @@ services:
         - prometheus-data:/data
     networks:
         - eliteapi-network
-  rabbit:
-    image: rabbitmq:3.8-alpine
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-        - '5672:5672'
-        - '15672:15672'
-    expose:
-        - '5672'
-        - '15672'
-    networks:
-        - eliteapi-network
         
 networks:
     eliteapi-network:

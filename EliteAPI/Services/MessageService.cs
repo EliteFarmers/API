@@ -1,81 +1,67 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing.Messaging;
 using EliteAPI.Services.Interfaces;
 using Microsoft.Extensions.Options;
-using RabbitMQ.Client;
+using StackExchange.Redis;
 
-namespace EliteAPI.Services; 
+namespace EliteAPI.Services;
 
-public class MessageService : IMessageService {
-
-    private const string ExchangeName = "eliteapi";
-    private readonly IConnection? _connection;
-    private readonly IModel? _channel;
-    private readonly RabbitMqSettings _rabbitMqSettings;
+public class MessageService(
+    IConnectionMultiplexer redis,
+    IOptions<MessagingSettings> messagingSettings,
+    ILogger<MessageService> logger
+    ) : IMessageService 
+{
+    private const string RedisChannelName = "eliteapi_messages";
+    private readonly MessagingSettings _messagingSettings = messagingSettings.Value;
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
     
-    public MessageService(IOptions<RabbitMqSettings> rabbitMqSettings) {
-        _rabbitMqSettings = rabbitMqSettings.Value;
-        
-        var factory = new ConnectionFactory {
-            HostName = _rabbitMqSettings.Host,
-            UserName = _rabbitMqSettings.User,
-            Password = _rabbitMqSettings.Password,
-            Port = _rabbitMqSettings.Port
-        };
+    public void SendMessage(MessageDto messageDto) {
+        if (!redis.IsConnected) {
+            logger.LogWarning("Cannot send message. Redis is not connected");
+            return;
+        }
 
         try {
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
-        } catch (Exception e) {
-            Console.Error.WriteLine(e);
+            var subscriber = redis.GetSubscriber();
+            var message = JsonSerializer.Serialize(messageDto, _jsonSerializerOptions);
+            
+            var redisChannel = new RedisChannel(RedisChannelName, RedisChannel.PatternMode.Literal);
+            var clientsReceived = subscriber.Publish(redisChannel, message, CommandFlags.FireAndForget);
+
+            logger.LogDebug("Published message to Redis channel '{ChannelName}'. Received by {ClientCount} clients", RedisChannelName, clientsReceived);
+        } catch (Exception ex) {
+            logger.LogError(ex, "Error publishing message to Redis channel '{ChannelName}'", RedisChannelName);
         }
-        
-        _channel?.ExchangeDeclare(ExchangeName, ExchangeType.Fanout);
     }
 
-    ~MessageService() {
-        _channel?.Close();
-        _connection?.Close();
-    }
-
-    public void SendMessage(MessageDto messageDto) {
-        if (_channel is null || !_channel.IsOpen) return;
-        
-        var message = JsonSerializer.Serialize(messageDto, _jsonSerializerOptions);
-        var body = Encoding.UTF8.GetBytes(message);
-        
-        _channel.BasicPublish(ExchangeName, string.Empty, null, body);
-    }
-    
     public void SendErrorMessage(string title, string message) {
-        if (string.IsNullOrEmpty(_rabbitMqSettings.ErrorAlertServer) || string.IsNullOrEmpty(_rabbitMqSettings.ErrorAlertChannel)) return;
-        
+        if (string.IsNullOrEmpty(_messagingSettings.ErrorAlertServer) || string.IsNullOrEmpty(_messagingSettings.ErrorAlertChannel)) return;
+
         SendMessage(new MessageDto {
             Name = "error",
-            GuildId = _rabbitMqSettings.ErrorAlertServer,
-            AuthorId = _rabbitMqSettings.ErrorAlertChannel,
+            GuildId = _messagingSettings.ErrorAlertServer,
+            AuthorId = _messagingSettings.ErrorAlertChannel,
             Data = $$"""
             {
-                "channelId": "{{_rabbitMqSettings.ErrorAlertChannel}}",
+                "channelId": "{{_messagingSettings.ErrorAlertChannel}}",
                 "title": "{{title}}",
                 "message": "{{message}}",
-                "ping": "{{_rabbitMqSettings.ErrorAlertPing}}"
+                "ping": "{{_messagingSettings.ErrorAlertPing}}"
             }
             """
         });
     }
 
     public void SendPurchaseMessage(string accountId, string skuId, string skuName) {
-        if (string.IsNullOrEmpty(_rabbitMqSettings.ErrorAlertServer)) return;
-        
+        if (string.IsNullOrEmpty(_messagingSettings.ErrorAlertServer)) return;
+
         SendMessage(new MessageDto {
             Name = "purchase",
-            GuildId = _rabbitMqSettings.ErrorAlertServer,
+            GuildId = _messagingSettings.ErrorAlertServer,
             AuthorId = accountId,
             Data = $$"""
             {
@@ -86,17 +72,17 @@ public class MessageService : IMessageService {
             """
         });
     }
-    
+
     public void SendWipedMessage(string uuid, string ign, string profileId, string discordId) {
-        if (string.IsNullOrEmpty(_rabbitMqSettings.WipeServer) || string.IsNullOrEmpty(_rabbitMqSettings.WipeChannel)) return;
-        
+        if (string.IsNullOrEmpty(_messagingSettings.WipeServer) || string.IsNullOrEmpty(_messagingSettings.WipeChannel)) return;
+
         SendMessage(new MessageDto {
             Name = "wipe",
-            GuildId = _rabbitMqSettings.WipeServer,
-            AuthorId = _rabbitMqSettings.WipeChannel,
+            GuildId = _messagingSettings.WipeServer,
+            AuthorId = _messagingSettings.WipeChannel,
             Data = $$"""
                      {
-                         "channelId": "{{_rabbitMqSettings.WipeChannel}}",
+                         "channelId": "{{_messagingSettings.WipeChannel}}",
                          "uuid": "{{uuid}}",
                          "ign": "{{ign}}",
                          "profileId": "{{profileId}}",

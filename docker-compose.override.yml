@@ -1,7 +1,7 @@
 services:
   eliteapi:
     environment:
-      - ASPNETCORE_ENVIRONMENT={$ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_ENVIRONMENT={$ASPNETCORE_ENVIRONMENT:-Production}
       - ASPNETCORE_URLS=http://+:7008;http://+:9102
     ports:
       - "7008"
