@@ -53,6 +53,7 @@ internal sealed class SetEventBannerEndpoint(
         if (eliteEvent.Banner is not null) {
 	        await objectStorageService.DeleteAsync(eliteEvent.Banner.Path, c);
 
+	        eliteEvent.Banner.Path = newImage.Path;
 	        eliteEvent.Banner.Metadata = newImage.Metadata;
 	        eliteEvent.Banner.Hash = newImage.Hash;
 	        eliteEvent.Banner.Title = newImage.Title;
