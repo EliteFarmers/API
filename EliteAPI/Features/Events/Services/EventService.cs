@@ -20,9 +20,9 @@ public class EventService(
 	IMapper mapper) 
 	: IEventService 
 {
-	public async Task<List<EventDetailsDto>> GetUpcomingEvents() {
+	public async Task<List<EventDetailsDto>> GetUpcomingEvents(int dayOffset = 0) {
 		var events = await context.Events
-            .Where(e => e.EndTime > DateTimeOffset.UtcNow && e.Approved)
+            .Where(e => e.EndTime > DateTimeOffset.UtcNow.AddDays(dayOffset) && e.Approved)
             .OrderBy(e => e.StartTime)
             .AsNoTracking()
             .ToListAsync();
