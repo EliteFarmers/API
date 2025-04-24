@@ -426,7 +426,8 @@ public class LbService(
 		List<LeaderboardEntryDto>? upcomingPlayers = null;
         
 		var rank = atRank is -1 or null ? position : Math.Max(1, atRank.Value);
-
+		rank = position != -1 ? Math.Min(position, rank) : rank;
+		
 		if (upcoming > 0 && rank > 1) {
 			upcomingPlayers = await GetLeaderboardSlice(leaderboardId, Math.Max(rank - upcoming.Value - 1, 0), Math.Min(rank - 1, upcoming.Value), gameMode, removedFilter, identifier);
 		}
