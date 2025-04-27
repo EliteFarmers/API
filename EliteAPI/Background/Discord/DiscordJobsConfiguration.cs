@@ -44,6 +44,17 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 				});
 			});
 		
+		var cleanupKey = CleanupRefreshTokens.Key;
+		options.AddJob<CleanupRefreshTokens>(builder => builder.WithIdentity(cleanupKey))
+			.AddTrigger(trigger => {
+				trigger.ForJob(cleanupKey);
+				trigger.StartNow();
+				trigger.WithSimpleSchedule(schedule => {
+					schedule.WithIntervalInHours(24);
+					schedule.RepeatForever();
+				});
+			});
+		
 		options.AddJob<RefreshAuthTokenBackgroundTask>(builder => {
 			builder.WithIdentity(RefreshAuthTokenBackgroundTask.Key);
 			builder.StoreDurably();

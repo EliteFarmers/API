@@ -1,4 +1,5 @@
-﻿using EliteAPI.Features.Leaderboards.Models;
+﻿using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
@@ -62,7 +63,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             .HasValue<GuildEntitlement>(EntitlementTarget.Guild);
     }
 
+    // Auth
     public DbSet<EliteAccount> Accounts { get; set; } = null!;
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+    
     public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
     public DbSet<UserSettings> UserSettings { get; set; } = null!;
     public DbSet<Badge> Badges { get; set; } = null!;
