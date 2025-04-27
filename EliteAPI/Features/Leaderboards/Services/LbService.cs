@@ -420,9 +420,8 @@ public class LbService(
 		}
 
 		var entry = await GetLeaderboardEntryAsync(leaderboardId, memberId, gameMode, removedFilter, identifier);
-		if (entry is null) return null;
 		
-		var position = entry.Rank;
+		var position = entry?.Rank ?? -1;
 		List<LeaderboardEntryDto>? upcomingPlayers = null;
         
 		var rank = atRank is -1 or null ? position : Math.Max(1, atRank.Value);
@@ -437,8 +436,8 @@ public class LbService(
 		
 		var result = new LeaderboardPositionDto {
 			Rank = position,
-			Amount = entry.Amount,
-			InitialAmount = entry.InitialAmount,
+			Amount = entry?.Amount ?? 0,
+			InitialAmount = entry?.InitialAmount ?? 0,
 			MinAmount = (double) definition.Info.MinimumScore,
 			UpcomingRank = rank == -1 ? -1 : rank - 1,
 			UpcomingPlayers = upcomingPlayers ?? [],
