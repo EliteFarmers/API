@@ -1,5 +1,4 @@
 using EliteAPI.Features.Leaderboards.Services;
-using EliteAPI.Utilities;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 
@@ -22,9 +21,8 @@ internal sealed class GetLeaderboardsEndpoint(
 			s.Summary = "Get leaderboards";
 		});
 		
-		
 		Description(d => d.AutoTagOverride("Leaderboard"));
-		Options(opt => opt.CacheOutput(CachePolicy.Hours));
+		Options(opt => opt.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(30)).Tag("leaderboards")));
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
