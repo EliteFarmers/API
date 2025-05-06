@@ -22,6 +22,7 @@ services:
         - eliteapi-network
   database:
     image: timescale/timescaledb:latest-pg15
+    shm_size: 512mb
     restart: always
     env_file:
       - ./EliteAPI/.env
