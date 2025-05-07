@@ -219,6 +219,7 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		new HalfEatenCarrotLeaderboard(),
 		new HemovibeLeaderboard(),
 		new LivingMetalHeartLeaderboard(),
-		new WiltedBerberisLeaderboard()
+		new WiltedBerberisLeaderboard(),
+		new TimiteLeaderboard()
 	];
 }
