@@ -129,3 +129,24 @@ public class WiltedBerberisLeaderboard : IMemberLeaderboardDefinition {
 		return collection;
 	}
 }
+
+public class TimiteLeaderboard : IMemberLeaderboardDefinition {
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Timite Collection",
+		ShortTitle = "Timite",
+		Slug = "timite",
+		Category = "Rift",
+		MinimumScore = 100,
+		IntervalType = [LeaderboardType.Current],
+		ScoreDataType = LeaderboardScoreDataType.Long,
+	};
+
+	private const string CollectionId = "TIMITE";
+	
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
+
+		member.TryGetCollection(CollectionId, out var collection);
+		return collection;
+	}
+}
