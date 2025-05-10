@@ -174,12 +174,27 @@ public class LbService(
 			.Select(lb => new { lb.Slug, lb.LeaderboardId, lb.MinimumScore })
 			.ToDictionaryAsync(lb => lb.Slug, c);
 		
-		var existingEntries = await context.LeaderboardEntries
+		var existingEntryList = await context.LeaderboardEntries
 			.AsNoTracking()
 			.Where(e => 
 				e.ProfileMemberId == member.Id
 				&& (e.IntervalIdentifier == monthlyInterval || e.IntervalIdentifier == weeklyInterval || e.IntervalIdentifier == null))
-			.ToDictionaryAsync(e => e.LeaderboardId, c);
+			.ToListAsync(cancellationToken: c);
+
+		var existingEntries = new Dictionary<int, Models.LeaderboardEntry>();
+		List<Models.LeaderboardEntry>? failed = null;
+		
+		// Add existing entries to a dictionary to check for duplicates
+		foreach (var entry in existingEntryList.Where(entry => !existingEntries.TryAdd(entry.LeaderboardId, entry))) {
+			failed ??= [];
+			failed.Add(entry);
+		}
+		
+		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
+		if (failed is { Count: > 0 }) {
+			await context.BulkDeleteAsync(failed, cancellationToken: c);
+			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Player}", failed.Count, member.PlayerUuid);
+		}
 
 		var updatedEntries = new List<Models.LeaderboardEntry>();
 		var newEntries = new List<Models.LeaderboardEntry>();
