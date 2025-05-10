@@ -248,7 +248,14 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			await context.BulkUpdateAsync(updatedEntries, cancellationToken: c);
+			var options = new BulkConfig() {
+				PropertiesToInclude = [
+					nameof(Models.LeaderboardEntry.Score),
+					nameof(Models.LeaderboardEntry.IsRemoved),
+				]
+			};
+			
+			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 		
@@ -356,7 +363,14 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			await context.BulkUpdateAsync(updatedEntries, cancellationToken: c);
+			var options = new BulkConfig() {
+				PropertiesToInclude = [
+					nameof(Models.LeaderboardEntry.Score),
+					nameof(Models.LeaderboardEntry.IsRemoved),
+				]
+			};
+			
+			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 		
