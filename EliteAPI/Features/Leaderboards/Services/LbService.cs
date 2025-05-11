@@ -198,6 +198,7 @@ public class LbService(
 
 		var updatedEntries = new List<Models.LeaderboardEntry>();
 		var newEntries = new List<Models.LeaderboardEntry>();
+		var ranRestore = false;
 		
 		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
 			if (definition is not IMemberLeaderboardDefinition memberLb) continue;
@@ -215,17 +216,32 @@ public class LbService(
 			var score = memberLb.GetScoreFromMember(member, type);
 				
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
-				entry.IsRemoved = member.WasRemoved;
+				var changed = false;
+				
+				if (entry.IsRemoved != member.WasRemoved) {
+					entry.IsRemoved = member.WasRemoved;
+					changed = true;
+
+					if (entry.IsRemoved == false && !ranRestore) {
+						await RestoreMemberLeaderboards(member.Id, c);
+						ranRestore = true;
+					}
+				}
 
 				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score - entry.InitialScore
 						: score;
-
-					entry.Score = newScore;
+					
+					if (entry.Score != newScore) {
+						entry.Score = newScore;
+						changed = true;
+					}
 				}
 
-				updatedEntries.Add(entry);
+				if (changed) {
+					updatedEntries.Add(entry);
+				}
 				continue;
 			}
 			
@@ -249,12 +265,12 @@ public class LbService(
 
 		if (updatedEntries.Count != 0) {
 			var options = new BulkConfig() {
-				PropertiesToInclude = [
+				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
-					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.InitialScore),
+					nameof(Models.LeaderboardEntry.IsRemoved)
 				]
 			};
-			
 			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
@@ -272,6 +288,12 @@ public class LbService(
 			member.Profile?.ProfileId, 
 			DateTime.UtcNow.Subtract(time).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
 		);
+	}
+
+	private async Task RestoreMemberLeaderboards(Guid profileMemberId, CancellationToken c = default) {
+		await context.LeaderboardEntries
+			.Where(e => e.ProfileMemberId == profileMemberId && e.IsRemoved == true)
+			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), cancellationToken: c);
 	}
 
 	public async Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c) {
@@ -310,6 +332,7 @@ public class LbService(
 
 		var updatedEntries = new List<Models.LeaderboardEntry>();
 		var newEntries = new List<Models.LeaderboardEntry>();
+		var ranRestore = false;
 		
 		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
 			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
@@ -330,17 +353,31 @@ public class LbService(
 			}
 
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
-				entry.IsRemoved = profile.IsDeleted;
+				var changed = false;
+				if (entry.IsRemoved != profile.IsDeleted) {
+					entry.IsRemoved = profile.IsDeleted;
+					changed = true;
+					
+					if (entry.IsRemoved == false && !ranRestore) {
+						await RestoreProfileLeaderboards(profile.ProfileId, c);
+						ranRestore = true;
+					}
+				}
 					
 				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
 					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
 						? score - entry.InitialScore 
 						: score;
 					
-					entry.Score = newScore;
+					if (entry.Score != newScore) {
+						entry.Score = newScore;
+						changed = true;
+					}
 				}
 				
-				updatedEntries.Add(entry);
+				if (changed) {
+					updatedEntries.Add(entry);
+				}
 				continue;
 			}
 			
@@ -364,12 +401,12 @@ public class LbService(
 
 		if (updatedEntries.Count != 0) {
 			var options = new BulkConfig() {
-				PropertiesToInclude = [
+				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
-					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.InitialScore),
+					nameof(Models.LeaderboardEntry.IsRemoved)
 				]
 			};
-			
 			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
@@ -386,6 +423,12 @@ public class LbService(
 			profile!.ProfileId,
 			DateTime.UtcNow.Subtract(time).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
 		);
+	}
+	
+	private async Task RestoreProfileLeaderboards(string profileId, CancellationToken c = default) {
+		await context.LeaderboardEntries
+			.Where(e => e.ProfileId == profileId && e.IsRemoved == true)
+			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), cancellationToken: c);
 	}
 	
 	public async Task<PlayerLeaderboardEntryWithRankDto?> GetLeaderboardEntryAsync(string leaderboardSlug, string memberOrProfileId, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null) {
