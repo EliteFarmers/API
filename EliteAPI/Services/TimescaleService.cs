@@ -58,12 +58,13 @@ public class TimescaleService(DataContext context) : ITimescaleService
     
     private static List<T> MaxPerDayFilter<T>(IEnumerable<T> collection, int perDay = 4) where T : ITimeScale {
         if (perDay == -1) return collection.ToList();
+        if (perDay <= 0) return [];
         
-        var groupedByDay = collection.GroupBy(obj => obj.Time.DayOfYear);
+        var groupedByDay = collection.GroupBy(obj => obj.Time.Date);
 
         var selectedEntries = new List<T>();
 
-        foreach (var group in groupedByDay)
+        foreach (var group in groupedByDay.OrderBy(g => g.Key))
         {
             // Order the entries in the group by their actual time values
             var orderedGroup = group.OrderBy(obj => obj.Time).ToList();
@@ -75,21 +76,25 @@ public class TimescaleService(DataContext context) : ITimescaleService
             }
 
             // Group the entries by the time interval
-            var span = TimeSpan.FromDays(1) / perDay;
-            var groupedByInterval = orderedGroup.GroupBy(obj => obj.Time.Ticks / span.Ticks).ToList();
+            var span = TimeSpan.FromDays(1).Ticks / perDay;
+            var groupedByInterval = orderedGroup.GroupBy(obj => obj.Time.Ticks / span).ToList();
             
             // Add the last entry of each interval
-            selectedEntries.AddRange(groupedByInterval.Select(hourly => hourly.Last()));
+            var newEntries = groupedByInterval.Select(hourly => hourly.Last()).ToList();
 
-            // If there are enough groups, we are done here
-            if (groupedByInterval.Count >= perDay) continue;
- 
-            var intervals = groupedByInterval
-                .Select(g => g.ToList())
-                .Where(g => g.Count > 1).ToList();
+            // Add more points if not enough were selected
+            if (groupedByInterval.Count < perDay) {
+                var intervalsWithMultipleItems = groupedByInterval
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.First())
+                    .ToList();
+                
+                var needed = perDay - newEntries.Count;
+                newEntries.AddRange(intervalsWithMultipleItems.Except(newEntries).Take(needed));
+            }
             
-            // Won't guarantee that the max amount of entries will be returned, and might go over, but it's close enough
-            selectedEntries.AddRange(intervals.Select(g => g.First()));
+            var finalDayEntries = newEntries.OrderBy(entry => entry.Time).Take(perDay).ToList();
+            selectedEntries.AddRange(finalDayEntries);
         }
         
         return selectedEntries;
