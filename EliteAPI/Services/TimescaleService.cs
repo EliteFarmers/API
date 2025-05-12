@@ -60,7 +60,7 @@ public class TimescaleService(DataContext context) : ITimescaleService
         if (perDay == -1) return collection.ToList();
         if (perDay <= 0) return [];
         
-        var groupedByDay = collection.GroupBy(obj => obj.Time.Date);
+        var groupedByDay = collection.GroupBy(obj => obj.Time.UtcDateTime.Date);
 
         var selectedEntries = new List<T>();
 
