@@ -78,7 +78,7 @@ public class AccountService(
             .Where(pd => pd.MinecraftAccount!.Id.Equals(id) || pd.MinecraftAccount.Name == id)
             .FirstOrDefaultAsync();
 
-        if (playerData is not null && playerData.LastUpdated.OlderThanSeconds(_coolDowns.HypixelPlayerDataLinkingCooldown)) {
+        if (playerData is null || !playerData.LastUpdated.OlderThanSeconds(_coolDowns.HypixelPlayerDataLinkingCooldown)) {
             await memberService.RefreshPlayerData(id);
             
             playerData = await context.PlayerData

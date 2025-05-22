@@ -166,13 +166,15 @@ public class MemberService(
         var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         
+        var minecraftAccount = account ?? await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
+        if (minecraftAccount is null) return;
+        
+        playerUuid = minecraftAccount.Id;
+        
         var data = await hypixelService.FetchPlayer(playerUuid);
         var player = data.Value;
         
         if (player?.Player is null) return;
-
-        var minecraftAccount = account ?? await mojangService.GetMinecraftAccountByUuid(playerUuid);
-        if (minecraftAccount is null) return;
         
         var existing = await context.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
         var playerData = mapper.Map<PlayerData>(player.Player);
