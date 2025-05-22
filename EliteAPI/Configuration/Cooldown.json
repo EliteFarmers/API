@@ -10,6 +10,8 @@
     "UserGuildsCooldown": 600,
     "UserRolesCooldown": 600,
     "ManualEntitlementsRefreshCooldown": 60,
-    "EntitlementsRefreshCooldown": 43200
+    "EntitlementsRefreshCooldown": 43200,
+    "BazaarRefreshInterval": 180,
+    "ItemsRefreshInterval": 14400
   }
 }

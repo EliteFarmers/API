@@ -12,9 +12,16 @@ public class HypixelRateLimitHandler(
 {
 	private const string RateLimitRemaining = "ratelimit-remaining";
 	private const string RateLimitLimit = "ratelimit-limit";
+	private const string ApiKey = "API-Key";
 
 	protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
 		CancellationToken cancellationToken) {
+		
+		// Exit early if the request does not contain an API-Key header (these requests don't count against the limit)
+		if (request.Headers.TryGetValues(ApiKey, out var apiKeyValues) && string.IsNullOrWhiteSpace(apiKeyValues.FirstOrDefault())) {
+			return await base.SendAsync(request, cancellationToken);
+		}
+		
 		using var lease = await limiter.AcquireAsync(permitCount: 1, cancellationToken);
 
 		if (!lease.IsAcquired) {

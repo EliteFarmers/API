@@ -15,7 +15,7 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 		options.AddJob<RefreshBotGuildsBackgroundJob>(builder => builder.WithIdentity(guildsKey))
 			.AddTrigger(trigger => {
 				trigger.ForJob(guildsKey);
-				trigger.StartNow();
+				trigger.StartAt(DateTimeOffset.Now.AddSeconds(5));
 				trigger.WithSimpleSchedule(schedule => {
 					schedule.WithIntervalInSeconds(_cooldowns.DiscordGuildsCooldown);
 					schedule.RepeatForever();
@@ -26,7 +26,7 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 		options.AddJob<RefreshProductsBackgroundJob>(builder => builder.WithIdentity(productsKey))
 			.AddTrigger(trigger => {
 				trigger.ForJob(productsKey);
-				trigger.StartNow();
+				trigger.StartAt(DateTimeOffset.Now.AddSeconds(5));
 				trigger.WithSimpleSchedule(schedule => {
 					schedule.WithIntervalInSeconds(_cooldowns.DiscordProductsCooldown);
 					schedule.RepeatForever();
@@ -37,7 +37,7 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 		options.AddJob<RefreshEntitlementsBackgroundJob>(builder => builder.WithIdentity(entitlementsKey))
 			.AddTrigger(trigger => {
 				trigger.ForJob(entitlementsKey);
-				trigger.StartNow();
+				trigger.StartAt(DateTimeOffset.Now.AddSeconds(5));
 				trigger.WithSimpleSchedule(schedule => {
 					schedule.WithIntervalInSeconds(_cooldowns.EntitlementsRefreshCooldown);
 					schedule.RepeatForever();
@@ -48,7 +48,7 @@ public class DiscordJobsConfiguration(IOptions<ConfigCooldownSettings> cooldowns
 		options.AddJob<CleanupRefreshTokens>(builder => builder.WithIdentity(cleanupKey))
 			.AddTrigger(trigger => {
 				trigger.ForJob(cleanupKey);
-				trigger.StartNow();
+				trigger.StartAt(DateTimeOffset.Now.AddSeconds(5));
 				trigger.WithSimpleSchedule(schedule => {
 					schedule.WithIntervalInHours(24);
 					schedule.RepeatForever();

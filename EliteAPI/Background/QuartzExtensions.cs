@@ -1,4 +1,5 @@
-﻿using EliteAPI.Background.Discord;
+﻿using EliteAPI.Background.Resources;
+using EliteAPI.Background.Discord;
 using EliteAPI.Background.Profiles;
 using Quartz;
 
@@ -14,5 +15,6 @@ public static class QuartzExtensions {
 
 		services.ConfigureOptions<DiscordJobsConfiguration>();
 		services.ConfigureOptions<HypixelJobsConfiguration>();
+		services.ConfigureOptions<ResourceJobsConfiguration>();
 	}
 }

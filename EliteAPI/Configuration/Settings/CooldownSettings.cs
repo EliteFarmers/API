@@ -13,4 +13,6 @@ public class ConfigCooldownSettings
     public int DiscordProductsCooldown { get; set; }
     public int ManualEntitlementsRefreshCooldown { get; set; }
     public int EntitlementsRefreshCooldown { get; set; }
+    public int BazaarRefreshInterval { get; set; }
+    public int ItemsRefreshInterval { get; set; }
 }

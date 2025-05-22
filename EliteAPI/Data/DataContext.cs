@@ -1,5 +1,7 @@
 ﻿using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
@@ -124,4 +126,11 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<LeaderboardEntry> LeaderboardEntries { get; set; } = null!;
     public DbSet<LeaderboardSnapshot> LeaderboardSnapshots { get; set; } = null!;
     public DbSet<LeaderboardSnapshotEntry> LeaderboardSnapshotEntries { get; set; } = null!;
+    
+    // Bazaar
+    public DbSet<BazaarProductSnapshot> BazaarProductSnapshots { get; set; } = null!;
+    public DbSet<BazaarProductSummary> BazaarProductSummaries { get; set; } = null!;
+    
+    // Items
+    public DbSet<SkyblockItem> SkyblockItems { get; set; } = null!;
 }

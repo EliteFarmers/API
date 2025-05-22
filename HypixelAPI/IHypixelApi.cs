@@ -15,4 +15,12 @@ public interface IHypixelApi {
 	
 	[Get("/skyblock/garden?profile={profileId}")]
 	Task<ApiResponse<GardenResponse>> FetchGarden(string profileId);
+	
+	[Get("/skyblock/bazaar")]
+	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
+	Task<ApiResponse<BazaarResponse>> FetchBazaar();
+	
+	[Get("/resources/skyblock/items")]
+	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
+	Task<ApiResponse<ItemsResponse>> FetchItems();
 }

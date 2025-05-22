@@ -165,7 +165,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try
     {
-        db.Database.Migrate();
+        await db.Database.MigrateAsync();
     }
     catch (Exception e)
     {
