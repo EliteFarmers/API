@@ -18,6 +18,7 @@ internal sealed class GetBazaarProductsEndpoint(
 
         Summary(s => {
             s.Summary = "Get Bazaar Products";
+            s.Description = "Get all bazaar products.";
         });
 		
         Options(o => {
@@ -54,14 +55,41 @@ internal sealed class GetBazaarProductsResponse
 
 internal sealed class BazaarProductSummaryDto
 {
+    /// <summary>
+    /// NPC sell price of the item if it exists.
+    /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public double Npc { get; set; }
+    /// <summary>
+    /// Instamt Sell price taken directly from most recently fetched data
+    /// </summary>
     public double Sell { get; set; }
+    /// <summary>
+    /// Instant Buy price taken directly from most recently fetched data
+    /// </summary>
     public double Buy { get; set; }
+    /// <summary>
+    /// Sell Order price calculated from most recently fetched data
+    /// </summary>
     public double SellOrder { get; set; }
+    /// <summary>
+    /// Buy Order price calculated from most recently fetched data
+    /// </summary>
     public double BuyOrder { get; set; }
+    /// <summary>
+    /// Calculated average Instant Sell price that should be more resistant to price fluctuations
+    /// </summary>
     public double AverageSell { get; set; }
+    /// <summary>
+    /// Calculated average Instant Buy price that should be more resistant to price fluctuations
+    /// </summary>
     public double AverageBuy { get; set; }
+    /// <summary>
+    /// Calculated average Sell Order price that should be more resistant to price fluctuations
+    /// </summary>
     public double AverageSellOrder { get; set; }
+    /// <summary>
+    /// Calculated average Buy Order price that should be more resistant to price fluctuations
+    /// </summary>
     public double AverageBuyOrder { get; set; }
 }

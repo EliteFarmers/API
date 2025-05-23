@@ -22,6 +22,7 @@ internal sealed class GetBazaarProductEndpoint(
 
         Summary(s => {
             s.Summary = "Get Bazaar Product";
+            s.Summary = "Get a specific bazaar product and it's npc price (if it exists)";
         });
 		
         Options(o => {
