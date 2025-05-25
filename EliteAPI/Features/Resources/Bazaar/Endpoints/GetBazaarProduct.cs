@@ -37,6 +37,7 @@ internal sealed class GetBazaarProductEndpoint(
                 ProductId = s.ItemId,
                 Product = new BazaarProductSummaryDto()
                 {
+                    Name = s.SkyblockItem.Data != null ? s.SkyblockItem.Data.Name : null,
                     Npc = s.SkyblockItem.NpcSellPrice,
                     Sell = s.InstaSellPrice,
                     Buy = s.InstaBuyPrice,

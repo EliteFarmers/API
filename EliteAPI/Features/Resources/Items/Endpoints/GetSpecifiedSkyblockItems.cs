@@ -36,6 +36,7 @@ internal sealed class GetSpecifiedSkyblockItemsEndpoint(
             .Include(s => s.BazaarProductSummary)
             .Select(s => new SkyblockItemResponse() {
                 ItemId = s.ItemId,
+                Name = s.Data != null ? s.Data.Name : null,
                 Data = s.Data,
                 Bazaar = s.BazaarProductSummary != null ? new BazaarProductSummaryDto()
                 {

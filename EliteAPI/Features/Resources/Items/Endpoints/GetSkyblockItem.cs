@@ -37,6 +37,7 @@ internal sealed class SkybProductEndpoint(
             .Select(s => new SkyblockItemResponse() {
                 ItemId = s.ItemId,
                 Data = s.Data,
+                Name = s.Data != null ? s.Data.Name : null,
                 Bazaar = s.BazaarProductSummary != null ? new BazaarProductSummaryDto()
                 {
                     Npc = s.NpcSellPrice,
@@ -64,7 +65,8 @@ internal sealed class SkybProductEndpoint(
 
 internal sealed class SkyblockItemResponse
 {
-    public string ItemId { get; set; }
+    public required string ItemId { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Data from the Hypixel items endpoint

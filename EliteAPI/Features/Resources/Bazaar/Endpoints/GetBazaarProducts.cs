@@ -32,6 +32,7 @@ internal sealed class GetBazaarProductsEndpoint(
             .Select(s => new {
                 ProductId = s.ItemId, Info = new BazaarProductSummaryDto()
             {
+                Name = s.SkyblockItem.Data != null ? s.SkyblockItem.Data.Name : null,
                 Npc = s.SkyblockItem.NpcSellPrice,
                 Sell = s.InstaSellPrice,
                 Buy = s.InstaBuyPrice,
@@ -55,6 +56,11 @@ internal sealed class GetBazaarProductsResponse
 
 internal sealed class BazaarProductSummaryDto
 {
+    /// <summary>
+    /// Name of the item if it exists.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? Name { get; set; }
     /// <summary>
     /// NPC sell price of the item if it exists.
     /// </summary>
