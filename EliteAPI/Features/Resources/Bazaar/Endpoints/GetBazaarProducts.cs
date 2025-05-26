@@ -67,7 +67,7 @@ internal sealed class BazaarProductSummaryDto
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public double Npc { get; set; }
     /// <summary>
-    /// Instamt Sell price taken directly from most recently fetched data
+    /// Instant Sell price taken directly from most recently fetched data
     /// </summary>
     public double Sell { get; set; }
     /// <summary>

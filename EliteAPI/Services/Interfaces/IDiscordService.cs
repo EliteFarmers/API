@@ -20,8 +20,8 @@ public interface IDiscordService
     Task<GuildMember?> GetGuildMember(ClaimsPrincipal user, ulong guildId);
     Task<GuildMember?> GetGuildMemberIfAdmin(ClaimsPrincipal user, ulong guildId, GuildPermission permission = GuildPermission.Role);
     Task FetchUserRoles(GuildMember member);
-    Task<Guild?> GetGuild(ulong guildId, bool skipCache = false, bool replaceImages = false);
-    Task RefreshDiscordGuild(ulong guildId, bool replaceImages = false);
+    Task<Guild?> GetGuild(ulong guildId, bool skipCache = false, bool replaceImages = false, int cooldown = -1);
+    Task RefreshDiscordGuild(ulong guildId, bool replaceImages = false, int cooldown = -1);
     Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, Image? image = null, bool force = false);
     Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, Image? image = null, bool force = false);
 }

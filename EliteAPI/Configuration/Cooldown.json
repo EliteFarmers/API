@@ -6,6 +6,7 @@
     "SkyblockGardenCooldown": 3600,
     "MinecraftAccountCooldown": 43200,
     "DiscordGuildsCooldown": 21600,
+    "DiscordGuildCooldown": 600,
     "DiscordProductsCooldown": 21600,
     "UserGuildsCooldown": 600,
     "UserRolesCooldown": 600,

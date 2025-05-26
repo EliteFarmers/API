@@ -19,7 +19,6 @@ internal sealed class SetAdminRoleEndpoint(
 		Summary(s => {
 			s.Summary = "Set an admin role for a guild";
 		});
-		
 	}
 
 	public override async Task HandleAsync(SetAdminRoleRequest request, CancellationToken c) {

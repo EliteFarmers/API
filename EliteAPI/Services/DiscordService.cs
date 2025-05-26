@@ -411,14 +411,15 @@ public class DiscordService(
         }
     }
 
-    public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false, bool replaceImages = false) {
+    public async Task<Guild?> GetGuild(ulong guildId, bool skipCache = false, bool replaceImages = false, int cooldown = -1) {
         var existing = await context.Guilds
             .Include(g => g.Channels)
             .Include(g => g.Roles)
             .AsSplitQuery()
             .FirstOrDefaultAsync(g => g.Id == guildId);
         
-        if (!skipCache && existing is not null && !existing.LastUpdated.OlderThanSeconds(_coolDowns.DiscordGuildsCooldown)) {
+        var cooldownSeconds = cooldown == -1 ? _coolDowns.DiscordGuildsCooldown : cooldown;
+        if (!skipCache && existing is not null && !existing.LastUpdated.OlderThanSeconds(cooldownSeconds)) {
             return existing;
         }
         
@@ -443,8 +444,8 @@ public class DiscordService(
         }
     }
 
-    public async Task RefreshDiscordGuild(ulong guildId, bool replaceImages = false) {
-        await GetGuild(guildId, true, replaceImages: replaceImages);
+    public async Task RefreshDiscordGuild(ulong guildId, bool replaceImages = false, int cooldown = -1) {
+        await GetGuild(guildId, cooldown == -1, replaceImages: replaceImages, cooldown: cooldown);
     }
 
     private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true, bool replaceImages = true) {
