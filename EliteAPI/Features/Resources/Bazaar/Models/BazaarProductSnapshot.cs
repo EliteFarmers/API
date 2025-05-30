@@ -33,6 +33,16 @@ public class BazaarProductSnapshot {
 	/// Representative price for a new sell order (from buy_summary)
 	/// </summary>
 	public double SellOrderPrice { get; set; }
+	
+	// /// <summary>
+	// /// Amount of sold items averaged over the last week
+	// /// </summary>
+	// public long SellVolumeWeekly { get; set; }
+	//
+	// /// <summary>
+	// /// Amount of bought items averaged over the last week
+	// /// </summary>
+	// public long BuyVolumeWeekly { get; set; }
 }
 
 public class BazaarProductSnapshotConfiguration : IEntityTypeConfiguration<BazaarProductSnapshot>

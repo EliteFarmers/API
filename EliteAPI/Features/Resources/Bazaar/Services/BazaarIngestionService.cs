@@ -42,6 +42,8 @@ public class BazaarIngestionService(
 
             var asks = productDetails.BuySummary
                 .OrderBy(o => o.PricePerUnit)
+                // Skip last order in list as it tends to be fake buy orders / storing coins
+                .SkipLast(productDetails.BuySummary.Count > 2 ? 1 : 0)
                 .ToList();
             var representativeSellOrderPrice = GetRepresentativeOrderPrices(asks, instaBuyPrice);
 
@@ -65,8 +67,23 @@ public class BazaarIngestionService(
             await CalculateAndStoreAveragesAsync(newSnapshots.Select(s => s.ProductId).Distinct().ToList(), recordedAt, TimeSpan.FromMinutes(20));
         }
     }
-
+    
     private static double GetRepresentativeOrderPrices(List<BazaarOrder> bids, double instaSellPrice) {
+        var volume = bids.Select(b => b.Amount).Sum();
+
+        // Take the first price that is above 0.5% of the volume
+        foreach (var bid in bids)
+        {
+            var percent = (double) bid.Amount / volume;
+            if (percent > 0.005)
+            {
+                return bid.PricePerUnit;
+            } 
+        }
+        
+        // Preform Vwap calculation if for some reason the above condition doesn't work.
+        // The below can probably be removed at some point
+        
         var bidSliceForVwap = bids.Skip(VwapSkipOrders).Take(VwapTakeOrders).ToList();
         var orderPrices = CalculateVwap(bidSliceForVwap);
         if (orderPrices != 0) return orderPrices;
