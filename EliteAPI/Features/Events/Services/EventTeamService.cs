@@ -27,16 +27,16 @@ public class EventTeamService(
 	public async Task<ActionResult> CreateUserTeamAsync(ulong eventId, CreateEventTeamDto team, string userId) {
 		var member = await eventService.GetEventMemberByIdAsync(userId, eventId);
 		if (member is null) {
-			return new BadRequestObjectResult("You are not a member of this event");
+			return new BadRequestObjectResult("You are not a member of this event.");
 		}
 
 		await context.Entry(member).Reference(m => m.Event).LoadAsync();
 		if (member.Event.JoinUntilTime < DateTimeOffset.UtcNow) {
-			return new BadRequestObjectResult("Event join time has expired");
+			return new BadRequestObjectResult("Event join time has expired.");
 		}
 		
 		if (!member.Event.IsCustomTeamEvent()) {
-			return new BadRequestObjectResult("This event does not support custom teams");
+			return new BadRequestObjectResult("This event does not support custom teams.");
 		}
 
 		var existing = await GetTeamAsync(member.UserId.ToString(), eventId);
@@ -247,6 +247,10 @@ public class EventTeamService(
 		var team = await GetTeamAsync(teamId);
 		if (team is null) {
 			return new BadRequestObjectResult("Invalid team id");
+		}
+
+		if (team.Event.IsSetTeamEvent()) {
+			return new BadRequestObjectResult("You can't leave the team that was chosen for you! Leave the event instead.");
 		}
 		
 		if (team.Event.JoinUntilTime < DateTimeOffset.UtcNow) {

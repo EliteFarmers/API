@@ -23,6 +23,15 @@ public static class EventProgressParser {
         return @event.MaxTeamMembers != 0;
     }
     
+    /// <summary>
+    /// Determines if the event has a set amount of teams
+    /// </summary>
+    /// <param name="event"></param>
+    /// <returns></returns>
+    public static bool IsSetTeamEvent(this Event @event) {
+        return @event.MaxTeams != 0;
+    }
+    
     public static void LoadProgress(this EventMember eventMember, DataContext context, ProfileMember member, Event @event) {
         var currentTime = DateTimeOffset.UtcNow;
 
