@@ -158,7 +158,8 @@ public static class ServiceExtensions
             new() { Path = $"{directoryPath}/Leaderboards.json", ReloadOnChange = true, Optional = false },
             new() { Path = $"{directoryPath}/Farming.json", ReloadOnChange = true, Optional = false },
             new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false }
+            new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/Pets.json", ReloadOnChange = true, Optional = false },
         });
         
         return configurationBuilder;
@@ -175,6 +176,7 @@ public static class ServiceExtensions
         builder.Services.Configure<ChocolateFactorySettings>(builder.Configuration.GetSection("ChocolateFactory"));
         builder.Services.Configure<MessagingSettings>(builder.Configuration.GetSection("Messaging"));
         builder.Services.Configure<ConfigEventSettings>(builder.Configuration.GetSection("Events"));
+        builder.Services.Configure<SkyblockPetSettings>(builder.Configuration.GetSection("Pets"));
 
         builder.Services.Configure<ConfigApiRateLimitSettings>(
             builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));
