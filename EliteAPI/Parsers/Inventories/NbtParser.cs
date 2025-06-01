@@ -40,7 +40,7 @@ public static class NbtParser {
         
         if (inv is not NbtList list) return null;
         
-        return list.AsValueEnumerable().Select(i => i.ToItem()).Where(i => i is not null).ToList();
+        return list.AsValueEnumerable().Select(i => i.ToItem()).Where(i => i?.SkyblockId is not null).ToList();
     }
     
     public static async Task<ItemDto?> NbtToItem(string? itemData) {
@@ -83,12 +83,12 @@ public static class NbtParser {
                 .ToDictionary(x => x.Key, x => x.Value),
             Attributes = ((NbtCompound?) extraAttributes)?
                 .AsValueEnumerable()
-                .Where(e => !e.IsSimpleType() && e.Name != "id" && e.Name != "uuid" && e.Name != "petInfo")
+                .Where(e => e.IsSimpleType() && e.Name != "id" && e.Name != "uuid" && e.Name != "petInfo")
                 .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
                 .ToDictionary(x => x.Key, x => x.Value),
             ItemAttributes = ((NbtCompound?) extraAttributes?["attributes"])?
                 .AsValueEnumerable()
-                .Where(e => !e.IsSimpleType())
+                .Where(e => e.IsSimpleType())
                 .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
                 .ToDictionary(x => x.Key, x => x.Value),
             Gems = ((NbtCompound?) extraAttributes?["gems"])?

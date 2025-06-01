@@ -1,4 +1,6 @@
-﻿namespace EliteAPI.Models.DTOs.Outgoing;
+﻿using EliteAPI.Parsers.Inventories;
+
+namespace EliteAPI.Models.DTOs.Outgoing;
 
 public class PetDto
 {
@@ -10,4 +12,5 @@ public class PetDto
     public string? HeldItem { get; set; }
     public short CandyUsed { get; set; } = 0;
     public string? Skin { get; set; }
+    public int Level => this.GetLevel();
 }
