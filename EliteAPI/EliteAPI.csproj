@@ -45,7 +45,7 @@
 		<PackageReference Include="Riok.Mapperly" Version="4.1.1" ExcludeAssets="runtime" PrivateAssets="all" />
 		<PackageReference Include="Scalar.AspNetCore" Version="2.0.12" />
 		<PackageReference Include="StackExchange.Redis" Version="2.8.24" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
 	</ItemGroup>
 
