@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 
@@ -75,4 +76,10 @@ public class ItemPetInfoDto
     public required string Tier { get; set; }
     [JsonPropertyName("candyUsed"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int CandyUsed { get; set; }
+    
+    [JsonPropertyName("heldItem"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? HeldItem { get; set; }
+    
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }

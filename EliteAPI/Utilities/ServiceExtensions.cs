@@ -177,6 +177,7 @@ public static class ServiceExtensions
         builder.Services.Configure<MessagingSettings>(builder.Configuration.GetSection("Messaging"));
         builder.Services.Configure<ConfigEventSettings>(builder.Configuration.GetSection("Events"));
         builder.Services.Configure<SkyblockPetSettings>(builder.Configuration.GetSection("Pets"));
+        builder.Services.Configure<AuctionHouseSettings>(builder.Configuration.GetSection("Auctions"));
 
         builder.Services.Configure<ConfigApiRateLimitSettings>(
             builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));

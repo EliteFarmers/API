@@ -1,4 +1,3 @@
-using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Resources.Items.Services;
 using Quartz;
 

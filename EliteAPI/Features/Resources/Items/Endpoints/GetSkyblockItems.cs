@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using EliteAPI.Data;
 using FastEndpoints;
 using HypixelAPI.DTOs;

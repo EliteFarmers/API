@@ -148,10 +148,12 @@ public class ItemGemstoneSlotCosts {
 public class ItemRequirement {
 	[JsonPropertyName("type")]
 	public required string Type { get; set; }
-	[JsonPropertyName("skill")]
+	[JsonPropertyName("skill"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Skill { get; set; }
-	[JsonPropertyName("level")]
+	[JsonPropertyName("level"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int Level { get; set; }
+	[JsonExtensionData]
+	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class ItemMuseumData {

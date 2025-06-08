@@ -1,5 +1,6 @@
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Events;
+using EliteAPI.Parsers.Events;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,6 +62,9 @@ internal sealed class LeaveEventEndpoint(
         foreach (var member in members)
         {
             member.Status = EventMemberStatus.Left;
+            
+            // Don't remove member from team in a set-team event
+            if (eliteEvent.IsSetTeamEvent()) continue;
 
             if (member.TeamId is not null) {
                 ThrowError("You must leave your team before leaving the event.");

@@ -287,6 +287,86 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("ProfileMemberMetadata");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionBinPrice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("AuctionUuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("IngestedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ListedAtUnixMillis")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("SkyblockId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VariantKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionUuid");
+
+                    b.HasIndex("IngestedAtUtc");
+
+                    b.HasIndex("SkyblockId", "VariantKey", "ListedAtUnixMillis");
+
+                    b.ToTable("AuctionBinPrices");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionItemVariantSummary", b =>
+                {
+                    b.Property<string>("SkyblockId")
+                        .HasColumnType("text")
+                        .HasColumnOrder(0);
+
+                    b.Property<string>("VariantKey")
+                        .HasColumnType("text")
+                        .HasColumnOrder(1);
+
+                    b.Property<DateTimeOffset>("LastCalculatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("RecentLowestPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTimeOffset?>("RecentLowestPriceObservationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RecentLowestPriceVolume")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("RepresentativeLowestPrice3Day")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("RepresentativeLowestPrice3DayVolume")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("RepresentativeLowestPrice7Day")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("RepresentativeLowestPrice7DayVolume")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SkyblockId", "VariantKey");
+
+                    b.HasIndex("LastCalculatedUtc");
+
+                    b.ToTable("AuctionItemVariantSummaries");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Resources.Bazaar.BazaarProductSnapshot", b =>
                 {
                     b.Property<long>("Id")
@@ -2331,6 +2411,15 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ProfileMember");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionItemVariantSummary", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Resources.Items.Models.SkyblockItem", null)
+                        .WithMany("AuctionItems")
+                        .HasForeignKey("SkyblockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Resources.Bazaar.BazaarProductSummary", b =>
                 {
                     b.HasOne("EliteAPI.Features.Resources.Items.Models.SkyblockItem", "SkyblockItem")
@@ -3195,6 +3284,8 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Items.Models.SkyblockItem", b =>
                 {
+                    b.Navigation("AuctionItems");
+
                     b.Navigation("BazaarProductSummary");
                 });
 

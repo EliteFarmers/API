@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
+using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Bazaar.Endpoints;
 using FastEndpoints;
 using HypixelAPI.DTOs;
@@ -7,14 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Items.Endpoints;
 
-internal sealed class SkybProductRequest
+internal sealed class SkyblockProductRequest
 {
     public required string ItemId { get; set; }
 }
 
-internal sealed class SkybProductEndpoint(
+internal sealed class SkyblockProductEndpoint(
     DataContext context
-) : Endpoint<SkybProductRequest, SkyblockItemResponse> {
+) : Endpoint<SkyblockProductRequest, SkyblockItemResponse> {
 	
     public override void Configure() {
         Get("/resources/items/{ItemId}");
@@ -31,13 +32,15 @@ internal sealed class SkybProductEndpoint(
         });
     }
 
-    public override async Task HandleAsync(SkybProductRequest request, CancellationToken c) {
+    public override async Task HandleAsync(SkyblockProductRequest request, CancellationToken c) {
         var result = await context.SkyblockItems
             .Include(s => s.BazaarProductSummary)
+            .Include(s => s.AuctionItems)
             .Select(s => new SkyblockItemResponse() {
                 ItemId = s.ItemId,
                 Data = s.Data,
                 Name = s.Data != null ? s.Data.Name : null,
+                Auctions = s.AuctionItems,
                 Bazaar = s.BazaarProductSummary != null ? new BazaarProductSummaryDto()
                 {
                     Npc = s.NpcSellPrice,
@@ -75,4 +78,7 @@ internal sealed class SkyblockItemResponse
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public BazaarProductSummaryDto? Bazaar { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public List<AuctionItemVariantSummary>? Auctions { get; set; } 
 }

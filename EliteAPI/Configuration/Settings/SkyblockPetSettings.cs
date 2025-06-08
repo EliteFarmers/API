@@ -1,5 +1,4 @@
-﻿using EliteAPI.Models.Entities.Hypixel;
-
+﻿
 namespace EliteAPI.Configuration.Settings; 
 
 public class SkyblockPetConfig {

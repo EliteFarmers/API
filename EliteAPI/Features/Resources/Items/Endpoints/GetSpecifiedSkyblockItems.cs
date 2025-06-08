@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Bazaar.Endpoints;
 using FastEndpoints;

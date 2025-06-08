@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
@@ -39,6 +40,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
             Source = builder.Build();
         }
         
+        optionsBuilder.EnableSensitiveDataLogging(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development");
         optionsBuilder.UseNpgsql(Source, opt => {
             opt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         });
@@ -133,4 +135,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     
     // Items
     public DbSet<SkyblockItem> SkyblockItems { get; set; } = null!;
+    
+    // Auction House
+    public DbSet<AuctionBinPrice> AuctionBinPrices { get; set; } = null!;
+    public DbSet<AuctionItemVariantSummary> AuctionItemVariantSummaries { get; set; } = null!;
 }

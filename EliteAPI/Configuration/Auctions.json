@@ -1,0 +1,33 @@
+{
+  "Auctions": {
+    "RecentWindowHours":  2,
+    "ShortTermRepresentativeLowestDays": 3,
+    "LongTermRepresentativeLowestDays":  7,
+    "RecentFallbackMaxLookbackDays": 2,
+    "MinRecentVolumeThreshold":  3,
+    "RecentFallbackTakeCount": 15,
+    "RawDataRetentionDays":  10,
+    "AggregationMaxLookbackDays": 7,
+    "PetLevelGroupOverrides": {},
+    "DontVaryByRarity": [],
+    "PetLevelGroups": {
+      "LVL_1-99": {
+        "MinLevel": 1,
+        "MaxLevel": 99
+      },
+      "LVL_100": {
+        "MinLevel": 100,
+        "MaxLevel": 100
+      },
+      "LVL_100-199": {
+        "MinLevel": 100,
+        "MaxLevel": 199
+      },
+      "LVL_200": {
+        "MinLevel": 200,
+        "MaxLevel": 200
+      }
+    },
+    "Variants": []
+  }
+}
