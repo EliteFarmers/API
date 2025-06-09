@@ -22,7 +22,7 @@ public class SkyblockItem
 
     public required string ItemId { get; set; }
     public BazaarProductSummary? BazaarProductSummary { get; set; }
-    public List<AuctionItemVariantSummary>? AuctionItems { get; set; }
+    public List<AuctionItem>? AuctionItems { get; set; }
     
     public double NpcSellPrice { get; set; }
     

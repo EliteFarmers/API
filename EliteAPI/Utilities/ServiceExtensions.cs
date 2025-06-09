@@ -160,6 +160,7 @@ public static class ServiceExtensions
             new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
             new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false },
             new() { Path = $"{directoryPath}/Pets.json", ReloadOnChange = true, Optional = false },
+            new() { Path = $"{directoryPath}/Auctions.json", ReloadOnChange = true, Optional = false },
         });
         
         return configurationBuilder;

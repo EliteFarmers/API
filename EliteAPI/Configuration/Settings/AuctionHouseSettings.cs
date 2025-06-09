@@ -2,6 +2,8 @@ namespace EliteAPI.Configuration.Settings;
 
 public class AuctionHouseSettings
 {
+    public int AuctionsRefreshInterval { get; set; }
+    public int FullAuctionsRefreshInterval { get; set; }
     public double RecentWindowHours { get; set; } = 2;
     public int ShortTermRepresentativeLowestDays { get; set; } = 3;
     public int LongTermRepresentativeLowestDays { get; set; } = 7;

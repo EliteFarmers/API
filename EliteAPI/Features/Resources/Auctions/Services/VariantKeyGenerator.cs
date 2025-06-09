@@ -1,4 +1,5 @@
 using EliteAPI.Configuration.Settings;
+using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
 using Microsoft.Extensions.Options;
@@ -9,73 +10,63 @@ namespace EliteAPI.Features.Resources.Auctions.Services;
 public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogger<VariantKeyGenerator> logger)
 {
     private readonly List<VariantConfigEntry> _configurations = settings.Value.Variants;
-    private const string JoinSeparator = "|";
-    private const string DefaultKey = "DEFAULT";
+    public const string JoinSeparator = "|";
+    private const string MinedCrops = "mined_crops";
     
-    public string? Generate(ItemDto itemDto, string rarity)
+    public AuctionItemVariation? Generate(ItemDto itemDto, string rarity)
     {
         var skyblockId = itemDto.SkyblockId;
         if (string.IsNullOrEmpty(skyblockId))
         {
-            logger.LogWarning("Cannot generate variant key: SkyblockId is missing from ItemDto.");
+            logger.LogWarning("Cannot generate variant key: SkyblockId is missing from ItemDto");
             return null;
         }
-
-        var variantKey = new List<string>();
+        
+        var variedBy = new AuctionItemVariation();
+        
         if (!settings.Value.DontVaryByRarity.Contains(skyblockId))
         {
-            variantKey.Add(rarity.ToUpperInvariant());
+            variedBy.Rarity = rarity.ToUpperInvariant();
         }
-
-        var config = _configurations.FirstOrDefault(c => c.SkyblockId == skyblockId) ??
-                     _configurations.FirstOrDefault(c => !string.IsNullOrEmpty(c.SkyblockIdPrefix) && skyblockId.StartsWith(c.SkyblockIdPrefix));
 
         if (itemDto.PetInfo is not null)
         {
-            var petKey = GenerateFromPetLevel(itemDto);
-            if (petKey is not null)
+            variedBy.Pet = itemDto.PetInfo.Type;
+            variedBy.PetLevel = GenerateFromPetLevel(itemDto);
+        }
+        
+        // Not checking cultivating because it could be applied to a lot of items and isn't worth the variation
+        if (itemDto.Attributes is not null && itemDto.Attributes.TryGetValue(MinedCrops, out var minedCrops))
+        {
+            if (long.TryParse(minedCrops, out var minedCrop) && minedCrop > 0)
             {
-                variantKey.Add(petKey);
+                // Get digits for groups, starting from 1,000,000
+                var digits = Math.Max(minedCrop.ToString().Length - 6, 0) + 6;
+                variedBy.Extra ??= new Dictionary<string, string>();
+                variedBy.Extra[MinedCrops] = digits.ToString();
             }
         }
         
         if (itemDto.ItemAttributes is not null && itemDto.ItemAttributes.Count > 0)
         {
-            var attributeKey = GenerateFromItemAttributes(itemDto);
-            if (attributeKey is not null)
-            {
-                variantKey.Add(attributeKey);
-            }
+            variedBy.ItemAttributes = GenerateFromItemAttributes(itemDto);
         }
-        
-        if (config is null) return string.Join(JoinSeparator, variantKey);
 
-        try
-        {
-            return config.Strategy switch
-            {
-                "ItemAttributes" => GenerateFromItemAttributes(itemDto),
-                "PetLevel" => GenerateFromPetLevel(itemDto),
-                _ => "DEFAULT_UNKNOWN_STRATEGY"
-            };
-        }
-        catch (System.Exception ex)
-        {
-            logger.LogError(ex, "Error generating variant key for SkyblockId '{SkyblockId}' with strategy '{Strategy}'.", skyblockId, config.Strategy);
-            return "DEFAULT_ERROR";
-        }
+        return variedBy;
     }
 
-    private static string? GenerateFromItemAttributes(ItemDto itemDto)
+    private static Dictionary<string, string>? GenerateFromItemAttributes(ItemDto itemDto)
     {
         if (itemDto.ItemAttributes == null || itemDto.ItemAttributes.Count == 0) return null;
         var sortedAttributes = itemDto.ItemAttributes
             .OrderBy(kvp => kvp.Key)
-            .Select(kvp => $"{kvp.Key.ToLowerInvariant().Replace(":", "-")}:{kvp.Value.ToString().ToLowerInvariant().Replace(":", "-")}");
-        return string.Join(JoinSeparator, sortedAttributes);
+            .ToDictionary(k => k.Key.ToLowerInvariant().Replace(":", "-"),
+                          v => v.Value.ToString().ToLowerInvariant().Replace(":", "-"));
+        
+        return sortedAttributes;
     }
 
-    private string? GenerateFromPetLevel(ItemDto itemDto)
+    private AuctionItemVariation.PetLevelGroup? GenerateFromPetLevel(ItemDto itemDto)
     {
         if (itemDto.SkyblockId is null || itemDto.PetInfo is null) return null;
         
@@ -90,7 +81,12 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
         foreach (var (key, group) in petLevelGroups)
         {
             if (level < group.MinLevel || level > group.MaxLevel) continue;
-            return key;
+            return new AuctionItemVariation.PetLevelGroup
+            {
+                Key = "LVL_" + group.MinLevel + (group.MaxLevel > group.MinLevel ? "-" + group.MaxLevel : ""),
+                Min = group.MinLevel,
+                Max = group.MaxLevel
+            };
         }
 
         return null;

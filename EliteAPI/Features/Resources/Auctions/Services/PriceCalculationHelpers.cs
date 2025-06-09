@@ -1,3 +1,5 @@
+using ZLinq;
+
 namespace EliteAPI.Features.Resources.Auctions.Services;
 
 public static class PriceCalculationHelpers
@@ -15,23 +17,13 @@ public static class PriceCalculationHelpers
         {
             return (null, 0);
         }
+        
+        var sortedPrices = prices.AsValueEnumerable().OrderBy(p => p).ToList();
+        var count = sortedPrices.Count;
 
-        // 1. Basic Validity Filter (prices must be positive)
-        var validPrices = prices.Where(p => p > 0).ToList();
-        if (validPrices.Count == 0)
-        {
-            logger.LogDebug("No positive prices found for {SkyblockId}/{VariantKey}.", skyblockIdForLogging, variantKeyForLogging);
-            return (null, 0);
-        }
-
-        var sortedPrices = validPrices.OrderBy(p => p).ToList();
-        int count = sortedPrices.Count;
-
-        // 2. Handle cases with too few data points for robust IQR
+        // Too few data points for a good IQR
         if (count < MinSamplesForIqr)
         {
-            logger.LogDebug("Only {Count} valid data points for {SkyblockId}/{VariantKey} (threshold for IQR is {Threshold}). Returning simple minimum of these points.",
-                count, skyblockIdForLogging, variantKeyForLogging, MinSamplesForIqr);
             return (sortedPrices.Min(), count);
         }
 
@@ -44,8 +36,7 @@ public static class PriceCalculationHelpers
         decimal lowerBound;
         decimal upperBound;
 
-        // Standard IQR outlier rule: Q1 - 1.5*IQR, Q3 + 1.5*IQR
-        // This is generally robust.
+        // Standard IQR outlier rule: Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
         if (iqr == 0) // Handles cases where many prices are identical (e.g. Q1=Median=Q3)
         {
             // If IQR is 0, the "cluster" is effectively items priced at Q1.
@@ -56,7 +47,7 @@ public static class PriceCalculationHelpers
             // If there's truly no spread in the central 50% (Q1=Q3), then items outside this single price point
             // would need a non-zero IQR from other data to be included/excluded by the 1.5*IQR rule.
             // For "lowest representative", if many items are at price X (Q1), X is representative.
-            logger.LogDebug("IQR is zero for {SkyblockId}/{VariantKey} (Q1={Q1}). Using Q1 as bounds for cluster.", skyblockIdForLogging, variantKeyForLogging, q1);
+            logger.LogDebug("IQR is zero for {SkyblockId}/{VariantKey} (Q1={Q1}). Using Q1 as bounds for cluster", skyblockIdForLogging, variantKeyForLogging, q1);
         }
         else
         {
@@ -67,13 +58,13 @@ public static class PriceCalculationHelpers
         // Ensure lower bound is not negative after calculation, stick to positive prices.
         lowerBound = Math.Max(0.01m, lowerBound); // Smallest possible positive price, effectively >0
 
-        // 4. Filter prices within the calculated "stable" range
+        // Filter prices within the calculated "stable" range
         var clusterPrices = sortedPrices.Where(p => p >= lowerBound && p <= upperBound).ToList();
 
         if (clusterPrices.Count != 0) return (clusterPrices.Min(), clusterPrices.Count);
         
-        logger.LogWarning("IQR outlier removal resulted in an empty cluster for {SkyblockId}/{VariantKey}. Original count: {OriginalCount}, Valid positive count: {ValidCount}. Q1={Q1}, Q3={Q3}, IQR={IQR}. Bounds=[{LBound},{UBound}]. Falling back to median of valid positive prices.",
-            skyblockIdForLogging, variantKeyForLogging, prices.Count, validPrices.Count, q1, q3, iqr, lowerBound, upperBound);
+        logger.LogWarning("IQR outlier removal resulted in an empty cluster for {SkyblockId}/{VariantKey}. Original count: {OriginalCount}. Q1={Q1}, Q3={Q3}, IQR={Iqr}. Bounds=[{LBound},{UBound}]. Falling back to median of valid positive prices",
+            skyblockIdForLogging, variantKeyForLogging, prices.Count, q1, q3, iqr, lowerBound, upperBound);
         
         // Fallback to median of the valid positive prices if IQR yields no cluster
         if (sortedPrices.Count == 0) return (null, 0); // sortedPrices are the valid positive prices

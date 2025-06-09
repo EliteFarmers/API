@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
-using EliteAPI.Features.Resources.Auctions.Models;
+using EliteAPI.Features.Resources.Auctions.DTOs;
 using EliteAPI.Features.Resources.Bazaar.Endpoints;
 using FastEndpoints;
 using HypixelAPI.DTOs;
@@ -40,7 +40,7 @@ internal sealed class SkyblockProductEndpoint(
                 ItemId = s.ItemId,
                 Data = s.Data,
                 Name = s.Data != null ? s.Data.Name : null,
-                Auctions = s.AuctionItems,
+                Auctions = s.AuctionItems != null ? s.AuctionItems.Select(a => a.ToDto()).ToList() : null,
                 Bazaar = s.BazaarProductSummary != null ? new BazaarProductSummaryDto()
                 {
                     Npc = s.NpcSellPrice,
@@ -80,5 +80,5 @@ internal sealed class SkyblockItemResponse
     public BazaarProductSummaryDto? Bazaar { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<AuctionItemVariantSummary>? Auctions { get; set; } 
+    public List<AuctionItemDto>? Auctions { get; set; } 
 }

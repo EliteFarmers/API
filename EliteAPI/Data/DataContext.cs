@@ -138,5 +138,5 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     
     // Auction House
     public DbSet<AuctionBinPrice> AuctionBinPrices { get; set; } = null!;
-    public DbSet<AuctionItemVariantSummary> AuctionItemVariantSummaries { get; set; } = null!;
+    public DbSet<AuctionItem> AuctionItems { get; set; } = null!;
 }
