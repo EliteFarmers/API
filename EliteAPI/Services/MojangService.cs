@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text.RegularExpressions;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Models.Entities.Accounts;
@@ -86,30 +87,60 @@ public partial class MojangService(
         return account;
     }
 
+    private readonly string[] _mojangProfileUris = [
+        "https://api.minecraftservices.com/minecraft/profile/lookup/name/",
+        "https://mowojang.matdoes.dev/users/profiles/minecraft/",
+        "https://api.mojang.com/users/profiles/minecraft/"
+    ];
+    
     private async Task<MinecraftAccount?> FetchMinecraftAccountByIgn(string ign)
     {
         if (!IgnRegex().IsMatch(ign)) return null;
         
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.mojang.com/users/profiles/minecraft/{ign}");
+        foreach (var uri in _mojangProfileUris)
+        {
+            var result = await FetchMinecraftUuidByIgn(ign, uri);
+            
+            // Exit loop if not found, it would be redundant to try other URIs
+            if (result.NotFound) {
+                return null;
+            }
+
+            // Fetch the Minecraft account by UUID if one was returned
+            if (result.Id is not null) {
+                return await FetchMinecraftAccountByUuid(result.Id);
+            }
+        }
+
+        return null;
+    }
+    
+    private async Task<(string? Id, bool NotFound)> FetchMinecraftUuidByIgn(string ign, string uri)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, uri + ign);
         var client = httpClientFactory.CreateClient(ClientName);
 
         var response = await client.SendAsync(request);
 
-        if (!response.IsSuccessStatusCode) return null;
+        if (response.StatusCode == HttpStatusCode.NotFound) {
+            return (null, true);
+        }
+
+        if (!response.IsSuccessStatusCode) {
+            return (null, false);
+        }
 
         try
         {
             var data = await response.Content.ReadFromJsonAsync<MojangProfilesResponse>();
-            if (data?.Id == null) return null;
-
-            return await FetchMinecraftAccountByUuid(data.Id);
+            return (data?.Id, false);
         }
         catch (Exception)
         {
-            logger.LogWarning("Failed to fetch Minecraft account \"{Ign}\" by IGN", ign);
+            logger.LogWarning("Failed to fetch Minecraft account \"{Ign}\" by IGN at {Uri}", ign, uri);
         }
 
-        return null;
+        return (null, false);
     }
 
     public async Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid) {
