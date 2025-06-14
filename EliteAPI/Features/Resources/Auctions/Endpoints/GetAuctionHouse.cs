@@ -1,7 +1,6 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Auctions.DTOs;
-using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -53,9 +52,4 @@ internal sealed class GetAuctionHouseProductsEndpoint(
 internal sealed class AuctionHouseDto
 {
     public Dictionary<string, List<AuctionItemDto>> Items { get; set; } = [];
-}
-
-internal sealed class AuctionHouseAuctionDto
-{
-    public ItemDto? Item { get; set; }
 }
