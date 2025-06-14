@@ -236,8 +236,7 @@ public class AuctionsIngestionService(
     private async Task<List<ItemVariantKey>> GetVariantsToUpdateAsync(DateTimeOffset now, int maxLookbackDays, CancellationToken cancellationToken)
     {
         var lookbackTimestampMs = now.AddDays(-maxLookbackDays).ToUnixTimeMilliseconds();
-        // This simple version gets all variants with any raw data in the lookback.
-        // More advanced: compare AuctionBinPrices.IngestedAtUtc with AuctionItemVariantSummary.LastCalculatedUtc
+        
         return await context.AuctionBinPrices
             .Where(r => r.ListedAt >= lookbackTimestampMs) // or r.IngestedAtUtc > some_point
             .Select(r => new ItemVariantKey(r.SkyblockId, r.VariantKey))

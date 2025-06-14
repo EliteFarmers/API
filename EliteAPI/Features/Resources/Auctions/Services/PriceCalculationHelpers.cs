@@ -5,7 +5,7 @@ namespace EliteAPI.Features.Resources.Auctions.Services;
 public static class PriceCalculationHelpers
 {
     // Minimum samples to attempt robust IQR. If fewer, a simpler min is used.
-    public const int MinSamplesForIqr = 5;
+    private const int MinSamplesForIqr = 5;
 
     public static (decimal? LowestPrice, int Volume) GetRepresentativeLowestFromList(
         List<decimal>? prices,
@@ -27,7 +27,7 @@ public static class PriceCalculationHelpers
             return (sortedPrices.Min(), count);
         }
 
-        // 3. Calculate Quartiles & IQR
+        // Calculate Quartiles & IQR
         // Ensure indices are within bounds
         var q1 = sortedPrices[Math.Min(count - 1, (int)Math.Floor(count * 0.25))];
         var q3 = sortedPrices[Math.Min(count - 1, (int)Math.Floor(count * 0.75))];
