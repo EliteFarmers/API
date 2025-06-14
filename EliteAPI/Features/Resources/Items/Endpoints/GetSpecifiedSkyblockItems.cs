@@ -1,5 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using EliteAPI.Data;
+using EliteAPI.Features.Resources.Auctions.DTOs;
 using EliteAPI.Features.Resources.Bazaar.Endpoints;
 using FastEndpoints;
 using FluentValidation;
@@ -34,10 +34,12 @@ internal sealed class GetSpecifiedSkyblockItemsEndpoint(
     public override async Task HandleAsync(GetSpecifiedSkyblockItemsRequest request, CancellationToken c) {
         var result = await context.SkyblockItems
             .Include(s => s.BazaarProductSummary)
+            .Include(s => s.AuctionItems)
             .Select(s => new SkyblockItemResponse() {
                 ItemId = s.ItemId,
                 Name = s.Data != null ? s.Data.Name : null,
                 Data = s.Data,
+                Auctions = s.AuctionItems != null ? s.AuctionItems.Select(a => a.ToDto()).ToList() : null,
                 Bazaar = s.BazaarProductSummary != null ? new BazaarProductSummaryDto()
                 {
                     Npc = s.NpcSellPrice,

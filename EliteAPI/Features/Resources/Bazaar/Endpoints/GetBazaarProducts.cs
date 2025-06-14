@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
-using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
-using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Bazaar.Endpoints;

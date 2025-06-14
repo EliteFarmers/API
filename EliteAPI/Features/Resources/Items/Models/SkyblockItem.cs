@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ public class SkyblockItem
 
     public required string ItemId { get; set; }
     public BazaarProductSummary? BazaarProductSummary { get; set; }
+    public List<AuctionItem>? AuctionItems { get; set; }
     
     public double NpcSellPrice { get; set; }
     
@@ -40,5 +42,9 @@ public class SkyblockItemConfiguration : IEntityTypeConfiguration<SkyblockItem>
         builder.HasOne(skyblockItem => skyblockItem.BazaarProductSummary)
             .WithOne(summary => summary.SkyblockItem)
             .HasForeignKey<BazaarProductSummary>(bazaarSummary => bazaarSummary.ItemId);
+
+        builder.HasMany(skyblockItem => skyblockItem.AuctionItems)
+            .WithOne()
+            .HasForeignKey(variant => variant.SkyblockId);
     }
 }

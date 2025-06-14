@@ -139,32 +139,39 @@ public class ItemGemstoneSlot {
 public class ItemGemstoneSlotCosts {
 	[JsonPropertyName("type")]
 	public required string Type { get; set; }
-	[JsonPropertyName("item_id")]
+	[JsonPropertyName("item_id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? ItemId { get; set; }
-	[JsonPropertyName("coins")]
+	[JsonPropertyName("coins"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int Coins { get; set; }
+	[JsonExtensionData]
+	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class ItemRequirement {
 	[JsonPropertyName("type")]
 	public required string Type { get; set; }
-	[JsonPropertyName("skill")]
+	[JsonPropertyName("skill"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Skill { get; set; }
-	[JsonPropertyName("level")]
+	[JsonPropertyName("level"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int Level { get; set; }
+	[JsonExtensionData]
+	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class ItemMuseumData {
 	[JsonPropertyName("donation_xp")]
 	public int DonationXp { get; set; }
-	[JsonPropertyName("parent")]
+	[JsonPropertyName("parent"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public Dictionary<string, string> Parent { get; set; } = new();
 	[JsonPropertyName("type")]
 	public string? Type { get; set; }
-	[JsonPropertyName("armor_set_donation_xp")]
+	[JsonPropertyName("armor_set_donation_xp"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public Dictionary<string, int>? ArmorSetDonationXp { get; set; }
-	[JsonPropertyName("game_stage")]
+	[JsonPropertyName("game_stage"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? GameStage { get; set; }
+	
+	[JsonExtensionData]
+	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class DungeonItemConversionCost

@@ -23,4 +23,8 @@ public interface IHypixelApi {
 	[Get("/resources/skyblock/items")]
 	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
 	Task<ApiResponse<ItemsResponse>> FetchItems();
+	
+	[Get("/skyblock/auctions?page={page}")]
+	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
+	Task<ApiResponse<AuctionHouseResponse>> FetchAuctionHouse(int page);
 }

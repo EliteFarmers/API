@@ -14,6 +14,8 @@ internal sealed class RefreshGuildEndpoint(
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
 		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
+		
+		Description(x => x.Accepts<DiscordIdRequest>());
 
 		Summary(s => {
 			s.Summary = "Request Guild Update";

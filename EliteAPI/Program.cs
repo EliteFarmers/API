@@ -158,6 +158,7 @@ using (var scope = app.Services.CreateScope())
 {
     FarmingWeightConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
     FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
+    SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
 
     var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     logging.LogInformation("Starting EliteAPI...");
