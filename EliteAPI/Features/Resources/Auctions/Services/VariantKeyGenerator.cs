@@ -47,14 +47,15 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
             }
         }
         
-        if (itemDto.ItemAttributes is not null && itemDto.ItemAttributes.Count > 0)
-        {
-            variedBy.ItemAttributes = GenerateFromItemAttributes(itemDto);
-        }
+        // if (itemDto.ItemAttributes is not null && itemDto.ItemAttributes.Count > 0)
+        // {
+        //     variedBy.ItemAttributes = GenerateFromItemAttributes(itemDto);
+        // }
 
         return variedBy;
     }
 
+    [Obsolete("Hypixel removed item attributes, this method is no longer used.")]
     private static Dictionary<string, string>? GenerateFromItemAttributes(ItemDto itemDto)
     {
         if (itemDto.ItemAttributes == null || itemDto.ItemAttributes.Count == 0) return null;

@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Auctions.DTOs;
@@ -10,16 +9,10 @@ using ZLinq;
 
 namespace EliteAPI.Features.Resources.Auctions.Endpoints;
 
-internal sealed class GetAuctionHouseRequest
-{
-    [QueryParam, DefaultValue(0)]
-    public int Page { get; set; } = 0;
-}
-
 internal sealed class GetAuctionHouseProductsEndpoint(
     DataContext context,
     IOptions<AuctionHouseSettings> auctionHouseSettings
-) : Endpoint<GetAuctionHouseRequest, AuctionHouseDto>
+) : EndpointWithoutRequest<AuctionHouseDto>
 {
     private readonly AuctionHouseSettings _config = auctionHouseSettings.Value;
 	
@@ -27,8 +20,6 @@ internal sealed class GetAuctionHouseProductsEndpoint(
         Get("/resources/auctions");
         AllowAnonymous();
         Version(0);
-
-        Description(x => x.Accepts<GetAuctionHouseRequest>());
         
         Summary(s => {
             s.Summary = "Get Auction House";
@@ -41,12 +32,11 @@ internal sealed class GetAuctionHouseProductsEndpoint(
         });
     }
 
-    public override async Task HandleAsync(GetAuctionHouseRequest request, CancellationToken c) {
+    public override async Task HandleAsync(CancellationToken c) {
         var data = await context.AuctionItems.AsNoTracking()
             .Where(r => r.CalculatedAt >= DateTime.UtcNow.AddDays(-_config.AggregationMaxLookbackDays))
             .GroupBy(a => a.SkyblockId)
             .ToListAsync(cancellationToken: c);
-            
 
         var response = new AuctionHouseDto()
         {
