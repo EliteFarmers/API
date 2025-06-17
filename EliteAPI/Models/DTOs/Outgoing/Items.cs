@@ -51,10 +51,10 @@ public class ItemDto {
     public Dictionary<string, string>? ItemAttributes { get; set; }
     
     /// <summary>
-    /// Applied gems with gem rarity
+    /// Applied gems with gem rarity, null for an unlocked gem slot without a gem
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, string>? Gems { get; set; }
+    public Dictionary<string, string?>? Gems { get; set; }
     
     /// <summary>
     /// Pet info if item is a pet

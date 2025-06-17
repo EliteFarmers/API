@@ -66,6 +66,27 @@ public static class NbtParser {
         var skyblockId = extraAttributes?["id"]?.StringValue;
         var petInfo = extraAttributes?["petInfo"]?.StringValue;
         
+        var unlockedGems = ((NbtList?)extraAttributes?["gems"]?["unlocked_slots"])?
+            .AsValueEnumerable()
+            .Select(e => e.StringValue)
+            .ToList();
+
+        var gems = ((NbtCompound?)extraAttributes?["gems"])?
+            .AsValueEnumerable()
+            .Where(e => !e.Name.IsNullOrEmpty() && (e is { TagType: NbtTagType.String, HasValue: true } ||
+                                                    (e.TagType == NbtTagType.Compound &&
+                                                     e["quality"]?.HasValue is true)))
+            .Select(e => e.TagType != NbtTagType.Compound
+                ? new KeyValuePair<string, string?>(e.Name!, e.GetValue()?.ToString() ?? string.Empty)
+                : new KeyValuePair<string, string?>(e.Name!, e["quality"]?.GetValue()?.ToString() ?? string.Empty))
+            .ToDictionary(x => x.Key, x => x.Value);
+        
+        if (unlockedGems is not null && unlockedGems.Count > 0 && gems is not null) {
+            foreach (var gem in unlockedGems) {
+                gems.TryAdd(gem, null);
+            }
+        }
+        
         var item = new ItemDto {
             Id = tag["id"]?.IntValue ?? 0,
             Count = tag["Count"]?.ByteValue ?? 0,
@@ -91,13 +112,7 @@ public static class NbtParser {
                 .Where(e => e.IsSimpleType())
                 .Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
                 .ToDictionary(x => x.Key, x => x.Value),
-            Gems = ((NbtCompound?) extraAttributes?["gems"])?
-                .AsValueEnumerable()
-                .Where(e => !e.Name.IsNullOrEmpty() && (e is { TagType: NbtTagType.String, HasValue: true } || (e.TagType == NbtTagType.Compound && e["quality"]?.HasValue is true)))
-                .Select(e => e.TagType != NbtTagType.Compound 
-                    ? new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty) 
-                    : new KeyValuePair<string, string>(e.Name!, e["quality"]?.GetValue()?.ToString() ?? string.Empty))
-                .ToDictionary(x => x.Key, x => x.Value)
+            Gems = gems
         };
 
         if (petInfo is not null) {
