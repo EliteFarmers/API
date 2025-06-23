@@ -4,6 +4,7 @@ using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.Entities.Hypixel;
@@ -51,6 +52,9 @@ public class ProfileMember : IDisposable
     [Column(TypeName = "jsonb")]
     public JsonDocument Collections { get; set; } = JsonDocument.Parse("{}");
 
+    [Column(TypeName = "jsonb")] 
+    public MemberStats Stats { get; set; } = new();
+    
     [Column(TypeName = "jsonb")] 
     public UnparsedApiData Unparsed { get; set; } = new();
 

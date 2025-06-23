@@ -5,6 +5,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.Events;
@@ -430,6 +431,10 @@ public class ProfileProcessorService(
             AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
             Bestiary = incomingData.Bestiary ?? new JsonObject()
         };
+
+        member.Stats ??= new MemberStats();
+        member.Stats.UnqiueShards = incomingData.PlayerStats?.UniqueShards ?? 0;
+        member.Stats.Shards = incomingData.PlayerStats?.AppliedShards ?? member.Stats.Shards;
 
         if (incomingData.Garden?.LarvaConsumed is not null) {
             member.Unparsed.Consumed.Add("wriggling_larva", incomingData.Garden.LarvaConsumed);

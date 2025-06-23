@@ -8,6 +8,9 @@ public class ProfileMemberResponse
 {
 	[JsonPropertyName("player_data")]
 	public RawMemberPlayerData? PlayerData { get; set; }
+	
+	[JsonPropertyName("player_stats")]
+	public PlayerStatsResponse? PlayerStats { get; set; }
     
 	[JsonPropertyName("pets_data")]
 	public MemberPetsResponse? PetsData { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Resources.Items.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -57,6 +58,7 @@ public class ProfileMemberDto
     
     // public InventoriesDto Inventories { get; set; } = new();
     public UnparsedApiDataDto Unparsed { get; set; } = new();
+    public MemberStatsDto Stats { get; set; } = new();
 
     public required JacobDataDto Jacob { get; set; }
     public required FarmingWeightDto FarmingWeight { get; set; }

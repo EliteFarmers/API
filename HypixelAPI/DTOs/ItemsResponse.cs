@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using HypixelAPI.Converters;
 
 namespace HypixelAPI.DTOs;
 
@@ -15,24 +16,30 @@ public class ItemResponse
 {
 	[JsonPropertyName("id")]
 	public string? Id { get; set; }
+	
 	[JsonPropertyName("material")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Material { get; set; }
+    
     /// <summary>
     /// Color as R,G,B
     /// </summary>
     [JsonPropertyName("color")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Color { get; set; }
+    
     [JsonPropertyName("durability")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Durability { get; set; }
+    
     [JsonPropertyName("skin")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public ItemSkin? Skin { get; set; }
+    
     [JsonPropertyName("name")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Name { get; set; }
+    
     [JsonPropertyName("category")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Category { get; set; }

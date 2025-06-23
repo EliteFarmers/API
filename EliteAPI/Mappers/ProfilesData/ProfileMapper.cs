@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using EliteAPI.Features.Leaderboards;
+using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Profile = AutoMapper.Profile;
@@ -34,6 +35,7 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming))
             .ForMember(x => x.Garden, opt => opt.MapFrom(x => x.Profile.Garden))
             .ForMember(x => x.Unparsed, opt => opt.MapFrom(x => x.Unparsed))
+            .ForMember(x => x.Stats, opt => opt.MapFrom(x => x.Stats.ToDto()))
             .ForMember(x => x.ChocolateFactory, opt => opt.MapFrom(x => x.ChocolateFactory))
             .ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api))
             .ForMember(x => x.Meta, opt => opt.MapFrom(x => x.Metadata == null ? null : x.Metadata.Cosmetics.MapToDto()))
