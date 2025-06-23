@@ -1,4 +1,6 @@
-﻿using HypixelAPI.Handlers;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using HypixelAPI.Handlers;
 using HypixelAPI.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
@@ -12,7 +14,15 @@ public static class DependencyInjection
 		services.AddSingleton<IHypixelRequestLimiter, HypixelRequestLimiter>();
 		services.AddScoped<HypixelRateLimitHandler>();
 		
-		services.AddRefitClient<IHypixelApi>()
+		services.AddRefitClient<IHypixelApi>(new RefitSettings()
+			{
+				ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
+				{
+					PropertyNameCaseInsensitive = true,
+					NumberHandling = JsonNumberHandling.AllowReadingFromString,
+					DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+				})
+			})
 			.ConfigureHttpClient(opt => {
 				opt.BaseAddress = new Uri(IHypixelApi.BaseHypixelUrl);
 				opt.DefaultRequestHeaders.TryAddWithoutValidation("API-Key", hypixelApiKey);
