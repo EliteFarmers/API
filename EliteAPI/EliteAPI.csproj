@@ -24,7 +24,7 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="FastEndpoints.Security" Version="5.34.0" />
-		<PackageReference Include="FastEndpoints.Swagger" Version="5.34.0" />
+		<PackageReference Include="FastEndpoints.Swagger" Version="6.2.0" />
 		<PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.2" />
