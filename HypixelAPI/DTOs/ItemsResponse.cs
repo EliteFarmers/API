@@ -176,28 +176,37 @@ public class ItemMuseumData {
 
 public class DungeonItemConversionCost
 {
-    [JsonPropertyName("essence_type")]
+    [JsonPropertyName("essence_type"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? EssenceType { get; set; }
-    [JsonPropertyName("amount")]
+    [JsonPropertyName("amount"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Amount { get; set; }
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
 public class UpgradeCosts
 {
 	[JsonPropertyName("type")]
     public string? Type { get; set; }
-    [JsonPropertyName("essence_type")]
+    [JsonPropertyName("essence_type"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? EssenceType { get; set; }
-    [JsonPropertyName("amount")]
+    [JsonPropertyName("item_id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? ItemId { get; set; }
+    [JsonPropertyName("amount"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Amount { get; set; }
+    
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
 public class CatacombsRequirements
 {
-	[JsonPropertyName("type")]
+	[JsonPropertyName("type"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Type { get; set; }
-    [JsonPropertyName("dungeon_type")]
+    [JsonPropertyName("dungeon_type"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? DungeonType { get; set; }
-    [JsonPropertyName("level")]
+    [JsonPropertyName("level"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Level { get; set; }
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
