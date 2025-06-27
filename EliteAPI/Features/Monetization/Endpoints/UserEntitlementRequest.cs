@@ -4,7 +4,7 @@ using EliteAPI.Models.Entities.Monetization;
 using FastEndpoints;
 using FluentValidation;
 
-namespace EliteAPI.Features.Entitlements;
+namespace EliteAPI.Features.Monetization.Endpoints;
 
 public class UserEntitlementRequest : DiscordIdRequest 
 {

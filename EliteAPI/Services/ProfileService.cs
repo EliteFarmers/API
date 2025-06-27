@@ -27,6 +27,7 @@ public class ProfileService(
             .AsNoTracking()
             .Include(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
+            .ThenInclude(m => m.EliteAccount!.UserSettings)
             .Include(p => p.Members)
             .ThenInclude(m => m.Farming)
             .Include(p => p.Members)
@@ -59,6 +60,7 @@ public class ProfileService(
         var profiles = await context.ProfileMembers
             .Include(p => p.Profile)
             .Include(p => p.MinecraftAccount)
+            .ThenInclude(m => m.EliteAccount!.UserSettings)
             .Select(p => p.Profile)
             .ToListAsync();
 
@@ -80,6 +82,7 @@ public class ProfileService(
             .AsNoTracking()
             .Include(p => p.Members)
             .ThenInclude(m => m.MinecraftAccount)
+            .ThenInclude(m => m.EliteAccount!.UserSettings)
             .Include(p => p.Members)
             .ThenInclude(m => m.Farming)
             .Include(p => p.Members)

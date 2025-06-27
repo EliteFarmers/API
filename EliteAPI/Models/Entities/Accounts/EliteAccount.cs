@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Monetization;
 
@@ -15,7 +16,6 @@ public class EliteAccount
     public required string Username { get; set; }
     public string? Discriminator { get; set; } = "0";
     public string? Avatar { get; set; }
-    public string? Email { get; set; }
     public string? Locale { get; set; }
     
     [ForeignKey("UserSettings")]
@@ -25,6 +25,16 @@ public class EliteAccount
     public bool ActiveRewards { get; set; } = false;
     public List<UserEntitlement> Entitlements { get; set; } = [];
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = [];
+    public List<ProductAccess> ProductAccesses { get; set; } = [];
+    
+    public string GetFormattedIgn()
+    {
+        var primaryMinecraftAccount = MinecraftAccounts.FirstOrDefault(a => a.Selected);
+        var prefix = UserSettings.Prefix ?? string.Empty;
+        var suffix = UserSettings.Suffix ?? string.Empty;
+        var ign = primaryMinecraftAccount?.Name ?? Username;
+        return $"{prefix} {ign} {suffix}".Trim();
+    }
 }
 
 [Flags]

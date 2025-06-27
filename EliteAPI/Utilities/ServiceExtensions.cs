@@ -104,7 +104,6 @@ public static class ServiceExtensions
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.AddScoped<IBadgeService, BadgeService>();
-        services.AddScoped<IMonetizationService, MonetizationService>();
         services.RegisterServicesFromEliteAPI();
 
         services.AddScoped<LocalOnlyMiddleware>();

@@ -95,7 +95,10 @@ public class DiscordService(
 
             if (user is null) return null;
 
-            var existing = await context.Accounts.FindAsync(user.Id);
+            var existing = await context.Accounts
+                .Include(a => a.MinecraftAccounts)
+                .Include(a => a.UserSettings)
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
                 
             var account = existing ?? new EliteAccount()
             {
@@ -107,7 +110,6 @@ public class DiscordService(
             account.Username = user.Username;
             account.DisplayName = user.DisplayName ?? user.Username;
             account.Discriminator = user.Discriminator;
-            account.Email = user.Email ?? account.Email;
             account.Avatar = user.Avatar;
             account.Locale = user.Locale;
 

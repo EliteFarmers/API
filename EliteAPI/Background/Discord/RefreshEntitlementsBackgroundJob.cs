@@ -1,6 +1,8 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Monetization.Services;
 using EliteAPI.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
 using StackExchange.Redis;
@@ -46,13 +48,15 @@ public class RefreshEntitlementsBackgroundJob(
         await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.EntitlementsRefreshCooldown));
 
         var accountsToCheck = context.Accounts
+            .Include(a => a.MinecraftAccounts)
             .Where(a => a.ActiveRewards)
             .Select(a => a.Id);
 
         foreach (var accountId in accountsToCheck) {
             if (ct.IsCancellationRequested) break;
             
-            await monetizationService.FetchUserEntitlementsAsync(accountId);
+            await monetizationService.SyncDiscordEntitlementsAsync(accountId, false);
+            // await monetizationService.FetchUserEntitlementsAsync(accountId);
             
             await Task.Delay(1000, ct);
         }

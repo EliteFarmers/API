@@ -2,7 +2,7 @@ using EliteAPI.Models.Common;
 using EliteAPI.Models.Entities.Monetization;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Entitlements.GetEntitlements;
+namespace EliteAPI.Features.Monetization.Endpoints.GetEntitlements;
 
 public class GetEntitlementsRequest : DiscordIdRequest 
 {

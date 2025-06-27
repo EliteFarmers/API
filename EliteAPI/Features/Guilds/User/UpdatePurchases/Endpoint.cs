@@ -1,5 +1,6 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Monetization.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
@@ -42,7 +43,7 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 			ThrowError("Guild is locked", StatusCodes.Status400BadRequest);
 		}
         
-		var entitlements = await monetizationService.GetGuildEntitlementsAsync(request.DiscordIdUlong);
+		var entitlements = await monetizationService.GetEntitlementsAsync(request.DiscordIdUlong);
 		if (entitlements is { Count: 0 }) {
 			await SendNoContentAsync(cancellation: c);
 			return;
@@ -55,7 +56,7 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 		var currentEvents = 0;
 
 		foreach (var entitlement in entitlements) {
-			if (!entitlement.Active) continue;
+			if (!entitlement.IsActive) continue;
 
 			var features = entitlement.Product.Features;
 			if (features is { MaxMonthlyEvents: > 0 }) {

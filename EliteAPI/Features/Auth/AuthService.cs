@@ -168,6 +168,7 @@ public partial class AuthService(
 			new(ClaimNames.Jti, Guid.NewGuid().ToString()),
 			new(ClaimNames.Avatar, user.Account.Avatar ?? string.Empty),
 			new(ClaimNames.Ign, primaryAccount?.Name ?? string.Empty),
+			new(ClaimNames.FormattedIgn, user.Account.GetFormattedIgn()),
 			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty),
 		};
 		
@@ -191,9 +192,7 @@ public partial class AuthService(
 		var user = new ApiUser {
 			Id = account.Id.ToString(),
 			AccountId = account.Id,
-			
-			UserName = account.Username,
-			Email = account.Email ?? string.Empty,
+			UserName = account.Username
 		};
 		
 		UpdateUserDiscordTokens(user, dto);

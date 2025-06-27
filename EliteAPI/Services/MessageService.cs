@@ -72,6 +72,23 @@ public class MessageService(
             """
         });
     }
+    
+    public void SendClaimMessage(string accountId, string skuId, string skuName) {
+        if (string.IsNullOrEmpty(_messagingSettings.ErrorAlertServer)) return;
+
+        SendMessage(new MessageDto {
+            Name = "claim",
+            GuildId = _messagingSettings.ErrorAlertServer,
+            AuthorId = accountId,
+            Data = $$"""
+                     {
+                         "userId": "{{accountId}}",
+                         "skuId": "{{skuId}}",
+                         "skuName": "{{skuName}}"
+                     }
+                     """
+        });
+    }
 
     public void SendWipedMessage(string uuid, string ign, string profileId, string discordId) {
         if (string.IsNullOrEmpty(_messagingSettings.WipeServer) || string.IsNullOrEmpty(_messagingSettings.WipeChannel)) return;

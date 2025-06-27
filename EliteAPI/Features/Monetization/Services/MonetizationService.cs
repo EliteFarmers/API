@@ -4,23 +4,26 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Services.Interfaces;
+using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Monetization.Services;
 
+[RegisterService<IMonetizationService>(LifeTime.Scoped)]
 public class MonetizationService(
 	DataContext context,
 	IHttpClientFactory httpClientFactory,
 	IConnectionMultiplexer redis,
-	ILogger<DiscordService> logger,
+	ILogger<MonetizationService> logger,
 	IBadgeService badgeService,
     IMessageService messageService,
 	IOptions<ConfigCooldownSettings> coolDowns)
@@ -69,6 +72,7 @@ public class MonetizationService(
 			product.Features.HideShopPromotions = editProductDto.Features.HideShopPromotions ?? product.Features.HideShopPromotions;
 			product.Features.WeightStyleOverride = editProductDto.Features.WeightStyleOverride ?? product.Features.WeightStyleOverride;
 			product.Features.MoreInfoDefault = editProductDto.Features.MoreInfoDefault ?? product.Features.MoreInfoDefault;
+			product.Features.CustomEmoji = editProductDto.Features.CustomEmoji ?? product.Features.CustomEmoji;
 			
 			context.Entry(product).Property(p => p.Features).IsModified = true;
 		}
@@ -76,18 +80,65 @@ public class MonetizationService(
 		await context.SaveChangesAsync();
 	}
 
-	public async Task<List<UserEntitlement>> GetUserEntitlementsAsync(ulong userId) {
-		return await context.UserEntitlements
-			.Where(x => x.AccountId == userId)
+	public async Task<List<ProductAccess>> GetEntitlementsAsync(ulong entityId)
+	{
+		return await context.ProductAccesses
+			.Where(x => x.GuildId == entityId || x.UserId == entityId)
 			.Include(u => u.Product)
 			.ToListAsync();
 	}
 
-	public async Task<List<GuildEntitlement>> GetGuildEntitlementsAsync(ulong guildId) {
-		return await context.GuildEntitlements
-			.Where(x => x.GuildId == guildId)
-			.Include(g => g.Product)
-			.ToListAsync();
+	public async Task GrantProductAccessAsync(ulong userId, ulong productId)
+	{
+		// Get free, available product with this ID
+		// Only durable products are eligible for free access
+		var product = await context.Products
+			.Where(x => x.Available && x.Price == 0 && x.Type == ProductType.Durable)
+			.FirstOrDefaultAsync(p => p.Id == productId);
+
+		if (product is null) {
+			return;
+		}
+		
+		// Check if the user already has access to this product
+		var existingAccess = await context.ProductAccesses
+			.FirstOrDefaultAsync(pa => pa.UserId == userId && 
+			                            pa.ProductId == productId && 
+			                            !pa.Revoked);
+		
+		if (existingAccess is not null) {
+			// User already has access, no need to grant again
+			return;
+		}
+
+		var order = new ShopOrder()
+		{
+			BuyerId = userId,
+			Provider = PaymentProvider.Free,
+			ProviderTransactionId = Guid.NewGuid().ToString(), // Use a unique ID for free orders
+			Status = OrderStatus.Completed,
+			RecipientId = userId,
+		};
+		context.ShopOrders.Add(order);
+		
+		// Create a new ProductAccess entry
+		var access = new ProductAccess {
+			ProductId = productId,
+			StartDate = DateTimeOffset.UtcNow,
+			EndDate = null, // Lifetime access
+			Consumed = false,
+			Revoked = false,
+			UserId = userId,
+			SourceOrderId = order.Id,
+		};
+		context.ProductAccesses.Add(access);
+		
+		messageService.SendPurchaseMessage(
+			userId.ToString(),
+			productId.ToString()
+		);
+		
+		await context.SaveChangesAsync();
 	}
 
 	public async Task<ActionResult> GrantTestEntitlementAsync(ulong targetId, ulong productId, EntitlementTarget target = EntitlementTarget.User) {
@@ -145,56 +196,20 @@ public class MonetizationService(
 		if (await db.KeyExistsAsync(key)) return;
 		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.ManualEntitlementsRefreshCooldown));
 		
+		await SyncDiscordEntitlementsAsync(userId, false);
+		
 		var user = await context.Accounts
 			.Include(a => a.UserSettings)
-			.Include(a => a.Entitlements)
+			.Include(a => a.ProductAccesses)
 			.ThenInclude(e => e.Product)
+			.ThenInclude(p => p.WeightStyles)
 			.Include(a => a.MinecraftAccounts)
 			.ThenInclude(m => m.Badges)
 			.FirstOrDefaultAsync(x => x.Id == userId);
 		
 		if (user is null) return;
 		
-		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements?user_id={userId}";
-		var entitlements = await FetchEntitlementsRecursive(url);
-
-		foreach (var entitlement in entitlements) {
-			var existing = user.Entitlements
-				.FirstOrDefault(x => x.Id == entitlement.Id);
-			
-			if (existing is null) {
-				var newEntitlement = new UserEntitlement {
-					Id = entitlement.Id,
-					AccountId = user.Id,
-					ProductId = entitlement.ProductId,
-					Type = entitlement.Type,
-					Deleted = entitlement.Deleted,
-					Consumed = entitlement.Consumed,
-					StartDate = entitlement.StartsAt,
-					EndDate = entitlement.EndsAt,
-				};
-				
-				user.Entitlements.Add(newEntitlement);
-				context.UserEntitlements.Add(newEntitlement);
-
-				messageService.SendPurchaseMessage(user.Id.ToString(), entitlement.ProductId.ToString());
-			} else {
-				existing.Type = entitlement.Type;
-				existing.Deleted = entitlement.Deleted;
-				existing.Consumed = entitlement.Consumed;
-				existing.StartDate = entitlement.StartsAt;
-				existing.EndDate = entitlement.EndsAt;
-			}
-		}
-
-		// Remove entitlements that the user no longer has
-		foreach (var existing in user.Entitlements) {
-			if (entitlements.All(x => x.Id != existing.Id)) {
-				existing.Deleted = true;
-			}
-		}
-
-		if (user.Entitlements.Count > 0) {
+		if (user.ProductAccesses.Count > 0) {
 			await UpdateUserFeaturesAsync(user);
 		}
 		
@@ -202,12 +217,14 @@ public class MonetizationService(
 	}
 
 	private async Task UpdateUserFeaturesAsync(EliteAccount account) {
-		var hasHideShopPromotions = account.Entitlements
-			.Any(x => x is { Active: true, Product.Features.HideShopPromotions: true });
-		var hasWeightStyleOverride = account.Entitlements
-			.Any(x => x is { Active: true, Product.Features.WeightStyleOverride: true });
-		var hasMoreInfoDefault = account.Entitlements
-			.Any(x => x is { Active: true, Product.Features.MoreInfoDefault: true });
+		var hasHideShopPromotions = account.ProductAccesses
+			.Any(x => x is { IsActive: true, Product.Features.HideShopPromotions: true });
+		var hasWeightStyleOverride = account.ProductAccesses
+			.Any(x => x is { IsActive: true, Product.Features.WeightStyleOverride: true });
+		var hasMoreInfoDefault = account.ProductAccesses
+			.Any(x => x is { IsActive: true, Product.Features.MoreInfoDefault: true });
+		var hasCustomEmoji = account.ProductAccesses
+			.Any(x => x is { IsActive: true, Product.Features.CustomEmoji: true });
 		
 		// Flag the account as having active rewards (or not)
 		account.ActiveRewards = hasHideShopPromotions || hasWeightStyleOverride || hasMoreInfoDefault;
@@ -219,7 +236,7 @@ public class MonetizationService(
 
 		if (account.UserSettings.WeightStyleId is {} style) {
 			// Check if the user has an entitlement for that weight style
-			var validStyle = account.Entitlements.Any(ue => ue.Active && ue.HasWeightStyle(style));
+			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasWeightStyle(style));
 
 			if (!validStyle) {
 				account.UserSettings.WeightStyleId = null;
@@ -229,10 +246,22 @@ public class MonetizationService(
 			}
 		}
 		
+		if (account.UserSettings.LeaderboardStyleId is {} lbStyle) {
+			// Check if the user has an entitlement for that leaderboard style
+			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasWeightStyle(lbStyle));
+
+			if (!validStyle) {
+				account.UserSettings.LeaderboardStyleId = null;
+				account.UserSettings.LeaderboardStyle = null;
+			} else {
+				account.ActiveRewards = true;
+			}
+		}
+		
 		if (account.UserSettings.Features.EmbedColor is {} color) {
 			// Check if the user has an entitlement for that embed color
-			var validEmbedColor = account.Entitlements
-				.Any(x => x.Active && x.Product.Features.EmbedColors?.Contains(color) is true);
+			var validEmbedColor = account.ProductAccesses
+				.Any(x => x.IsActive && x.Product.Features.EmbedColors?.Contains(color) is true);
 			
 			// Clear the embed color if the user doesn't have the entitlement
 			if (!validEmbedColor) {
@@ -241,16 +270,43 @@ public class MonetizationService(
 				account.ActiveRewards = true;
 			}
 		}
+
+		if (account.UserSettings.Suffix is not null)
+		{
+			// Clear the suffix if the user doesn't have the entitlement
+			if (!hasCustomEmoji) {
+				account.UserSettings.Suffix = null;
+			} else {
+				account.ActiveRewards = true;
+			}
+		}
+		
+		if (account.UserSettings.EmojiUrl is {} emojiUrl) {
+			// Check if the user has an entitlement for that embed color
+			var validEmojiUrl = account.ProductAccesses
+				.Any(x => 
+					x.IsActive 
+					&& x.Product.WeightStyles.Exists(
+						s => s.NameStyle?.Emojis.Exists(e => e.Url == emojiUrl) is true)
+					);
+			
+			// Clear the embed color if the user doesn't have the entitlement
+			if (!validEmojiUrl) {
+				account.UserSettings.EmojiUrl = null;
+			} else {
+				account.ActiveRewards = true;
+			}
+		}
 		
 		// Check that active badges are still valid
 		var primary = account.MinecraftAccounts.FirstOrDefault(x => x.Selected);
 		if (primary is not null) {
-			var badgeEntitlements = account.Entitlements
+			var badgeProductAccesses = account.ProductAccesses
 				.Where(x => x is { Product.Features.BadgeId : > 0 })
 				.GroupBy(x => x.Product.Features.BadgeId)
-				.Select(g => new { BadgeId = g.Key!.Value, Active = g.Any(x => x.Active) });
+				.Select(g => new { BadgeId = g.Key!.Value, Active = g.Any(x => x.IsActive) });
 		
-			foreach (var badge in badgeEntitlements) {
+			foreach (var badge in badgeProductAccesses) {
 				switch (badge.Active) {
 					case true when primary.Badges.All(x => x.BadgeId != badge.BadgeId):
 						account.ActiveRewards = true;
@@ -273,53 +329,12 @@ public class MonetizationService(
 		
 		if (await db.KeyExistsAsync(key)) return;
 		await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.ManualEntitlementsRefreshCooldown));
-		
-		var guild = await context.Guilds
-			.Include(x => x.Entitlements)
-			.FirstOrDefaultAsync(x => x.Id == guildId);
-		
-		if (guild is null) return;
-		
-		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements?guild_id={guildId}";
-		var entitlements = await FetchEntitlementsRecursive(url);
-		
-		foreach (var entitlement in entitlements) {
-			var existing = guild.Entitlements
-				.FirstOrDefault(x => x.Id == entitlement.Id);
-			
-			if (existing is null) {
-				var newEntitlement = new GuildEntitlement {
-					Id = entitlement.Id,
-					GuildId = guild.Id,
-					ProductId = entitlement.ProductId,
-					Type = entitlement.Type,
-					Deleted = entitlement.Deleted,
-					Consumed = entitlement.Consumed,
-					StartDate = entitlement.StartsAt,
-					EndDate = entitlement.EndsAt,
-				};
-				
-				guild.Entitlements.Add(newEntitlement);
-				context.GuildEntitlements.Add(newEntitlement);
-			} else {
-				existing.Type = entitlement.Type;
-				existing.Deleted = entitlement.Deleted;
-				existing.Consumed = entitlement.Consumed;
-				existing.StartDate = entitlement.StartsAt;
-				existing.EndDate = entitlement.EndsAt;
-			}
-		}
-		
-		// Remove entitlements that the guild no longer has
-		foreach (var existing in guild.Entitlements) {
-			if (entitlements.All(x => x.Id != existing.Id)) {
-				existing.Deleted = true;
-			}
-		}
 
-		if (entitlements.Count > 0) {
-			await UpdateGuildFeaturesAsync(guild, guild.Entitlements);
-		}
+		await SyncDiscordEntitlementsAsync(guildId, true);
+
+		// if (entitlements.Count > 0) {
+		// 	await UpdateGuildFeaturesAsync(guild, guild.Entitlements);
+		// }
 		
 		await context.SaveChangesAsync();
 	}
@@ -361,6 +376,90 @@ public class MonetizationService(
 		await context.SaveChangesAsync();
 	}
 	
+	public async Task SyncDiscordEntitlementsAsync(ulong entityId, bool isGuild)
+	{
+	    // Fetch Discord entitlements for the user or guild
+	    var discordEntitlements = await FetchDiscordEntitlements(entityId, isGuild);
+
+	    foreach (var discordEntitlement in discordEntitlements)
+	    {
+	        var providerId = discordEntitlement.Id.ToString();
+
+	        // Create or update the ShopOrder based on the Discord entitlement
+	        var order = await context.ShopOrders.FirstOrDefaultAsync(o => o.ProviderTransactionId == providerId);
+	        if (order is null)
+	        {
+	            order = new ShopOrder
+	            {
+	                Provider = PaymentProvider.Discord,
+	                ProviderTransactionId = providerId,
+	                BuyerId = discordEntitlement.UserId ?? entityId, 
+	                Status = OrderStatus.Completed,
+	            };
+	            
+	            // Set recipient based on whether it's a guild or user entitlement
+	            if (discordEntitlement.GuildId is not null) {
+	                order.RecipientGuildId = discordEntitlement.GuildId;
+	            } else {
+	                order.RecipientId = discordEntitlement.UserId;
+	            }
+
+	            context.ShopOrders.Add(order);
+	        }
+	        
+	        // Create/update ProductAccess entitlement
+	        var access = await context.ProductAccesses.FirstOrDefaultAsync(pa => pa.SourceOrderId == order.Id);
+	        if (access is null)
+	        {
+	            access = new ProductAccess
+	            {
+	                ProductId = discordEntitlement.ProductId,
+	                SourceOrderId = order.Id,
+	            };
+
+	            // Set the UserId or GuildId based on the entitlement type
+	            if (discordEntitlement.GuildId is not null) {
+	                access.GuildId = discordEntitlement.GuildId;
+	            } else {
+	                access.UserId = discordEntitlement.UserId;
+	                
+	                messageService.SendPurchaseMessage(
+		                discordEntitlement.UserId.ToString() ?? string.Empty,
+		                discordEntitlement.ProductId.ToString()
+		            );
+	            }
+
+	            context.ProductAccesses.Add(access);
+	        }
+
+	        // Update status and dates
+	        access.StartDate = discordEntitlement.StartsAt ?? DateTimeOffset.MinValue;
+	        access.EndDate = discordEntitlement.EndsAt;
+	        access.Consumed = discordEntitlement.Consumed;
+	        if (discordEntitlement.Deleted)
+	        {
+		        access.Revoked = discordEntitlement.Deleted;
+	        }
+	        
+	        if (access.Revoked) {
+	            order.Status = OrderStatus.Refunded;
+	        }
+	    }
+	    await context.SaveChangesAsync();
+	}
+
+	private async Task<List<DiscordEntitlement>> FetchDiscordEntitlements(ulong entityId, bool isGuild)
+	{
+		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements";
+		if (isGuild) {
+			url += $"?guild_id={entityId}";
+		} else {
+			url += $"?user_id={entityId}";
+		}
+		
+		return await FetchEntitlementsRecursive(url);
+	}
+
 	private async Task<List<DiscordEntitlement>> FetchEntitlementsRecursive(string url, List<DiscordEntitlement>? entitlements = null, ulong? after = null) {
 		var client = httpClientFactory.CreateClient(ClientName);
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);

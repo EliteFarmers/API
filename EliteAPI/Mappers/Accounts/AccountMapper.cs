@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Monetization;
@@ -9,7 +10,7 @@ public class AccountMapper : Profile
 {
     public AccountMapper() {
         CreateMap<EliteAccount, AuthorizedAccountDto>()
-            .ForMember(a => a.Entitlements, opt => opt.MapFrom(a => a.Entitlements))
+            .ForMember(a => a.Entitlements, opt => opt.MapFrom(a => a.ProductAccesses))
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.UserSettings))
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
@@ -45,7 +46,8 @@ public class EliteMapper : Profile
     public EliteMapper()
     {
         CreateMap<UserSettings, UserSettingsDto>()
-            .ForMember(a => a.WeightStyle, opt => opt.MapFrom(a => a.WeightStyle));
+            .ForMember(a => a.WeightStyle, opt => opt.MapFrom(a => a.WeightStyle))
+            .ForMember(a => a.LeaderboardStyle, opt => opt.MapFrom(a => a.LeaderboardStyle));
 
         CreateMap<Entitlement, EntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
@@ -58,6 +60,11 @@ public class EliteMapper : Profile
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
 
         CreateMap<GuildEntitlement, EntitlementDto>()
+            .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
+            .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
+            .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));
+        
+        CreateMap<ProductAccess, EntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
             .ForMember(a => a.Product, opt => opt.MapFrom(a => a.Product))
             .ForMember(a => a.ProductId, opt => opt.MapFrom(a => a.ProductId.ToString()));

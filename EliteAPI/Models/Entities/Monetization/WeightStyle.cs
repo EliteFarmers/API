@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -39,6 +40,12 @@ public class WeightStyle {
     
 	[Column(TypeName = "jsonb")]
 	public WeightStyleData Data { get; set; } = new();
+
+    [Column(TypeName = "jsonb")]
+    public LeaderboardStyleData? Leaderboard { get; set; }
+    
+    [Column(TypeName = "jsonb")]
+    public NameStyleData? NameStyle { get; set; }
 }
 
 public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
@@ -56,6 +63,51 @@ public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
                 j => j.HasOne(ci => ci.Cosmetic).WithMany().HasForeignKey(ci => ci.CosmeticId)
             );
     }
+}
+
+public class LeaderboardStyleData
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleLayer? Background { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleLayer? Overlay { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Font { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? NameColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ScoreColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RankColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? LeaderboardNameColor { get; set; }
+}
+
+public class LeaderboardStyleLayer
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ImageUrl { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ImageOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? FillColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? FillOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BorderColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? BorderOpacity { get; set; }
+}
+
+public class NameStyleData
+{
+    public List<NameStyleEmojiOption> Emojis { get; set; } = [];
+}
+
+public class NameStyleEmojiOption
+{
+    public string? Name { get; set; }
+    public string? Url { get; set; }
 }
 
 public class WeightStyleData

@@ -1,10 +1,9 @@
+using EliteAPI.Features.Monetization.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Accounts;
-using EliteAPI.Models.Entities.Monetization;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Entitlements.GetEntitlements;
+namespace EliteAPI.Features.Monetization.Endpoints.GetEntitlements;
 
 internal sealed class GetEntitlementsEndpoint(
 	IMonetizationService monetizationService,
@@ -23,11 +22,10 @@ internal sealed class GetEntitlementsEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(GetEntitlementsRequest request, CancellationToken c) 
+	public override async Task HandleAsync(GetEntitlementsRequest request, CancellationToken c)
 	{
-		var entitlements = request.Target == EntitlementTarget.User 
-			?  mapper.Map<List<EntitlementDto>>(await monetizationService.GetUserEntitlementsAsync(request.DiscordIdUlong))
-			:  mapper.Map<List<EntitlementDto>>(await monetizationService.GetGuildEntitlementsAsync(request.DiscordIdUlong));
+		var entitlements =
+			mapper.Map<List<EntitlementDto>>(await monetizationService.GetEntitlementsAsync(request.DiscordIdUlong));
 
 		await SendAsync(entitlements, cancellation: c);
 	}

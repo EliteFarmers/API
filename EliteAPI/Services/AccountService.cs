@@ -204,12 +204,8 @@ public class AccountService(
             return new UnauthorizedObjectResult("Account not found.");
         }
 
-        if (settings.Features is null) {
-            return new OkResult();
-        }
-
         var changes = settings.Features;
-
+        
         var entitlements = await context.UserEntitlements
             .Where(ue => ue.AccountId == account.Id && !ue.Deleted
                     && (ue.StartDate == null || ue.StartDate <= DateTimeOffset.UtcNow) 
@@ -224,41 +220,61 @@ public class AccountService(
             account.UserSettings.WeightStyle = null;
         }
         
-        if (changes.WeightStyleOverride is true 
-            && entitlements.Any(ue => ue.Product.Features.WeightStyleOverride))
-        {
-            account.UserSettings.Features.WeightStyleOverride = true;
-        } 
-        else if (changes.WeightStyleOverride is false)
-        {
-            account.UserSettings.Features.WeightStyleOverride = false;
-        }
-        
-        if (changes.MoreInfoDefault is true 
-            && entitlements.Any(ue => ue.Product.Features.MoreInfoDefault))
-        {
-            account.UserSettings.Features.MoreInfoDefault = true;
-        } 
-        else if (changes.MoreInfoDefault is false)
-        {
-            account.UserSettings.Features.MoreInfoDefault = false;
-        }
-        
-        if (changes.HideShopPromotions is true 
-            && entitlements.Any(ue => ue.Product.Features.HideShopPromotions))
-        {
-            account.UserSettings.Features.HideShopPromotions = true;
-        }
-        else if (changes.HideShopPromotions is false)
-        {
-            account.UserSettings.Features.HideShopPromotions = false;
+        if (settings.LeaderboardStyleId is not null) {
+            var validChange = entitlements.Any(ue => ue.Active && ue.HasWeightStyle(settings.LeaderboardStyleId.Value));
+            
+            account.UserSettings.WeightStyleId = validChange ? settings.WeightStyleId : null;
+            account.UserSettings.WeightStyle = null;
         }
 
-        if (changes.EmbedColor is not null) {
-            account.UserSettings.Features.EmbedColor = 
-                entitlements.Any(ue => ue.Product.Features.EmbedColors?.Contains(changes.EmbedColor) is true)
-                    ? changes.EmbedColor
-                    : null; // Clear the embed color if not valid (also allows for resetting the embed color)
+        if (changes is not null)
+        {
+            if (changes.WeightStyleOverride is true 
+                && entitlements.Any(ue => ue.Product.Features.WeightStyleOverride))
+            {
+                account.UserSettings.Features.WeightStyleOverride = true;
+            } 
+            else if (changes.WeightStyleOverride is false)
+            {
+                account.UserSettings.Features.WeightStyleOverride = false;
+            }
+        
+            if (changes.MoreInfoDefault is true 
+                && entitlements.Any(ue => ue.Product.Features.MoreInfoDefault))
+            {
+                account.UserSettings.Features.MoreInfoDefault = true;
+            } 
+            else if (changes.MoreInfoDefault is false)
+            {
+                account.UserSettings.Features.MoreInfoDefault = false;
+            }
+        
+            if (changes.HideShopPromotions is true 
+                && entitlements.Any(ue => ue.Product.Features.HideShopPromotions))
+            {
+                account.UserSettings.Features.HideShopPromotions = true;
+            }
+            else if (changes.HideShopPromotions is false)
+            {
+                account.UserSettings.Features.HideShopPromotions = false;
+            }
+
+            if (changes.EmbedColor is not null) {
+                account.UserSettings.Features.EmbedColor = 
+                    entitlements.Any(ue => ue.Product.Features.EmbedColors?.Contains(changes.EmbedColor) is true)
+                        ? changes.EmbedColor
+                        : null; // Clear the embed color if not valid (also allows for resetting the embed color)
+            }
+        }
+
+        if (settings.Suffix is not null) {
+            var validChange = entitlements.Any(ue => ue is { Active: true, Product.Features.CustomEmoji: true });
+
+            if (settings.Suffix.IsNullOrEmpty()) {
+                account.UserSettings.Suffix = null;
+            } else {
+                account.UserSettings.Suffix = validChange ? settings.Suffix : null;
+            }
         }
         
         context.Accounts.Update(account);

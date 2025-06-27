@@ -26,12 +26,12 @@ public class ApiUser : IdentityUser {
 public static class ClaimNames {
 	public const string Role = "role";
 	public const string Name = JwtRegisteredClaimNames.Name;
-	public const string Email = JwtRegisteredClaimNames.Email;
 	public const string NameId = JwtRegisteredClaimNames.NameId;
 	public const string Jti	= JwtRegisteredClaimNames.Jti;
 	
 	public const string Avatar = "Avatar";
 	public const string Ign = "Ign";
+	public const string FormattedIgn = "FIgn";
 	public const string Uuid = "Uuid";
 }
 
