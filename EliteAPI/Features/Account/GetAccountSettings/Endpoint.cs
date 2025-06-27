@@ -23,6 +23,7 @@ internal sealed class GetAccountSettingsEndpoint(
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var settings = await context.Accounts
+			.Include(a => a.MinecraftAccounts)
 			.Include(a => a.UserSettings)
 			.ThenInclude(a => a.WeightStyle)
 			.Where(a => a.Id == request.DiscordIdUlong)

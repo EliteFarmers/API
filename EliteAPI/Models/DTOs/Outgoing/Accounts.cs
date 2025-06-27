@@ -88,18 +88,51 @@ public class MinecraftAccountPropertyDto
 public class UserSettingsDto
 {
     /// <summary>
+    /// Custom name prefix
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Prefix { get; set; }
+    /// <summary>
+    /// Custom name suffix
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Suffix { get; set; }
+    
+    /// <summary>
     /// Configurated features for the user
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ConfiguredProductFeaturesDto? Features { get; set; }
     
     /// <summary>
     /// Selected weight style for the user
     /// </summary>
+    /// 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public WeightStyleLinkedDto? WeightStyle { get; set; }
+    
+    /// <summary>
+    /// Selected leaderboard style for the user
+    /// </summary>
+    /// 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public WeightStyleLinkedDto? LeaderboardStyle { get; set; }
 }
 
 public class UpdateUserSettingsDto
 {
+    /// <summary>
+    /// Custom name prefix
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Prefix { get; set; }
+    
+    /// <summary>
+    /// Custom name suffix
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Suffix { get; set; }
+    
     /// <summary>
     /// Configurated features for the user
     /// </summary>
@@ -109,6 +142,11 @@ public class UpdateUserSettingsDto
     /// Selected weight style for the user
     /// </summary>
     public int? WeightStyleId { get; set; }
+    
+    /// <summary>
+    /// Selected leaderboard style for the user
+    /// </summary>
+    public int? LeaderboardStyleId { get; set; }
 }
 
 public class ConfiguredProductFeaturesDto {
@@ -117,27 +155,38 @@ public class ConfiguredProductFeaturesDto {
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int? WeightStyle { get; set; }
+    
     /// <summary>
     /// Ability to override other's weight styles.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool? WeightStyleOverride { get; set; }
+    
     /// <summary>
     /// Embed color for the bot.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [MaxLength(6)]
     public string? EmbedColor { get; set; }
+    
     /// <summary>
     /// Show "More Info" on weight command by default.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool? MoreInfoDefault { get; set; }
+    
     /// <summary>
     /// If shop promotions should be hidden.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool? HideShopPromotions { get; set; }
+    
+    /// <summary>
+    /// Custom name emoji URL.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [MaxLength(256)]
+    public string? EmojiUrl { get; set; }
 }
 
 public class UnlockedProductFeaturesDto
@@ -172,6 +221,11 @@ public class UnlockedProductFeaturesDto
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool? MoreInfoDefault { get; set; }
+    /// <summary>
+    /// Ability to have custom name emoji for the user.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool? CustomEmoji { get; set; }
     /// <summary>
     /// Maximum number of events that can be created in a month. (For guilds)
     /// </summary>

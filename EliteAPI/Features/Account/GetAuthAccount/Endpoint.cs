@@ -31,7 +31,7 @@ internal sealed class GetAuthAccountEndpoint(
 		var account = await context.Accounts
 			.Include(a => a.MinecraftAccounts)
 				.ThenInclude(a => a.Badges)
-			.Include(a => a.Entitlements.Where(e => !e.Deleted))
+			.Include(a => a.ProductAccesses.Where(e => !e.Revoked))
 				.ThenInclude(a => a.Product)
 				.ThenInclude(p => p.WeightStyles)
 			.Include(a => a.UserSettings)

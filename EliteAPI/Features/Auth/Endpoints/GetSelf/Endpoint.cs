@@ -26,6 +26,7 @@ internal sealed class GetSelfEndpoint(
 			Username = User.FindFirstValue(ClaimNames.Name) ?? string.Empty,
 			Avatar = User.FindFirstValue(ClaimNames.Avatar) ?? string.Empty,
 			Ign = User.FindFirstValue(ClaimNames.Ign) ?? string.Empty,
+			FIgn = User.FindFirstValue(ClaimNames.FormattedIgn) ?? string.Empty,
 			Uuid = User.FindFirstValue(ClaimNames.Uuid) ?? string.Empty,
 			Roles = User.Claims.Where(l => l.Type == ClaimNames.Role).Select(a => a.Value).ToArray()
 		}, cancellation: c);

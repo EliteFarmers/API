@@ -1,4 +1,5 @@
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Profiles;
 using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -135,6 +136,10 @@ public static class LeaderboardEntryExtensions {
 	}
 	
 	public static IQueryable<LeaderboardEntryDto> MapToMemberLeaderboardEntries(this IQueryable<LeaderboardEntry> query, bool includeMeta = false) {
+		if (includeMeta)
+		{
+			query = query.Include(a => a.ProfileMember!.MinecraftAccount!.EliteAccount!.UserSettings);
+		}
 		return query.Select(e => new LeaderboardEntryDto {
 			Uuid = e.ProfileMember!.PlayerUuid,
 			Profile = e.ProfileMember.ProfileName,
@@ -143,7 +148,7 @@ public static class LeaderboardEntryExtensions {
 			Removed = e.IsRemoved,
 			Mode = e.ProfileType,
 			Ign = e.ProfileMember.MinecraftAccount.Name,
-			Meta = includeMeta && e.ProfileMember.Metadata != null ? e.ProfileMember.Metadata.Cosmetics.MapToDto() : null
+			Meta = includeMeta ? e.ProfileMember.GetCosmeticsDto() : null
 		});
 	}
 }

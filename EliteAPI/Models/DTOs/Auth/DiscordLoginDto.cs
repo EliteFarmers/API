@@ -69,6 +69,11 @@ public class AuthSessionDto {
 	/// </summary>
 	public required string Ign { get; set; }
 	/// <summary>
+	/// Formatted Primary Minecraft IGN
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? FIgn { get; set; }
+	/// <summary>
 	/// Primary Minecraft UUID
 	/// </summary>
 	public required string Uuid { get; set; }

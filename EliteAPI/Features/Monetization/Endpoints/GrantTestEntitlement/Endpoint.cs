@@ -1,10 +1,10 @@
+using EliteAPI.Features.Monetization.Services;
 using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Monetization;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Features.Entitlements.GrantTestEntitlement;
+namespace EliteAPI.Features.Monetization.Endpoints.GrantTestEntitlement;
 
 internal sealed class GrantTestEntitlementEndpoint(
 	IMonetizationService monetizationService)

@@ -1,4 +1,5 @@
 using EliteAPI.Authentication;
+using EliteAPI.Features.Monetization.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;

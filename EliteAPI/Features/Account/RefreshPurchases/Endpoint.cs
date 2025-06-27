@@ -1,3 +1,4 @@
+using EliteAPI.Features.Monetization.Services;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using FastEndpoints;
@@ -24,7 +25,8 @@ internal sealed class RefreshPurchasesEndpoint(
 		if (id is null) {
 			ThrowError("Unauthorized", StatusCodes.Status401Unauthorized);
 		}
-        
+
+		await monetizationService.SyncDiscordEntitlementsAsync(id.Value, false);
 		await monetizationService.FetchUserEntitlementsAsync(id.Value);
 
 		await SendNoContentAsync(cancellation: c);

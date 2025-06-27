@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.Entities.Accounts;
@@ -57,7 +58,6 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
         modelBuilder.Entity<MinecraftAccount>().Property(c => c.Name)
             .UseCollation("case_insensitive");
 
-        modelBuilder.Entity<EliteAccount>().Navigation(e => e.MinecraftAccounts).AutoInclude();
         modelBuilder.Entity<MinecraftAccount>().Navigation(e => e.Badges).AutoInclude();
         modelBuilder.Entity<UserBadge>().Navigation(e => e.Badge).AutoInclude();
         
@@ -105,6 +105,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<ProductCategory> ProductCategories { get; set; } = null!;
     public DbSet<Tag> Tags { get; set; } = null!;
     public DbSet<ProductTag> ProductTags { get; set; } = null!;
+    
+    public DbSet<ShopOrder> ShopOrders { get; set; } = null!;
+    public DbSet<ShopOrderItem> ShopOrderItems { get; set; } = null!;
+    public DbSet<ProductAccess> ProductAccesses { get; set; } = null!;
 
     // Events
     public DbSet<Event> Events { get; set; } = null!;
