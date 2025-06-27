@@ -59,11 +59,12 @@ public class MinecraftAccountDetailsDto
     public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
 }
 
-[SwaggerSchema(Required = ["Id", "Name", "Properties", "Profiles", "PrimaryAccount", "EventEntries"])]
+[SwaggerSchema(Required = ["Id", "Name", "FormattedName", "Properties", "Profiles", "PrimaryAccount", "EventEntries"])]
 public class MinecraftAccountDto
 {
     public required string Id { get; set; }
     public required string Name { get; set; }
+    public required string FormattedName { get; set; }
     public bool PrimaryAccount { get; set; } = true;
     
     public string? DiscordId { get; set; }
