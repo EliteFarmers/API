@@ -133,7 +133,7 @@ public class MonetizationService(
 		};
 		context.ProductAccesses.Add(access);
 		
-		messageService.SendPurchaseMessage(
+		messageService.SendClaimMessage(
 			userId.ToString(),
 			productId.ToString()
 		);

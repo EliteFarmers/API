@@ -128,6 +128,11 @@ public partial class AuthService(
 		var user = await userManager.FindByIdAsync(userId);
 		if (user is null) return null;
 		
+		// Load user settings relationship
+		await context.Entry(user).Reference(x => x.Account).LoadAsync();
+		await context.Entry(user.Account).Collection(x => x.MinecraftAccounts).LoadAsync();
+		await context.Entry(user.Account).Reference(x => x.UserSettings).LoadAsync();
+		
 		var storedToken = await context.RefreshTokens
 			.FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == refreshToken);
 
