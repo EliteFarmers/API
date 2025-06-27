@@ -43,7 +43,7 @@ public class RefreshEntitlementsBackgroundJob(
         var db = redis.GetDatabase();
         if (db.KeyExists(key)) {
             logger.LogInformation("Entitlements are still on cooldown");
-            // return;
+            return;
         }
         await db.StringSetAsync(key, "1", TimeSpan.FromSeconds(_coolDowns.EntitlementsRefreshCooldown));
 

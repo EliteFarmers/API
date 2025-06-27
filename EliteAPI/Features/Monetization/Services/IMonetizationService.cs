@@ -11,6 +11,7 @@ public interface IMonetizationService {
 	Task FetchUserEntitlementsAsync(ulong userId);
 	Task SyncDiscordEntitlementsAsync(ulong entityId, bool isGuild);
 	Task FetchGuildEntitlementsAsync(ulong guildId);
+	Task GrantProductAccessAsync(ulong userId, ulong productId);
 	Task<ActionResult> GrantTestEntitlementAsync(ulong targetId, ulong productId, EntitlementTarget target = EntitlementTarget.User);
 	Task<ActionResult> RemoveTestEntitlementAsync(ulong targetId, ulong entitlementId, EntitlementTarget target = EntitlementTarget.User);
 }

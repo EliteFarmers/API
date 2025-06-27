@@ -88,6 +88,59 @@ public class MonetizationService(
 			.ToListAsync();
 	}
 
+	public async Task GrantProductAccessAsync(ulong userId, ulong productId)
+	{
+		// Get free, available product with this ID
+		// Only durable products are eligible for free access
+		var product = await context.Products
+			.Where(x => x.Available && x.Price == 0 && x.Type == ProductType.Durable)
+			.FirstOrDefaultAsync(p => p.Id == productId);
+
+		if (product is null) {
+			return;
+		}
+		
+		// Check if the user already has access to this product
+		var existingAccess = await context.ProductAccesses
+			.FirstOrDefaultAsync(pa => pa.UserId == userId && 
+			                            pa.ProductId == productId && 
+			                            !pa.Revoked);
+		
+		if (existingAccess is not null) {
+			// User already has access, no need to grant again
+			return;
+		}
+
+		var order = new ShopOrder()
+		{
+			BuyerId = userId,
+			Provider = PaymentProvider.Free,
+			ProviderTransactionId = Guid.NewGuid().ToString(), // Use a unique ID for free orders
+			Status = OrderStatus.Completed,
+			RecipientId = userId,
+		};
+		context.ShopOrders.Add(order);
+		
+		// Create a new ProductAccess entry
+		var access = new ProductAccess {
+			ProductId = productId,
+			StartDate = DateTimeOffset.UtcNow,
+			EndDate = null, // Lifetime access
+			Consumed = false,
+			Revoked = false,
+			UserId = userId,
+			SourceOrderId = order.Id,
+		};
+		context.ProductAccesses.Add(access);
+		
+		messageService.SendPurchaseMessage(
+			userId.ToString(),
+			productId.ToString()
+		);
+		
+		await context.SaveChangesAsync();
+	}
+
 	public async Task<ActionResult> GrantTestEntitlementAsync(ulong targetId, ulong productId, EntitlementTarget target = EntitlementTarget.User) {
 		var client = httpClientFactory.CreateClient(ClientName);
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
@@ -369,6 +422,11 @@ public class MonetizationService(
 	                access.GuildId = discordEntitlement.GuildId;
 	            } else {
 	                access.UserId = discordEntitlement.UserId;
+	                
+	                messageService.SendPurchaseMessage(
+		                discordEntitlement.UserId.ToString() ?? string.Empty,
+		                discordEntitlement.ProductId.ToString()
+		            );
 	            }
 
 	            context.ProductAccesses.Add(access);

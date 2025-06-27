@@ -38,6 +38,7 @@ public enum PaymentProvider
     Discord = 1,
     Stripe = 2,
     ManualGift = 3,
+    Free = 4,
 }
 
 public enum OrderStatus
