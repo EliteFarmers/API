@@ -206,22 +206,20 @@ public class AccountService(
 
         var changes = settings.Features;
         
-        var entitlements = await context.UserEntitlements
-            .Where(ue => ue.AccountId == account.Id && !ue.Deleted
-                    && (ue.StartDate == null || ue.StartDate <= DateTimeOffset.UtcNow) 
-                    && (ue.EndDate == null || ue.EndDate >= DateTimeOffset.UtcNow))
+        var entitlements = await context.ProductAccesses
+            .Where(ue => ue.UserId == account.Id && !ue.Revoked)
             .Include(entitlement => entitlement.Product)
             .ToListAsync();
 
         if (settings.WeightStyleId is not null) {
-            var validChange = entitlements.Any(ue => ue.Active && ue.HasWeightStyle(settings.WeightStyleId.Value));
+            var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.WeightStyleId.Value));
             
             account.UserSettings.WeightStyleId = validChange ? settings.WeightStyleId : null;
             account.UserSettings.WeightStyle = null;
         }
         
         if (settings.LeaderboardStyleId is not null) {
-            var validChange = entitlements.Any(ue => ue.Active && ue.HasWeightStyle(settings.LeaderboardStyleId.Value));
+            var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.LeaderboardStyleId.Value));
             
             account.UserSettings.WeightStyleId = validChange ? settings.WeightStyleId : null;
             account.UserSettings.WeightStyle = null;
@@ -268,7 +266,7 @@ public class AccountService(
         }
 
         if (settings.Suffix is not null) {
-            var validChange = entitlements.Any(ue => ue is { Active: true, Product.Features.CustomEmoji: true });
+            var validChange = entitlements.Any(ue => ue is { IsActive: true, Product.Features.CustomEmoji: true });
 
             if (settings.Suffix.IsNullOrEmpty()) {
                 account.UserSettings.Suffix = null;

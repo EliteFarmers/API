@@ -106,7 +106,7 @@ public class MonetizationService(
 			                            pa.ProductId == productId && 
 			                            !pa.Revoked);
 		
-		if (existingAccess is not null) {
+		if (existingAccess is not null && existingAccess.IsActive) {
 			// User already has access, no need to grant again
 			return;
 		}
