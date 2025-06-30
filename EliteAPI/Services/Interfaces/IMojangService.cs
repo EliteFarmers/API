@@ -12,4 +12,6 @@ public interface IMojangService
     Task<MinecraftAccount?> FetchMinecraftAccountByUuid(string uuid);
     Task<MinecraftAccount?> GetMinecraftAccountByIgn(string ign);
     Task<MinecraftAccount?> GetMinecraftAccountByUuidOrIgn(string uuidOrIgn);
+    
+    Task<(byte[]? face, byte[]? hat)> GetMinecraftAccountFace(string uuidOrIgn);
 }

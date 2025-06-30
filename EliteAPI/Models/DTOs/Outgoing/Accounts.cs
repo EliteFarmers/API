@@ -56,7 +56,7 @@ public class MinecraftAccountDetailsDto
     public required string Name { get; set; }
     public bool PrimaryAccount { get; set; } = true;
     public List<UserBadgeDto> Badges { get; set; } = new();
-    public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
+    public MinecraftSkinDto Skin { get; set; } = new();
 }
 
 [SwaggerSchema(Required = ["Id", "Name", "FormattedName", "Properties", "Profiles", "PrimaryAccount", "EventEntries"])]
@@ -71,8 +71,7 @@ public class MinecraftAccountDto
     public string? DiscordUsername { get; set; }
     public string? DiscordAvatar { get; set; }
     public UserSettingsDto Settings { get; set; } = new();
-
-    public List<MinecraftAccountPropertyDto> Properties { get; set; } = new();
+    public MinecraftSkinDto Skin { get; set; } = new();
     public List<ProfileDetailsDto> Profiles { get; set; } = new();
     public List<UserBadgeDto> Badges { get; set; } = new();
     public PlayerDataDto? PlayerData { get; set; }
@@ -83,6 +82,25 @@ public class MinecraftAccountPropertyDto
 {
     public required string Name { get; set; }
     public required string Value { get; set; }
+}
+
+public class MinecraftSkinDto
+{
+    /// <summary>
+    /// Minecraft skin texture ID
+    /// </summary>
+    public string? Texture { get; set; }
+    
+    /// <summary>
+    /// Base64 data image of the 8x8 face
+    /// </summary>
+    public string? Face { get; set; }
+    
+    /// <summary>
+    /// Base64 data image of the 8x8 hat (overlay on the face)
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Hat { get; set; }
 }
 
 
