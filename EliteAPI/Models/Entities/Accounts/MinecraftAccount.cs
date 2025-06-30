@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,9 +20,23 @@ public class MinecraftAccount
     public bool Selected { get; set; }
     
     public PlayerData? PlayerData { get; set; }
-
-    [Column(TypeName = "jsonb")]
-    public List<MinecraftAccountProperty> Properties { get; set; } = new();
+    
+    [MaxLength(128)]
+    public string? TextureId { get; set; }
+    
+    [Column(TypeName = "bytea")]
+    public byte[]? Face { get; set; }
+    [Column(TypeName = "bytea")]
+    public byte[]? Hat { get; set; }
+    
+    public string? FaceUrl => Face != null ? $"data:image/png;base64,{Convert.ToBase64String(Face)}" : null;
+    public string? HatUrl => Hat != null ? $"data:image/png;base64,{Convert.ToBase64String(Hat)}" : null;
+    public MinecraftSkinDto Skin => new MinecraftSkinDto
+    {
+        Face = FaceUrl,
+        Hat = HatUrl,
+        Texture = TextureId
+    };
     
     public AccountFlag Flags { get; set; } = AccountFlag.None;
     public bool IsBanned => Flags.HasFlag(AccountFlag.Banned);
