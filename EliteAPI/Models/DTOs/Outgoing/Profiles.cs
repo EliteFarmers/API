@@ -33,9 +33,6 @@ public class MemberDetailsDto
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public MemberCosmeticsDto? Meta { get; set; }
-    
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public MinecraftSkinDto? Skin { get; set; }
 }
 
 public class ProfileMemberDto
