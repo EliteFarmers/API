@@ -16,6 +16,9 @@ internal sealed class GetAccountFaceEndpoint(
 		Get("/account/{Player}/face", "/account/{Player}/face.png");
 		AllowAnonymous();
 		Version(0);
+		
+		// 4 hour cache
+		ResponseCache(4 * 60 * 60);
 
 		Summary(s => {
 			s.Summary = "Get Minecraft Account Face Image";
