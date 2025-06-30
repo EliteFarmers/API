@@ -23,14 +23,14 @@ public class MinecraftAccountMapper : Profile
         CreateMap<MinecraftAccount, MinecraftAccountDto>()
             .ForMember(a => a.FormattedName, opt => opt.MapFrom(a => a.EliteAccount != null ? a.EliteAccount.GetFormattedIgn() : a.Name))
             .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected))
-            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties))
+            .ForMember(a => a.Skin, opt => opt.MapFrom(a => a.Skin))
             .ForMember(a => a.Badges, opt => opt.MapFrom(a => a.Badges))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
 
         CreateMap<MinecraftAccount, MinecraftAccountDetailsDto>()
             .ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected))
             .ForMember(a => a.Badges, opt => opt.MapFrom(a => a.Badges))
-            .ForMember(a => a.Properties, opt => opt.MapFrom(a => a.Properties));
+            .ForMember(a => a.Skin, opt => opt.MapFrom(a => a.Skin));
     }
 }
 
