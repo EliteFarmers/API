@@ -19,10 +19,14 @@ internal sealed class GetAccountFaceEndpoint(
 		
 		// 4 hour cache
 		ResponseCache(4 * 60 * 60);
-
+		
 		Summary(s => {
 			s.Summary = "Get Minecraft Account Face Image";
 			s.Description = "Returns an 8x8 or 72x72 face png image of the Minecraft account associated with the provided player name or UUID. 72x72 response includes the player's \"hat\" overlay. If not found, returns Steve's face.";
+		});
+		
+		Options(o => {
+			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(4)));
 		});
 	}
 
