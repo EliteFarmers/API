@@ -44,6 +44,7 @@ internal sealed class JoinEventEndpoint(
         }
 
         await context.Entry(user).Reference(x => x.Account).LoadAsync(c);
+        await context.Entry(user.Account).Collection(x => x.MinecraftAccounts).LoadAsync(c);
         var account = user.Account;
         
         if (DateTimeOffset.UtcNow > eliteEvent.JoinUntilTime || DateTimeOffset.UtcNow > eliteEvent.EndTime) {
