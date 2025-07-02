@@ -27,6 +27,7 @@ internal sealed class GetAccountFaceEndpoint(
 		
 		Options(o => {
 			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(4)));
+			o.DisableRateLimiting();
 		});
 	}
 

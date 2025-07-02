@@ -199,7 +199,7 @@ public static class ServiceExtensions
                 }
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                //Log the rate limit rejection
+                // Log the rate limit rejection
                 var logger = context.HttpContext.RequestServices.GetService<ILogger<ApiRateLimiterPolicy>>();
                 logger?.LogWarning("Rate limit exceeded for {Ip}", context.HttpContext.Connection.RemoteIpAddress);
                 
