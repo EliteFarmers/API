@@ -163,6 +163,7 @@ public partial class AuthService(
 	public async Task<(string token, DateTimeOffset expiry)> GenerateJwtToken(ApiUser user) {
 		// Load user accounts (and minecraft accounts)
 		await context.Entry(user).Reference(x => x.Account).LoadAsync();
+		await context.Entry(user.Account).Collection(x => x.MinecraftAccounts).LoadAsync();
 		
 		var primaryAccount = user.Account.MinecraftAccounts.FirstOrDefault(q => q.Selected)
 			?? user.Account.MinecraftAccounts.FirstOrDefault();
