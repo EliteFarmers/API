@@ -112,23 +112,7 @@ app.UseOutputCache();
 
 app.UseDefaultExceptionHandler();
 
-app.UseFastEndpoints(o => {
-    o.Binding.ReflectionCache.AddFromEliteAPI();
-    o.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-
-    o.Binding.UsePropertyNamingPolicy = true;
-    o.Versioning.Prefix = "v";
-    o.Versioning.PrependToRoute = true;
-    
-    o.Endpoints.Configurator = endpoints => {
-        if (endpoints.IdempotencyOptions is not null) {
-            endpoints.IdempotencyOptions.CacheDuration = TimeSpan.FromMinutes(1);
-        } 
-    };
-
-    o.Security.RoleClaimType = ClaimNames.Role;
-    o.Security.NameClaimType = ClaimNames.Name;
-});
+app.UseEliteFastEndpoints();
 
 app.UseEliteOpenApi();
 
