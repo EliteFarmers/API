@@ -16,6 +16,8 @@ internal sealed class ReorderCategoryProductsEndpoint(
 		Post("/shop/category/{CategoryId}/reorder");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
+		
+		Description(x => x.Accepts<ReorderCategoryProductsRequest>());
 
 		Summary(s => {
 			s.Summary = "Reorder Products in Shop Category";
