@@ -123,6 +123,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.LastUpdated, opt => opt.MapFrom(e => e.LastUpdated.ToUnixTimeSeconds().ToString()))
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
+            .ForMember(e => e.EstimatedTimeActive, opt => opt.MapFrom(e => e.EstimatedTimeActive.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)));
         
         CreateMap<MedalEventMember, EventMemberDetailsDto>()
@@ -135,6 +136,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.EstimatedTimeActive, opt => opt.MapFrom(e => e.EstimatedTimeActive.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
 
         CreateMap<PestEventMember, EventMemberDetailsDto>()
@@ -147,6 +149,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.EstimatedTimeActive, opt => opt.MapFrom(e => e.EstimatedTimeActive.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
 
         CreateMap<CollectionEventMember, EventMemberDetailsDto>()
@@ -159,6 +162,7 @@ public class EventMemberMappers : Profile {
             .ForMember(e => e.TeamId, opt => opt.MapFrom(e => e.TeamId.ToString()))
             .ForMember(e => e.Disqualified, opt => opt.MapFrom(e => e.IsDisqualified))
             .ForMember(e => e.Score, opt => opt.MapFrom(e => e.Score.ToString(CultureInfo.InvariantCulture)))
+            .ForMember(e => e.EstimatedTimeActive, opt => opt.MapFrom(e => e.EstimatedTimeActive.ToString(CultureInfo.InvariantCulture)))
             .ForMember(e => e.Data, opt => opt.MapFrom(e => e.Data));
         
         CreateMap<EventMember, AdminEventMemberDto>()
