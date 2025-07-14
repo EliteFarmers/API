@@ -30,7 +30,6 @@ public class CreateAnnouncementDto
     /// <summary>
     /// Type of the announcement
     /// </summary>
-    [JsonConverter(typeof(LowercaseEnumConverter<AnnouncementType>))]
     public AnnouncementType Type { get; set; } = AnnouncementType.Other;
     
     /// <summary>

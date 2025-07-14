@@ -36,6 +36,7 @@ internal sealed class GetAuthAccountEndpoint(
 				.ThenInclude(p => p.WeightStyles)
 			.Include(a => a.UserSettings)
 				.ThenInclude(a => a.WeightStyle)
+			.Include(a => a.DismissedAnnouncements)
 			.AsSplitQuery()
 			.FirstOrDefaultAsync(a => a.Id.Equals(user.AccountId), cancellationToken: c);
 

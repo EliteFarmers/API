@@ -26,10 +26,6 @@ public class AuthorizedAccountDto
     public string? Discriminator { get; set; }
     
     /// <summary>
-    /// Discord email, not asked for normally
-    /// </summary>
-    public string? Email { get; set; }
-    /// <summary>
     /// Discord user locale
     /// </summary>
     public string? Locale { get; set; }
@@ -39,14 +35,21 @@ public class AuthorizedAccountDto
     public string? Avatar { get; set; }
     
     public UserSettingsDto Settings { get; set; } = new();
+    
     /// <summary>
     /// Purchased entitlements from the Discord store
     /// </summary>
     public List<EntitlementDto> Entitlements { get; set; } = [];
+    
     /// <summary>
     /// Linked Minecraft accounts
     /// </summary>
     public List<MinecraftAccountDetailsDto> MinecraftAccounts { get; set; } = [];
+    
+    /// <summary>
+    /// Dismissed announcements by the user
+    /// </summary>
+    public List<string> DismissedAnnouncements { get; set; } = [];
 }
 
 [SwaggerSchema(Required = ["Id", "Name", "Properties", "PrimaryAccount"])]

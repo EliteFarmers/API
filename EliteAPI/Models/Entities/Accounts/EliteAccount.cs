@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Features.Articles.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Monetization;
@@ -26,6 +27,7 @@ public class EliteAccount
     public List<UserEntitlement> Entitlements { get; set; } = [];
     public List<MinecraftAccount> MinecraftAccounts { get; set; } = [];
     public List<ProductAccess> ProductAccesses { get; set; } = [];
+    public List<DismissedAnnouncement> DismissedAnnouncements { get; set; } = [];
     
     public string GetFormattedIgn()
     {

@@ -31,6 +31,7 @@ public static class SwaggerExtensions {
         doc.Version = version;
         
         doc.SchemaSettings.FlattenInheritanceHierarchy = true;
+        doc.SchemaSettings.SchemaProcessors.Add(new EnumAttributeSchemaProcessor());
     }
     
     public static WebApplication UseEliteOpenApi(this WebApplication app) {

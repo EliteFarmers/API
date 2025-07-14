@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Utilities;
 
 namespace EliteAPI.Features.Articles.Models;
 
@@ -24,6 +24,7 @@ public class Announcement
     public DateTimeOffset ExpiresAt { get; set; }
 }
 
+[JsonStringEnum]
 public enum AnnouncementType
 {
     Other = 0,
