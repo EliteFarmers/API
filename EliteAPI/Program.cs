@@ -142,7 +142,7 @@ app.Use(async (context, next) => {
     const string otherString = "Other";
     const string unknownString = "unknown";
     
-    const string skyHanniVersion = "version";
+    const string skyHanniVersion = "sh_version";
     const string skyHanniMcVersion = "mc_version";
     const string tagName = "user_agent";
     

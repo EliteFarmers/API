@@ -63,23 +63,7 @@ internal sealed class GetWeightForProfilesEndpoint(
 				return mapped;
 			}).ToList()
 		};
-        
-		// TODO: Remove this check after the next SkyHanni full release
-		// Check for user agent (ex: "SkyHanni/0.28.Beta.15") with a version lower than "0.28.Beta.14" since it errors with the mouse property
-		if (HttpContext.Request.Headers.TryGetValue("User-Agent", out var userAgent) && userAgent.ToString().Contains("SkyHanni"))
-		{
-			try {
-				var version = userAgent.ToString().Split("/")[1].Replace("Beta.", "");
-				if (System.Version.Parse(version) < System.Version.Parse("0.28.14")) {
-					foreach (var profile in dto.Profiles) {
-						profile.Pests.Mouse = null; // Remove mouse from the response
-					}
-				}
-			} catch (Exception) {
-				return TypedResults.Ok(dto);
-			}
-		}
-        
+		
 		return TypedResults.Ok(dto);
 	}
 }
