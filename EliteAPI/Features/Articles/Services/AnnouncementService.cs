@@ -1,4 +1,5 @@
 using EliteAPI.Data;
+using EliteAPI.Features.Articles.Models;
 using ErrorOr;
 using FastEndpoints;
 using Microsoft.AspNetCore.OutputCaching;
@@ -40,9 +41,20 @@ public class AnnouncementService(DataContext context, IOutputCacheStore cacheSto
             return Error.NotFound(description: "Announcement not found");
         }
 
-        context.Announcements.Remove(announcement);
+        var dismissed = await context.DismissedAnnouncements
+            .FirstOrDefaultAsync(d => d.AnnouncementId == announcementId && d.AccountId == accountId, c);
+        
+        if (dismissed is not null) {
+            return Error.Conflict(description: "Announcement already dismissed");
+        }
+
+        context.DismissedAnnouncements.Add(new DismissedAnnouncement()
+        {
+            AccountId = accountId,
+            AnnouncementId = announcementId,
+        });
+        
         await context.SaveChangesAsync(c);
-        await cacheStore.EvictByTagAsync("announcements", c);
         
         return Result.Success;
     }
