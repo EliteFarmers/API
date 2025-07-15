@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Features.Articles.Models;
+using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Monetization;

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using EliteAPI.Utilities;
 
-namespace EliteAPI.Features.Articles.Models;
+namespace EliteAPI.Features.Announcements.Models;
 
 public class Announcement
 {

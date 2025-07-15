@@ -3,7 +3,7 @@ using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EliteAPI.Features.Articles.Models;
+namespace EliteAPI.Features.Announcements.Models;
 
 public class DismissedAnnouncement
 {

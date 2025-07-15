@@ -2,7 +2,7 @@ using EliteAPI.Utilities;
 using ErrorOr;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Articles;
+namespace EliteAPI.Features.Announcements;
 
 internal sealed class DismissAnnouncementDto
 {

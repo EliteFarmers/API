@@ -1,11 +1,11 @@
 using EliteAPI.Data;
-using EliteAPI.Features.Articles.Models;
+using EliteAPI.Features.Announcements.Models;
 using ErrorOr;
 using FastEndpoints;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Articles;
+namespace EliteAPI.Features.Announcements;
 
 interface IAnnouncementService
 {

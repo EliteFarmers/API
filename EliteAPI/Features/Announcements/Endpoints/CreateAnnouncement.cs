@@ -2,7 +2,7 @@ using EliteAPI.Features.Auth;
 using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Articles;
+namespace EliteAPI.Features.Announcements;
 
 internal sealed class CreateAnnouncementEndpoint(
     IAnnouncementService announcementService

@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using EliteAPI.Features.Articles.Models;
+using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Utilities;
 using Riok.Mapperly.Abstractions;
 
-namespace EliteAPI.Features.Articles;
+namespace EliteAPI.Features.Announcements;
 
 [Mapper]
 public static partial class AnnouncementMapper

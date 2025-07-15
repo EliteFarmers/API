@@ -1,6 +1,6 @@
 using FastEndpoints;
 
-namespace EliteAPI.Features.Articles;
+namespace EliteAPI.Features.Announcements;
 
 internal sealed class GetAnnouncementEndpoint(
     IAnnouncementService announcementService

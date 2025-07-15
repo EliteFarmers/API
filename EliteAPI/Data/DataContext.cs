@@ -1,4 +1,4 @@
-﻿using EliteAPI.Features.Articles.Models;
+﻿using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
@@ -145,11 +145,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<AuctionBinPrice> AuctionBinPrices { get; set; } = null!;
     public DbSet<AuctionItem> AuctionItems { get; set; } = null!;
     
-    // Annoucements / blogs
-    public DbSet<Article> Articles { get; set; } = null!;
-    public DbSet<PostTag> PostTags { get; set; } = null!;
-    public DbSet<ArticlePostTag> ArticlePostTags { get; set; } = null!;
-    public DbSet<ArticleImage> ArticleImages { get; set; } = null!;
+    // Annoucements 
     public DbSet<Announcement> Announcements { get; set; } = null!;
     public DbSet<DismissedAnnouncement> DismissedAnnouncements { get; set; } = null!;
 }
