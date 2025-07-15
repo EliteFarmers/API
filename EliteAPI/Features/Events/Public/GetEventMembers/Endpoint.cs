@@ -41,6 +41,7 @@ internal sealed class GetEventMembersEndpoint(
 		var members = await context.EventMembers.AsNoTracking()
 			.Include(e => e.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)
+			.ThenInclude(m => m.EliteAccount!.UserSettings)
 			.Include(e => e.ProfileMember)
 			.ThenInclude(p => p.Metadata)
 			.AsNoTracking()

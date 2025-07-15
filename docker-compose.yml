@@ -65,14 +65,14 @@ services:
     networks:
         - eliteapi-network
   prometheus:
-    image: prom/prometheus:v2.55.1
+    image: prom/prometheus:v3.5.0
     restart: unless-stopped
     ports:
         - '9090:9090'
     expose:
         - '9090'
     volumes:
-        - ./EliteAPI/Data/Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        - ./EliteAPI/Data/Prometheus:/etc/prometheus
         - prometheus-data:/data
     networks:
         - eliteapi-network

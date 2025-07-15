@@ -117,17 +117,49 @@ app.UseEliteFastEndpoints();
 app.UseEliteOpenApi();
 
 app.Use(async (context, next) => {
-    var tagsFeature = context.Features.Get<IHttpMetricsTagsFeature>();
-    if (tagsFeature is not null) {
-        var userAgent = context.Request.Headers.UserAgent.ToString() switch {
-            var ua when ua.StartsWith("SkyHanni") => "SkyHanni",
-            var ua when ua.StartsWith("Mozilla") => "Browser",
-            var ua when ua.StartsWith("EliteWebsite") => "EliteWebsite",
-            var ua when ua.StartsWith("EliteDiscordBot") => "EliteBot",
-            _ => "Other"
-        };
+    const string skyHanni = "SkyHanni";
+    const string eliteWebsiteUserAgent = "EliteWebsite";
+    const string eliteDiscordBotUserAgent = "EliteDiscordBot";
+    const string eliteBotString = "EliteBot";
+    const string browserUserAgent = "Mozilla";
+    const string browserString = "Browser";
+    const string otherString = "Other";
+    const string unknownString = "unknown";
+    
+    const string skyHanniVersion = "sh_version";
+    const string skyHanniMcVersion = "mc_version";
+    const string tagName = "user_agent";
+    
+    var metricTags = context.Features.Get<IHttpMetricsTagsFeature>();
+    if (metricTags is not null) {
+        var userAgentHeader = context.Request.Headers.UserAgent.ToString();
         
-        tagsFeature.Tags.Add(new KeyValuePair<string, object?>("user_agent", userAgent));
+        var userAgentGroup = userAgentHeader switch {
+            _ when userAgentHeader.StartsWith(skyHanni) => skyHanni,
+            _ when userAgentHeader.StartsWith(browserUserAgent) => browserString,
+            _ when userAgentHeader.StartsWith(eliteWebsiteUserAgent) => eliteWebsiteUserAgent,
+            _ when userAgentHeader.StartsWith(eliteDiscordBotUserAgent) => eliteBotString,
+            _ => otherString
+        };
+
+        if (userAgentGroup == skyHanni)
+        {
+            var parts = userAgentHeader.Split('/');
+            var version = parts.Length > 1 ? parts[1] : unknownString;
+            
+            if (version.Contains('-'))
+            {
+                var versionParts = version.Split('-');
+                version = versionParts[0];
+                var mcVersion = versionParts.Length > 1 ? versionParts[1] : unknownString;
+            
+                metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniMcVersion, mcVersion));
+            }
+            
+            metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniVersion, version));
+        }
+        
+        metricTags.Tags.Add(new KeyValuePair<string, object?>(tagName, userAgentGroup));
     }
 
     await next.Invoke();
