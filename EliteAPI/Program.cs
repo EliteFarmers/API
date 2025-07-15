@@ -163,15 +163,16 @@ app.Use(async (context, next) => {
             var parts = userAgentHeader.Split('/');
             var version = parts.Length > 1 ? parts[1] : unknownString;
             
-            metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniVersion, version));
-
             if (version.Contains('-'))
             {
                 var versionParts = version.Split('-');
+                version = versionParts[0];
                 var mcVersion = versionParts.Length > 1 ? versionParts[1] : unknownString;
             
                 metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniMcVersion, mcVersion));
             }
+            
+            metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniVersion, version));
         }
         
         metricTags.Tags.Add(new KeyValuePair<string, object?>(tagName, userAgentGroup));
