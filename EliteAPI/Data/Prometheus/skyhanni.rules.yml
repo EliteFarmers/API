@@ -1,0 +1,30 @@
+groups:
+  - name: SkyHanniVersionRules
+    interval: 5m
+    rules:
+      # SkyHanni Major Version Metrics
+      - record: skyhanni:sh_version:requests_rate_by_major_version:5m
+        expr: >
+          sum by (major_version) (
+            label_replace(
+              rate(http_server_request_duration_seconds_count{user_agent="SkyHanni", sh_version!=""}[5m]),
+              "major_version", "$1", "sh_version", "(\\d+)\\..*"
+            )
+          )
+          
+      # Minecraft Version Metrics
+      - record: skyhanni:mc_version:requests_rate:5m
+        expr: >
+          sum by (mc_version) (
+          rate(http_server_request_duration_seconds_count{user_agent="SkyHanni", mc_version!=""}[5m])
+          )
+          
+      # SkyHanni Major Version and Minecraft Version Metrics
+      - record: skyhanni:sh_major_version_mc_version:requests_rate:5m
+        expr: >
+          sum by (major_version, mc_version) (
+            label_replace(
+              rate(http_server_request_duration_seconds_count{user_agent="SkyHanni", sh_version!="", mc_version!=""}[5m]),
+              "major_version", "$1", "sh_version", "(\\d+)\\..*"
+            )
+          )
