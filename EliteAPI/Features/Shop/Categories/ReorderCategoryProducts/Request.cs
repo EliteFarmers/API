@@ -7,6 +7,7 @@ internal sealed class ReorderCategoryProductsRequest : ReorderStringRequest {
 	/// <summary>
 	/// Category id
 	/// </summary>
+	[RouteParam]
 	public required int CategoryId { get; set; }
 }
 
