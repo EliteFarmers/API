@@ -2,11 +2,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Images;
+using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Events;
 
+[JsonStringEnum]
 public enum EventType {
     None = 0,
     FarmingWeight = 1,

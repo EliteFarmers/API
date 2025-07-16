@@ -105,18 +105,16 @@ public class EventService(
 		return eliteEvent;
 	}
 
-	public async Task<ActionResult<EventMember>> CreateEventMember(Event eliteEvent, CreateEventMemberDto eventMemberDto) {
-		switch (eliteEvent) {
-			case WeightEvent weightEvent:
-				return await CreateWeightEventMember(weightEvent, eventMemberDto);
-			case MedalEvent medalEvent:
-				return await CreateMedalsEventMember(medalEvent, eventMemberDto);
-			case PestEvent pestEvent:
-				return await CreatePestsEventMember(pestEvent, eventMemberDto);
-			case CollectionEvent collectionEvent:
-				return await CreateCollectionEventMember(collectionEvent, eventMemberDto);
-		}
-		return new BadRequestObjectResult("Invalid event type");
+	public async Task<ActionResult<EventMember>> CreateEventMember(Event eliteEvent, CreateEventMemberDto eventMemberDto)
+	{
+		return eliteEvent switch
+		{
+			WeightEvent weightEvent => await CreateWeightEventMember(weightEvent, eventMemberDto),
+			MedalEvent medalEvent => await CreateMedalsEventMember(medalEvent, eventMemberDto),
+			PestEvent pestEvent => await CreatePestsEventMember(pestEvent, eventMemberDto),
+			CollectionEvent collectionEvent => await CreateCollectionEventMember(collectionEvent, eventMemberDto),
+			_ => new BadRequestObjectResult("Invalid event type")
+		};
 	}
 
 	public async Task<EventMember?> GetEventMemberByIdAsync(string userId, ulong eventId) {
@@ -267,8 +265,8 @@ public class EventService(
 	}
 	
 	private ActionResult<Event> CreateWeightEvent(CreateEventDto eventDto, ulong guildId) {
-		var eliteEvent = new MedalEvent {
-			Type = EventType.Medals,
+		var eliteEvent = new WeightEvent {
+			Type = EventType.FarmingWeight,
 		};
 		return SetEventValuesAndAdd(eliteEvent, eventDto, guildId);
 	} 
@@ -332,43 +330,9 @@ public class EventService(
 			
 		@event.GuildId = guildId;
 		
-		if (!PopulateEventData(@event, eventDto)) {
-			return new BadRequestObjectResult("Invalid event data");
-		}
-		
 		AddEvent(@event);
 		
 		return @event;
-	}
-	
-	private static bool PopulateEventData(Event @event, CreateEventDto eventDto) {
-		switch (eventDto.Type) {
-			case EventType.None:
-			case EventType.FarmingWeight:
-				if (@event is WeightEvent weightEvent) {
-                    weightEvent.Data = (eventDto is CreateWeightEventDto weightDto ? weightDto.Data : null) ?? weightEvent.Data;
-                }
-				break;
-			case EventType.Medals:
-				if (@event is MedalEvent medalEvent) {
-                    medalEvent.Data = (eventDto is CreateMedalEventDto medalDto ? medalDto.Data : null) ?? medalEvent.Data;
-                }
-				break;
-			case EventType.Pests:
-				if (@event is PestEvent pestEvent) {
-					pestEvent.Data = (eventDto is CreatePestEventDto pestDto ? pestDto.Data : null) ?? pestEvent.Data;
-				}
-				break;
-			case EventType.Collection:
-				if (@event is CollectionEvent collectionEvent) {
-					collectionEvent.Data = (eventDto is CreateCollectionEventDto collectionDto ? collectionDto.Data : null) ?? collectionEvent.Data;
-				}
-				break;
-			default:
-				return false;
-		}
-		
-		return true;
 	}
 	
 	private void AddEvent(Event @event) {

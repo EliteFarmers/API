@@ -336,34 +336,6 @@ public class CreateEventDto {
     public int MaxTeamMembers { get; set; } = 0;
 }
 
-public class CreateWeightEventDto : CreateEventDto {
-    /// <summary>
-    /// Data specific to the weight event
-    /// </summary>
-    public WeightEventData? Data { get; set; } = new();
-}
-
-public class CreateMedalEventDto : CreateEventDto {
-    /// <summary>
-    /// Data specific to the medal event
-    /// </summary>
-    public MedalEventData? Data { get; set; } = new();
-}
-
-public class CreatePestEventDto : CreateEventDto {
-    /// <summary>
-    /// Data specific to the pest event
-    /// </summary>
-    public PestEventData? Data { get; set; } = new();
-}
-
-public class CreateCollectionEventDto : CreateEventDto {
-    /// <summary>
-    /// Data specific to the pest event
-    /// </summary>
-    public CollectionEventData? Data { get; set; } = new();
-}
-
 public class CreateEventMemberDto  {
     public ulong EventId { get; set; }
     public EventType Type { get; set; }

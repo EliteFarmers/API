@@ -13,7 +13,7 @@ public class JsonStringEnumAttribute : JsonConverterAttribute
 {
     public override JsonConverter CreateConverter(Type typeToConvert)
     {
-        return new JsonStringEnumConverter(JsonNamingPolicy.CamelCase);
+        return new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower);
     }
 }
 
@@ -38,10 +38,10 @@ public class EnumAttributeSchemaProcessor : ISchemaProcessor
         schema.Enumeration.Clear();
         schema.EnumerationNames.Clear(); // Clear out the default integer values
 
-        // Add the camel-cased string values
+        // Add the string values
         foreach (var name in Enum.GetNames(type))
         {
-            schema.Enumeration.Add(JsonNamingPolicy.CamelCase.ConvertName(name));
+            schema.Enumeration.Add(JsonNamingPolicy.KebabCaseLower.ConvertName(name));
         }
     }
 }

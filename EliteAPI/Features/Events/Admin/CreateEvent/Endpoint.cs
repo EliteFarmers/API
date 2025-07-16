@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EliteAPI.Authentication;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.Common;
@@ -7,30 +8,30 @@ using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Features.Events.Admin.CreateEventCollection;
+namespace EliteAPI.Features.Events.Admin.CreateEvent;
 
-internal sealed class CreateCollectionEventRequest : DiscordIdRequest {
+internal sealed class CreateEventRequest : DiscordIdRequest {
 	[FastEndpoints.FromBody]
-	public required CreateCollectionEventDto Event { get; set; }
+	public required CreateEventDto Event { get; set; }
 }
 
-internal sealed class CreateCollectionEventEndpoint(
+internal sealed class CreateWeightEventEndpoint(
 	IDiscordService discordService,
 	IEventService eventService,
 	AutoMapper.IMapper mapper
-) : Endpoint<CreateCollectionEventRequest, EventDetailsDto> {
+) : Endpoint<CreateEventRequest, EventDetailsDto> {
 
 	public override void Configure() {
-		Post("/guild/{DiscordId}/events/collection");
+		Post("/guild/{DiscordId}/events/weight");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Create Collection Event";
+			s.Summary = "Create Event";
 		});
 	}
 
-	public override async Task HandleAsync(CreateCollectionEventRequest request, CancellationToken c) {
+	public override async Task HandleAsync(CreateEventRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await SendNotFoundAsync(c);
@@ -41,7 +42,7 @@ internal sealed class CreateCollectionEventEndpoint(
 			ThrowError(reason);
 		}
 
-		request.Event.Type = EventType.Collection;
+		request.Event.Type ??= EventType.FarmingWeight;
 		var result = await eventService.CreateEvent(request.Event, request.DiscordIdUlong);
 
 		if (result.Result is BadRequestObjectResult badRequest) {
@@ -53,8 +54,8 @@ internal sealed class CreateCollectionEventEndpoint(
 	}
 }
 
-internal sealed class CreateCollectionEventRequestValidator : Validator<CreateCollectionEventRequest> {
-	public CreateCollectionEventRequestValidator() {
+internal sealed class CreateEventRequestValidator : Validator<CreateEventRequest> {
+	public CreateEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}
 }
