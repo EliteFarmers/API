@@ -33,18 +33,18 @@ internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings
 			var formattedKey = FormatUtils.GetFormattedCropName(key);
 			if (formattedKey is null) continue;
             
-			crops.Add(formattedKey, value);
+			crops.TryAdd(formattedKey, value);
 		}
         
-		var reversed = FarmingWeightConfig.Settings.PestDropBrackets
+		var reversed = _weightSettings.PestDropBrackets
 			.DistinctBy(p => p.Value)
 			.ToDictionary(pair => pair.Value, pair => pair.Key);
 
 		var result = new WeightsDto {
 			Crops = crops,
 			Pests = {
-				Brackets = FarmingWeightConfig.Settings.PestDropBrackets,
-				Values = FarmingWeightConfig.Settings.PestCropDropChances
+				Brackets = _weightSettings.PestDropBrackets,
+				Values = _weightSettings.PestCropDropChances
 					.DistinctBy(p => p.Key.ToString().ToLowerInvariant())
 					.ToDictionary(
 						pair => pair.Key.ToString().ToLowerInvariant(), 
