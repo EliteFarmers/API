@@ -9,7 +9,7 @@
     <ItemGroup>
       <PackageReference Include="Refit" Version="8.0.0" />
       <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
-      <PackageReference Include="System.Threading.RateLimiting" Version="9.0.6" />
+      <PackageReference Include="System.Threading.RateLimiting" Version="9.0.7" />
     </ItemGroup>
     
 </Project>
