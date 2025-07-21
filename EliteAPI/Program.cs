@@ -160,6 +160,15 @@ app.Use(async (context, next) => {
         }
         
         metricTags.Tags.Add(new KeyValuePair<string, object?>(tagName, userAgentGroup));
+
+        if (context.Request.Headers.TryGetValue("X-Known-Bot", out var bot))
+        {
+            if (bot.Count > 0 && bot[0]!.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                metricTags.Tags.Add(new KeyValuePair<string, object?>("known_bot", "1"));
+                context.Items["known_bot"] = true;
+            }
+        }
     }
 
     await next.Invoke();

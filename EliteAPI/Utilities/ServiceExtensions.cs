@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
@@ -212,9 +213,7 @@ public static class ServiceExtensions
                 var remoteIpAddress = context.Connection.RemoteIpAddress;
 
                 // Check if IP address is from docker network
-                if (remoteIpAddress is null 
-                    || IPAddress.IsLoopback(remoteIpAddress) 
-                    || remoteIpAddress.IsFromDockerNetwork())
+                if (remoteIpAddress is null || remoteIpAddress.IsPrivate())
                 {
                     return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
                 }
@@ -235,10 +234,43 @@ public static class ServiceExtensions
         return services;
     }
 
-    public static bool IsFromDockerNetwork(this IPAddress ip)
+    /// <summary>
+    /// Determines if an IP address is within one of the RFC 1918 private ranges.
+    /// </summary>
+    public static bool IsPrivate(this IPAddress ip)
     {
-        // Check if the IP address is from the Docker network or local.
-        return IPAddress.IsLoopback(ip) || ip.ToString().StartsWith("172.") || ip.MapToIPv4().ToString().StartsWith("172.");
+        if (IPAddress.IsLoopback(ip))
+        {
+            return true;
+        }
+
+        if (ip.IsIPv4MappedToIPv6)
+        {
+            ip = ip.MapToIPv4();
+        }
+
+        if (ip.AddressFamily != AddressFamily.InterNetwork)
+        {
+            return false;
+        }
+
+        var ipBytes = ip.GetAddressBytes();
+
+        return ipBytes[0] switch
+        {
+            // Range: 10.0.0.0/8
+            10 => true,
+            // Range: 172.16.0.0/12
+            172 => ipBytes[1] >= 16 && ipBytes[1] <= 31,
+            // Range: 192.168.0.0/16
+            192 => ipBytes[1] == 168,
+            _ => false
+        };
+    }
+
+    public static bool IsKnownBot(this HttpContext context)
+    {
+        return context.Items.TryGetValue("known_bot", out var isKnownBot) && isKnownBot is true;
     }
 }
 
