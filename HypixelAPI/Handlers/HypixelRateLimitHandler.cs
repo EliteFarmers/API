@@ -8,7 +8,7 @@ namespace HypixelAPI.Handlers;
 public class HypixelRateLimitHandler(
 	IHypixelRequestLimiter limiter,
 	IHypixelKeyUsageCounter keyUsageCounter
-	) : DelegatingHandler, IAsyncDisposable
+	) : DelegatingHandler
 {
 	private const string RateLimitRemaining = "ratelimit-remaining";
 	private const string RateLimitLimit = "ratelimit-limit";
@@ -42,35 +42,17 @@ public class HypixelRateLimitHandler(
 		keyUsageCounter.Increment();
 		var response = await base.SendAsync(request, cancellationToken);
 
-		if (!response.Headers.TryGetValues(RateLimitLimit, out var limitValues)) {
-			return response;
-		}
-		
-		var limit = limitValues.FirstOrDefault();
-		if (!int.TryParse(limit, out var limitInt)) {
-			return response;
-		}
-
-		if (!response.Headers.TryGetValues(RateLimitRemaining, out var remainingValues)) {
-			limiter.UpdateRequestLimit(limitInt);
-			return response;
-		}
-		
-		var remaining = remainingValues.FirstOrDefault();
-		if (int.TryParse(remaining, out var remainingInt)) {
-			limiter.UpdateRequestLimit(limitInt, remainingInt);
-		} else {
-			limiter.UpdateRequestLimit(limitInt);
+		if (response.Headers.TryGetValues(RateLimitLimit, out var limitValues) &&
+		    response.Headers.TryGetValues(RateLimitRemaining, out var remainingValues))
+		{
+			if (int.TryParse(limitValues.FirstOrDefault(), out var limitInt) &&
+			    int.TryParse(remainingValues.FirstOrDefault(), out var remainingInt))
+			{
+				// Sync the limiter with the authoritative state from the server.
+				limiter.Sync(limitInt, remainingInt);
+			}
 		}
 		
 		return response;
-	}
-
-	async ValueTask IAsyncDisposable.DisposeAsync()
-	{
-		await limiter.DisposeAsync().ConfigureAwait(false);
-
-		Dispose(disposing: false);
-		GC.SuppressFinalize(this);
 	}
 }
