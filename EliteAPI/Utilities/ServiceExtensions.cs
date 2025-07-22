@@ -94,7 +94,10 @@ public static class ServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddEliteScopedServices(this IServiceCollection services) {
+    public static IServiceCollection AddEliteScopedServices(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IHypixelService, HypixelService>();
         services.AddScoped<IMojangService, MojangService>();
@@ -268,8 +271,9 @@ public static class ServiceExtensions
         };
     }
 
-    public static bool IsKnownBot(this HttpContext context)
+    public static bool IsKnownBot(this HttpContext? context)
     {
+        if (context is null) return false;
         return context.Items.TryGetValue("known_bot", out var isKnownBot) && isKnownBot is true;
     }
 }

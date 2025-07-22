@@ -15,6 +15,7 @@ namespace EliteAPI.Services;
 
 public class MemberService(
     DataContext context,
+    IHttpContextAccessor contextAccessor,
     IServiceScopeFactory provider,
     IMojangService mojangService,
     IOptions<ConfigCooldownSettings> coolDowns,
@@ -76,6 +77,8 @@ public class MemberService(
     }
 
     public async Task UpdatePlayerIfNeeded(string playerUuid, float cooldownMultiplier = 1) {
+        if (contextAccessor.HttpContext.IsKnownBot()) return;
+        
         var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
         if (account is null) return;
         
@@ -89,6 +92,8 @@ public class MemberService(
     }  
     
     public async Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1) {
+        if (contextAccessor.HttpContext.IsKnownBot()) return;
+        
         var lastUpdated = await context.ProfileMembers
             .AsNoTracking()
             .Where(a => a.Id == memberId)
@@ -162,13 +167,13 @@ public class MemberService(
     
     public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {
         using var scope = provider.CreateScope();
-        await using var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+        await using var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
         
-        var mojangService = scope.ServiceProvider.GetRequiredService<IMojangService>();
+        var mojang = scope.ServiceProvider.GetRequiredService<IMojangService>();
         var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
         var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
         
-        var minecraftAccount = account ?? await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
+        var minecraftAccount = account ?? await mojang.GetMinecraftAccountByUuidOrIgn(playerUuid);
         if (minecraftAccount is null) return;
         
         playerUuid = minecraftAccount.Id;
@@ -178,7 +183,7 @@ public class MemberService(
         
         if (player?.Player is null) return;
         
-        var existing = await context.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
+        var existing = await dataContext.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
         var playerData = mapper.Map<PlayerData>(player.Player);
         
         if (existing is null) {
@@ -187,7 +192,7 @@ public class MemberService(
             minecraftAccount.PlayerData = playerData;
             minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             
-            context.PlayerData.Add(playerData);
+            dataContext.PlayerData.Add(playerData);
         } else {
             mapper.Map(playerData, existing);
 
@@ -195,15 +200,15 @@ public class MemberService(
                 existing.MinecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             } else {
                 minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                if (context.Entry(minecraftAccount).State == EntityState.Detached) {
-                    context.Entry(minecraftAccount).State = EntityState.Modified;
+                if (dataContext.Entry(minecraftAccount).State == EntityState.Detached) {
+                    dataContext.Entry(minecraftAccount).State = EntityState.Modified;
                 }
             }
             
-            context.PlayerData.Update(existing);
+            dataContext.PlayerData.Update(existing);
         }
         
-        await context.SaveChangesAsync();
+        await dataContext.SaveChangesAsync();
     }
 }
 
