@@ -4,7 +4,7 @@ using EliteAPI.Models.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace EliteAPI.Models.Entities.Accounts;
+namespace EliteAPI.Features.Account.Models;
 
 public class Badge {
     [Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

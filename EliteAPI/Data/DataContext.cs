@@ -1,11 +1,11 @@
-﻿using EliteAPI.Features.Announcements.Models;
+﻿using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Items.Models;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;

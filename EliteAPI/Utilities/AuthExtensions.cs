@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Auth.Models;
 
 namespace EliteAPI.Utilities;
 

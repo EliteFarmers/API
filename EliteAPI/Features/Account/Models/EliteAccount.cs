@@ -5,7 +5,7 @@ using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Monetization;
 
-namespace EliteAPI.Models.Entities.Accounts; 
+namespace EliteAPI.Features.Account.Models; 
 
 [Table("Accounts")]
 public class EliteAccount

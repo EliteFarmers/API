@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;

@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
 using EliteAPI.Authentication;
+using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Images;
 

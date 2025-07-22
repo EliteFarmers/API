@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;

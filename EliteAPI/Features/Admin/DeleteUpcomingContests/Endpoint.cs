@@ -1,4 +1,4 @@
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using StackExchange.Redis;

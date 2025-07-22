@@ -1,3 +1,4 @@
+using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;

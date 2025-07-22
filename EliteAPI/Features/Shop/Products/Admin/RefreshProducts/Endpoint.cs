@@ -1,6 +1,7 @@
 using EliteAPI.Background.Discord;
+using EliteAPI.Features.Account.DTOs;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.OutputCaching;

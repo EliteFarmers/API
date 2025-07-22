@@ -1,7 +1,7 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Outgoing.Shop;
-using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 

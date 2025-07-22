@@ -1,13 +1,15 @@
 ﻿using EliteAPI.Data;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Services.Interfaces;
+using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Account.Services;
 
-public class BadgeService(DataContext context, IMojangService mojangService) : IBadgeService {
-    
+[RegisterService<IBadgeService>(LifeTime.Scoped)]
+public class BadgeService(DataContext context, IMojangService mojangService) : IBadgeService 
+{
     public async Task<Badge?> GetBadgeById(int id) {
         return await context.Badges.FindAsync(id);
     }

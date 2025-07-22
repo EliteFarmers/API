@@ -1,7 +1,7 @@
-﻿using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Features.Account.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Services.Interfaces;
+namespace EliteAPI.Features.Account.Services;
 
 public interface IBadgeService {
     public Task<Badge?> GetBadgeById(int id);

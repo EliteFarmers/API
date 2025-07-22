@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Models.Entities.Discord;
 
 namespace EliteAPI.Features.Monetization.Models;

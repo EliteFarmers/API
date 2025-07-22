@@ -1,15 +1,17 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
-using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.DTOs;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Account.Services;
 
+[RegisterService<IAccountService>(LifeTime.Scoped)]
 public class AccountService(
     DataContext context, 
     IMemberService memberService,

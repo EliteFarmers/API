@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 
-namespace EliteAPI.Models.Entities.Monetization;
+namespace EliteAPI.Features.Monetization.Models;
 
 public class UserEntitlement : Entitlement {
 	[ForeignKey("Account")]

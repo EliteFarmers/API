@@ -1,6 +1,6 @@
 using EliteAPI.Data;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.Common;
-using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;

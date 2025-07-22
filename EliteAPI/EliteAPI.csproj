@@ -58,9 +58,11 @@
 	<ItemGroup>
 		<Folder Include="Data\Grafana\Datasources\" />
 		<Folder Include="Data\Grafana\Dashboards\" />
+		<Folder Include="Features\Account\Endpoints\" />
 		<Folder Include="Features\Auth\Endpoints\" />
 		<Folder Include="Features\Events\Admin\Members\" />
 		<Folder Include="Features\Profiles\Models\" />
+		<Folder Include="Models\Entities\Accounts\" />
 	</ItemGroup>
 
 	<ItemGroup>

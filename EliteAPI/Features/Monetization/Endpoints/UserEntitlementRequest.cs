@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.Entities.Monetization;
 using FastEndpoints;

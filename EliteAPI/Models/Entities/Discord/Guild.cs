@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Images;
-using EliteAPI.Models.Entities.Monetization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

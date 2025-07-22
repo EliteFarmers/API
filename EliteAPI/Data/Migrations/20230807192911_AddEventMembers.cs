@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using Microsoft.EntityFrameworkCore.Migrations;

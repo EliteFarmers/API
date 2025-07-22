@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Models.Entities.Discord;
 
-namespace EliteAPI.Models.Entities.Monetization;
+namespace EliteAPI.Features.Monetization.Models;
 
 public class GuildEntitlement : Entitlement {
 	[ForeignKey("User")]

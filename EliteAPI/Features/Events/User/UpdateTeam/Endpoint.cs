@@ -1,6 +1,6 @@
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;

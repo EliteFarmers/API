@@ -1,8 +1,10 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Account.DTOs;
+using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 

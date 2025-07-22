@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Models;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

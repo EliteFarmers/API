@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
+using EliteAPI.Features.Account.DTOs;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Mappers.Accounts;

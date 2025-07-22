@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Models.Entities.Accounts; 
+namespace EliteAPI.Features.Account.Models; 
 
 [Index(nameof(Name), Name = "idx_minecraft_accounts_name")]
 public class MinecraftAccount

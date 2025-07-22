@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Monetization;
 
-namespace EliteAPI.Models.Entities.Accounts;
+namespace EliteAPI.Features.Account.Models;
 
 public class UserSettings {
 	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

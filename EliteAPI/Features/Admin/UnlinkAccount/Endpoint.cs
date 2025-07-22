@@ -1,4 +1,5 @@
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Account.Services;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;

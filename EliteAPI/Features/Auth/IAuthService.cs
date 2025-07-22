@@ -1,5 +1,5 @@
-﻿using EliteAPI.Models.DTOs.Auth;
-using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Features.Auth.Models;
+using EliteAPI.Models.DTOs.Auth;
 
 namespace EliteAPI.Features.Auth;
 

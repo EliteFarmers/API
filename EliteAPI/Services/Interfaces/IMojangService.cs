@@ -1,4 +1,4 @@
-﻿using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Features.Account.Models;
 
 namespace EliteAPI.Services.Interfaces;
 

@@ -5,7 +5,7 @@ using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
@@ -102,12 +102,10 @@ public static class ServiceExtensions
         services.AddScoped<IHypixelService, HypixelService>();
         services.AddScoped<IMojangService, MojangService>();
         services.AddScoped<IMemberService, MemberService>();
-        services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IDiscordService, DiscordService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
-        services.AddScoped<IBadgeService, BadgeService>();
         services.RegisterServicesFromEliteAPI();
 
         services.AddScoped<LocalOnlyMiddleware>();

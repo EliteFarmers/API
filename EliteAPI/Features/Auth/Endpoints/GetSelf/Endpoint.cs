@@ -1,6 +1,6 @@
 using System.Security.Claims;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Auth;
-using EliteAPI.Models.Entities.Accounts;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.GetSelf;

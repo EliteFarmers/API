@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using EliteAPI.Features.Account.DTOs;
 
 namespace EliteAPI.Models.DTOs.Outgoing.Shop;
 

@@ -1,8 +1,8 @@
-﻿using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
+﻿using EliteAPI.Features.Account.DTOs;
+using EliteAPI.Features.Account.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Services.Interfaces;
+namespace EliteAPI.Features.Account.Services;
 
 public interface IAccountService
 {

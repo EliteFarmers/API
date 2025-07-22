@@ -1,5 +1,5 @@
 using System.Text.Json;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Auth.Models;
 using ErrorOr;
 using FastEndpoints;
 

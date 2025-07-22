@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using EliteAPI.Data;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.Entities.Monetization;
 using FastEndpoints;
 using FluentValidation;

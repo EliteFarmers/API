@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Models.Entities.Accounts;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Events;
 

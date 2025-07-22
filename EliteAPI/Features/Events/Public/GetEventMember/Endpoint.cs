@@ -1,8 +1,8 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Utilities;
 using FastEndpoints;

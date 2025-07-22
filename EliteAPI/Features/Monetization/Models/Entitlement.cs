@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using EliteAPI.Models.Entities.Monetization;
 
-namespace EliteAPI.Models.Entities.Monetization;
+namespace EliteAPI.Features.Monetization.Models;
 
 // https://discord.com/developers/docs/monetization/entitlements#entitlement-object-entitlement-types
 public enum EntitlementType {

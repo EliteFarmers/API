@@ -1,21 +1,24 @@
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Features.Account.UnlinkAccount;
+namespace EliteAPI.Features.Account.SetPrimaryAccount;
 
-internal sealed class UnlinkAccountEndpoint(
+internal sealed class SetPrimaryAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<PlayerRequest> {
 	
 	public override void Configure() {
-		Delete("/account/{Player}");
+		Post("/account/primary/{Player}");
 		Version(0);
-
+		
+		Description(s => s.Accepts<PlayerRequest>());
+		
 		Summary(s => {
-			s.Summary = "Unlink Account";
+			s.Summary = "Set Primary Account";
 		});
 	}
 
@@ -25,7 +28,7 @@ internal sealed class UnlinkAccountEndpoint(
 			ThrowError("Unauthorized", StatusCodes.Status401Unauthorized);
 		}
         
-		var result = await accountService.UnlinkAccount(id.Value, request.Player);
+		var result = await accountService.MakePrimaryAccount(id.Value, request.Player);
 
 		if (result is BadRequestObjectResult bad) {
 			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);

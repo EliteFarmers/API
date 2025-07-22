@@ -1,6 +1,6 @@
-﻿using EliteAPI.Models.DTOs.Incoming;
+﻿using EliteAPI.Features.Auth.Models;
+using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Accounts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.Interfaces; 

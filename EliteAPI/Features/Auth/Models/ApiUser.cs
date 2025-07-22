@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IdentityModel.Tokens.Jwt;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Models.Entities.Discord;
 using Microsoft.AspNetCore.Identity;
 
-namespace EliteAPI.Models.Entities.Accounts;
+namespace EliteAPI.Features.Auth.Models;
 
 public class ApiUser : IdentityUser {
 	[MaxLength(256)]

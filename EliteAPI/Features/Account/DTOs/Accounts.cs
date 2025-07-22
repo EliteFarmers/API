@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.DTOs.Incoming;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Monetization;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace EliteAPI.Models.DTOs.Outgoing;
+namespace EliteAPI.Features.Account.DTOs;
 
 [SwaggerSchema(Required = ["Id", "DisplayName", "Username", "Settings", "MinecraftAccounts"])]
 public class AuthorizedAccountDto

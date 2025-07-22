@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Models.DTOs.Incoming;
-using EliteAPI.Models.Entities.Accounts;
 
 namespace EliteAPI.Mappers.Accounts;
 

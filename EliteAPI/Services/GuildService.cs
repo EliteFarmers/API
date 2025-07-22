@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using EliteAPI.Data;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.DTOs.Outgoing.Messaging;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;

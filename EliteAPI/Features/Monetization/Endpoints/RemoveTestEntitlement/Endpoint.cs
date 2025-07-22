@@ -1,5 +1,6 @@
+using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Monetization.Services;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Models.Entities.Monetization;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Models.Entities.Accounts.ApiUser>;
+global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Features.Auth.Models.ApiUser>;
 using FastEndpoints;
 using System.Net;
 using System.Text.Json;
@@ -8,7 +8,6 @@ using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
-using EliteAPI.Models.Entities.Accounts;
 using EliteAPI.Utilities;
 using HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;

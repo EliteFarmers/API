@@ -1,5 +1,5 @@
 using EliteAPI.Features.Auth;
-using EliteAPI.Models.Entities.Accounts;
+using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Announcements;
