@@ -73,6 +73,20 @@
       "SQUASH_RING": -1,
       "CROPIE_TALISMAN": -1,
       "POWER_RELIC": -1
-    }
+    },
+    "ShardIds": [
+      "SHARD_WARTYBUG",
+      "SHARD_DRAGONFLY",
+      "SHARD_FIREFLY",
+      "SHARD_LUNAR_MOTH",
+      "SHARD_LADYBUG",
+      "SHARD_CROPEETLE",
+      "SHARD_INVISIBUG",
+      "SHARD_TERMITE",
+      "SHARD_PRAYING_MANTIS",
+      "SHARD_PEST",
+      "SHARD_MUDWORM",
+      "SHARD_GALAXY_FISH"
+    ]
   }
 }

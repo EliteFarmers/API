@@ -2,18 +2,16 @@ using System.Globalization;
 using System.Text;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Services;
-using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using ErrorOr;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Account.UpdateSettings;
 
 internal sealed class UpdateAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<UpdateUserSettingsDto> {
+) : Endpoint<UpdateUserSettingsDto, ErrorOr<Success>> {
 	
 	public override void Configure() {
 		Patch("/account/settings");
@@ -24,19 +22,14 @@ internal sealed class UpdateAccountEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(UpdateUserSettingsDto request, CancellationToken c) {
+	public override async Task<ErrorOr<Success>> ExecuteAsync(UpdateUserSettingsDto request, CancellationToken c) {
 		var id = User.GetDiscordId();
-		if (id is null) {
-			ThrowError("Unauthorized", StatusCodes.Status401Unauthorized);
+		if (id is null)
+		{
+			return Error.Unauthorized();
 		}
         
-		var result = await accountService.UpdateSettings(id.Value, request);
-
-		if (result is BadRequestObjectResult bad) {
-			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);
-		}
-
-		await SendNoContentAsync(cancellation: c);
+		return await accountService.UpdateSettings(id.Value, request);
 	}
 }
 
