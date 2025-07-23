@@ -4,6 +4,7 @@ using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using ErrorOr;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +16,12 @@ namespace EliteAPI.Features.Account.Services;
 public class AccountService(
     DataContext context, 
     IMemberService memberService,
-    IOptions<ConfigCooldownSettings> coolDowns) 
+    IOptions<ConfigCooldownSettings> coolDowns,
+    IOptions<FarmingItemsSettings> farmingItems) 
     : IAccountService 
 {
     private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
+    private readonly FarmingItemsSettings _farmingItems = farmingItems.Value;
     
     public Task<EliteAccount?> GetAccountByIgnOrUuid(string ignOrUuid) {
         return ignOrUuid.Length == 32 ? GetAccountByMinecraftUuid(ignOrUuid) : GetAccountByIgn(ignOrUuid);
@@ -30,6 +33,10 @@ public class AccountService(
             .ThenInclude(a => a.Badges)
             .Include(a => a.UserSettings)
             .ThenInclude(a => a.WeightStyle)
+            .Include(a => a.UserSettings)
+            .ThenInclude(a => a.LeaderboardStyle)
+            .Include(a => a.UserSettings)
+            .ThenInclude(a => a.NameStyle)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == accountId);
     }
@@ -136,6 +143,7 @@ public class AccountService(
     public async Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn) {
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
+            .Include(a => a.UserSettings)
             .FirstOrDefaultAsync(a => a.Id == discordId);
         
         if (account is null) return new UnauthorizedObjectResult("Account not found.");
@@ -160,8 +168,15 @@ public class AccountService(
         minecraftAccount.Selected = false;
         account.MinecraftAccounts.Remove(minecraftAccount);
         
+        // Remove fortune settings for the account
+        if (account.UserSettings.Fortune?.Accounts.ContainsKey(minecraftAccount.Id) is true)
+        {
+            account.UserSettings.Fortune.Accounts.Remove(minecraftAccount.Id);
+        }
+        
         context.Entry(account).State = EntityState.Modified;
         context.Entry(minecraftAccount).State = EntityState.Modified;
+        context.Entry(account.UserSettings).State = EntityState.Modified;
         await context.SaveChangesAsync();
 
         return new NoContentResult();
@@ -198,12 +213,12 @@ public class AccountService(
         return new AcceptedResult();
     }
 
-    public async Task<ActionResult> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings) {
+    public async Task<ErrorOr<Success>> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings) {
         var account = await GetAccount(discordId);
 
         if (account is null)
         {
-            return new UnauthorizedObjectResult("Account not found.");
+            return Error.Unauthorized("Account not found.");
         }
 
         var changes = settings.Features;
@@ -280,7 +295,54 @@ public class AccountService(
         context.Accounts.Update(account);
         
         await context.SaveChangesAsync();
+
+        return Result.Success;
+    }
+    
+    public async Task<ErrorOr<Success>> UpdateFortuneSettings(ulong discordId, string playerUuid, string profileUuid, MemberFortuneSettingsDto settings) {
+        var account = await GetAccount(discordId);
+
+        if (account is null)
+        {
+            return Error.Unauthorized("Account not found.");
+        }
         
-        return new OkResult();
+        if (account.MinecraftAccounts.All(mc => mc.Id != playerUuid)) {
+            return Error.Validation($"Minecraft account with ID {playerUuid} not linked to {discordId}.");
+        }
+        
+        var existing = account.UserSettings.Fortune ?? new FortuneSettingsDto();
+
+        if (!existing.Accounts.ContainsKey(playerUuid))
+        {
+            existing.Accounts[playerUuid] = new Dictionary<string, MemberFortuneSettingsDto>();
+        }
+        
+        if (settings.CommunityCenter is < 0 or > 10) {
+            return Error.Validation($"Community Center level must be between 0 and 10.");
+        }
+
+        if (settings.Strength is < 0 or > 5000) {
+            return Error.Validation($"Strength must be between 0 and 5000.");
+        }
+        
+        if (settings.Attributes.Any(kvp => kvp.Value < 0 || kvp.Value > 500 || !_farmingItems.ShardIds.Contains(kvp.Key)))
+        {
+            return Error.Validation("Attribute values must be between 0 and 500 and must be valid shards.");
+        }
+        
+        if (settings.Exported.Any(kvp => FormatUtils.GetCropFromItemId(kvp.Key) is null))
+        {
+            // Ensure all exported crops are valid crop IDs
+            return Error.Validation("Exported crops must be valid crop IDs.");
+        }
+        
+        existing.Accounts[playerUuid][profileUuid] = settings;
+        account.UserSettings.Fortune = existing;
+        
+        context.Entry(account.UserSettings).State = EntityState.Modified;
+        await context.SaveChangesAsync();
+
+        return Result.Success;
     }
 }

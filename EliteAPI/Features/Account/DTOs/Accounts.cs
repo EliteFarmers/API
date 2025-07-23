@@ -141,6 +141,19 @@ public class UserSettingsDto
     /// 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public WeightStyleLinkedDto? LeaderboardStyle { get; set; }
+    
+    /// <summary>
+    /// Selected name style for the user
+    /// </summary>
+    /// 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public WeightStyleLinkedDto? NameStyle { get; set; }
+    
+    /// <summary>
+    /// Fortune settings for the user
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public FortuneSettingsDto? Fortune { get; set; }
 }
 
 public class UpdateUserSettingsDto

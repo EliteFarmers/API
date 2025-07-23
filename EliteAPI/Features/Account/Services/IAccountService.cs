@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
+using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Account.Services;
@@ -18,5 +19,6 @@ public interface IAccountService
     Task<ActionResult> LinkAccount(ulong discordId, string playerUuidOrIgn);
     Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn);
     Task<ActionResult> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn);
-    Task<ActionResult> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings);
+    Task<ErrorOr<Success>> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings);
+    Task<ErrorOr<Success>> UpdateFortuneSettings(ulong discordId, string playerUuid, string profileUuid, MemberFortuneSettingsDto settings);
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Monetization;
 
@@ -29,6 +30,16 @@ public class UserSettings {
 	[ForeignKey(nameof(LeaderboardStyle))]
 	public int? LeaderboardStyleId { get; set; }
 	public WeightStyle? LeaderboardStyle { get; set; }
+		
+	[ForeignKey(nameof(NameStyle))]
+	public int? NameStyleId { get; set; }
+	public WeightStyle? NameStyle { get; set; }
+	
+	/// <summary>
+	/// Custom fortune settings for the user.
+	/// </summary>
+	[Column(TypeName = "jsonb")]
+	public FortuneSettingsDto? Fortune { get; set; }
 	
 	/// <summary>
 	/// Leaderboard custom cosmetics.

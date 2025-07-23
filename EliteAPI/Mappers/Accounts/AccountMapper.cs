@@ -50,7 +50,9 @@ public class EliteMapper : Profile
     {
         CreateMap<UserSettings, UserSettingsDto>()
             .ForMember(a => a.WeightStyle, opt => opt.MapFrom(a => a.WeightStyle))
-            .ForMember(a => a.LeaderboardStyle, opt => opt.MapFrom(a => a.LeaderboardStyle));
+            .ForMember(a => a.LeaderboardStyle, opt => opt.MapFrom(a => a.LeaderboardStyle))
+            .ForMember(a => a.NameStyle, opt => opt.MapFrom(a => a.NameStyle))
+            .ForMember(a => a.Fortune, opt => opt.MapFrom(a => a.Fortune));
 
         CreateMap<Entitlement, EntitlementDto>()
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()))
