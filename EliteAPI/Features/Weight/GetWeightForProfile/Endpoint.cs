@@ -29,6 +29,11 @@ internal sealed class GetWeightForProfileEndpoint(
 		Summary(s => {
 			s.Summary = "Get farming weight for a profile member";
 		});
+		
+		ResponseCache(120);
+		Options(o => {
+			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
+		});
 	}
 
 	public override async Task<Result> ExecuteAsync(GetWeightProfilesRequest request, CancellationToken c) {

@@ -20,6 +20,11 @@ internal sealed class GetAccountSettingsEndpoint(
 		Summary(s => {
 			s.Summary = "Get Account Settings";
 		});
+		
+		ResponseCache(120);
+		Options(o => {
+			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
+		});
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {

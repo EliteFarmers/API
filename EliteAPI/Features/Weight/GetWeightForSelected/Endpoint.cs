@@ -29,6 +29,11 @@ internal sealed class GetWeightForSelectedEndpoint(
 		Summary(s => {
 			s.Summary = "Get farming weight for a player's selected profile";
 		});
+		
+		ResponseCache(120);
+		Options(o => {
+			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
+		});
 	}
 
 	public override async Task<Result> ExecuteAsync(GetWeightSelectedProfileRequest request, CancellationToken c) {
