@@ -1,6 +1,7 @@
 services:
   eliteapi:
     image: eliteapi:latest
+    restart: unless-stopped
     build:
       context: .
       dockerfile: EliteAPI/Dockerfile
