@@ -21,6 +21,11 @@ internal sealed class GetAccountFromDiscordEndpoint(
 		Summary(s => {
 			s.Summary = "Get Minecraft Account from Discord Id";
 		});
+		
+		ResponseCache(120);
+		Options(o => {
+			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
+		});
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
