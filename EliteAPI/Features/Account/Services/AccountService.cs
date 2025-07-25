@@ -238,8 +238,15 @@ public class AccountService(
         if (settings.LeaderboardStyleId is not null) {
             var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.LeaderboardStyleId.Value));
             
-            account.UserSettings.WeightStyleId = validChange ? settings.WeightStyleId : null;
-            account.UserSettings.WeightStyle = null;
+            account.UserSettings.LeaderboardStyleId = validChange ? settings.LeaderboardStyleId : null;
+            account.UserSettings.LeaderboardStyle = null;
+        }
+        
+        if (settings.NameStyleId is not null) {
+            var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.NameStyleId.Value));
+            
+            account.UserSettings.NameStyleId = validChange ? settings.NameStyleId : null;
+            account.UserSettings.NameStyle = null;
         }
 
         if (changes is not null)

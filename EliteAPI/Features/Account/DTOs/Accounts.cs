@@ -184,6 +184,11 @@ public class UpdateUserSettingsDto
     /// Selected leaderboard style for the user
     /// </summary>
     public int? LeaderboardStyleId { get; set; }
+        
+    /// <summary>
+    /// Selected name style for the user
+    /// </summary>
+    public int? NameStyleId { get; set; }
 }
 
 public class ConfiguredProductFeaturesDto {
