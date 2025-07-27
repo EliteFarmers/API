@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
 
@@ -95,7 +96,7 @@ public class PestDropChance {
     public List<PestRngDrop> Rare { get; set; } = [];
     
     [JsonIgnore]
-    private Dictionary<int, double> Precomputed { get; } = new();
+    private ConcurrentDictionary<int, double> Precomputed { get; } = new();
     
     public double GetCropDrops(int fortune) {
         var drops = Base * (fortune / Scaling + Items);
@@ -113,7 +114,7 @@ public class PestDropChance {
         // Zero fortune means we're ignoring the drops from this bracket
         if (fortune == 0 && !includeZero) {
             if (usePrecomputed) {
-                Precomputed[fortune] = 0;
+                Precomputed.GetOrAdd(fortune, 0);
             }
             return 0;
         }
@@ -125,11 +126,11 @@ public class PestDropChance {
             return toSubtract;
         }
 
-        Precomputed.TryAdd(fortune, toSubtract);
+        Precomputed.GetOrAdd(fortune, toSubtract);
         return toSubtract;
     }
     
-    public Dictionary<int, double> GetPrecomputed(ConfigFarmingWeightSettings? weightConfig = null) {
+    public IReadOnlyDictionary<int, double> GetPrecomputed(ConfigFarmingWeightSettings? weightConfig = null) {
         var pestBrackets = weightConfig?.PestDropBrackets ?? FarmingWeightConfig.Settings.PestDropBrackets;
 
         if (Precomputed.Count >= pestBrackets.Count) return Precomputed;
