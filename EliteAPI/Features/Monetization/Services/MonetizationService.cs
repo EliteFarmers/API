@@ -275,7 +275,7 @@ public class MonetizationService(
 		if (account.UserSettings.Features.EmbedColor is {} color) {
 			// Check if the user has an entitlement for that embed color
 			var validEmbedColor = account.ProductAccesses
-				.Any(x => x.IsActive && x.Product.Features.EmbedColors?.Contains(color) is true);
+				.Any(x => x.IsActive && x.Product.Features?.EmbedColors?.Contains(color) is true);
 			
 			// Clear the embed color if the user doesn't have the entitlement
 			if (!validEmbedColor) {
@@ -465,6 +465,10 @@ public class MonetizationService(
 	    // Validate product access
 	    var account = await context.Accounts
 	        .Include(a => a.ProductAccesses)
+	        .ThenInclude(e => e.Product)
+	        .ThenInclude(p => p.WeightStyles)
+	        .Include(a => a.MinecraftAccounts)
+	        .ThenInclude(m => m.Badges)
 	        .Include(a => a.UserSettings)
 	        .FirstOrDefaultAsync(a => a.Id == entityId);
 
