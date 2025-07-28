@@ -24,9 +24,9 @@ internal sealed class GetAccountEndpoint(
 			s.Summary = "Get Minecraft Account";
 		});
 		
-		ResponseCache(120);
+		ResponseCache(30);
 		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
+			o.CacheOutput(c => c.Expire(TimeSpan.FromSeconds(30)));
 		});
 	}
 

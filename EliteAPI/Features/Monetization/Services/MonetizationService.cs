@@ -248,6 +248,18 @@ public class MonetizationService(
 			}
 		}
 		
+		if (account.UserSettings.NameStyleId is {} nameStyle) {
+			// Check if the user has an entitlement for that name style
+			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasWeightStyle(nameStyle));
+
+			if (!validStyle) {
+				account.UserSettings.NameStyleId = null;
+				account.UserSettings.NameStyle = null;
+			} else {
+				account.ActiveRewards = true;
+			}
+		}
+		
 		if (account.UserSettings.LeaderboardStyleId is {} lbStyle) {
 			// Check if the user has an entitlement for that leaderboard style
 			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasWeightStyle(lbStyle));
@@ -447,7 +459,18 @@ public class MonetizationService(
 	            order.Status = OrderStatus.Refunded;
 	        }
 	    }
+	    
 	    await context.SaveChangesAsync();
+	    
+	    // Validate product access
+	    var account = await context.Accounts
+	        .Include(a => a.ProductAccesses)
+	        .Include(a => a.UserSettings)
+	        .FirstOrDefaultAsync(a => a.Id == entityId);
+
+	    if (account is not null) {
+			await UpdateUserFeaturesAsync(account);
+	    }
 	}
 
 	private async Task<List<DiscordEntitlement>> FetchDiscordEntitlements(ulong entityId, bool isGuild)

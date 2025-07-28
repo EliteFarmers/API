@@ -17,12 +17,19 @@ public static class ProfileMemberMapper
         if (userSettings is null && cosmetics is null) {
             return null;
         }
+        
+        var leaderboardCosmetics = cosmetics?.Leaderboard ?? userSettings?.CustomLeaderboardStyle;
+
+        if (userSettings?.LeaderboardStyleId is not null && leaderboardCosmetics is not null)
+        {
+            leaderboardCosmetics.StyleId = userSettings.LeaderboardStyleId;
+        }
 
         return new MemberCosmeticsDto
         {
             Prefix = cosmetics?.Prefix ?? userSettings?.Prefix,
             Suffix = cosmetics?.Suffix ?? userSettings?.Suffix,
-            Leaderboard = cosmetics?.Leaderboard ?? userSettings?.CustomLeaderboardStyle,
+            Leaderboard = leaderboardCosmetics
         };
     }
 }

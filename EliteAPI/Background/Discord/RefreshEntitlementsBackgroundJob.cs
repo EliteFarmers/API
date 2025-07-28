@@ -56,9 +56,8 @@ public class RefreshEntitlementsBackgroundJob(
             if (ct.IsCancellationRequested) break;
             
             await monetizationService.SyncDiscordEntitlementsAsync(accountId, false);
-            // await monetizationService.FetchUserEntitlementsAsync(accountId);
             
-            await Task.Delay(1000, ct);
+            await Task.Delay(250, ct);
         }
         
         await context.SaveChangesAsync(ct);
