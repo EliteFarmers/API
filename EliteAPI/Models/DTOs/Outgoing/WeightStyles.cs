@@ -94,7 +94,7 @@ public class WeightStyleDataDto
 public class StyleLeaderboardElementsDto
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public WeightStyleBackgroundDto? Background { get; set; } = new();
+    public WeightStyleBackgroundDto? Background { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Score { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
