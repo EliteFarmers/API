@@ -30,6 +30,7 @@ public class WeightStyleMapper : Profile
 		CreateMap<WeightStyleData, WeightStyleDataDto>()
 			.ForMember(w => w.Decal, opt => opt.MapFrom(w => w.Decal))
 			.ForMember(w => w.Elements, opt => opt.MapFrom(w => w.Elements))
+			.ForMember(w => w.Leaderboard, opt => opt.MapFrom(w => w.Leaderboard))
 			.ReverseMap();
 
 		CreateMap<WeightStyleDecal, WeightStyleDecalDto>()
@@ -48,6 +49,10 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.Badge, opt => opt.MapFrom(w => w.Badge))
 			.ForMember(w => w.Rank, opt => opt.MapFrom(w => w.Rank))
 			.ForMember(w => w.RankWithBadge, opt => opt.MapFrom(w => w.RankWithBadge))
+			.ReverseMap();
+		
+		CreateMap<StyleLeaderboardElements, StyleLeaderboardElementsDto>()
+			.ForMember(w => w.Background, opt => opt.MapFrom(w => w.Background))
 			.ReverseMap();
 
 		CreateMap<WeightStyleBackground, WeightStyleBackgroundDto>()

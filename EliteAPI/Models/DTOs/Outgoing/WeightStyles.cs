@@ -86,6 +86,23 @@ public class WeightStyleDataDto
     public WeightStyleDecalDto? Decal { get; set; }
     
     public WeightStyleElementsDto Elements { get; set; } = new();
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public StyleLeaderboardElementsDto? Leaderboard { get; set; } = new();
+}
+
+public class StyleLeaderboardElementsDto
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public WeightStyleBackgroundDto? Background { get; set; } = new();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Score { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Rank { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Name { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Subtitle { get; set; }
 }
 
 public class WeightStyleDecalDto {
@@ -138,6 +155,9 @@ public class WeightStyleBackgroundDto
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Fill { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Align { get; set; }
     
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<WeightStyleBackgroundRectDto>? Rects { get; set; }

@@ -114,6 +114,21 @@ public class WeightStyleData
 {
     public WeightStyleDecal? Decal { get; set; }
     public WeightStyleElements Elements { get; set; } = new();
+    public StyleLeaderboardElements? Leaderboard { get; set; }
+}
+
+public class StyleLeaderboardElements
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public WeightStyleBackground? Background { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Score { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Rank { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Name { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Subtitle { get; set; }
 }
 
 public class WeightStyleDecal {
