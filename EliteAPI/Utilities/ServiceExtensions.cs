@@ -249,6 +249,14 @@ public static class ServiceExtensions
         {
             ip = ip.MapToIPv4();
         }
+        
+        if (ConfigGlobalRateLimitSettings.Settings.WhitelistedIp != string.Empty)
+        {
+            if (ip.ToString() == ConfigGlobalRateLimitSettings.Settings.WhitelistedIp)
+            {
+                return true;
+            }
+        }
 
         if (ip.AddressFamily != AddressFamily.InterNetwork)
         {

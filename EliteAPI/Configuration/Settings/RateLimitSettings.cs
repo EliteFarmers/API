@@ -23,4 +23,5 @@ public class ConfigGlobalRateLimitSettings {
     public int TokenLimit { get; set; } = 20;
     public int TokensPerPeriod { get; set; } = 5;
     public bool AutoReplenishment { get; set; } = false;
+    public string WhitelistedIp { get; set; } = string.Empty;
 }
