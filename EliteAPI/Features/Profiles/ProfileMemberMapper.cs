@@ -20,8 +20,9 @@ public static class ProfileMemberMapper
         
         var leaderboardCosmetics = cosmetics?.Leaderboard ?? userSettings?.CustomLeaderboardStyle;
 
-        if (userSettings?.LeaderboardStyleId is not null && leaderboardCosmetics is not null)
+        if (userSettings?.LeaderboardStyleId is not null)
         {
+            leaderboardCosmetics ??= new MemberLeaderboardCosmeticsDto();
             leaderboardCosmetics.StyleId = userSettings.LeaderboardStyleId;
         }
 
