@@ -65,22 +65,35 @@ public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
     }
 }
 
+
 public class LeaderboardStyleData
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LeaderboardStyleLayer? Background { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LeaderboardStyleLayer? Overlay { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? GradientOpacity { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? GradientColor { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Font { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? NameColor { get; set; }
+    public LeaderboardStyleText? Name { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ScoreColor { get; set; }
+    public LeaderboardStyleText? Score { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? RankColor { get; set; }
+    public LeaderboardStyleText? Rank { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? LeaderboardNameColor { get; set; }
+    public LeaderboardStyleText? Subtitle { get; set; }
 }
 
 public class LeaderboardStyleLayer
@@ -97,6 +110,20 @@ public class LeaderboardStyleLayer
     public string? BorderColor { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? BorderOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Align { get; set; }
+}
+
+public class LeaderboardStyleText
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Color { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ShadowColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? ShadowOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? FontWeight { get; set; }
 }
 
 public class NameStyleData
@@ -114,21 +141,6 @@ public class WeightStyleData
 {
     public WeightStyleDecal? Decal { get; set; }
     public WeightStyleElements Elements { get; set; } = new();
-    public StyleLeaderboardElements? Leaderboard { get; set; }
-}
-
-public class StyleLeaderboardElements
-{
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public WeightStyleBackground? Background { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Score { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Rank { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Name { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Subtitle { get; set; }
 }
 
 public class WeightStyleDecal {

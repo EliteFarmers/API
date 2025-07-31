@@ -28,7 +28,7 @@ public class ObjectStorageService : IObjectStorageService {
 		
 		var credentials = new BasicAWSCredentials(accessKey, secretKey);
 		_client = new AmazonS3Client(credentials, new AmazonS3Config() {
-			ServiceURL = endpoint
+			ServiceURL = endpoint,
 		});
 	}
 
@@ -37,6 +37,7 @@ public class ObjectStorageService : IObjectStorageService {
 		
 		var request = new PutObjectRequest {
 			BucketName = _bucketName,
+			DisableDefaultChecksumValidation = true, // Needed for R2
 			DisablePayloadSigning = true, // Needed for R2
 			InputStream = stream,
 			Key = key

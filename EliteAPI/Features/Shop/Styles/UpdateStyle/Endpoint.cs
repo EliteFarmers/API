@@ -45,7 +45,12 @@ internal sealed class UpdateStyleEndpoint(
 		existing.Collection = incoming.Collection ?? existing.Collection;
 		existing.StyleFormatter = incoming.StyleFormatter ?? existing.StyleFormatter;
 		existing.Description = incoming.Description ?? existing.Description;
-		existing.Data = incoming.Data is not null ? mapper.Map<WeightStyleData>(incoming.Data) : existing.Data;
+		existing.Data = incoming.Data is not null 
+			? mapper.Map<WeightStyleData>(incoming.Data) 
+			: existing.Data;
+		existing.Leaderboard = incoming.Leaderboard is not null 
+			? mapper.Map<LeaderboardStyleData>(incoming.Leaderboard) 
+			: existing.Leaderboard;
 		
 		context.WeightStyles.Update(existing);
 		await context.SaveChangesAsync(c);

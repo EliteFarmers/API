@@ -17,6 +17,7 @@ public class WeightStyleMapper : Profile
 
 		CreateMap<WeightStyle, WeightStyleWithDataDto>()
 			.ForMember(w => w.Data, opt => opt.MapFrom(w => w.Data))
+			.ForMember(w => w.Leaderboard, opt => opt.MapFrom(w => w.Leaderboard))
 			.ForMember(w => w.Image, opt => opt.MapFrom(w => w.Image))
 			.ForMember(w => w.Images, opt => opt.MapFrom(w => w.Images))
 			.ForMember(w => w.Products, opt => opt.MapFrom(w => w.Products));
@@ -30,7 +31,6 @@ public class WeightStyleMapper : Profile
 		CreateMap<WeightStyleData, WeightStyleDataDto>()
 			.ForMember(w => w.Decal, opt => opt.MapFrom(w => w.Decal))
 			.ForMember(w => w.Elements, opt => opt.MapFrom(w => w.Elements))
-			.ForMember(w => w.Leaderboard, opt => opt.MapFrom(w => w.Leaderboard))
 			.ReverseMap();
 
 		CreateMap<WeightStyleDecal, WeightStyleDecalDto>()
@@ -51,8 +51,19 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.RankWithBadge, opt => opt.MapFrom(w => w.RankWithBadge))
 			.ReverseMap();
 		
-		CreateMap<StyleLeaderboardElements, StyleLeaderboardElementsDto>()
+		CreateMap<LeaderboardStyleData, LeaderboardStyleDataDto>()
 			.ForMember(w => w.Background, opt => opt.MapFrom(w => w.Background))
+			.ForMember(w => w.Overlay, opt => opt.MapFrom(w => w.Overlay))
+			.ForMember(w => w.Name, opt => opt.MapFrom(w => w.Name))
+			.ForMember(w => w.Rank, opt => opt.MapFrom(w => w.Rank))
+			.ForMember(w => w.Score, opt => opt.MapFrom(w => w.Score))
+			.ForMember(w => w.Subtitle, opt => opt.MapFrom(w => w.Subtitle))
+			.ReverseMap();
+
+		CreateMap<LeaderboardStyleLayer, LeaderboardStyleLayerDto>()
+			.ReverseMap();
+		
+		CreateMap<LeaderboardStyleText, LeaderboardStyleTextDto>()
 			.ReverseMap();
 
 		CreateMap<WeightStyleBackground, WeightStyleBackgroundDto>()

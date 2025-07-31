@@ -46,7 +46,7 @@ internal sealed class UpdateBadgeEndpoint(
 				await objectStorageService.DeleteAsync(existingBadge.Image.Path, c);
 			}
         
-			var image = await objectStorageService.UploadImageAsync($"badges/{existingBadge.Id}.png", request.Badge.Image, token: c);
+			var image = await objectStorageService.UploadImageAsync($"badges/{existingBadge.Id}/{Guid.NewGuid()}.png", request.Badge.Image, token: c);
        
 			existingBadge.Image = image;
 			existingBadge.ImageId = image.Id;

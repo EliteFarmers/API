@@ -26,6 +26,9 @@ public class WeightStyleDto
 public class WeightStyleWithDataDto : WeightStyleDto
 {
     public WeightStyleDataDto? Data { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleDataDto? Leaderboard { get; set; }
 }
 
 public class WeightStyleLinkedDto
@@ -86,23 +89,66 @@ public class WeightStyleDataDto
     public WeightStyleDecalDto? Decal { get; set; }
     
     public WeightStyleElementsDto Elements { get; set; } = new();
-    
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public StyleLeaderboardElementsDto? Leaderboard { get; set; } = new();
 }
 
-public class StyleLeaderboardElementsDto
+public class LeaderboardStyleDataDto
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public WeightStyleBackgroundDto? Background { get; set; }
+    public LeaderboardStyleLayerDto? Background { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Score { get; set; }
+    public LeaderboardStyleLayerDto? Overlay { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Rank { get; set; }
+    public double? GradientOpacity { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Name { get; set; }
+    public string? GradientColor { get; set; }
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Subtitle { get; set; }
+    public string? Font { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleTextDto? Name { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleTextDto? Score { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleTextDto? Rank { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LeaderboardStyleTextDto? Subtitle { get; set; }
+}
+
+public class LeaderboardStyleLayerDto
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ImageUrl { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ImageOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? FillColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? FillOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BorderColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? BorderOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Align { get; set; }
+}
+
+public class LeaderboardStyleTextDto
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Color { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ShadowColor { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public double? ShadowOpacity { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? FontWeight { get; set; }
 }
 
 public class WeightStyleDecalDto {
