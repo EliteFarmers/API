@@ -16,6 +16,8 @@ internal sealed class GrantTestEntitlementEndpoint(
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 		
+		Description(s => s.Accepts<UserEntitlementRequest>());
+		
 		Summary(s => {
 			s.Summary = "Grant a test entitlement to a user or guild";
 			s.Description = "This passes along a request to Discord to grant a test entitlement to a user or guild, which only works on subscription products.";

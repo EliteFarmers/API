@@ -40,4 +40,22 @@ public class ProductAccess
     public bool HasWeightStyle(int weightStyleId) {
         return Product?.ProductWeightStyles is {} list && list.Exists(l => l.WeightStyleId == weightStyleId);
     }
+    
+    public bool HasLeaderboardStyle(int leaderboardStyleId) {
+        return Product?.WeightStyles is {} list && list.Exists(l => l.Id == leaderboardStyleId && l.HasLeaderboardStyle());
+    }
+    
+    public bool HasNameStyle(int nameStyleId) {
+        return Product?.WeightStyles is {} list && list.Exists(l => l.Id == nameStyleId && l.StyleFormatter == "data");
+    }
+}
+
+public static class ProductAccessExtensions
+{
+    public static IQueryable<ProductAccess> WhereActive(this IQueryable<ProductAccess> query) 
+    {
+        return query.Where(e => !e.Revoked
+                                && e.StartDate <= DateTimeOffset.UtcNow
+                                && (e.EndDate == null || e.EndDate >= DateTimeOffset.UtcNow));
+    }
 }

@@ -2,6 +2,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using ErrorOr;
@@ -224,26 +225,29 @@ public class AccountService(
         var changes = settings.Features;
         
         var entitlements = await context.ProductAccesses
-            .Where(ue => ue.UserId == account.Id && !ue.Revoked)
+            .Where(ue => ue.UserId == account.Id)
+            .WhereActive()
             .Include(entitlement => entitlement.Product)
+            .ThenInclude(p => p.WeightStyles)
+            .AsNoTracking()
             .ToListAsync();
 
         if (settings.WeightStyleId is not null) {
-            var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.WeightStyleId.Value));
+            var validChange = entitlements.Any(ue => ue.HasWeightStyle(settings.WeightStyleId.Value));
             
             account.UserSettings.WeightStyleId = validChange ? settings.WeightStyleId : null;
             account.UserSettings.WeightStyle = null;
         }
         
         if (settings.LeaderboardStyleId is not null) {
-            var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.LeaderboardStyleId.Value));
+            var validChange = entitlements.Any(ue => ue.HasLeaderboardStyle(settings.LeaderboardStyleId.Value));
             
             account.UserSettings.LeaderboardStyleId = validChange ? settings.LeaderboardStyleId : null;
             account.UserSettings.LeaderboardStyle = null;
         }
         
         if (settings.NameStyleId is not null) {
-            var validChange = entitlements.Any(ue => ue.IsActive && ue.HasWeightStyle(settings.NameStyleId.Value));
+            var validChange = entitlements.Any(ue => ue.HasNameStyle(settings.NameStyleId.Value));
             
             account.UserSettings.NameStyleId = validChange ? settings.NameStyleId : null;
             account.UserSettings.NameStyle = null;

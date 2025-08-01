@@ -46,6 +46,12 @@ public class WeightStyle {
     
     [Column(TypeName = "jsonb")]
     public NameStyleData? NameStyle { get; set; }
+
+    public bool HasLeaderboardStyle() => Leaderboard is not null &&
+         (Leaderboard.Background is not null || Leaderboard.Overlay is not null ||
+          Leaderboard.Name is not null ||
+          Leaderboard.Score is not null || Leaderboard.Rank is not null ||
+          Leaderboard.Subtitle is not null);
 }
 
 public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>

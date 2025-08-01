@@ -250,7 +250,7 @@ public class MonetizationService(
 		
 		if (account.UserSettings.NameStyleId is {} nameStyle) {
 			// Check if the user has an entitlement for that name style
-			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasWeightStyle(nameStyle));
+			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasNameStyle(nameStyle));
 
 			if (!validStyle) {
 				account.UserSettings.NameStyleId = null;
@@ -262,7 +262,7 @@ public class MonetizationService(
 		
 		if (account.UserSettings.LeaderboardStyleId is {} lbStyle) {
 			// Check if the user has an entitlement for that leaderboard style
-			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasWeightStyle(lbStyle));
+			var validStyle = account.ProductAccesses.Any(ue => ue.IsActive && ue.HasLeaderboardStyle(lbStyle));
 
 			if (!validStyle) {
 				account.UserSettings.LeaderboardStyleId = null;
