@@ -1,7 +1,5 @@
 ﻿using EliteAPI.Features.Account.Services;
-using EliteAPI.Features.Auth.Models;
 using EliteAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using Quartz;
 using StackExchange.Redis;
 
@@ -9,7 +7,7 @@ namespace EliteAPI.Background.Discord;
 
 public class RefreshUserGuildsBackgroundJob(
     ILogger<RefreshUserGuildsBackgroundJob> logger,
-    UserManager<ApiUser> userManager,
+    UserManager userManager,
     IDiscordService discordService,
     IConnectionMultiplexer redis,
     IMessageService messageService
