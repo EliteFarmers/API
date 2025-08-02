@@ -1,5 +1,6 @@
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;

@@ -1,4 +1,5 @@
 using EliteAPI.Data;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;

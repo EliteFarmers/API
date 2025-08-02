@@ -12,8 +12,10 @@ public class DiscordUserResponse
     public string? Avatar { get; set; }
     public string? Locale { get; set; }
 
-    [JsonPropertyName("display_name")]
+    [JsonPropertyName("global_name")]
     public string? DisplayName { get; set; }
+    
+    public string? Banner { get; set; }
 }
 
 public class RefreshTokenResponse

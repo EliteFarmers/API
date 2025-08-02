@@ -7,4 +7,5 @@ public class IncomingAccountDto {
     public string? Discriminator { get; set; }
     public string? Avatar { get; set; }
     public string? Locale { get; set; }
+    public string? Banner { get; set; }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Security.Claims;
-using AutoMapper;
 using EliteAPI.Authentication;
 using EliteAPI.Background.Discord;
 using EliteAPI.Configuration.Settings;
@@ -13,13 +12,16 @@ using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Images;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
 using StackExchange.Redis;
+using IMapper = AutoMapper.IMapper;
 
-namespace EliteAPI.Services;
+namespace EliteAPI.Features.Account.Services;
 
+[RegisterService<IDiscordService>(LifeTime.Scoped)]
 public class DiscordService(
     IHttpClientFactory httpClientFactory,
     DataContext context,
@@ -113,7 +115,9 @@ public class DiscordService(
             account.Discriminator = user.Discriminator;
             account.Avatar = user.Avatar;
             account.Locale = user.Locale;
-
+            account.Data ??= new DiscordAccountData();
+            account.Data.Banner = user.Banner;
+            
             if (existing is null) context.Accounts.Add(account);
             await context.SaveChangesAsync();
 

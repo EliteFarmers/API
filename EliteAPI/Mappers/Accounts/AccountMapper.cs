@@ -14,6 +14,7 @@ public class AccountMapper : Profile
             .ForMember(a => a.Entitlements, opt => opt.MapFrom(a => a.ProductAccesses))
             .ForMember(a => a.Settings, opt => opt.MapFrom(a => a.UserSettings))
             .ForMember(a => a.MinecraftAccounts, opt => opt.MapFrom(a => a.MinecraftAccounts))
+            .ForMember(a => a.Banner, opt => opt.MapFrom(a => a.Data != null ? a.Data.Banner : null))
             .ForMember(a => a.DismissedAnnouncements, opt => opt.MapFrom(a => a.DismissedAnnouncements.Select(d => d.AnnouncementId)))
             .ForMember(a => a.Id, opt => opt.MapFrom(a => a.Id.ToString()));
     }

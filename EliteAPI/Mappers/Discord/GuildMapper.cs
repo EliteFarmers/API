@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EliteAPI.Authentication;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;

@@ -1,4 +1,5 @@
-﻿using EliteAPI.Features.Auth.Models;
+﻿using EliteAPI.Features.Account.Services;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Quartz;

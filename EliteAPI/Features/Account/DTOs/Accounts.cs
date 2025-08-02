@@ -35,6 +35,11 @@ public class AuthorizedAccountDto
     /// Discord avatar URL hash
     /// </summary>
     public string? Avatar { get; set; }
+    /// <summary>
+    /// Discord banner URL hash
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Banner { get; set; }
     
     public UserSettingsDto Settings { get; set; } = new();
     

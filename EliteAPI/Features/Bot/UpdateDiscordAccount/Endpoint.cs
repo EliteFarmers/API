@@ -36,9 +36,11 @@ internal sealed class UpdateDiscordAccountEndpoint(
 			DisplayName = request.DisplayName ?? request.Username,
 		};
 
-		account.Avatar = request.Avatar ?? account.Avatar;
+		account.Avatar = request.Avatar;
 		account.DisplayName = request.DisplayName ?? account.DisplayName;
 		account.Locale = request.Locale ?? account.Locale;
+		account.Data ??= new DiscordAccountData();
+		account.Data.Banner = request.Banner;
         
 		account.Discriminator = request.Discriminator;
 

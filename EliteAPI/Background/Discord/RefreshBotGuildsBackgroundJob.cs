@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;

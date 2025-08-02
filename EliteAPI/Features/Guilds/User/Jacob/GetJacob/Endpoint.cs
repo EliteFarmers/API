@@ -1,5 +1,6 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;

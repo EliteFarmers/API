@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EliteAPI.Data;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;

@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using EliteAPI.Background.Discord;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Auth;
 using EliteAPI.Services;

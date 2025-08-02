@@ -6,7 +6,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Images;
 
-namespace EliteAPI.Services.Interfaces;
+namespace EliteAPI.Features.Account.Services;
 
 public interface IDiscordService
 {

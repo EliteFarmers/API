@@ -1,4 +1,4 @@
-﻿using EliteAPI.Services.Interfaces;
+﻿using EliteAPI.Features.Account.Services;
 using EliteAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using StackExchange.Redis;

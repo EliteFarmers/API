@@ -103,7 +103,6 @@ public static class ServiceExtensions
         services.AddScoped<IMojangService, MojangService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IProfileService, ProfileService>();
-        services.AddScoped<IDiscordService, DiscordService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.RegisterServicesFromEliteAPI();

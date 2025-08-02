@@ -1,5 +1,6 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Guilds.User.Jacob.UpdateJacob;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using EliteAPI.Authentication;
+using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Events.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;

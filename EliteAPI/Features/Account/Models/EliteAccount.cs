@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Features.Account.Models; 
 
@@ -18,6 +18,9 @@ public class EliteAccount
     public string? Discriminator { get; set; } = "0";
     public string? Avatar { get; set; }
     public string? Locale { get; set; }
+    
+    [Column(TypeName = "jsonb")]
+    public DiscordAccountData? Data { get; set; }
     
     [ForeignKey("UserSettings")]
     public int? UserSettingsId { get; set; }
@@ -46,6 +49,16 @@ public enum PermissionFlags : ushort {
     ViewGraphs = 17,
     Moderator = 32,
     Admin = 64
+}
+
+public class DiscordAccountData
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Banner { get; set; }
+    // [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    // public string? PrimaryColor { get; set; }
+    // [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    // public string? AccentColor { get; set; }
 }
 
 public class Purchase
