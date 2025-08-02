@@ -26,7 +26,7 @@ internal sealed class RefreshGuildMembershipsEndpoint(
 			ThrowError("Discord access token not found", StatusCodes.Status401Unauthorized);
 		}
 
-		if (user.GuildsLastUpdated.OlderThanSeconds(60)) {
+		if (!user.GuildsLastUpdated.OlderThanSeconds(60)) {
 			ThrowError("Guild memberships can only be refreshed once every 60 seconds", StatusCodes.Status429TooManyRequests);
 		}
 		
