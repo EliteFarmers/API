@@ -22,7 +22,7 @@ public sealed class ResponseSender : IGlobalPostProcessor
                 : ctx.HttpContext.Response.SendAsync(value, cancellation: ct);
         }
 
-        if (errorOr.Errors?.All(e => e.Type == ErrorType.Validation) is true)
+        if (errorOr.Errors?.All(e => e.Type is ErrorType.Validation or ErrorType.Failure) is true)
         {
             return ctx.HttpContext.Response.SendErrorsAsync(
                 failures: [..errorOr.Errors.Select(e => new ValidationFailure(e.Code, e.Description))],
@@ -30,7 +30,7 @@ public sealed class ResponseSender : IGlobalPostProcessor
         }
 
         var problem = errorOr.Errors?.FirstOrDefault(e => e.Type != ErrorType.Validation);
-
+        
         return problem?.Type switch
         {
             ErrorType.Conflict => ctx.HttpContext.Response.SendAsync("Duplicate submission!", 409, cancellation: ct),

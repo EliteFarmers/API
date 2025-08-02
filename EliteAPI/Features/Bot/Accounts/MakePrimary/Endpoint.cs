@@ -1,15 +1,14 @@
 using EliteAPI.Authentication;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.Common;
-using EliteAPI.Services.Interfaces;
+using ErrorOr;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Bot.Accounts.MakePrimary;
 
 internal sealed class MakePrimaryAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<DiscordIdPlayerRequest> {
+) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
 	
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/{Player}/primary");
@@ -24,13 +23,7 @@ internal sealed class MakePrimaryAccountEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(DiscordIdPlayerRequest request, CancellationToken c) {
-		var result = await accountService.MakePrimaryAccount(request.DiscordIdUlong, request.Player);
-
-		if (result is BadRequestObjectResult bad) {
-			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);
-		}
-
-		await SendNoContentAsync(cancellation: c);
+	public override async Task<ErrorOr<Success>> ExecuteAsync(DiscordIdPlayerRequest request, CancellationToken c) {
+		return await accountService.MakePrimaryAccount(request.DiscordIdUlong, request.Player);
 	}
 }

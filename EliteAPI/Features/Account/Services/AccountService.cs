@@ -7,7 +7,6 @@ using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using ErrorOr;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -66,11 +65,11 @@ public class AccountService(
         return await GetAccount(minecraftAccount.AccountId ?? 0);
     }
     
-    public async Task<ActionResult> LinkAccount(ulong discordId, string playerUuidOrIgn) {
+    public async Task<ErrorOr<Success>> LinkAccount(ulong discordId, string playerUuidOrIgn) {
         var account = await GetAccount(discordId);
         
         if (account is null) {
-            return new UnauthorizedObjectResult("Account not found.");
+            return Error.Unauthorized(description: "Account not found.");
         }
         
         // Remove dashes from id
@@ -79,7 +78,7 @@ public class AccountService(
         // Check if the player has already linked this account
         if (account.MinecraftAccounts.Any(mc => mc.Id.Equals(id) || mc.Name.ToLower().Equals(id.ToLower())))
         {
-            return new BadRequestObjectResult("You have already linked this account.");
+            return Error.Failure(description: "You have already linked this account.");
         }
 
         var playerData = await context.PlayerData
@@ -100,14 +99,14 @@ public class AccountService(
         
         if (playerData?.MinecraftAccount is null)
         {
-            return new BadRequestObjectResult("No Minecraft account found. Please ensure you entered the correct player name or try looking up their stats first.");
+            return Error.Failure(description: "No Minecraft account found. Please ensure you entered the correct player name or try looking up their stats first.");
         }
 
         // Remove "#0000" because some other (bad) applications require the discriminator in Hypixel to be zeros
         var linkedDiscord = playerData.SocialMedia.Discord?.Replace("#0000", "");
         if (linkedDiscord is null)
         {
-            return new BadRequestObjectResult("You have not linked a Discord account in the Hypixel social menu. Do that first and try again.");
+            return Error.Failure(description: "You have not linked a Discord account in the Hypixel social menu. Do that first and try again.");
         }
 
         // Handle old Discord accounts with the discriminator (rip) 
@@ -115,12 +114,12 @@ public class AccountService(
             var tag = $"{account.Username}#{account.Discriminator}";
             if (!linkedDiscord.Equals($"{account.Username}#{account.Discriminator}"))
             {
-                return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{tag}` within Hypixel or ensure you entered the correct player name.");
+                return Error.Failure(description: $"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{tag}` within Hypixel or ensure you entered the correct player name.");
             }
         } 
         else if (!account.Username.ToLower().Equals(linkedDiscord.ToLower())) // Handle new Discord accounts without the discriminator
         { 
-            return new BadRequestObjectResult($"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{account.Username}` within Hypixel or ensure you entered the correct player name.");
+            return Error.Failure(description: $"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{account.Username}` within Hypixel or ensure you entered the correct player name.");
         }
 
         // Success
@@ -138,16 +137,16 @@ public class AccountService(
         
         await context.SaveChangesAsync();
         
-        return new AcceptedResult();
+        return Result.Success;
     }
 
-    public async Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn) {
+    public async Task<ErrorOr<Success>> UnlinkAccount(ulong discordId, string playerUuidOrIgn) {
         var account = await context.Accounts
             .Include(a => a.MinecraftAccounts)
             .Include(a => a.UserSettings)
             .FirstOrDefaultAsync(a => a.Id == discordId);
         
-        if (account is null) return new UnauthorizedObjectResult("Account not found.");
+        if (account is null) return Error.Unauthorized(description: "Account not found.");
         
         // Remove dashes from id
         var id = playerUuidOrIgn.Replace("-", "");
@@ -157,7 +156,7 @@ public class AccountService(
         // Check if the player has already linked their account
         if (minecraftAccount is null)
         {
-            return new BadRequestObjectResult("You have not linked this account.");
+            return Error.Failure(description: "You have not linked this account.");
         }
         
         // Remove the badges from the user that are tied to the account
@@ -173,22 +172,20 @@ public class AccountService(
         if (account.UserSettings.Fortune?.Accounts.ContainsKey(minecraftAccount.Id) is true)
         {
             account.UserSettings.Fortune.Accounts.Remove(minecraftAccount.Id);
+            context.Entry(account.UserSettings).State = EntityState.Modified;
         }
         
-        context.Entry(account).State = EntityState.Modified;
-        context.Entry(minecraftAccount).State = EntityState.Modified;
-        context.Entry(account.UserSettings).State = EntityState.Modified;
         await context.SaveChangesAsync();
 
-        return new NoContentResult();
+        return Result.Success;
     }
 
-    public async Task<ActionResult> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn) {
+    public async Task<ErrorOr<Success>> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn) {
         var account = await GetAccount(discordId);
 
         if (account is null)
         {
-            return new UnauthorizedObjectResult("Account not found.");
+            return Error.Unauthorized(description: "Account not found.");
         }
 
         var mcAccounts = account.MinecraftAccounts;
@@ -197,7 +194,7 @@ public class AccountService(
         
         if (newSelectedAccount is null)
         {
-            return new BadRequestObjectResult("Minecraft account not found for this player.");
+            return Error.Failure(description: "Minecraft account not found for this player.");
         }
         
         if (selectedAccount is not null)
@@ -211,7 +208,7 @@ public class AccountService(
         
         await context.SaveChangesAsync();
         
-        return new AcceptedResult();
+        return Result.Success;
     }
 
     public async Task<ErrorOr<Success>> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings) {
@@ -219,7 +216,7 @@ public class AccountService(
 
         if (account is null)
         {
-            return Error.Unauthorized("Account not found.");
+            return Error.Unauthorized(description: "Account not found.");
         }
 
         var changes = settings.Features;
@@ -315,11 +312,11 @@ public class AccountService(
 
         if (account is null)
         {
-            return Error.Unauthorized("Account not found.");
+            return Error.Unauthorized(description: "Account not found.");
         }
         
         if (account.MinecraftAccounts.All(mc => mc.Id != playerUuid)) {
-            return Error.Validation($"Minecraft account with ID {playerUuid} not linked to {discordId}.");
+            return Error.Validation(description: $"Minecraft account with ID {playerUuid} not linked to {discordId}.");
         }
         
         var existing = account.UserSettings.Fortune ?? new FortuneSettingsDto();
@@ -330,22 +327,22 @@ public class AccountService(
         }
         
         if (settings.CommunityCenter is < 0 or > 10) {
-            return Error.Validation($"Community Center level must be between 0 and 10.");
+            return Error.Validation(description: "Community Center level must be between 0 and 10.");
         }
 
         if (settings.Strength is < 0 or > 5000) {
-            return Error.Validation($"Strength must be between 0 and 5000.");
+            return Error.Validation(description: "Strength must be between 0 and 5000.");
         }
         
         if (settings.Attributes.Any(kvp => kvp.Value < 0 || kvp.Value > 500 || !_farmingItems.ShardIds.Contains(kvp.Key)))
         {
-            return Error.Validation("Attribute values must be between 0 and 500 and must be valid shards.");
+            return Error.Validation(description: "Attribute values must be between 0 and 500 and must be valid shards.");
         }
         
         if (settings.Exported.Any(kvp => FormatUtils.GetCropFromItemId(kvp.Key) is null))
         {
             // Ensure all exported crops are valid crop IDs
-            return Error.Validation("Exported crops must be valid crop IDs.");
+            return Error.Validation(description: "Exported crops must be valid crop IDs.");
         }
         
         existing.Accounts[playerUuid][profileUuid] = settings;

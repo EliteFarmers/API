@@ -1,8 +1,7 @@
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Auth.Models;
-using EliteAPI.Services.Interfaces;
+using ErrorOr;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Admin.LinkAccount;
 
@@ -13,7 +12,7 @@ internal sealed class AdminLinkAccountRequest {
 
 internal sealed class LinkAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<AdminLinkAccountRequest> {
+) : Endpoint<AdminLinkAccountRequest, ErrorOr<Success>> {
 	
 	public override void Configure() {
 		Post("/admin/link-account");
@@ -25,22 +24,11 @@ internal sealed class LinkAccountEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(AdminLinkAccountRequest request, CancellationToken c) {
+	public override async Task<ErrorOr<Success>> ExecuteAsync(AdminLinkAccountRequest request, CancellationToken c) {
 		if (!ulong.TryParse(request.DiscordId, out var discordId)) {
 			ThrowError("Invalid Discord ID", StatusCodes.Status400BadRequest);
-			return;
 		}
 
-		var result = await accountService.LinkAccount(discordId, request.Player);
-
-		if (result is BadRequestObjectResult bad) {
-			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);
-		}
-		
-		if (result is UnauthorizedObjectResult unauthorized) {
-			ThrowError(unauthorized.Value?.ToString() ?? "Unauthorized", StatusCodes.Status401Unauthorized);
-		}
-
-		await SendNoContentAsync(cancellation: c);
+		return await accountService.LinkAccount(discordId, request.Player);
 	}
 }

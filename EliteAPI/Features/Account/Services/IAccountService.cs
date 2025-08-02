@@ -16,9 +16,9 @@ public interface IAccountService
     Task<EliteAccount?> GetAccountByIgn(string ign);
     Task<EliteAccount?> GetAccountByMinecraftUuid(string uuid);
     Task<EliteAccount?> GetAccountByIgnOrUuid(string ignOrUuid);
-    Task<ActionResult> LinkAccount(ulong discordId, string playerUuidOrIgn);
-    Task<ActionResult> UnlinkAccount(ulong discordId, string playerUuidOrIgn);
-    Task<ActionResult> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn);
+    Task<ErrorOr<Success>> LinkAccount(ulong discordId, string playerUuidOrIgn);
+    Task<ErrorOr<Success>> UnlinkAccount(ulong discordId, string playerUuidOrIgn);
+    Task<ErrorOr<Success>> MakePrimaryAccount(ulong discordId, string playerUuidOrIgn);
     Task<ErrorOr<Success>> UpdateSettings(ulong discordId, UpdateUserSettingsDto settings);
     Task<ErrorOr<Success>> UpdateFortuneSettings(ulong discordId, string playerUuid, string profileUuid, MemberFortuneSettingsDto settings);
 }

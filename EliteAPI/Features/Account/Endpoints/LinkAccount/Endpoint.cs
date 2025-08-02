@@ -1,15 +1,14 @@
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.Common;
-using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using ErrorOr;
 using FastEndpoints;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Account.LinkAccount;
 
 internal sealed class LinkAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<PlayerRequest> {
+) : Endpoint<PlayerRequest, ErrorOr<Success>> {
 	
 	public override void Configure() {
 		Post("/account/{Player}");
@@ -22,18 +21,12 @@ internal sealed class LinkAccountEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(PlayerRequest request, CancellationToken c) {
+	public override async Task<ErrorOr<Success>> ExecuteAsync(PlayerRequest request, CancellationToken c) {
 		var id = User.GetDiscordId();
 		if (id is null) {
 			ThrowError("Unauthorized", StatusCodes.Status401Unauthorized);
 		}
         
-		var result = await accountService.LinkAccount(id.Value, request.Player);
-
-		if (result is BadRequestObjectResult bad) {
-			ThrowError(bad.Value?.ToString() ?? "Bad request", StatusCodes.Status400BadRequest);
-		}
-
-		await SendNoContentAsync(cancellation: c);
+		return await accountService.LinkAccount(id.Value, request.Player);
 	}
 }
