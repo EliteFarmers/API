@@ -108,7 +108,7 @@ public class AccountService(
         {
             return Error.Failure(description: "You have not linked a Discord account in the Hypixel social menu. Do that first and try again.");
         }
-
+        
         // Handle old Discord accounts with the discriminator (rip) 
         if (account.Discriminator is not null && !account.Discriminator.Equals("0")) {
             var tag = $"{account.Username}#{account.Discriminator}";
@@ -121,12 +121,9 @@ public class AccountService(
         { 
             return Error.Failure(description: $"`{id}` has the account `{linkedDiscord}` linked in Hypixel.\nPlease change this to `{account.Username}` within Hypixel or ensure you entered the correct player name.");
         }
-
-        // Success
-        account.MinecraftAccounts.Add(playerData.MinecraftAccount);
         
         // Select the account if it's the only one
-        if (account.MinecraftAccounts.Count == 1)
+        if (account.MinecraftAccounts.Count == 0)
         {
             playerData.MinecraftAccount.Selected = true;
         }
@@ -161,6 +158,16 @@ public class AccountService(
         
         // Remove the badges from the user that are tied to the account
         context.UserBadges.RemoveRange(minecraftAccount.Badges.Where(x => x.Badge.TieToAccount));
+        
+        if (minecraftAccount.Selected && account.MinecraftAccounts.Count > 1)
+        {
+            // If the account is selected and there are other accounts, select another one
+            var newSelectedAccount = account.MinecraftAccounts.FirstOrDefault(mc => mc.Id != minecraftAccount.Id);
+            if (newSelectedAccount is not null)
+            {
+                newSelectedAccount.Selected = true;
+            }
+        }
         
         // Reset the account id
         minecraftAccount.AccountId = null;
