@@ -71,13 +71,13 @@ public partial class AuthService(
 		{
 			// Update existing user if necessary
 			if (user.UserName != account.Username) {
+				await ObtainUserName(account.Username);
 				user.UserName = account.Username;
 			}
 			
 			UpdateUserDiscordTokens(user, login);
 			await userManager.UpdateAsync(user);
 		}
-
 		
 		UpdateUserDiscordTokens(user, login);
 		
@@ -206,8 +206,42 @@ public partial class AuthService(
 
 		return (token, expiresAt);
 	}
+	
+	/// <summary>
+	/// Usernames are unique per Discord account, but a user might not have logged in since changing their username,
+	/// which would allow a different user to register with the same username.
+	/// <br/>
+	/// To prevent this, we check if the username already exists in the database, and if it does, we update the existing user
+	/// to a random GUID as a placeholder username until they log in again. (usernames are not used for anything important)
+	/// </summary>
+	/// <returns></returns>
+	private async Task ObtainUserName(string username) {
+		var existingUser = await userManager.Users
+			.AsNoTracking()
+			.FirstOrDefaultAsync(u => u.UserName == username);
+
+		if (existingUser is null) return;
+		
+		var placeholderUsername = Guid.NewGuid().ToString();
+		existingUser.UserName = placeholderUsername;
+		var updateResult = await userManager.UpdateAsync(existingUser);
+		
+		if (!updateResult.Succeeded)
+		{
+			logger.LogWarning("Failed to update existing user {UserId} with placeholder username: {Errors}",
+				existingUser.Id,
+				string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+			return;
+		}
+
+		logger.LogInformation("Updated existing user {UserId} username to placeholder: {Placeholder}",
+			existingUser.Id,
+			placeholderUsername);
+	}
 
 	private async Task<IEnumerable<IdentityError>> RegisterUser(EliteAccount account, DiscordUpdateResponse dto) {
+		await ObtainUserName(account.Username);
+		
 		var user = new ApiUser {
 			Id = account.Id.ToString(),
 			AccountId = account.Id,
