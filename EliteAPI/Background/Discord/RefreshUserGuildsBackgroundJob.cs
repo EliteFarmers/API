@@ -48,7 +48,7 @@ public class RefreshUserGuildsBackgroundJob(
 	
 	private async Task RefreshUserGuilds(string userId) {
         var user = await userManager.FindByIdAsync(userId);
-        if (user is null) return;
+        if (user?.DiscordAccessToken is null) return;
         
         await discordService.FetchUserGuilds(user);
     }

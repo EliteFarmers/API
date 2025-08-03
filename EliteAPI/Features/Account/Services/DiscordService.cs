@@ -290,7 +290,7 @@ public class DiscordService(
     
     public async Task<List<GuildMemberDto>> GetUsersGuilds(string userId) {
         var user = await userManager.FindByIdAsync(userId);
-        if (user?.DiscordAccessToken is null) return [];
+        if (user is null) return [];
         
         var existing = await context.GuildMembers
             .Include(gm => gm.Guild)
