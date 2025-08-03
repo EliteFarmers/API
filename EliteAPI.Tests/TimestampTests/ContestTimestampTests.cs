@@ -9,6 +9,6 @@ public class ContestTimestampTests {
     public void ContestKeyTimestampTest(string contestKey, long expectedTimestamp) {
         var actual = FormatUtils.GetTimeFromContestKey(contestKey);
         
-        actual.Should().Be(expectedTimestamp);
+        actual.ShouldBe(expectedTimestamp);
     }
 }

@@ -1,7 +1,7 @@
 global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Features.Auth.Models.ApiUser>;
 using FastEndpoints;
 using System.Net;
-using System.Text.Json;
+using System.Runtime.CompilerServices;
 using EliteAPI;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+[assembly: InternalsVisibleTo("Tests")]
 
 DotNetEnv.Env.Load();
 

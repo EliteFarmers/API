@@ -17,6 +17,6 @@ public class CollectionTierParserTests
 
         var actual = CollectionTierParser.ParseCollectionTiers(input);
 
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
 }

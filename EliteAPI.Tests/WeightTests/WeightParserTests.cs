@@ -13,7 +13,7 @@ public class WeightParserTests {
 	[Fact]
 	public void CropWeightTests() {
 		var collection = new CropCollection() {
-			ProfileMemberId = new Guid(),
+			ProfileMemberId = Guid.Empty,
 
 			Cactus = 6907586,
 			Carrot = 10134865,
@@ -56,7 +56,7 @@ public class WeightParserTests {
 		var weight = FarmingWeightParser.ParseCropWeight(collections, uncounted);
 		var summed = weight.Values.Sum();
 
-		collection.CountCropWeight().Should().BeApproximately(summed, 0.001);
+		collection.CountCropWeight().ShouldBe(summed, 0.001);
 	}
 	
 	

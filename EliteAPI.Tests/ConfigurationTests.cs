@@ -18,6 +18,6 @@ public class ConfigurationTests
 	public void TestConfigurationContainsExpectedSection()
 	{
 		var farmingWeightSection = _configuration.GetSection("FarmingWeight");
-		farmingWeightSection.Should().NotBeNull();
+		farmingWeightSection.ShouldNotBeNull();
 	}
 }

@@ -27,8 +27,8 @@ public class ToolCollectionTests {
         var actual = item.ExtractCounter();
         var cultivated = item.ExtractCultivating();
         
-        actual.Should().Be(expected);
-        cultivated.Should().Be(expectedCultivated);
+        actual.ShouldBe(expected);
+        cultivated.ShouldBe(expectedCultivated);
     }
     
     [Fact]
@@ -47,8 +47,8 @@ public class ToolCollectionTests {
         var actual = item.ExtractCollected();
         var cultivated = item.ExtractCultivating();
         
-        actual.Should().Be(expected);
-        cultivated.Should().Be(456);
+        actual.ShouldBe(expected);
+        cultivated.ShouldBe(456);
     }
     
     [Fact]
@@ -65,7 +65,7 @@ public class ToolCollectionTests {
         const int expected = 456;
         var actual = item.ExtractCollected();
         
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
     
     [Fact]
@@ -82,7 +82,7 @@ public class ToolCollectionTests {
         const int expected = 0;
         var actual = item.ExtractCollected();
         
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
     
     [Fact]
@@ -98,7 +98,7 @@ public class ToolCollectionTests {
         const int expected = 0;
         var actual = item.ExtractCollected();
         
-        actual.Should().Be(expected);
+        actual.ShouldBe(expected);
     }
     
 }

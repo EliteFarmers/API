@@ -9,7 +9,8 @@ public class CollectionTests {
 
     public CollectionTests() {
         // Populate the crop item ids
-        FarmingWeightConfig.Settings.CropItemIds = new List<string> {
+        FarmingWeightConfig.Settings.CropItemIds =
+        [
             "CACTUS",
             "CARROT_ITEM",
             "INK_SACK:3", // Cocoa
@@ -20,7 +21,7 @@ public class CollectionTests {
             "MELON",
             "NETHER_STALK",
             "MUSHROOM_COLLECTION"
-        };
+        ];
     }
     
     [Fact]
@@ -55,7 +56,7 @@ public class CollectionTests {
         var jsonDoc = JsonSerializer.SerializeToDocument(input);
         var actual = jsonDoc.ExtractCropCollections();
 
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
     }
     
     [Fact]
@@ -86,11 +87,11 @@ public class CollectionTests {
         var jsonDoc = JsonSerializer.SerializeToDocument(input);
         var actual = jsonDoc.ExtractCropCollections();
         
-        actual.Should().Equal(expected);
+        actual.ShouldBe(expected);
         
         var withSeeds = jsonDoc.ExtractCropCollections(true);
         expected.Add(Crop.Seeds, 12);
         
-        withSeeds.Should().Equal(expected);
+        withSeeds.ShouldBe(expected);
     }
 }

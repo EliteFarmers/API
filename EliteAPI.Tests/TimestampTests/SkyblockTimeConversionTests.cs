@@ -9,7 +9,7 @@ public class SkyblockTimeConversionTests {
     public void UnixSecondsToSkyblockTimeTest(long unixSeconds, long expectedSkyblockTime) {
         var actual = new SkyblockDate(unixSeconds).ElapsedSeconds;
         
-        actual.Should().Be(expectedSkyblockTime);
+        actual.ShouldBe(expectedSkyblockTime);
     }
     
     [Theory]
@@ -22,7 +22,7 @@ public class SkyblockTimeConversionTests {
     public void SkyblockDateToUnixSecondsTest(int year, int month, int day, long unixSeconds) {
         var expected = new SkyblockDate(year, month, day).UnixSeconds;
         
-        unixSeconds.Should().Be(expected);
+        unixSeconds.ShouldBe(expected);
     }
     
     [Theory]
@@ -34,9 +34,9 @@ public class SkyblockTimeConversionTests {
     public void UnixSecondsToSkyblockDateTest(long unixSeconds, int year, int month, int day) {
         var date = new SkyblockDate(unixSeconds);
         
-        date.Day.Should().Be(day);
-        date.Month.Should().Be(month);
-        date.Year.Should().Be(year);
+        date.Day.ShouldBe(day);
+        date.Month.ShouldBe(month);
+        date.Year.ShouldBe(year);
     }
     
     [Theory]
@@ -46,7 +46,7 @@ public class SkyblockTimeConversionTests {
     public void UnixSecondsToReadableSkyblockDateTest(long timestamp, string formattedDate) {
         var actual = new SkyblockDate(timestamp).ToString();
         
-        actual.Should().Be(formattedDate);
+        actual.ShouldBe(formattedDate);
     }
     
     [Theory]
@@ -58,6 +58,6 @@ public class SkyblockTimeConversionTests {
     public void UnixSecondsToStartOfSkyblockDateTest(long unixSeconds, long expected) {
         var date = new SkyblockDate(unixSeconds);
         
-        date.StartOfDayTimestamp().Should().Be(expected);
+        date.StartOfDayTimestamp().ShouldBe(expected);
     }
 }

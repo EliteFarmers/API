@@ -37,8 +37,8 @@ public class PlotParserTests {
 		var result = UnlockedPlotsParser.CombinePlots(plots);
 		var unlocked = (UnlockedPlots)result;
 
-		(unlocked == UnlockedPlots.All).Should().BeTrue();
+		(unlocked == UnlockedPlots.All).ShouldBeTrue();
 		
-		UnlockedPlotsParser.SeperatePlots(result).Should().Equal(plots);
+		UnlockedPlotsParser.SeperatePlots(result).ShouldBe(plots);
 	}
 }
