@@ -25,6 +25,7 @@ public partial class AuthService(
 	UserManager userManager,
 	IConfiguration configuration,
 	ISchedulerFactory schedulerFactory,
+	ILogger<AuthService> logger,
 	DataContext context) 
 	: IAuthService 
 {
@@ -37,12 +38,14 @@ public partial class AuthService(
 	public async Task<AuthResponseDto?> LoginAsync(DiscordLoginDto dto) {
 		var login = await discordService.FetchRefreshToken(dto.Code, dto.RedirectUri);
 		if (login is null) {
+			logger.LogWarning("Failed to fetch refresh token for user login with access code!");
 			return null;
 		}
 		
 		var account = await discordService.GetDiscordUser(login.AccessToken);
 		
 		if (account is null) {
+			logger.LogWarning("Failed to fetch Discord user account for login!");
 			return null;
 		}
 		
@@ -51,10 +54,18 @@ public partial class AuthService(
 		if (user is null) 
 		{
 			var errors = await RegisterUser(account, login);
-			if (errors.Any()) return null;
+			var identityErrors = errors.ToList();
+			if (identityErrors.Count != 0)
+			{
+				logger.LogWarning("Failed to register user {UserId} with errors: {Errors}", account.Id, string.Join(", ", identityErrors.Select(e => e.Description)));
+				return null;
+			}
 			
 			user = await userManager.FindByIdAsync(account.Id.ToString());
-			if (user is null) return null; // Should not happen if registration succeeded
+			if (user is null) {
+				logger.LogError("User {UserId} was not found after registration!", account.Id);
+				return null; // Should not happen if registration succeeded
+			}
 		} 
 		else 
 		{
@@ -76,6 +87,7 @@ public partial class AuthService(
 		var refreshToken = await GenerateAndStoreRefreshToken(user);
 		
 		if (refreshToken.IsNullOrEmpty()) {
+			logger.LogWarning("Failed to generate or store refresh token for user {UserId}", user.Id);
 			return null;
 		}
 		
