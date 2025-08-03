@@ -54,7 +54,7 @@ internal sealed class GetEventMembersEndpoint(
 		};
 		
 		// If the user is the member or a moderator, send the notes
-		if (User.GetId() is { } id && (id == member.UserId.ToString() || User.IsInRole(ApiUserPolicies.Moderator))) {
+		if (User.GetDiscordId() is { } id && (id == member.UserId || User.IsInRole(ApiUserPolicies.Moderator))) {
 			await SendAsync(mapped, cancellation: c);
 			return;
 		}

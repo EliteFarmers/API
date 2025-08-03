@@ -20,7 +20,7 @@ internal sealed class GetPublicGuildEventsEndpoint(
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get public guild";
+			s.Summary = "Get public guild events";
 		});
 		
 		Options(o => {

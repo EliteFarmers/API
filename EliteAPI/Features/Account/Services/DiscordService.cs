@@ -320,7 +320,11 @@ public class DiscordService(
             .FirstOrDefaultAsync(g => g.Id == guild.Id);
         
         if (existingGuild is null) {
-            return null; // We only care about guilds the bot is in
+            existingGuild = await GetGuild(guild.Id, skipCache: true); 
+        
+            if (existingGuild is null) {
+                return null;
+            }
         }
         
         var existing = await context.GuildMembers
@@ -380,8 +384,6 @@ public class DiscordService(
         }
 
         if (member.LastUpdated.OlderThanSeconds(_coolDowns.UserRolesCooldown)) {
-            await GetUsersGuilds(userId);
-
             await FetchUserRoles(member);
         }
         
@@ -690,20 +692,24 @@ public static class DiscordExtensions
     private const ulong ManageGuild = 0x20;
     
     public static bool HasGuildAdminPermissions(this GuildMember member, GuildPermission permission = GuildPermission.Role) {
+        var bits = member.Permissions;
+        
+        // Check if the user has the admin permission
+        if ((bits & Admin) == Admin) {
+            return true;
+        }
+        
+        // Accept manage guild as admin if permission is set to manager
+        if (permission == GuildPermission.Manager) {
+            return (bits & ManageGuild) == ManageGuild;
+        }
+        
         var adminRole = member.Guild?.AdminRole ?? 0;
         // Accept admin role as admin if permission is set to role
         if (permission == GuildPermission.Role && adminRole != 0 && member.Roles.Contains(adminRole)) {
             return true;
         }
-        
-        var bits = member.Permissions;
 
-        if (permission == GuildPermission.Manager) {
-            // Accept manage guild as admin if permission is set to manager
-            return (bits & Admin) == Admin || (bits & ManageGuild) == ManageGuild;
-        }
-        
-        // Check if the user has the admin permission
-        return (bits & Admin) == Admin;
+        return false;
     }
 }
