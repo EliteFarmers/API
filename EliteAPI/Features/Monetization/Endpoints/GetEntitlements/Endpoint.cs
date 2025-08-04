@@ -28,6 +28,6 @@ internal sealed class GetEntitlementsEndpoint(
 		var entitlements =
 			mapper.Map<List<EntitlementDto>>(await monetizationService.GetEntitlementsAsync(request.DiscordIdUlong));
 
-		await SendAsync(entitlements, cancellation: c);
+		await Send.OkAsync(entitlements, cancellation: c);
 	}
 }

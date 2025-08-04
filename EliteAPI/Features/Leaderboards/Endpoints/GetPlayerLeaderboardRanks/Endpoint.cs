@@ -51,6 +51,6 @@ internal sealed class GetPlayerLeaderboardRanksEndpoint(
 			Ranks = ranks
 		};
 		
-		await SendAsync(response, cancellation: c);
+		await Send.OkAsync(response, cancellation: c);
 	}
 }

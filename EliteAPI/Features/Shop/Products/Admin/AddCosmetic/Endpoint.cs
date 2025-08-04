@@ -41,18 +41,18 @@ internal sealed class AddCosmeticToProductEndpoint(
 	public override async Task HandleAsync(AddCosmeticToProductRequest request, CancellationToken c) {
 		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == (ulong) request.ProductId, cancellationToken: c);
 		if (product is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		var style = await context.WeightStyles.FirstOrDefaultAsync(w => w.Id == request.CosmeticId, cancellationToken: c);
 		if (style is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		if (product.ProductWeightStyles.Exists(w => w.WeightStyleId == request.CosmeticId)) {
-			await SendNoContentAsync(cancellation: c);
+			await Send.NoContentAsync(cancellation: c);
 			return;
 		}
 
@@ -71,6 +71,6 @@ internal sealed class AddCosmeticToProductEndpoint(
 
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

@@ -27,7 +27,7 @@ internal sealed class DeleteContestPingsEndpoint(
 	public override async Task HandleAsync(DisableContestPingsRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
@@ -41,7 +41,7 @@ internal sealed class DeleteContestPingsEndpoint(
 		}
 
 		if (!guild.Features.ContestPingsEnabled) {
-			await SendNoContentAsync(cancellation: c);
+			await Send.NoContentAsync(cancellation: c);
 			return;
 		}
 
@@ -54,6 +54,6 @@ internal sealed class DeleteContestPingsEndpoint(
 		context.Entry(guild).Property(g => g.Features).IsModified = true;
 		
 		await context.SaveChangesAsync(c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

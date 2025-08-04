@@ -29,7 +29,7 @@ internal sealed class DeleteTeamEndpoint(
 	public override async Task HandleAsync(DeleteTeamRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		if (userId is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 
@@ -39,7 +39,7 @@ internal sealed class DeleteTeamEndpoint(
 		}
 		
 		if (team.UserId != userId) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 		
@@ -50,6 +50,6 @@ internal sealed class DeleteTeamEndpoint(
 		}
 		
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

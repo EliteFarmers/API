@@ -29,6 +29,6 @@ internal sealed class RefreshPurchasesEndpoint(
 		await monetizationService.SyncDiscordEntitlementsAsync(id.Value, false);
 		await monetizationService.FetchUserEntitlementsAsync(id.Value);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

@@ -29,11 +29,11 @@ internal sealed class GetGuildEventEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
 
 		if (@event is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
 		var result = mapper.Map<EventDetailsDto>(@event);
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

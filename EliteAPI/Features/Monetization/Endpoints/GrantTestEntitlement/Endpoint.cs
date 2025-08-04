@@ -29,10 +29,10 @@ internal sealed class GrantTestEntitlementEndpoint(
 		var result = await monetizationService.GrantTestEntitlementAsync(request.DiscordIdUlong, request.ProductIdUlong, request.Target ?? EntitlementTarget.User);
 		
 		if (result is StatusCodeResult statusCodeResult) {
-			await SendAsync(statusCodeResult, statusCodeResult.StatusCode, c);
+			await Send.ResponseAsync(statusCodeResult, statusCodeResult.StatusCode, c);
 			return;
 		}
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

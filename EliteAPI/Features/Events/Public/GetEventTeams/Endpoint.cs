@@ -29,6 +29,6 @@ internal sealed class GetEventTeamsEndpoint(
 		var teams = await teamService.GetEventTeamsAsync(request.EventId);
 		var result = mapper.Map<List<EventTeamWithMembersDto>>(teams);
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

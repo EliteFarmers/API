@@ -28,7 +28,7 @@ internal sealed class SetJacobFeatureEndpoint(
 	{
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
@@ -39,6 +39,6 @@ internal sealed class SetJacobFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

@@ -36,7 +36,7 @@ internal sealed class GetUserGuildEndpoint(
 		var guildMember = await discordService.GetGuildMemberIfAdmin(User, request.DiscordIdUlong);
 
 		if (guildMember is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
@@ -45,7 +45,7 @@ internal sealed class GetUserGuildEndpoint(
 			.Include(g => g.Channels).AsNoTracking()
 			.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, cancellationToken: c);
         
-		await SendAsync(new AuthorizedGuildDto {
+		await Send.OkAsync(new AuthorizedGuildDto {
 			Id = request.DiscordIdUlong.ToString(),
 			Permissions = guildMember.Permissions.ToString(),
 			Guild = mapper.Map<PrivateGuildDto>(guild),

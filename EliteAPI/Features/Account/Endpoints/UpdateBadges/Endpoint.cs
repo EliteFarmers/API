@@ -21,7 +21,7 @@ internal sealed class UpdateBadgesEndpoint(
 	public override async Task HandleAsync(UpdateBadgesRequest request, CancellationToken c) {
 		var userId = User.GetDiscordId();
 		if (userId is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
         
@@ -31,7 +31,7 @@ internal sealed class UpdateBadgesEndpoint(
 			.ToListAsync(cancellationToken: c);
         
 		if (userBadges is { Count: 0 }) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 		}
 
 		foreach (var badge in request.Badges) {
@@ -49,6 +49,6 @@ internal sealed class UpdateBadgesEndpoint(
 		ThrowIfAnyErrors();
         
 		await context.SaveChangesAsync(c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

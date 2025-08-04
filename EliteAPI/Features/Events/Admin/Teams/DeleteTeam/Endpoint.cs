@@ -37,7 +37,7 @@ internal sealed class DeleteTeamEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
 		
 		if (userId is null || @event is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 		
@@ -46,19 +46,19 @@ internal sealed class DeleteTeamEndpoint(
 			.FirstOrDefaultAsync(t => t.EventId == @event.Id && t.Id == request.TeamId, cancellationToken: c);
 
 		if (team is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		var result = await teamService.DeleteTeamAsync(request.TeamId);
 		
 		if (result is BadRequestObjectResult badRequest) {
-			await SendAsync(badRequest.Value?.ToString(), cancellation: c);
+			await Send.OkAsync(badRequest.Value?.ToString(), cancellation: c);
 			return;
 		}
 		
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

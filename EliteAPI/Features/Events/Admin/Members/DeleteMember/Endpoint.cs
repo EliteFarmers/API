@@ -39,7 +39,7 @@ internal sealed class DeleteMemberEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
 		if (userId is null || @event is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 		
@@ -56,14 +56,14 @@ internal sealed class DeleteMemberEndpoint(
 				.FirstOrDefaultAsync(cancellationToken: c);
         
 		if (member is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		context.EventMembers.Remove(member);
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

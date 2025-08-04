@@ -25,6 +25,6 @@ internal sealed class CreateAnnouncementEndpoint(
     {
         await announcementService.CreateAnnouncementAsync(request, c);
 		
-        await SendNoContentAsync(c);
+        await Send.NoContentAsync(c);
     }
 }

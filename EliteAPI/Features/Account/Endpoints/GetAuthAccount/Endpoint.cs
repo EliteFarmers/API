@@ -43,6 +43,6 @@ internal sealed class GetAuthAccountEndpoint(
 
         var result = mapper.Map<AuthorizedAccountDto>(account);
 
-        await SendAsync(result, cancellation: c);
+        await Send.OkAsync(result, cancellation: c);
     }
 }

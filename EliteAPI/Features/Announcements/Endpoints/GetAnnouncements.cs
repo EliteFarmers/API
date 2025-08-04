@@ -24,6 +24,6 @@ internal sealed class GetAnnouncementEndpoint(
     public override async Task HandleAsync(CancellationToken c)
     {
         var announcements = await announcementService.GetAnnouncements(c);
-        await SendAsync(announcements, cancellation: c);
+        await Send.OkAsync(announcements, cancellation: c);
     }
 }

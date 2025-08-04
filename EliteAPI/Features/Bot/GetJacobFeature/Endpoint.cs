@@ -24,12 +24,12 @@ internal sealed class GetJacobFeatureEndpoint(
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var guild = await context.Guilds.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, c);
 		if (guild is null || !guild.Features.JacobLeaderboardEnabled) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
 		if (guild.Features.JacobLeaderboard is not null) {
-			await SendAsync(guild.Features.JacobLeaderboard, cancellation: c);
+			await Send.OkAsync(guild.Features.JacobLeaderboard, cancellation: c);
 			return;
 		}
         
@@ -37,6 +37,6 @@ internal sealed class GetJacobFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 		
-		await SendAsync(guild.Features.JacobLeaderboard, cancellation: c);
+		await Send.OkAsync(guild.Features.JacobLeaderboard, cancellation: c);
 	}
 }

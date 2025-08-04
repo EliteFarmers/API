@@ -36,7 +36,7 @@ internal sealed class DeleteStyleImageEndpoint(
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		
 		if (style is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -45,7 +45,7 @@ internal sealed class DeleteStyleImageEndpoint(
 		                 ?? (style.Image?.Path == decoded ? style.Image : null);
 		
 		if (styleImage is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -60,6 +60,6 @@ internal sealed class DeleteStyleImageEndpoint(
 		
 		await cacheStore.EvictByTagAsync("styles", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

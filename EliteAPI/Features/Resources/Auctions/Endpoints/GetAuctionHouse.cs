@@ -45,7 +45,7 @@ internal sealed class GetAuctionHouseProductsEndpoint(
             ),
         };
         
-        await SendAsync(response, cancellation: c);
+        await Send.OkAsync(response, cancellation: c);
     }
 }
 

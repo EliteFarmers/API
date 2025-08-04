@@ -25,7 +25,7 @@ internal sealed class UpdateGuildMemberRolesEndpoint(
 			.FirstOrDefaultAsync(m => m.GuildId == request.DiscordIdUlong && m.AccountId == request.UserId, cancellationToken: c);
         
 		if (member is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
@@ -39,6 +39,6 @@ internal sealed class UpdateGuildMemberRolesEndpoint(
 		context.GuildMembers.Update(member);
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

@@ -35,7 +35,7 @@ internal sealed class UpdateTeamEndpoint(
 	public override async Task HandleAsync(AdminUpdateTeamRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		if (userId is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 
@@ -50,7 +50,7 @@ internal sealed class UpdateTeamEndpoint(
 		}
 		
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

@@ -28,7 +28,7 @@ internal sealed class GetProfileNamesEndpoint(
 	public override async Task HandleAsync(PlayerRequest request, CancellationToken c) {
 		var player = await profileService.GetPlayerDataByUuidOrIgn(request.Player);
 		if (player is null) {
-			await SendAsync([], cancellation: c);
+			await Send.OkAsync([], cancellation: c);
 			return;
 		}
 		
@@ -41,6 +41,6 @@ internal sealed class GetProfileNamesEndpoint(
 				Selected = m.IsSelected
 			}).ToListAsync(cancellationToken: c);
 
-		await SendAsync(profiles, cancellation: c);
+		await Send.OkAsync(profiles, cancellation: c);
 	}
 }

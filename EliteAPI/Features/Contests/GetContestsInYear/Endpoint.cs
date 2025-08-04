@@ -32,6 +32,6 @@ internal sealed class GetContestsInYearEndpoint(
 
 		var result = await contestsService.GetContestsFromYear(request.Year);
 		
-		await SendAsync(result, cancellation: ct);
+		await Send.OkAsync(result, cancellation: ct);
 	}
 }

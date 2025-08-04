@@ -22,6 +22,6 @@ internal sealed class RemoveBadgeEndpoint(
 
 	public override async Task HandleAsync(BotRemoveBadgeRequest request, CancellationToken c) {
 		await badgeService.RemoveBadgeFromUser(request.Player, request.BadgeId);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

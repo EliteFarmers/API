@@ -32,10 +32,10 @@ internal sealed class GetAdminCropGraphsEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
 
 		if (profile == Guid.Empty) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 		}
         
 		var points = await timescaleService.GetCropCollections(profile, request.Start, request.End, -1);
-		await SendOkAsync(points, c);
+		await Send.OkAsync(points, c);
 	}
 }

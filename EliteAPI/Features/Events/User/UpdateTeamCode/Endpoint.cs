@@ -29,7 +29,7 @@ internal sealed class UpdateTeamJoinCodeEndpoint(
 	public override async Task HandleAsync(UpdateTeamJoinCodeRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		if (userId is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 
@@ -40,10 +40,10 @@ internal sealed class UpdateTeamJoinCodeEndpoint(
 				ThrowError(bad.Value?.ToString() ?? "Failed to generate new join code");
 				break;
 			case UnauthorizedObjectResult:
-				await SendUnauthorizedAsync(c);
+				await Send.UnauthorizedAsync(c);
 				return;
 		}
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

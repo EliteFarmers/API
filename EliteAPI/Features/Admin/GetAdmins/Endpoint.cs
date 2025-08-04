@@ -51,6 +51,6 @@ internal sealed class GetAdminsEndpoint(
 			.AsSplitQuery()
 			.ToListAsync(cancellationToken: c);
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

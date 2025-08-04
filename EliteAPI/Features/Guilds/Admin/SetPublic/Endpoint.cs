@@ -29,7 +29,7 @@ internal sealed class SetGuildPublicEndpoint(
 	{
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
@@ -40,6 +40,6 @@ internal sealed class SetGuildPublicEndpoint(
 		
 		await cacheStore.EvictByTagAsync("guilds", c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

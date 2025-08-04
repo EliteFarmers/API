@@ -33,6 +33,6 @@ internal sealed class GetPublicGuildsEndpoint(
 			.Select(g => mapper.Map<GuildDetailsDto>(g))
 			.ToListAsync(c);
         
-		await SendAsync(guilds, cancellation: c);
+		await Send.OkAsync(guilds, cancellation: c);
 	}
 }

@@ -30,13 +30,13 @@ internal sealed class SetAdminRoleEndpoint(
 
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
 		guild.AdminRole = request.RoleIdUlong;
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

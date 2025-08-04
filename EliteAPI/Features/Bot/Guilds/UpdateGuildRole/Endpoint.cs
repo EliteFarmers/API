@@ -21,6 +21,6 @@ internal sealed class UpdateGuildRoleEndpoint(
 
 	public override async Task HandleAsync(BotUpdateGuildRoleRequest request, CancellationToken c) {
 		await guildService.UpdateGuildRoleData(request.DiscordIdUlong, request.Role);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

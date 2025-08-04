@@ -35,7 +35,7 @@ internal sealed class ClaimProductEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
 		
 		if (product is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 
@@ -53,6 +53,6 @@ internal sealed class ClaimProductEndpoint(
 		
 		await monetizationService.GrantProductAccessAsync(userId.Value, product.Id);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

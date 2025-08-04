@@ -40,6 +40,6 @@ internal sealed class GetAccountSettingsEndpoint(
 			ThrowError("User settings not found", StatusCodes.Status404NotFound);
 		}
 
-		await SendAsync(settings, cancellation: c);
+		await Send.OkAsync(settings, cancellation: c);
 	}
 }

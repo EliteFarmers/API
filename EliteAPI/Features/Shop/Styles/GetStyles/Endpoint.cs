@@ -29,6 +29,6 @@ internal sealed class GetStylesEndpoint(
 			.Select(s => mapper.Map<WeightStyleWithDataDto>(s))
 			.ToListAsync(cancellationToken: c);
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

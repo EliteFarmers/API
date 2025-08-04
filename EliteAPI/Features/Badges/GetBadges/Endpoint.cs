@@ -32,6 +32,6 @@ internal sealed class GetBadgesEndpoint(
 			.AsNoTracking()
 			.ToList();
         
-		await SendAsync(mapper.Map<List<BadgeDto>>(badges), cancellation: c);
+		await Send.OkAsync(mapper.Map<List<BadgeDto>>(badges), cancellation: c);
 	}
 }

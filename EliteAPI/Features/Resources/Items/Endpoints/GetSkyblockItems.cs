@@ -30,7 +30,7 @@ internal sealed class GetSkyblockItemsEndpoint(
             .Where(s => s.Data != null)
             .ToDictionaryAsync(k => k.ItemId, v => v.Data, cancellationToken: c);
 		
-        await SendAsync(new GetSkyblockItemsResponse { Items = result }, cancellation: c);
+        await Send.OkAsync(new GetSkyblockItemsResponse { Items = result }, cancellation: c);
     }
 }
 

@@ -34,7 +34,7 @@ internal sealed class SetTeamOwnerEndpoint(
 	public override async Task HandleAsync(ChangeTeamOwnerRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		if (userId is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 		
@@ -43,18 +43,18 @@ internal sealed class SetTeamOwnerEndpoint(
 			.FirstOrDefaultAsync(t => t.EventId == request.EventId && t.Id == request.TeamId, cancellationToken: c);
 
 		if (team is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		var result = await teamService.SetTeamOwnerValidateAsync(request.TeamId, userId, request.Player);
 		
 		if (result is BadRequestObjectResult badRequest) {
-			await SendAsync(badRequest.Value?.ToString(), cancellation: c);
+			await Send.OkAsync(badRequest.Value?.ToString(), cancellation: c);
 			return;
 		}
 
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

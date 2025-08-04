@@ -30,7 +30,7 @@ internal sealed class LeaveEventEndpoint(
 	public override async Task HandleAsync(LeaveEventRequest request, CancellationToken c) {
         var user = await userManager.GetUserAsync(User);
         if (user?.AccountId is null) {
-	        await SendUnauthorizedAsync(c);
+	        await Send.UnauthorizedAsync(c);
 	        return;
         }
         
@@ -38,7 +38,7 @@ internal sealed class LeaveEventEndpoint(
 	        .FirstOrDefaultAsync(e => e.Id == request.EventId, cancellationToken: c);
         
         if (eliteEvent is null) {
-	        await SendNotFoundAsync(c);
+	        await Send.NotFoundAsync(c);
 	        return;
         }
 
@@ -75,6 +75,6 @@ internal sealed class LeaveEventEndpoint(
         }
 
         await context.SaveChangesAsync(c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

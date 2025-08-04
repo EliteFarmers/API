@@ -51,6 +51,6 @@ internal sealed class CreateBadgeEndpoint(
 		}
 		
 		await cacheStore.EvictByTagAsync("badges", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

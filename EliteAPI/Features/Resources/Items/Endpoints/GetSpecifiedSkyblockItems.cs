@@ -56,7 +56,7 @@ internal sealed class GetSpecifiedSkyblockItemsEndpoint(
             .Where(s => request.Items.Contains(s.ItemId))
             .ToDictionaryAsync(k => k.ItemId, v => v, cancellationToken: c);
 		
-        await SendAsync(new GetSpecifiedSkyblockItemsResponse { Items = result }, cancellation: c);
+        await Send.OkAsync(new GetSpecifiedSkyblockItemsResponse { Items = result }, cancellation: c);
     }
 }
 

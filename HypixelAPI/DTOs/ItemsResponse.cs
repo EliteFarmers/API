@@ -123,15 +123,15 @@ public class ItemResponse
 public class ItemSkin
 {
 	[JsonPropertyName("value")]
-    public string Value { get; set; }
+    public string? Value { get; set; }
     
     [JsonPropertyName("signature")]
-    public string Signature { get; set; }
+    public string? Signature { get; set; }
 }
 
 public class ItemGemstoneSlot {
 	[JsonPropertyName("slot_type")]
-	public string SlotType { get; set; }
+	public string? SlotType { get; set; }
 	[JsonPropertyName("costs")]
 	public List<ItemGemstoneSlotCosts> Costs { get; set; } = [];
 }

@@ -53,6 +53,6 @@ internal sealed class GetAccountFromDiscordEndpoint(
 		result.Profiles = profileDetails;
 		result.Settings = mapper.Map<UserSettingsDto>(account.UserSettings);
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

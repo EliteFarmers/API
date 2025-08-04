@@ -55,6 +55,6 @@ internal sealed class GetMedalBracketsGraphEndpoint(
 			}
 		}
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

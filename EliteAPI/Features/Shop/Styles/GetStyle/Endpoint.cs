@@ -35,11 +35,11 @@ internal sealed class GetStyleEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
 		
 		if (existing is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		var result = mapper.Map<WeightStyleWithDataDto>(existing);
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

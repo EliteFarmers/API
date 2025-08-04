@@ -36,7 +36,7 @@ internal sealed class SetEventBannerEndpoint(
             .FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
         
         if (eliteEvent is null || eliteEvent.GuildId != request.DiscordIdUlong) {
-	        await SendNotFoundAsync(c);
+	        await Send.NotFoundAsync(c);
 			return;
         }
 
@@ -64,7 +64,7 @@ internal sealed class SetEventBannerEndpoint(
         }
         
         await context.SaveChangesAsync(c);
-        await SendNoContentAsync(cancellation: c);
+        await Send.NoContentAsync(cancellation: c);
 	}
 }
 

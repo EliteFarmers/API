@@ -26,7 +26,7 @@ internal sealed class DisableContestPingsPingsEndpoint(
 	public override async Task HandleAsync(DisableContestPingsRequest request, CancellationToken c) {
 		var guild = await context.Guilds.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, c);
 		if (guild?.Features.ContestPings is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
@@ -40,6 +40,6 @@ internal sealed class DisableContestPingsPingsEndpoint(
 
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

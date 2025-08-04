@@ -46,7 +46,7 @@ internal sealed class GetCategoriesEndpoint(
 			
 			var result = mapper.Map<List<ShopCategoryDto>>(results);
 			
-			await SendAsync(result, cancellation: c);
+			await Send.OkAsync(result, cancellation: c);
 		} else {
 			var result = await context.Categories
 				.OrderBy(category => category.Order)
@@ -54,7 +54,7 @@ internal sealed class GetCategoriesEndpoint(
 				.Select(category => mapper.Map<ShopCategoryDto>(category))
 				.ToListAsync(cancellationToken: c);
 			
-			await SendAsync(result, cancellation: c);
+			await Send.OkAsync(result, cancellation: c);
 		}
 	}
 }

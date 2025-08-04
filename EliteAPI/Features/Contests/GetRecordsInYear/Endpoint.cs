@@ -45,6 +45,6 @@ internal sealed class GetRecordsInYearEndpoint(
 			}
 		};
 		
-		await SendAsync(result, cancellation: ct);
+		await Send.OkAsync(result, cancellation: ct);
 	}
 }

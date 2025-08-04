@@ -37,7 +37,7 @@ internal sealed class GetLeaderboardsEndpoint(
 				ScoreDataType = l.Value.Info.ScoreDataType
 			});
 		
-		await SendAsync(new LeaderboardsResponse() {
+		await Send.OkAsync(new LeaderboardsResponse() {
 			Leaderboards = leaderboards,
 		}, cancellation: c);
 	}

@@ -31,6 +31,6 @@ internal sealed class SearchAccountsEndpoint(
 			.SqlQuery<string>($"SELECT * FROM autocomplete_igns({dbQuery}, {dbStart}, {dbEnd})")
 			.ToListAsync(cancellationToken: c);
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

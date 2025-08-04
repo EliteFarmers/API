@@ -36,7 +36,7 @@ internal sealed class UpdateStyleEndpoint(
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		
 		if (existing is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -57,7 +57,7 @@ internal sealed class UpdateStyleEndpoint(
 		
 		await outputCacheStore.EvictByTagAsync("styles", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

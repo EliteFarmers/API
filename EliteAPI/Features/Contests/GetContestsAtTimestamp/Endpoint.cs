@@ -30,6 +30,6 @@ internal sealed class GetContestsAtTimestampEndpoint(
 
 		var result = await contestsService.GetContestsAt(skyblockDate.StartOfDayTimestamp());
 		
-		await SendAsync(result, cancellation: ct);
+		await Send.OkAsync(result, cancellation: ct);
 	}
 }

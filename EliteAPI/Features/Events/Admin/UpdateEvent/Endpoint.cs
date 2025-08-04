@@ -36,7 +36,7 @@ internal sealed class CreateWeightEventEndpoint(
             .FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
         
         if (eliteEvent is null || eliteEvent.GuildId != request.DiscordIdUlong) {
-	        await SendNotFoundAsync(c);
+	        await Send.NotFoundAsync(c);
 			return;
         }
 
@@ -87,7 +87,7 @@ internal sealed class CreateWeightEventEndpoint(
                     .SetProperty(e => e.EndTime, eliteEvent.EndTime), cancellationToken: c);
         }
 
-        await SendNoContentAsync(cancellation: c);
+        await Send.NoContentAsync(cancellation: c);
 	}
 }
 

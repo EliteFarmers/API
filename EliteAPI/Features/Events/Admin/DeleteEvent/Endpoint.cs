@@ -32,7 +32,7 @@ internal sealed class DeleteEventEndpoint(
             .FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
 
         if (eliteEvent is null) {
-	        await SendNotFoundAsync(c);
+	        await Send.NotFoundAsync(c);
 	        return;
         }
         
@@ -51,7 +51,7 @@ internal sealed class DeleteEventEndpoint(
         context.Events.Remove(eliteEvent);
         await context.SaveChangesAsync(c);
         
-        await SendNoContentAsync(cancellation: c);
+        await Send.NoContentAsync(cancellation: c);
 	}
 }
 

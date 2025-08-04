@@ -36,6 +36,6 @@ internal sealed class RefreshGuildMembershipsEndpoint(
 			ThrowError("No guild memberships found", StatusCodes.Status404NotFound);
 		}
 
-		await SendNoContentAsync(c);
+		await Send.NoContentAsync(c);
 	}
 }

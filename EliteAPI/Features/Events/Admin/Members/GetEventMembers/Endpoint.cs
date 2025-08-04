@@ -34,7 +34,7 @@ internal sealed class GetEventMembersEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
 
 		if (@event is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -49,7 +49,7 @@ internal sealed class GetEventMembersEndpoint(
 			.ToListAsync(cancellationToken: c);
         
 		var result = mapper.Map<List<AdminEventMemberDto>>(members);
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }
 

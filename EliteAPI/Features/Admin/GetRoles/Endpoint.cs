@@ -25,6 +25,6 @@ internal sealed class GetRolesEndpoint(
 			.Where(r => r != null)
 			.ToArrayAsync(cancellationToken: c) as string[];
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

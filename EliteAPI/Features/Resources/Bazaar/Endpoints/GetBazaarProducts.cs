@@ -43,7 +43,7 @@ internal sealed class GetBazaarProductsEndpoint(
             }})
             .ToDictionaryAsync(k => k.ProductId, v => v.Info, cancellationToken: c);
 		
-        await SendAsync(new GetBazaarProductsResponse() { Products = result }, cancellation: c);
+        await Send.OkAsync(new GetBazaarProductsResponse() { Products = result }, cancellation: c);
     }
 }
 

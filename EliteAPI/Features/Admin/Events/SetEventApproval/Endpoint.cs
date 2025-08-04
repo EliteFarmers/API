@@ -30,7 +30,7 @@ internal sealed class SetEventApprovalEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventIdUlong, cancellationToken: c);
 
 		if (eliteEvent is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 
@@ -39,6 +39,6 @@ internal sealed class SetEventApprovalEndpoint(
 		
 		await cacheStore.EvictByTagAsync("upcoming-events", c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

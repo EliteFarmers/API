@@ -31,6 +31,6 @@ internal sealed class GetCurrentContestsEndpoint(
 
 		var result = await contestsService.GetContestsFromYear(SkyblockDate.Now.Year + 1, true);
 		
-		await SendAsync(result, cancellation: ct);
+		await Send.OkAsync(result, cancellation: ct);
 	}
 }

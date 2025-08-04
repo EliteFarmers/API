@@ -47,6 +47,6 @@ internal sealed class GetContestsInMonthEndpoint(
 			}
 		}
 		
-		await SendAsync(data, cancellation: ct);
+		await Send.OkAsync(data, cancellation: ct);
 	}
 }

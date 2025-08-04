@@ -29,13 +29,13 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		if (userId is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -46,7 +46,7 @@ internal sealed class UpdateGuildPurchasesEndpoint(
         
 		var entitlements = await monetizationService.GetEntitlementsAsync(request.DiscordIdUlong);
 		if (entitlements is { Count: 0 }) {
-			await SendNoContentAsync(cancellation: c);
+			await Send.NoContentAsync(cancellation: c);
 			return;
 		}
         
@@ -70,7 +70,7 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 		}
 
 		if (currentLeaderboards == maxLeaderboards && currentEvents == maxEvents) {
-			await SendNoContentAsync(cancellation: c);
+			await Send.NoContentAsync(cancellation: c);
 			return;
 		}
         
@@ -84,6 +84,6 @@ internal sealed class UpdateGuildPurchasesEndpoint(
         
 		await context.SaveChangesAsync(c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

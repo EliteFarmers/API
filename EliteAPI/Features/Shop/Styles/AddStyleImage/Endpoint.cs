@@ -45,7 +45,7 @@ internal sealed class AddStyleImageEndpoint(
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
 		
 		if (style is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -72,6 +72,6 @@ internal sealed class AddStyleImageEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("styles", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

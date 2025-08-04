@@ -25,6 +25,6 @@ internal sealed class UnlinkAccountEndpoint(
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		await monetizationService.FetchUserEntitlementsAsync(request.DiscordIdUlong);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

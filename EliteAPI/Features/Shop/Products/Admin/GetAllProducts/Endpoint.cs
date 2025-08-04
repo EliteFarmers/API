@@ -32,6 +32,6 @@ internal sealed class GetAllProductsEndpoint(
 			.Select(x => mapper.Map<ProductDto>(x))
 			.ToListAsync(cancellationToken: c);
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

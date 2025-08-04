@@ -37,7 +37,7 @@ internal sealed class AddTeamMemberEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
 		if (@event is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -47,14 +47,14 @@ internal sealed class AddTeamMemberEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
         
 		if (team is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
 		await teamService.AddMemberToTeamAsync(request.TeamId, request.Player);
 
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

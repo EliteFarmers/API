@@ -31,7 +31,7 @@ internal sealed class GetPublicGuildEventsEndpoint(
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null || !guild.IsPublic) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -43,6 +43,6 @@ internal sealed class GetPublicGuildEventsEndpoint(
 
 		var mapped = mapper.Map<List<EventDetailsDto>>(events) ?? [];
 		
-		await SendAsync(mapped, cancellation: c);
+		await Send.OkAsync(mapped, cancellation: c);
 	}
 }

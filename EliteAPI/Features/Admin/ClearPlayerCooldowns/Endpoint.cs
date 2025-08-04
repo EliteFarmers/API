@@ -31,7 +31,7 @@ internal sealed class ClearPlayerCooldownsEndpoint(
 	{
 		var account = await mojangService.GetMinecraftAccountByUuidOrIgn(request.Player);
 		if (account is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 
@@ -49,6 +49,6 @@ internal sealed class ClearPlayerCooldownsEndpoint(
 		await db.KeyDeleteAsync($"player:{account.Id}:updating");
 		await db.KeyDeleteAsync($"profile:{account.Id}:updating");
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

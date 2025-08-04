@@ -42,7 +42,7 @@ internal sealed class GetProfileRankEndpoint(
 				ThrowError("Profile not found", StatusCodes.Status404NotFound);
 			}
 
-			await SendAsync(result, cancellation: c);
+			await Send.OkAsync(result, cancellation: c);
 			return;
 		}
 		
@@ -64,7 +64,7 @@ internal sealed class GetProfileRankEndpoint(
 				removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
 				gameMode: request.Mode,
 				identifier: request.Interval);
-			await SendAsync(new LeaderboardPositionDto {
+			await Send.OkAsync(new LeaderboardPositionDto {
 				Rank = -1,
 				Amount = 0,
 				MinAmount = newLbService.GetLeaderboardMinScore(request.Leaderboard),
@@ -74,6 +74,6 @@ internal sealed class GetProfileRankEndpoint(
 			return;
 		}
 		
-		await SendAsync(newResult, cancellation: c);
+		await Send.OkAsync(newResult, cancellation: c);
 	}
 }

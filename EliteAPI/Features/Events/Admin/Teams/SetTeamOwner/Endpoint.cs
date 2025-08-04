@@ -38,7 +38,7 @@ internal sealed class SetTeamOwnerEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
 		if (userId is null || @event is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 		
@@ -47,18 +47,18 @@ internal sealed class SetTeamOwnerEndpoint(
 			.FirstOrDefaultAsync(t => t.EventId == @event.Id && t.Id == request.TeamId, cancellationToken: c);
 
 		if (team is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
 		var result = await teamService.SetTeamOwnerAsync(request.TeamId, request.Player);
 		
 		if (result is BadRequestObjectResult badRequest) {
-			await SendAsync(badRequest.Value?.ToString(), cancellation: c);
+			await Send.OkAsync(badRequest.Value?.ToString(), cancellation: c);
 			return;
 		}
 
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

@@ -33,7 +33,7 @@ internal sealed class DeleteProductImageEndpoint(
 			.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, cancellationToken: c);
 		
 		if (product is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 		
@@ -42,7 +42,7 @@ internal sealed class DeleteProductImageEndpoint(
 		                   ?? (product.Thumbnail?.Path == decoded ? product.Thumbnail : null);
 		
 		if (productImage is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 		
@@ -62,6 +62,6 @@ internal sealed class DeleteProductImageEndpoint(
 		
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

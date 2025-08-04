@@ -43,19 +43,19 @@ internal sealed class CreateTeamEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
 		
 		if (userId is null || @event is null) {
-			await SendUnauthorizedAsync(c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
 		
 		var result = await teamService.CreateAdminTeamAsync(request.EventId, request.Team, request.UserId ?? userId);
 		
 		if (result is BadRequestObjectResult badRequest) {
-			await SendAsync(badRequest.Value?.ToString(), cancellation: c);
+			await Send.OkAsync(badRequest.Value?.ToString(), cancellation: c);
 			return;
 		}
 
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

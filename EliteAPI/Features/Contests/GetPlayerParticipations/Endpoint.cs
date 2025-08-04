@@ -31,7 +31,7 @@ internal sealed class GetPlayerParticipationsEndpoint(
 			.ToListAsync(cancellationToken: ct);
 
 		if (profileMembers.Count == 0) {
-			await SendNotFoundAsync(ct);
+			await Send.NotFoundAsync(ct);
 			return;
 		}
 
@@ -42,6 +42,6 @@ internal sealed class GetPlayerParticipationsEndpoint(
 			data.AddRange(mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests));
 		}
 		
-		await SendAsync(data, cancellation: ct);
+		await Send.OkAsync(data, cancellation: ct);
 	}
 }

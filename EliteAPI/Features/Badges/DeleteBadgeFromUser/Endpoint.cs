@@ -33,6 +33,6 @@ internal sealed class DeleteBadgeFromUserBadgeEndpoint(
 				break;
 		}
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

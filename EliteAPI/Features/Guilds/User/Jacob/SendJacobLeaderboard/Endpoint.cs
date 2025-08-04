@@ -27,12 +27,12 @@ internal sealed class SendGuildJacobFeatureEndpoint(
 	public override async Task HandleAsync(SendJacobLeaderboardRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
 		if (!guild.Features.JacobLeaderboardEnabled || guild.Features.JacobLeaderboard is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -40,7 +40,7 @@ internal sealed class SendGuildJacobFeatureEndpoint(
 		var existing = feature.Leaderboards.FirstOrDefault(lb => lb.Id.Equals(request.LeaderboardId));
         
 		if (existing is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -54,10 +54,10 @@ internal sealed class SendGuildJacobFeatureEndpoint(
 		var result = await guildService.SendLeaderboardPanel(request.DiscordIdUlong, existing.ChannelId, author ?? "", request.LeaderboardId);
 		
 		if (result is NotFoundObjectResult) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

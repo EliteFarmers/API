@@ -56,7 +56,7 @@ internal sealed class GetLeaderboardEndpoint(
 				Entries = newEntries
 			};
 
-			await SendAsync(newLeaderboard, cancellation: c);
+			await Send.OkAsync(newLeaderboard, cancellation: c);
 			return;
 		}
 		
@@ -77,6 +77,6 @@ internal sealed class GetLeaderboardEndpoint(
 			Entries = entries.Select(e => e.MapToDto()).ToList()
 		};
 
-		await SendAsync(leaderboard, cancellation: c);
+		await Send.OkAsync(leaderboard, cancellation: c);
 	}
 }

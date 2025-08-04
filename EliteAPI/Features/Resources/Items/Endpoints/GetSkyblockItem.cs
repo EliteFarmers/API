@@ -58,11 +58,11 @@ internal sealed class SkyblockProductEndpoint(
 
         if (result is null)
         {
-            await SendNotFoundAsync(c);
+            await Send.NotFoundAsync(c);
             return;
         }
 		
-        await SendAsync(result, cancellation: c);
+        await Send.OkAsync(result, cancellation: c);
     }
 }
 

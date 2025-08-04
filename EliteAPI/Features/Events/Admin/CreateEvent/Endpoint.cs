@@ -35,7 +35,7 @@ internal sealed class CreateWeightEventEndpoint(
 	public override async Task HandleAsync(CreateEventRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
@@ -51,7 +51,7 @@ internal sealed class CreateWeightEventEndpoint(
 		}
 
 		var mapped = mapper.Map<EventDetailsDto>(result.Value);
-		await SendAsync(mapped, cancellation: c);
+		await Send.OkAsync(mapped, cancellation: c);
 	}
 }
 

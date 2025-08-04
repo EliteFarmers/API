@@ -41,6 +41,6 @@ internal sealed class GetContestPingsEndpoint(
 				Enabled = g.Features.ContestPings?.Enabled ?? false
 			}).ToList();
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

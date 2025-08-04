@@ -31,12 +31,12 @@ internal sealed class GetSelectedMemberParticipationsEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: ct);
 		
 		if (profileMember is null) {
-			await SendNotFoundAsync(ct);
+			await Send.NotFoundAsync(ct);
 			return;
 		}
 
 		var data = mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests);
 		
-		await SendAsync(data, cancellation: ct);
+		await Send.OkAsync(data, cancellation: ct);
 	}
 }

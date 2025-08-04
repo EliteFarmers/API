@@ -22,6 +22,6 @@ internal sealed class GetContestsInDayEndpoint(
 		var timestamp = FormatUtils.GetTimeFromSkyblockDate(request.Year - 1, request.Month - 1, request.Day - 1);
 		var result = await contestsService.GetContestsAt(timestamp);
 		
-		await SendAsync(result, cancellation: ct);
+		await Send.OkAsync(result, cancellation: ct);
 	}
 }

@@ -24,6 +24,6 @@ internal sealed class GetAllProfileDetailsEndpoint(
 
 	public override async Task HandleAsync(PlayerUuidRequest request, CancellationToken c) {
 		var member = await profileService.GetProfilesDetails(request.PlayerUuidFormatted);
-		await SendAsync(member, cancellation: c);
+		await Send.OkAsync(member, cancellation: c);
 	}
 }

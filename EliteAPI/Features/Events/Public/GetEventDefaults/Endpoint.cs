@@ -28,6 +28,6 @@ internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDef
 			PestWeights = new PestEventData().PestWeights,
 		};
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

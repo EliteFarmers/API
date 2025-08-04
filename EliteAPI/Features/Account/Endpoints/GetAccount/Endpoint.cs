@@ -57,6 +57,6 @@ internal sealed class GetAccountEndpoint(
 		result.Profiles = profilesDetails;
 		result.Settings = mapper.Map<UserSettingsDto>(account?.UserSettings);
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

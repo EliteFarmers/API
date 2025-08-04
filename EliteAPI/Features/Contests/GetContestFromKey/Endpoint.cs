@@ -51,6 +51,6 @@ internal sealed class GetContestFromKeyEndpoint(
 			ThrowError("Contest not found");
 		}
 		
-		await SendAsync(result, cancellation: ct);
+		await Send.OkAsync(result, cancellation: ct);
 	}
 }

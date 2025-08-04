@@ -37,7 +37,7 @@ internal sealed class BanMemberEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
 		if (@event is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -47,7 +47,7 @@ internal sealed class BanMemberEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
         
 		if (member is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
@@ -59,7 +59,7 @@ internal sealed class BanMemberEndpoint(
 		await context.SaveChangesAsync(c);
         
 		var result = mapper.Map<AdminEventMemberDto>(member);
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }
 

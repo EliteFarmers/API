@@ -33,7 +33,7 @@ internal sealed class UnbanMemberEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
 		if (@event is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -43,7 +43,7 @@ internal sealed class UnbanMemberEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
         
 		if (member is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -52,7 +52,7 @@ internal sealed class UnbanMemberEndpoint(
 		member.Team = null;
 		await context.SaveChangesAsync(c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

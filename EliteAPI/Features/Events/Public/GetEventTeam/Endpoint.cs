@@ -34,7 +34,7 @@ internal sealed class GetEventTeamEndpoint(
 		
 		var team = await teamService.GetTeamAsync(request.TeamId);
 		if (team is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -47,6 +47,6 @@ internal sealed class GetEventTeamEndpoint(
 			result.JoinCode = null;
 		}
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

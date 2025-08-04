@@ -38,7 +38,7 @@ internal sealed class ForceAddMemberEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
 		
 		if (@event is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -74,7 +74,7 @@ internal sealed class ForceAddMemberEndpoint(
 			ThrowError("Player (or linked account) is already in the event.");
 		}
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }
 

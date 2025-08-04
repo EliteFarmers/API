@@ -29,6 +29,6 @@ internal sealed class GetPendingEventsEndpoint(
         
 		var result = mapper.Map<List<EventDetailsDto>>(events);
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

@@ -39,7 +39,7 @@ internal sealed class GetAccountFaceEndpoint(
 		face ??= SteveBase64;
 		
 		if (hat is null) {
-			await SendBytesAsync(face, contentType: MediaTypeNames.Image.Png, cancellation: c);
+			await Send.BytesAsync(face, contentType: MediaTypeNames.Image.Png, cancellation: c);
 			return;
 		}
 		
@@ -64,6 +64,6 @@ internal sealed class GetAccountFaceEndpoint(
 		await finalImage.SaveAsPngAsync(outputStream, c); // Pass the cancellation token
 		var finalBytes = outputStream.ToArray();
 		
-		await SendBytesAsync(finalBytes, contentType: MediaTypeNames.Image.Png, cancellation: c);
+		await Send.BytesAsync(finalBytes, contentType: MediaTypeNames.Image.Png, cancellation: c);
 	}
 }

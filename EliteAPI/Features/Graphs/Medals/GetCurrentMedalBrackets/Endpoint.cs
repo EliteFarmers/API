@@ -53,6 +53,6 @@ internal sealed class GetCurrentMedalBracketsEndpoint(
 			Brackets = brackets ?? new Dictionary<string, ContestBracketsDto>()
 		};
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

@@ -56,6 +56,6 @@ internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings
 			}
 		};
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

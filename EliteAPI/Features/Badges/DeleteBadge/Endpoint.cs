@@ -30,7 +30,7 @@ internal sealed class DeleteBadgeEndpoint(
 			.FirstOrDefaultAsync(b => b.Id == request.BadgeId, cancellationToken: c);
     
 		if (existingBadge is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -43,6 +43,6 @@ internal sealed class DeleteBadgeEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("badges", c);
 		
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

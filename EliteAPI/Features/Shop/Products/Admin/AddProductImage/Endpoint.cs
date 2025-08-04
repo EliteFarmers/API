@@ -30,7 +30,7 @@ internal sealed class AddProductImageEndpoint(
 	public override async Task HandleAsync(AddProductImageRequest request, CancellationToken c) {
 		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, cancellationToken: c);
 		if (product is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 		
@@ -63,6 +63,6 @@ internal sealed class AddProductImageEndpoint(
 		
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

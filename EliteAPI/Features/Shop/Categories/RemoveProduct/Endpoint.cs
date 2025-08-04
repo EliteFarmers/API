@@ -40,7 +40,7 @@ internal sealed class RemoveProductToCategoryEndpoint(
 			.FirstOrDefaultAsync(e => e.CategoryId == request.CategoryId && e.ProductId == (ulong) request.ProductId, cancellationToken: c);
 		
 		if (existing is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 
@@ -49,6 +49,6 @@ internal sealed class RemoveProductToCategoryEndpoint(
 		
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

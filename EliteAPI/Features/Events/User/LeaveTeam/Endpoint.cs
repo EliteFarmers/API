@@ -32,7 +32,7 @@ internal sealed class LeaveTeamEndpoint(
 	public override async Task HandleAsync(LeaveTeamRequest request, CancellationToken c) {
         var userId = User.GetId();
         if (userId is null) {
-            await SendUnauthorizedAsync(c);
+            await Send.UnauthorizedAsync(c);
             return;
         }
         
@@ -43,6 +43,6 @@ internal sealed class LeaveTeamEndpoint(
         }
         
         await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

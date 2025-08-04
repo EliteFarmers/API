@@ -33,7 +33,7 @@ internal sealed class GetEventEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.Approved, cancellationToken: c);
 		
 		if (eliteEvent is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
@@ -45,6 +45,6 @@ internal sealed class GetEventEndpoint(
         
 		var result = mapper.Map<EventDetailsDto>(eliteEvent);
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

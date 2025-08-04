@@ -35,10 +35,10 @@ internal sealed class GetProductEndpoint(
 			.FirstOrDefaultAsync(cancellationToken: c);
 		
 		if (result is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

@@ -32,7 +32,7 @@ internal sealed class JoinEventEndpoint(
 	public override async Task HandleAsync(JoinEventRequest request, CancellationToken c) {
 		var user = await userManager.GetUserAsync(User);
         if (user?.AccountId is null || user.DiscordAccessToken is null) {
-            await SendUnauthorizedAsync(c);
+            await Send.UnauthorizedAsync(c);
             return;
         }
         
@@ -40,7 +40,7 @@ internal sealed class JoinEventEndpoint(
             .FirstOrDefaultAsync(e => e.Id == request.EventId, cancellationToken: c);
         
         if (eliteEvent is null) {
-            await SendNotFoundAsync(c);
+            await Send.NotFoundAsync(c);
             return;
         }
 
@@ -133,7 +133,7 @@ internal sealed class JoinEventEndpoint(
             // Init member if needed
             await eventService.InitializeEventMember(member, eliteEvent, profileMember);
             
-            await SendNoContentAsync(cancellation: c);
+            await Send.NoContentAsync(cancellation: c);
             return;
         }
         
@@ -153,6 +153,6 @@ internal sealed class JoinEventEndpoint(
             ThrowError("Player (or linked account) is already in the event.");
         }
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

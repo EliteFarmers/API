@@ -42,6 +42,6 @@ internal sealed class GetUpcomingEventsEndpoint(
 	public override async Task HandleAsync(GetUpcomingEventsRequest request, CancellationToken c) {
 		var result = await eventService.GetUpcomingEvents(-(request.Offset ?? 0));
 
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

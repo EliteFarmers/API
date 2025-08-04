@@ -26,6 +26,6 @@ internal sealed class GetUserGuildsEndpoint(
 		}
 
 		var result = await discordService.GetUsersGuilds(userId);
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

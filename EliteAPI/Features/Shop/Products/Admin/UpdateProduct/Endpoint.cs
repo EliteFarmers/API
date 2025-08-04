@@ -26,7 +26,7 @@ internal sealed class UpdateProductEndpoint(
 	public override async Task HandleAsync(UpdateProductRequest request, CancellationToken c) {
 		var product = await context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, c);
 		if (product is null) {
-			await SendNotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(cancellation: c);
 			return;
 		}
 		
@@ -35,6 +35,6 @@ internal sealed class UpdateProductEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

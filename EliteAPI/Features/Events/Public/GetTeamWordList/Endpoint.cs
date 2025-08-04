@@ -22,6 +22,6 @@ internal sealed class GetTeamWordListEndpoint(IEventTeamService teamService) : E
 
 	public override async Task HandleAsync(CancellationToken c) {
 		var result = teamService.GetEventTeamNameWords();
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

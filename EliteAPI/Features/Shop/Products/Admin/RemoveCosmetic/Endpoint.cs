@@ -42,7 +42,7 @@ internal sealed class RemoveCosmeticToProductEndpoint(
 					&& p.WeightStyleId == request.CosmeticId, c);
 		
 		if (link is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -56,6 +56,6 @@ internal sealed class RemoveCosmeticToProductEndpoint(
 
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

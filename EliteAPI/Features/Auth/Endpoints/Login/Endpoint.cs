@@ -23,10 +23,10 @@ internal sealed class LoginEndpoint(
 		var user = await authService.LoginAsync(request);
 		
 		if (user is null) {
-			await SendUnauthorizedAsync(cancellation: c);
+			await Send.UnauthorizedAsync(cancellation: c);
 			return;
 		}
 		
-		await SendAsync(user, cancellation: c);
+		await Send.OkAsync(user, cancellation: c);
 	}
 }

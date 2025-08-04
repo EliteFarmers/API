@@ -55,6 +55,6 @@ internal sealed class UpdateDiscordAccountEndpoint(
 			context.Accounts.Update(account);
 		}
         
-		await SendAsync(mapper.Map<AuthorizedAccountDto>(account), cancellation: c);
+		await Send.OkAsync(mapper.Map<AuthorizedAccountDto>(account), cancellation: c);
 	}
 }

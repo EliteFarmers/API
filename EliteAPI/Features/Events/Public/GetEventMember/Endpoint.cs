@@ -39,7 +39,7 @@ internal sealed class GetEventMembersEndpoint(
 			.FirstOrDefaultAsync(e => e.EventId == request.EventId && e.ProfileMember.PlayerUuid == request.PlayerUuid, cancellationToken: c);
 		
 		if (member is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
@@ -55,12 +55,12 @@ internal sealed class GetEventMembersEndpoint(
 		
 		// If the user is the member or a moderator, send the notes
 		if (User.GetDiscordId() is { } id && (id == member.UserId || User.IsInRole(ApiUserPolicies.Moderator))) {
-			await SendAsync(mapped, cancellation: c);
+			await Send.OkAsync(mapped, cancellation: c);
 			return;
 		}
 
 		mapped.Notes = null;
-		await SendAsync(mapped, cancellation: c);
+		await Send.OkAsync(mapped, cancellation: c);
 	}
 }
 

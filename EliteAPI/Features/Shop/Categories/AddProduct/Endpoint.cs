@@ -44,7 +44,7 @@ internal sealed class AddProductToCategoryEndpoint(
 			.ToListAsync(cancellationToken: c);
 		
 		if (existing.Exists(e => e.ProductId == (ulong) request.ProductId)) {
-			await SendNoContentAsync(cancellation: c);
+			await Send.NoContentAsync(cancellation: c);
 			return;
 		}
 
@@ -54,7 +54,7 @@ internal sealed class AddProductToCategoryEndpoint(
 				.FirstOrDefaultAsync(e => e.Id == request.CategoryId, cancellationToken: c);
 
 			if (category is null) {
-				await SendNotFoundAsync(c);
+				await Send.NotFoundAsync(c);
 				return;
 			}
 		}
@@ -64,7 +64,7 @@ internal sealed class AddProductToCategoryEndpoint(
 			.FirstOrDefaultAsync(p => p.Id == (ulong) request.ProductId, cancellationToken: c);
 		
 		if (product is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -79,6 +79,6 @@ internal sealed class AddProductToCategoryEndpoint(
 		
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

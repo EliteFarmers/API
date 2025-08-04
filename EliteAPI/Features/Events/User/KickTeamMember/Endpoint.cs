@@ -26,7 +26,7 @@ internal sealed class KickTeamMemberEndpoint(
 	public override async Task HandleAsync(KickTeamMemberRequest request, CancellationToken c) {
         var userId = User.GetId();
         if (userId is null) {
-            await SendUnauthorizedAsync(c);
+            await Send.UnauthorizedAsync(c);
             return;
         }
         
@@ -37,6 +37,6 @@ internal sealed class KickTeamMemberEndpoint(
         }
         
         await cacheStore.EvictByTagAsync("event-teams", c);
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

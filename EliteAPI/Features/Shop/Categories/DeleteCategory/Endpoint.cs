@@ -33,7 +33,7 @@ internal sealed class UpdateCategoryEndpoint(
 			.FirstOrDefaultAsync(e => e.Id == request.CategoryId, cancellationToken: c);
 		
 		if (category is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -42,6 +42,6 @@ internal sealed class UpdateCategoryEndpoint(
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await SendNoContentAsync(cancellation: c);
+		await Send.NoContentAsync(cancellation: c);
 	}
 }

@@ -31,6 +31,6 @@ internal sealed class GetPlayerRanksEndpoint(
         
 		var positions = await lbService.GetLeaderboardPositions(memberId.Value.ToString(), request.ProfileUuidFormatted);
 		
-		await SendAsync(positions, cancellation: c);
+		await Send.OkAsync(positions, cancellation: c);
 	}
 }

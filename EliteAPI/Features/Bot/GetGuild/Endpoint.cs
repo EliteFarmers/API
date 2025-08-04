@@ -26,10 +26,10 @@ internal sealed class GetBotGuildEndpoint(
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var guild = await context.Guilds.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, c);
 		if (guild is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
-		await SendAsync(mapper.Map<PrivateGuildDto>(guild), cancellation: c);
+		await Send.OkAsync(mapper.Map<PrivateGuildDto>(guild), cancellation: c);
 	}
 }

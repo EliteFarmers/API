@@ -46,7 +46,7 @@ internal sealed class GetCategoryEndpoint(
 			: await query.FirstOrDefaultAsync(e => e.Slug == request.Category, cancellationToken: c);
 		
 		if (category is null) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
 		
@@ -56,6 +56,6 @@ internal sealed class GetCategoryEndpoint(
 		
 		var result = mapper.Map<ShopCategoryDto>(category);
 		
-		await SendAsync(result, cancellation: c);
+		await Send.OkAsync(result, cancellation: c);
 	}
 }

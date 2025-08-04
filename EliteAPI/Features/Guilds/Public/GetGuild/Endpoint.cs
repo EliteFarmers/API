@@ -28,11 +28,11 @@ internal sealed class GetPublicGuildEndpoint(
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null || !guild.IsPublic) {
-			await SendNotFoundAsync(c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
         
 		var mapped = mapper.Map<PublicGuildDto>(guild);
-		await SendAsync(mapped, cancellation: c);
+		await Send.OkAsync(mapped, cancellation: c);
 	}
 }

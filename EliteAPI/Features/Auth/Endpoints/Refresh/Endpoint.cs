@@ -23,10 +23,10 @@ internal sealed class RefreshEndpoint(
 		var response = await authService.VerifyRefreshToken(request);
 		
 		if (response is null) {
-			await SendUnauthorizedAsync(cancellation: c);
+			await Send.UnauthorizedAsync(cancellation: c);
 			return;
 		}
 		
-		await SendAsync(response, cancellation: c);
+		await Send.OkAsync(response, cancellation: c);
 	}
 }

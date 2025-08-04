@@ -438,7 +438,7 @@ public class DiscordService(
         var response = await client.GetAsync(DiscordBaseUrl + $"/guilds/{guildId}?with_counts=true");
         
         if (!response.IsSuccessStatusCode) {
-            logger.LogWarning("Failed to fetch guild from Discord");
+            logger.LogWarning("Failed to fetch guild from Discord with error code {StatusCode}", response.StatusCode);
             return existing;
         }
         

@@ -21,7 +21,7 @@ internal sealed class GetSelfEndpoint(
 
 	public override async Task HandleAsync(CancellationToken c) 
 	{
-		await SendAsync(new AuthSessionDto {
+		await Send.OkAsync(new AuthSessionDto {
 			Id = User.FindFirstValue(ClaimNames.NameId) ?? string.Empty,
 			Username = User.FindFirstValue(ClaimNames.Name) ?? string.Empty,
 			Avatar = User.FindFirstValue(ClaimNames.Avatar) ?? string.Empty,
