@@ -49,6 +49,7 @@ public class JacobContestDto
     public required string Crop { get; set; }
     public long Timestamp { get; set; }
     public int Participants { get; set; }
+    public ContestBracketsDto Brackets { get; set; } = new();
 }
 
 public class JacobCropStatsDto {

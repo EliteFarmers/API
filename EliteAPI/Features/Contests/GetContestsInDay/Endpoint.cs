@@ -14,7 +14,7 @@ internal sealed class GetContestsInDayEndpoint(
 		ResponseCache(600);
 		
 		Summary(s => {
-			s.Summary = "Get all contests in a SkyBlock year";
+			s.Summary = "Get the three contests in a specific SkyBlock day";
 		});
 	}
 

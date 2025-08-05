@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Parsers.Profiles;
 using EliteAPI.Utilities;
 using Profile = AutoMapper.Profile;
 
@@ -31,6 +32,7 @@ public class JacobContestsMapper : Profile
         CreateMap<JacobContest, JacobContestDto>()
             .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)))
             .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.Timestamp))
+            .ForMember(j => j.Brackets, opt => opt.MapFrom(x => x.GetBrackets()))
             .ForMember(j => j.Participants, opt => opt.MapFrom(x => x.Participants));
 
         CreateMap<JacobContest, JacobContestWithParticipationsDto>()

@@ -38,24 +38,16 @@ public static class JacobContestParser
         return ContestMedal.None;
     }
 
-    public static void CalculateBrackets(this JacobContestWithParticipationsDto contest) {
-        var participations = contest.Participations;
-        var brackets = contest.Brackets;
-
-        var grouped = participations
-            .Where(p => p.Medal != null)
-            .OrderBy(p => p.Collected)
-            .GroupBy(p => p.Medal)
-            .Select(p => new {
-                Medal = p.Key!,
-                p.First().Collected
-            }).ToFrozenDictionary(p => p.Medal, p => p.Collected);
-        
-        brackets.Bronze = grouped.TryGetValue(ContestMedal.Bronze.MedalName(), out var bronze) ? bronze : -1;
-        brackets.Silver = grouped.TryGetValue(ContestMedal.Silver.MedalName(), out var silver) ? silver : -1;
-        brackets.Gold = grouped.TryGetValue(ContestMedal.Gold.MedalName(), out var gold) ? gold : -1;
-        brackets.Platinum = grouped.TryGetValue(ContestMedal.Platinum.MedalName(), out var platinum) ? platinum : -1;
-        brackets.Diamond = grouped.TryGetValue(ContestMedal.Diamond.MedalName(), out var diamond) ? diamond : -1;
+    public static ContestBracketsDto GetBrackets(this JacobContest contest)
+    {
+        return new ContestBracketsDto
+        {
+            Bronze = contest.Bronze,
+            Silver = contest.Silver,
+            Gold = contest.Gold,
+            Platinum = contest.Platinum,
+            Diamond = contest.Diamond
+        };
     }
 
     public static void UpdateMedalBracket(this JacobContest contest, ContestParticipation participation) {
