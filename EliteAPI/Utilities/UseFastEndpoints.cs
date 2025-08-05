@@ -16,7 +16,13 @@ public static class UseFastEndpoints
             c.Binding.UsePropertyNamingPolicy = true;
             c.Versioning.Prefix = "v";
             c.Versioning.PrependToRoute = true;
-    
+
+            c.Endpoints.NameGenerator = (ctx) =>
+            {
+                var name = (ctx.TagPrefix ?? "") + ctx.EndpointType.Name.Replace("Endpoint", "") + (ctx.RouteNumber?.ToString() ?? "");
+                return name;
+            };
+
             c.Endpoints.Configurator = endpoints => {
                 if (endpoints.IdempotencyOptions is not null) {
                     endpoints.IdempotencyOptions.CacheDuration = TimeSpan.FromMinutes(1);

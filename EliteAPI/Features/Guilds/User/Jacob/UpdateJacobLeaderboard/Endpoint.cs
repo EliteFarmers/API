@@ -1,12 +1,11 @@
 using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Services;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.UpdateJacobLeaderboard;
 
-internal sealed class UpdateGuildJacobFeatureEndpoint(
+internal sealed class UpdateGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<UpdateJacobLeaderboardRequest> {

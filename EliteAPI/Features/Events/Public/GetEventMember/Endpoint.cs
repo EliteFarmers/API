@@ -13,7 +13,7 @@ namespace EliteAPI.Features.Events.Public.GetEventMember;
 internal sealed class GetEventMemberRequest : PlayerUuidRequest {
 	public ulong EventId { get; set; }
 }
-internal sealed class GetEventMembersEndpoint(
+internal sealed class GetEventMemberEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper)
 	: Endpoint<GetEventMemberRequest, EventMemberDto>

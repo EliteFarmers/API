@@ -19,7 +19,7 @@ internal sealed class CreateTeamRequest : DiscordIdRequest {
 	public string? UserId { get; set; }
 }
 
-internal sealed class CreateTeamEndpoint(
+internal sealed class CreateTeamAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore

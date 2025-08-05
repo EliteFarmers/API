@@ -15,7 +15,7 @@ internal sealed class DeleteTeamRequest : DiscordIdRequest {
 	public int TeamId { get; set; }
 }
 
-internal sealed class DeleteTeamEndpoint(
+internal sealed class DeleteTeamAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore

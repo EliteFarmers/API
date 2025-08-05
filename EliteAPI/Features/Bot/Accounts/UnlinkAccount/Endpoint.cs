@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Bot.Accounts.UnlinkAccount;
 
-internal sealed class UnlinkAccountEndpoint(
+internal sealed class UnlinkAccountBotEndpoint(
 	IAccountService accountService
 ) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
 	

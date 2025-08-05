@@ -9,7 +9,7 @@ namespace EliteAPI.Features.Garden.GetSelectedGarden;
 
 using Result = Results<Ok<GardenDto>, NotFound>;
 
-internal sealed class GetGardenEndpoint(
+internal sealed class GetSelectedGardenEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper)
 	: Endpoint<PlayerUuidRequest, Result> 

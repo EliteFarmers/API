@@ -17,7 +17,7 @@ internal sealed class AdminUpdateTeamRequest : DiscordIdRequest
     public required UpdateEventTeamDto Team { get; set; }
 }
 
-internal sealed class UpdateTeamEndpoint(
+internal sealed class UpdateTeamAdminEndpoint(
 	IOutputCacheStore cacheStore,
     IEventTeamService teamService)
 	: Endpoint<AdminUpdateTeamRequest>

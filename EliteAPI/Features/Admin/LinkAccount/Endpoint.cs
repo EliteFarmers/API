@@ -10,7 +10,7 @@ internal sealed class AdminLinkAccountRequest {
 	public required string Player { get; set; }
 }
 
-internal sealed class LinkAccountEndpoint(
+internal sealed class LinkUserAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<AdminLinkAccountRequest, ErrorOr<Success>> {
 	

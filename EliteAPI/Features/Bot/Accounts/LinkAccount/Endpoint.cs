@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Bot.Accounts.LinkAccount;
 
-internal sealed class LinkAccountEndpoint(
+internal sealed class LinkAccountBotEndpoint(
 	IAccountService accountService
 ) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
 	

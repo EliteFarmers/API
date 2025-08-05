@@ -13,7 +13,7 @@ internal sealed class GetTeamsRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
-internal sealed class GetTeamsEndpoint(
+internal sealed class GetTeamsAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper,
 	IEventTeamService teamService

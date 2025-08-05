@@ -2,12 +2,11 @@ using EliteAPI.Authentication;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Models.Entities.Discord;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.User.ContestPings.UpdateContestPings;
 
-internal sealed class DeleteContestPingsEndpoint(
+internal sealed class UpdateContestPingsEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<UpdateContestPingsRequest> {

@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Bot.Accounts.RefreshPurchases;
 
-internal sealed class UnlinkAccountEndpoint(
+internal sealed class RefreshUserPurchasesEndpoint(
 	IMonetizationService monetizationService
 ) : Endpoint<DiscordIdRequest> {
 	

@@ -14,7 +14,7 @@ internal sealed class AddTeamMemberRequest : PlayerRequest {
 	public int TeamId { get; set; }
 }
 
-internal sealed class AddTeamMemberEndpoint(
+internal sealed class AddTeamMemberAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore

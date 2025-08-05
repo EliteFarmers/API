@@ -13,7 +13,7 @@ internal sealed class DeleteCategoryRequest {
 	public required int CategoryId { get; set; }
 }
 
-internal sealed class UpdateCategoryEndpoint(
+internal sealed class DeleteCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
 ) : Endpoint<DeleteCategoryRequest> {

@@ -12,7 +12,7 @@ internal sealed class GetEventMembersRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
-internal sealed class GetEventMembersEndpoint(
+internal sealed class GetGuildEventMembersEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetEventMembersRequest, List<AdminEventMemberDto>> {

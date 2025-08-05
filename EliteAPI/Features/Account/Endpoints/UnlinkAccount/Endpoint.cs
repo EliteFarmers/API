@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Account.UnlinkAccount;
 
-internal sealed class UnlinkAccountEndpoint(
+internal sealed class UnlinkOwnAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<PlayerRequest, ErrorOr<Success>> {
 	

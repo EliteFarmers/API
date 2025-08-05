@@ -16,7 +16,7 @@ internal sealed class SetTeamOwnerRequest {
 	public required string Player { get; set; }
 }
 
-internal sealed class SetTeamOwnerEndpoint(
+internal sealed class SetTeamOwnerAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore

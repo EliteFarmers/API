@@ -10,7 +10,7 @@ internal sealed class AdminUnlinkAccountRequest {
 	public required string Player { get; set; }
 }
 
-internal sealed class UnlinkAccountEndpoint(
+internal sealed class UnlinkUserAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<AdminUnlinkAccountRequest, ErrorOr<Success>> {
 	

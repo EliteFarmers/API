@@ -16,7 +16,7 @@ internal sealed class CreateEventRequest : DiscordIdRequest {
 	public required CreateEventDto Event { get; set; }
 }
 
-internal sealed class CreateWeightEventEndpoint(
+internal sealed class CreateEventEndpoint(
 	IDiscordService discordService,
 	IEventService eventService,
 	AutoMapper.IMapper mapper

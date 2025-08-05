@@ -15,7 +15,7 @@ internal sealed class UpdateEventRequest : DiscordIdRequest {
 	public required EditEventDto Event { get; set; }
 }
 
-internal sealed class CreateWeightEventEndpoint(
+internal sealed class UpdateEventEndpoint(
 	DataContext context,
 	IEventService eventService,
 	AutoMapper.IMapper mapper

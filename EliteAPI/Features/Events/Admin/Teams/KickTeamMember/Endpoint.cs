@@ -14,7 +14,7 @@ internal sealed class KickTeamMemberRequest : PlayerRequest {
 	public int TeamId { get; set; }
 }
 
-internal sealed class KickTeamMemberEndpoint(
+internal sealed class KickTeamMemberAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore

@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Account.LinkAccount;
 
-internal sealed class LinkAccountEndpoint(
+internal sealed class LinkOwnAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<PlayerRequest, ErrorOr<Success>> {
 	
