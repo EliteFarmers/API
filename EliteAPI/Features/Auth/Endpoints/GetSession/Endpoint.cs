@@ -3,9 +3,9 @@ using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Auth;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Auth.GetSelf;
+namespace EliteAPI.Features.Auth.GetSession;
 
-internal sealed class GetSelfEndpoint(
+internal sealed class GetSessionEndpoint(
 	IAuthService authService
 	) : EndpointWithoutRequest<AuthSessionDto> 
 {

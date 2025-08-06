@@ -14,7 +14,7 @@ namespace EliteAPI.Features.Contests;
 
 public interface IContestsService {
 	Task<List<ContestParticipationWithTimestampDto>> FetchRecords(Crop crop, long startTime, long endTime);
-	Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp);
+	Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp, int limit = -1);
 	Task<JacobContestWithParticipationsDto?> GetContestFromKey(string contestKey);
 	Task<YearlyContestsDto> GetContestsFromYear(int year, bool now = false);
 	Task<Dictionary<string, ContestBracketsDto>?> GetAverageMedalBrackets(long start, long end);
@@ -28,7 +28,7 @@ public class ContestsService(
 	IConnectionMultiplexer redis) 
 	: IContestsService 
 {
-	public async Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp)
+	public async Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp, int limit = -1)
 	{
 		var skyblockDate = new SkyblockDate(timestamp);
 		if (skyblockDate.Year < 1) return [];
@@ -54,7 +54,10 @@ public class ContestsService(
 
 			var contestDto = data.First(d => d.Crop.Equals(crop));
 
-			contestDto.Participations = stripped.OrderByDescending(p => p.Collected).ToList();
+			contestDto.Participations = stripped
+				.OrderByDescending(p => p.Collected)
+				.Take(limit > 0 ? limit : stripped.Count)
+				.ToList();
 		}
 
 		return data;

@@ -3,7 +3,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.Refresh;
 
-internal sealed class RefreshEndpoint(
+internal sealed class RefreshAuthEndpoint(
 	IAuthService authService
 	) : Endpoint<AuthRefreshDto, AuthResponseDto> 
 {
