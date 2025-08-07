@@ -697,7 +697,7 @@ public class LbService(
                     FROM ""LeaderboardEntries"" others
                     WHERE others.""IsRemoved"" = false
                       AND others.""LeaderboardId"" = le.""LeaderboardId""
-                      AND others.""IntervalIdentifier"" IS NOT DISTINCT FROM le.""IntervalIdentifier""
+                      AND (others.""IntervalIdentifier"" = le.""IntervalIdentifier"" OR (others.""IntervalIdentifier"" IS NULL AND le.""IntervalIdentifier"" IS NULL))
                       AND others.""Score"" > le.""Score""
                 )
             END AS ""Rank""
@@ -750,7 +750,7 @@ public class LbService(
                     FROM ""LeaderboardEntries"" others
                     WHERE others.""IsRemoved"" = false
                       AND others.""LeaderboardId"" = le.""LeaderboardId""
-                      AND others.""IntervalIdentifier"" IS NOT DISTINCT FROM le.""IntervalIdentifier""
+                      AND (others.""IntervalIdentifier"" = le.""IntervalIdentifier"" OR (others.""IntervalIdentifier"" IS NULL AND le.""IntervalIdentifier"" IS NULL))
                       AND others.""Score"" > le.""Score""
                 )
             END AS ""Rank""

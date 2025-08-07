@@ -68,9 +68,9 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 		builder.HasIndex(le => le.IsRemoved);
 		
 		// Index specifically for getting all ranks of a player in a leaderboard
-		builder.HasIndex(le => new { le.LeaderboardId, le.IntervalIdentifier, le.IsRemoved, le.Score })
+		builder.HasIndex(le => new { le.LeaderboardId, le.IsRemoved, le.IntervalIdentifier, le.Score })
 			.IsDescending(false, false, false, true)
-			.HasDatabaseName("IX_LeaderboardEntries_Rank_Subquery");
+			.HasDatabaseName("IX_LeaderboardEntries_Ranks_Subquery");
 		
 		builder.HasIndex(le => le.ProfileId);
 		builder.HasIndex(le => le.ProfileMemberId);
