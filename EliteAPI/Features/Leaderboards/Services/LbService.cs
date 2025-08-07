@@ -680,33 +680,22 @@ public class LbService(
 	{
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
-
+		
 		var sql = @"
-        SELECT
-            le.""IntervalIdentifier"",
-            le.""Score"",
-            le.""InitialScore"",
-            l.""Title"",
-            l.""Slug"",
-            l.""ShortTitle"",
-            l.""ScoreDataType"",
-            CASE
-                WHEN le.""IsRemoved"" = true THEN -1
-                ELSE (
-                    SELECT COUNT(*) + 1
-                    FROM ""LeaderboardEntries"" others
-                    WHERE others.""IsRemoved"" = false
-                      AND others.""LeaderboardId"" = le.""LeaderboardId""
-                      AND (others.""IntervalIdentifier"" = le.""IntervalIdentifier"" OR (others.""IntervalIdentifier"" IS NULL AND le.""IntervalIdentifier"" IS NULL))
-                      AND others.""Score"" > le.""Score""
-                )
-            END AS ""Rank""
-        FROM ""LeaderboardEntries"" AS le
-        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
-        WHERE le.""ProfileMemberId"" = @profileMemberId
-          AND (le.""IntervalIdentifier"" = @monthlyInterval 
-               OR le.""IntervalIdentifier"" = @weeklyInterval 
-               OR le.""IntervalIdentifier"" IS NULL)";
+	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND o.""Score"" > le.""Score"") END AS ""Rank""
+	        FROM ""LeaderboardEntries"" AS le
+	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
+	        WHERE le.""ProfileMemberId"" = @profileMemberId AND le.""IntervalIdentifier"" IN (@monthlyInterval, @weeklyInterval)
+
+	        UNION ALL
+
+	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" IS NULL AND o.""Score"" > le.""Score"") END AS ""Rank""
+	        FROM ""LeaderboardEntries"" AS le
+	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
+	        WHERE le.""ProfileMemberId"" = @profileMemberId AND le.""IntervalIdentifier"" IS NULL;
+	    ";
 
 		var results = await context.Set<LeaderboardRanksQueryResult>()
 			.FromSqlRaw(sql,
@@ -733,33 +722,22 @@ public class LbService(
 	{
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
-
+		
 		var sql = @"
-        SELECT
-            le.""IntervalIdentifier"",
-            le.""Score"",
-            le.""InitialScore"",
-            l.""Title"",
-            l.""Slug"",
-            l.""ShortTitle"",
-            l.""ScoreDataType"",
-            CASE
-                WHEN le.""IsRemoved"" = true THEN -1
-                ELSE (
-                    SELECT COUNT(*) + 1
-                    FROM ""LeaderboardEntries"" others
-                    WHERE others.""IsRemoved"" = false
-                      AND others.""LeaderboardId"" = le.""LeaderboardId""
-                      AND (others.""IntervalIdentifier"" = le.""IntervalIdentifier"" OR (others.""IntervalIdentifier"" IS NULL AND le.""IntervalIdentifier"" IS NULL))
-                      AND others.""Score"" > le.""Score""
-                )
-            END AS ""Rank""
-        FROM ""LeaderboardEntries"" AS le
-        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
-        WHERE le.""ProfileId"" = @profileId
-          AND (le.""IntervalIdentifier"" = @monthlyInterval 
-               OR le.""IntervalIdentifier"" = @weeklyInterval 
-               OR le.""IntervalIdentifier"" IS NULL)";
+	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND o.""Score"" > le.""Score"") END AS ""Rank""
+	        FROM ""LeaderboardEntries"" AS le
+	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
+	        WHERE le.""ProfileId"" = @profileId AND le.""IntervalIdentifier"" IN (@monthlyInterval, @weeklyInterval)
+
+	        UNION ALL
+
+	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" IS NULL AND o.""Score"" > le.""Score"") END AS ""Rank""
+	        FROM ""LeaderboardEntries"" AS le
+	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
+	        WHERE le.""ProfileId"" = @profileId AND le.""IntervalIdentifier"" IS NULL;
+	    ";
 
 		var results = await context.Set<LeaderboardRanksQueryResult>()
 			.FromSqlRaw(sql,

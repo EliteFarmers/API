@@ -72,6 +72,12 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 			.IsDescending(false, false, false, true)
 			.HasDatabaseName("IX_LeaderboardEntries_Ranks_Subquery");
 		
+		// Index specifically for getting all ranks of a player in a leaderboard, without interval
+		builder.HasIndex(le => new { le.LeaderboardId, le.IsRemoved, le.Score })
+			.HasFilter(@"""IntervalIdentifier"" IS NULL")
+			.IsDescending(false, false, true)
+			.HasDatabaseName("IX_LeaderboardEntries_Rank_Subquery_AllTime");
+		
 		builder.HasIndex(le => le.ProfileId);
 		builder.HasIndex(le => le.ProfileMemberId);
 	}
