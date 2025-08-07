@@ -588,127 +588,100 @@ public class LbService(
 	    var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 	    var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
 	    
-	    // It's not possible to use RANK in a EF Core query directly, so we have a raw SQL query here.
-	    // This is much more clunky, but it's way faster than the alterative
-	    var sql = @"
-	        WITH RankedEntries AS (
-	            SELECT
-	                le.""LeaderboardId"",
-	                le.""IntervalIdentifier"",
-	                le.""ProfileMemberId"",
-	                RANK() OVER (PARTITION BY le.""LeaderboardId"", le.""IntervalIdentifier"" ORDER BY le.""Score"" DESC) as ""Rank""
-	            FROM ""LeaderboardEntries"" AS le
-	            WHERE le.""IsRemoved"" = false
-	              AND (le.""IntervalIdentifier"" = @monthlyInterval 
-	                   OR le.""IntervalIdentifier"" = @weeklyInterval 
-	                   OR le.""IntervalIdentifier"" IS NULL)
-	        )
-	        SELECT
-	            le.""IntervalIdentifier"",
-	            le.""Score"",
-	            le.""InitialScore"",
-	            CASE
-	                WHEN le.""IsRemoved"" = true THEN -1
-	                ELSE re.""Rank""
-	            END AS ""Rank"",
-	            l.""Title"",
-	            l.""Slug"",
-	            l.""ShortTitle"",
-	            l.""ScoreDataType""
-	        FROM ""LeaderboardEntries"" AS le
-	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
-	        LEFT JOIN RankedEntries AS re ON le.""LeaderboardId"" = re.""LeaderboardId""
-	                                    AND COALESCE(le.""IntervalIdentifier"", '') = COALESCE(re.""IntervalIdentifier"", '')
-	                                    AND le.""ProfileMemberId"" = re.""ProfileMemberId""
-	        WHERE le.""ProfileMemberId"" = @profileMemberId
-	          AND (le.""IntervalIdentifier"" = @monthlyInterval 
-	               OR le.""IntervalIdentifier"" = @weeklyInterval 
-	               OR le.""IntervalIdentifier"" IS NULL)
-		";
+        var playerEntries = await context.LeaderboardEntries
+            .Where(le => le.ProfileMemberId == profileMemberId
+				&& (le.IntervalIdentifier == monthlyInterval || le.IntervalIdentifier == weeklyInterval || le.IntervalIdentifier == null))
+            .Select(le => new
+            {
+                le.LeaderboardId,
+                le.IntervalIdentifier,
+                le.Score,
+                le.InitialScore,
+                le.IsRemoved,
+                le.ProfileType,
+                le.Leaderboard // Include the Leaderboard for its Title/Slug etc.
+            })
+            .ToListAsync();
 
+        var results = new List<PlayerLeaderboardEntryWithRankDto>();
 
-	   return await context.Set<LeaderboardRanksQueryResult>()
-		    .FromSqlRaw(sql,
-			    new Npgsql.NpgsqlParameter("profileMemberId", profileMemberId),
-			    new Npgsql.NpgsqlParameter("monthlyInterval", monthlyInterval),
-			    new Npgsql.NpgsqlParameter("weeklyInterval", weeklyInterval))
-		    .Select(r => new PlayerLeaderboardEntryWithRankDto
-	    {
-		    IntervalIdentifier = r.IntervalIdentifier,
-		    Amount = (double)r.Score,
-		    InitialAmount = (double)r.InitialScore,
-		    Rank = (int)r.Rank,
-		    Title = r.Title,
-		    Slug = r.Slug,
-		    Short = r.ShortTitle,
-		    Type = Enum.Parse<LeaderboardScoreDataType>(r.ScoreDataType)
-	    }).ToListAsync();
+        foreach (var entry in playerEntries)
+        {
+            // Calculate the rank for this specific entry
+            var rank = entry.IsRemoved ? -1 : await context.LeaderboardEntries
+                .Where(otherEntry =>
+                    otherEntry.LeaderboardId == entry.LeaderboardId &&
+                    otherEntry.IntervalIdentifier == entry.IntervalIdentifier &&
+                    otherEntry.Score > entry.Score &&
+                    otherEntry.IsRemoved == false
+                )
+                .CountAsync() + 1; // Rank is 1 + the number of entries with a higher score
+
+            results.Add(new PlayerLeaderboardEntryWithRankDto
+            {
+                IntervalIdentifier = entry.IntervalIdentifier,
+                Amount = (double) entry.Score,
+                InitialAmount = (double) entry.InitialScore,
+                Rank = rank,
+                Title = entry.Leaderboard.Title,
+	            Slug = entry.Leaderboard.Slug,
+	            Short = entry.Leaderboard.ShortTitle,
+	            Type = entry.Leaderboard.ScoreDataType
+            });
+        }
+
+        return results;
     }
 	
-	 public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(string profileId)
+	public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(string profileId)
 	{
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
 		
-		// It's not possible to use RANK in a EF Core query directly, so we have a raw SQL query here.
-		var sql = @"
-	        WITH RankedEntries AS (
-	            SELECT
-	                le.""LeaderboardId"",
-	                le.""IntervalIdentifier"",
-	                le.""ProfileId"",
-	                RANK() OVER (PARTITION BY le.""LeaderboardId"", le.""IntervalIdentifier"" ORDER BY le.""Score"" DESC) as ""Rank""
-	            FROM ""LeaderboardEntries"" AS le
-	            WHERE le.""IsRemoved"" = false
-	              AND (le.""IntervalIdentifier"" = @monthlyInterval 
-	                   OR le.""IntervalIdentifier"" = @weeklyInterval 
-	                   OR le.""IntervalIdentifier"" IS NULL)
-	        )
-	        SELECT
-	            le.""IntervalIdentifier"",
-	            le.""Score"",
-	            le.""InitialScore"",
-	            CASE
-	                WHEN le.""IsRemoved"" = true THEN -1
-	                ELSE re.""Rank""
-	            END AS ""Rank"",
-	            l.""Title"",
-	            l.""Slug"",
-	            l.""ShortTitle"",
-	            l.""ScoreDataType""
-	        FROM ""LeaderboardEntries"" AS le
-	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
-	        LEFT JOIN RankedEntries AS re ON le.""LeaderboardId"" = re.""LeaderboardId""
-	                                    AND COALESCE(le.""IntervalIdentifier"", '') = COALESCE(re.""IntervalIdentifier"", '')
-	                                    AND le.""ProfileId"" = re.""ProfileId""
-	        WHERE le.""ProfileId"" = @profileId -- Get ALL entries for this player (removed or not)
-	          AND (le.""IntervalIdentifier"" = @monthlyInterval 
-	               OR le.""IntervalIdentifier"" = @weeklyInterval 
-	               OR le.""IntervalIdentifier"" IS NULL)
-		";
- 
- 
-		// Execute the raw query and map the results to our DTO
-		var results = await context.Set<LeaderboardRanksQueryResult>()
-			.FromSqlRaw(sql,
-				new Npgsql.NpgsqlParameter("profileId", profileId),
-				new Npgsql.NpgsqlParameter("monthlyInterval", monthlyInterval),
-				new Npgsql.NpgsqlParameter("weeklyInterval", weeklyInterval))
+		var playerEntries = await context.LeaderboardEntries
+			.Where(le => le.ProfileId == profileId
+				&& (le.IntervalIdentifier == monthlyInterval || le.IntervalIdentifier == weeklyInterval || le.IntervalIdentifier == null))
+			.Select(le => new
+			{
+				le.LeaderboardId,
+				le.IntervalIdentifier,
+				le.Score,
+				le.InitialScore,
+				le.IsRemoved,
+				le.ProfileType,
+				le.Leaderboard // Include the Leaderboard for its Title/Slug etc.
+			})
 			.ToListAsync();
- 
-		// Project the results into your final DTO
-		return results.Select(r => new PlayerLeaderboardEntryWithRankDto
+
+		var results = new List<PlayerLeaderboardEntryWithRankDto>();
+
+		foreach (var entry in playerEntries)
 		{
-			IntervalIdentifier = r.IntervalIdentifier,
-			Amount = (double)r.Score,
-			InitialAmount = (double)r.InitialScore,
-			Profile = true,
-			Rank = (int) r.Rank,
-			Title = r.Title,
-			Slug = r.Slug,
-			Short = r.ShortTitle,
-			Type = Enum.Parse<LeaderboardScoreDataType>(r.ScoreDataType)
-		}).ToList();
+			// Calculate the rank for this specific entry
+			var rank = entry.IsRemoved ? -1 : await context.LeaderboardEntries
+				.Where(otherEntry =>
+					otherEntry.LeaderboardId == entry.LeaderboardId &&
+					otherEntry.IntervalIdentifier == entry.IntervalIdentifier &&
+					otherEntry.Score > entry.Score &&
+					otherEntry.IsRemoved == false
+				)
+				.CountAsync() + 1; // Rank is 1 + the number of entries with a higher score
+
+			results.Add(new PlayerLeaderboardEntryWithRankDto
+			{
+				IntervalIdentifier = entry.IntervalIdentifier,
+				Amount = (double) entry.Score,
+				InitialAmount = (double) entry.InitialScore,
+				Profile = true,
+				Rank = rank,
+				Title = entry.Leaderboard.Title,
+				Slug = entry.Leaderboard.Slug,
+				Short = entry.Leaderboard.ShortTitle,
+				Type = entry.Leaderboard.ScoreDataType
+			});
+		}
+
+		return results;
 	}
 }
 
