@@ -12,7 +12,7 @@ internal sealed class GetBannedMembersRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
-internal sealed class GetBannedMembersEndpoint(
+internal sealed class GetBannedMembersAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetBannedMembersRequest, List<AdminEventMemberDto>> {

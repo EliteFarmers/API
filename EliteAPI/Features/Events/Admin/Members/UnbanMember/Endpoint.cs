@@ -13,7 +13,7 @@ internal sealed class UnbanMemberRequest : PlayerUuidRequest {
 	public ulong EventId { get; set; }
 }
 
-internal sealed class UnbanMemberEndpoint(
+internal sealed class UnbanMemberAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context
 ) : Endpoint<UnbanMemberRequest> {

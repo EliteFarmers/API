@@ -14,7 +14,7 @@ internal sealed class SetEventBannerRequest : DiscordIdRequest {
 	public required EditEventBannerDto Data { get; set; }
 }
 
-internal sealed class SetEventBannerEndpoint(
+internal sealed class SetEventBannerAdminEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService
 ) : Endpoint<SetEventBannerRequest> {

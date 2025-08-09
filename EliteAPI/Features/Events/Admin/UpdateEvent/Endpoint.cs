@@ -15,7 +15,7 @@ internal sealed class UpdateEventRequest : DiscordIdRequest {
 	public required EditEventDto Event { get; set; }
 }
 
-internal sealed class UpdateEventEndpoint(
+internal sealed class UpdateEventAdminEndpoint(
 	DataContext context,
 	IEventService eventService,
 	AutoMapper.IMapper mapper

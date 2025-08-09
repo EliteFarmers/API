@@ -16,7 +16,7 @@ internal sealed class ForceAddMemberRequest : PlayerUuidRequest {
 	public required string ProfileUuid { get; set; }
 }
 
-internal sealed class ForceAddMemberEndpoint(
+internal sealed class ForceAddMemberAdminEndpoint(
 	DataContext context,
 	IEventService eventService
 ) : Endpoint<ForceAddMemberRequest> {

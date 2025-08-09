@@ -11,7 +11,7 @@ internal sealed class DeleteEventBannerRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
 }
 
-internal sealed class DeleteEventBannerEndpoint(
+internal sealed class DeleteEventBannerAdminEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService
 ) : Endpoint<DeleteEventBannerRequest> {

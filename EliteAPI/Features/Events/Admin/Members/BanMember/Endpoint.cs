@@ -17,7 +17,7 @@ internal sealed class BanMemberRequest : PlayerUuidRequest {
 	public required string Reason { get; set; }
 }
 
-internal sealed class BanMemberEndpoint(
+internal sealed class BanMemberAdminEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context
 ) : Endpoint<BanMemberRequest, AdminEventMemberDto> {

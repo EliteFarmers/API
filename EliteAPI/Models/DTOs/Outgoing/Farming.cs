@@ -96,6 +96,9 @@ public class ContestBracketsDto {
 public class ContestParticipationDto
 {
     public string Crop { get; set; } = "";
+    /// <summary>
+    /// Timestamp of the contest in seconds since unix epoch.
+    /// </summary>
     public long Timestamp { get; set; }
     public int Collected { get; set; } = 0;
     public int Position { get; set; } = -1;

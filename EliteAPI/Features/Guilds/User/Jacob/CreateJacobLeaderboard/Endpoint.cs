@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.CreateJacobLeaderboard;
 
-internal sealed class CreateGuildJacobFeatureEndpoint(
+internal sealed class CreateGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<CreateJacobLeaderboardRequest> {

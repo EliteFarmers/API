@@ -6,7 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.DeleteJacobLeaderboard;
 
-internal sealed class DeleteGuildJacobFeatureEndpoint(
+internal sealed class DeleteGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<DeleteGuildJacobLeaderboardRequest> {

@@ -16,8 +16,7 @@ internal sealed class DeleteMemberRequest : PlayerUuidRequest {
 	[QueryParam] public int? RecordId { get; set; } = -1;
 }
 
-internal sealed class DeleteMemberEndpoint(
-	IEventTeamService teamService,
+internal sealed class DeleteMemberAdminEndpoint(
 	DataContext context
 ) : Endpoint<DeleteMemberRequest> {
 

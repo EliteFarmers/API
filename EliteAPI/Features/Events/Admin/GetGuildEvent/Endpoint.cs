@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetGuildEvent;
 
-internal sealed class GetGuildEventEndpoint(
+internal sealed class GetGuildEventAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetAdminGuildEventRequest, EventDetailsDto> {
