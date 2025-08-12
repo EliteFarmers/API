@@ -21,7 +21,12 @@ internal sealed class GetAccountEndpoint(
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get Minecraft Account";
+			s.Summary = "Get Account";
+			s.Description = "Retrieves the Minecraft account information for a given player, along with an overview of their profiles and player data.";
+			s.ExampleRequest = new PlayerRequest()
+			{
+				Player = "Ke5o"
+			};
 		});
 		
 		ResponseCache(30);
