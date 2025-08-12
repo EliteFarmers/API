@@ -27,10 +27,12 @@ public static partial class LeaderboardMapper {
 	[MapperIgnoreTarget(nameof(LeaderboardDto.ShortTitle))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.MinimumScore))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.Interval))]
+	[MapperIgnoreTarget(nameof(LeaderboardDto.FirstInterval))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.StartsAt))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.EndsAt))]
 	public static partial LeaderboardDto MapToDto(this Leaderboard leaderboard);
 	
+	[MapperIgnoreTarget(nameof(ProfileLeaderboardMemberDto.Removed))]
 	public static partial ProfileLeaderboardMemberDto MapToDto(this ProfileLeaderboardMember dto);
 	
 	public static partial MemberCosmeticsDto? MapToDto(this ProfileMemberMetadataCosmetics? meta);

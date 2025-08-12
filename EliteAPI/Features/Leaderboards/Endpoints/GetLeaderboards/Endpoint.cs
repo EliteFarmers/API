@@ -18,7 +18,7 @@ internal sealed class GetLeaderboardsEndpoint(
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get leaderboards";
+			s.Summary = "Get Leaderboards";
 		});
 		
 		Description(d => d.AutoTagOverride("Leaderboard"));

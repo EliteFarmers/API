@@ -33,12 +33,6 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 	public int? AtRank { get; set; } = -1;
 	
 	/// <summary>
-	/// Use new leaderboard backend (will be removed in the future)
-	///	</summary>
-	[QueryParam, DefaultValue(true)]
-	public bool? New { get; set; } = true;
-	
-	/// <summary>
 	/// Time interval key of a monthly leaderboard. Format: yyyy-MM
 	/// </summary>
 	[QueryParam, DefaultValue(null)]
@@ -70,8 +64,7 @@ internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankReq
 		RuleFor(x => x.Leaderboard)
 			.NotEmpty()
 			.WithMessage("Leaderboard is required")
-			.When(x => lbSettings.Value.HasLeaderboard(x.Leaderboard) 
-			           || (x.New is true && newLbService.LeaderboardsById.ContainsKey(x.Leaderboard)))
+			.When(x => newLbService.LeaderboardsById.ContainsKey(x.Leaderboard))
 			.WithMessage("Leaderboard does not exist");
 		
 		RuleFor(x => x.Upcoming)

@@ -17,8 +17,7 @@ public interface IContestsProcessorService {
 [RegisterService<IContestsProcessorService>(LifeTime.Scoped)]
 public class ContestsProcessorService(
     DataContext context, 
-    ILogger<ContestsProcessorService> logger, 
-    ILeaderboardService lbService) 
+    ILogger<ContestsProcessorService> logger) 
     : IContestsProcessorService 
 {
     public async Task ProcessContests(Guid memberId, RawJacobData? incoming) {
@@ -217,18 +216,5 @@ public class ContestsProcessorService(
         
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
-        
-        UpdateLeaderboardPositions(memberId.ToString(), jacob);
 	}
-
-    private void UpdateLeaderboardPositions(string memberId, JacobData jacob) {
-        lbService.UpdateLeaderboardScore("participations", memberId, jacob.Participations);
-        lbService.UpdateLeaderboardScore("firstplace", memberId, jacob.FirstPlaceScores);
-            
-        lbService.UpdateLeaderboardScore("diamondmedals", memberId, jacob.EarnedMedals.Diamond);
-        lbService.UpdateLeaderboardScore("platinummedals", memberId, jacob.EarnedMedals.Platinum);
-        lbService.UpdateLeaderboardScore("goldmedals", memberId, jacob.EarnedMedals.Gold);
-        lbService.UpdateLeaderboardScore("silvermedals", memberId, jacob.EarnedMedals.Silver);
-        lbService.UpdateLeaderboardScore("bronzemedals", memberId, jacob.EarnedMedals.Bronze);
-    }	
 }

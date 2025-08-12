@@ -22,7 +22,7 @@ public interface ILbService
 
 	Task<LeaderboardEntryWithRankDto?> GetLastLeaderboardEntry(string leaderboardId, string? gameMode = null,
 		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null);
-
+	Task<string?> GetFirstInterval(string leaderboardId);
 	double GetLeaderboardMinScore(string leaderboardId);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
 	Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c);
@@ -184,6 +184,47 @@ public class LbService(
 		}
 
 		return null;
+	}
+
+	/// <summary>
+	/// Get the first recorded interval for a leaderboard, used for frontends to determine the first interval to allow a user to select.
+	/// </summary>
+	/// <param name="leaderboardId"></param>
+	/// <returns></returns>
+	public async Task<string?> GetFirstInterval(string leaderboardId)
+	{
+		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
+		
+		// Check redis cache first
+		var db = redis.GetDatabase();
+		var cacheKey = $"leaderboard-first-interval:{leaderboardId}";
+		if (await db.KeyExistsAsync(cacheKey))
+		{
+			var cachedValue = await db.StringGetAsync(cacheKey);
+			if (cachedValue.HasValue)
+			{
+				return cachedValue.ToString();
+			}
+		}
+
+		var lb = await context.Leaderboards
+			.AsNoTracking()
+			.FirstOrDefaultAsync(lb => lb.Slug == leaderboardId);
+		if (lb is null) return null;
+
+		var firstEntry = await context.LeaderboardEntries
+			.AsNoTracking()
+			.Where(e => e.LeaderboardId == lb.LeaderboardId)
+			.OrderBy(e => e.IntervalIdentifier)
+			.Select(e => e.IntervalIdentifier)
+			.FirstOrDefaultAsync();
+		
+		if (firstEntry is null) return null;
+		
+		// Store the first interval in the cache for 1 hour
+		await db.StringSetAsync(cacheKey, firstEntry, TimeSpan.FromHours(3));
+
+		return firstEntry;
 	}
 
 	public double GetLeaderboardMinScore(string leaderboardId)
@@ -792,4 +833,23 @@ public enum RemovedFilter
 	NotRemoved = 0,
 	Removed = 1,
 	All = 2
+}
+
+public class ProfileLeaderboardMember {
+	public required string Ign { get; init; }
+	public required string Uuid { get; init; }
+	public int Xp { get; init; }
+}
+
+public class LeaderboardEntry {
+	public required string MemberId { get; init; }
+	public string? Ign { get; init; }
+	public string? Profile { get; init; }
+	public double Amount { get; init; }
+	public string? Uuid { get; init; }
+	public List<ProfileLeaderboardMember>? Members { get; init; }
+}
+
+public class LeaderboardEntryWithRank : LeaderboardEntry {
+	public int Rank { get; init; }
 }

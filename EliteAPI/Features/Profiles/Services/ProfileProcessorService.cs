@@ -72,7 +72,6 @@ public class ProfileProcessorService(
 	IMojangService mojangService,
 	IMessageService messageService,
 	ILbService lbService,
-	ILeaderboardService leaderboardService,
 	ISchedulerFactory schedulerFactory,
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
@@ -300,9 +299,6 @@ public class ProfileProcessorService(
             if (shouldRemove) {
                 existing.IsSelected = false;
                 
-                // Remove leaderboard positions
-                await leaderboardService.RemoveMemberFromAllLeaderboards(existing.Id.ToString());
-                
                 messageService.SendWipedMessage(
                     playerUuid, 
                     existing.MinecraftAccount.Name ?? "", 
@@ -483,48 +479,9 @@ public class ProfileProcessorService(
         // Runs on background service
         await ParseJacobContests(member.PlayerUuid, member.ProfileId, member.Id, incomingData.Jacob);
 
-        UpdateLeaderboards(member, previousApi);
-
         await lbService.UpdateMemberLeaderboardsAsync(member, CancellationToken.None);
     }
     
-    private void UpdateLeaderboards(ProfileMember member, ApiAccess previousApi) {
-        var memberId = member.Id.ToString();
-        
-        // Update misc leaderboards
-        leaderboardService.UpdateLeaderboardScore("farmingweight", memberId, member.Farming.TotalWeight);
-        leaderboardService.UpdateLeaderboardScore("skyblockxp", memberId, member.SkyblockXp);
-
-        // Might want to do this later, but for now the leaderboard queries don't check API access
-        // So removing members from leaderboards if they disable the API is not a good idea
-        
-        // If collections api was turned off, remove scores
-        // if (previousApi.Collections && !member.Api.Collections) {
-        //     await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.CollectionLeaderboards.Keys, memberId);
-        // }
-        //
-        // If skills api was turned off, remove scores
-        // if (previousApi.Skills && !member.Api.Skills) {
-        //     await leaderboardService.RemoveMemberFromLeaderboards(_lbSettings.SkillLeaderboards.Keys, memberId);
-        // }
-        
-        // Update pest leaderboards
-        leaderboardService.UpdateLeaderboardScore("mite", memberId, member.Farming.Pests.Mite);
-        leaderboardService.UpdateLeaderboardScore("cricket", memberId, member.Farming.Pests.Cricket);
-        leaderboardService.UpdateLeaderboardScore("moth", memberId, member.Farming.Pests.Moth);
-        leaderboardService.UpdateLeaderboardScore("earthworm", memberId, member.Farming.Pests.Earthworm);
-        leaderboardService.UpdateLeaderboardScore("slug", memberId, member.Farming.Pests.Slug);
-        leaderboardService.UpdateLeaderboardScore("beetle", memberId, member.Farming.Pests.Beetle);
-        leaderboardService.UpdateLeaderboardScore("locust", memberId, member.Farming.Pests.Locust);
-        leaderboardService.UpdateLeaderboardScore("rat", memberId, member.Farming.Pests.Rat);
-        leaderboardService.UpdateLeaderboardScore("mosquito", memberId, member.Farming.Pests.Mosquito);
-        leaderboardService.UpdateLeaderboardScore("fly", memberId, member.Farming.Pests.Fly);
-        leaderboardService.UpdateLeaderboardScore("mouse", memberId, member.Farming.Pests.Mouse);
-        
-        // Update chocolate factory leaderboards
-        leaderboardService.UpdateLeaderboardScore("chocolate", memberId, member.ChocolateFactory.TotalChocolate);
-    }
-
     private async Task ParseJacobContests(string playerUuid, string profileUuid, Guid memberId, RawJacobData? incomingData) 
     {
         var data = new JobDataMap {
@@ -571,19 +528,6 @@ public class ProfileProcessorService(
             };
             
             await context.BulkInsertAsync([ cropCollection ]);
-
-            // Update leaderboard positions
-            var memberId = member.Id.ToString();
-            leaderboardService.UpdateLeaderboardScore("cactus", memberId, cropCollection.Cactus);
-            leaderboardService.UpdateLeaderboardScore("carrot", memberId, cropCollection.Carrot);
-            leaderboardService.UpdateLeaderboardScore("cocoa", memberId, cropCollection.CocoaBeans);
-            leaderboardService.UpdateLeaderboardScore("melon", memberId, cropCollection.Melon);
-            leaderboardService.UpdateLeaderboardScore("mushroom", memberId, cropCollection.Mushroom);
-            leaderboardService.UpdateLeaderboardScore("netherwart", memberId, cropCollection.NetherWart);
-            leaderboardService.UpdateLeaderboardScore("potato", memberId, cropCollection.Potato);
-            leaderboardService.UpdateLeaderboardScore("pumpkin", memberId, cropCollection.Pumpkin);
-            leaderboardService.UpdateLeaderboardScore("sugarcane", memberId, cropCollection.SugarCane);
-            leaderboardService.UpdateLeaderboardScore("wheat", memberId, cropCollection.Wheat);
         }
 
         if (member.Api.Skills) {
@@ -607,19 +551,6 @@ public class ProfileProcessorService(
             };
             
             await context.BulkInsertAsync([ skillExp ]);
-            
-            // Update leaderboard positions
-            var memberId = member.Id.ToString();
-            leaderboardService.UpdateLeaderboardScore("alchemy", memberId, skillExp.Alchemy);
-            leaderboardService.UpdateLeaderboardScore("carpentry", memberId, skillExp.Carpentry);
-            leaderboardService.UpdateLeaderboardScore("combat", memberId, skillExp.Combat);
-            leaderboardService.UpdateLeaderboardScore("enchanting", memberId, skillExp.Enchanting);
-            leaderboardService.UpdateLeaderboardScore("farming", memberId, skillExp.Farming);
-            leaderboardService.UpdateLeaderboardScore("fishing", memberId, skillExp.Fishing);
-            leaderboardService.UpdateLeaderboardScore("mining", memberId, skillExp.Mining);
-            leaderboardService.UpdateLeaderboardScore("runecrafting", memberId, skillExp.Runecrafting);
-            leaderboardService.UpdateLeaderboardScore("taming", memberId, skillExp.Taming);
-            leaderboardService.UpdateLeaderboardScore("social", memberId, skillExp.Social);
         }
     }
 }

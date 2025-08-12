@@ -35,12 +35,6 @@ public class LeaderboardRequest {
 	/// </summary>
 	[QueryParam, DefaultValue(RemovedFilter.NotRemoved)]
 	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
-	
-	/// <summary>
-	/// Use new leaderboard backend (will be default in the future)
-	/// </summary>
-	[QueryParam, DefaultValue(true)]
-	public bool? New { get; set; } = true;
 }
 
 internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest> {
@@ -51,8 +45,7 @@ internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest
 		RuleFor(x => x.Leaderboard)
 			.NotEmpty()
 			.WithMessage("Leaderboard is required")
-			.When(x => lbSettings.Value.HasLeaderboard(x.Leaderboard) 
-			           || (x.New is true && newLbService.LeaderboardsById.ContainsKey(x.Leaderboard)))
+			.When(x => newLbService.LeaderboardsById.ContainsKey(x.Leaderboard))
 			.WithMessage("Leaderboard does not exist");
 		
 		RuleFor(x => x.Interval)

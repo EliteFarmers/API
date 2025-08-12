@@ -5,8 +5,7 @@ using FastEndpoints;
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRank;
 
 internal sealed class GetPlayerRankEndpoint(
-	ILeaderboardService lbService,
-	ILbService newLbService
+	ILbService lbService
 	) : Endpoint<GetPlayerRankRequest, LeaderboardPositionDto>
 {
 	
@@ -28,26 +27,8 @@ internal sealed class GetPlayerRankEndpoint(
 			request.Upcoming = 10;
 		}
 #pragma warning restore CS0618 // Type or member is obsolete
-
-		if (request.New is not true) {
-			var result = await lbService.GetLeaderboardRank(
-				leaderboardId: request.Leaderboard,
-				playerUuid: request.PlayerUuidFormatted,
-				profileId: request.ProfileUuidFormatted,
-				includeUpcoming: request.Upcoming > 0,
-				atRank: request.AtRank ?? -1,
-				c: c
-			);
-
-			if (result is null) {
-				ThrowError("Player not found", StatusCodes.Status404NotFound);
-			}
-
-			await Send.OkAsync(result, cancellation: c);
-			return;
-		}
 		
-		var newResult = await newLbService.GetLeaderboardRank(
+		var newResult = await lbService.GetLeaderboardRank(
 			leaderboardId: request.Leaderboard,
 			playerUuid: request.PlayerUuidFormatted,
 			profileId: request.ProfileUuidFormatted,
@@ -60,7 +41,7 @@ internal sealed class GetPlayerRankEndpoint(
 		);
 		
 		if (newResult is null) {
-			var last = await newLbService.GetLastLeaderboardEntry(
+			var last = await lbService.GetLastLeaderboardEntry(
 				request.Leaderboard,
 				removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
 				gameMode: request.Mode,
@@ -68,7 +49,7 @@ internal sealed class GetPlayerRankEndpoint(
 			await Send.OkAsync(new LeaderboardPositionDto {
 				Rank = -1,
 				Amount = 0,
-				MinAmount = newLbService.GetLeaderboardMinScore(request.Leaderboard),
+				MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard),
 				UpcomingRank = last?.Rank ?? 10_000,
 				UpcomingPlayers = request.Upcoming > 0 && last is not null ? [last] : null,
 			}, cancellation: c);

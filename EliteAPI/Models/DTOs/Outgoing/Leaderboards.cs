@@ -9,6 +9,8 @@ public class LeaderboardDto {
     public string? ShortTitle { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Interval { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? FirstInterval { get; set; }
     public int Limit { get; set; }
     public int Offset { get; set; }
     public int MaxEntries { get; set; }

@@ -1,16 +1,12 @@
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRanks;
 
 [Obsolete]
-internal sealed class GetPlayerRanksEndpoint(
-	ILeaderboardService lbService,
-	IMemberService memberService
-	) : Endpoint<PlayerProfileUuidRequest, LeaderboardPositionsDto> 
+internal sealed class GetPlayerRanksEndpoint() : Endpoint<PlayerProfileUuidRequest, LeaderboardPositionsDto> 
 {
 	public override void Configure() {
 		Get("/leaderboard/ranks/{PlayerUuid}/{ProfileUuid}");
@@ -22,15 +18,8 @@ internal sealed class GetPlayerRanksEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(PlayerProfileUuidRequest request, CancellationToken c) {
-		var memberId = await memberService.GetProfileMemberId(request.PlayerUuidFormatted, request.ProfileUuidFormatted);
-
-		if (memberId is null) {
-			ThrowError("Profile member not found.", StatusCodes.Status404NotFound);
-		}
-        
-		var positions = await lbService.GetLeaderboardPositions(memberId.Value.ToString(), request.ProfileUuidFormatted);
-		
-		await Send.OkAsync(positions, cancellation: c);
+	public override Task HandleAsync(PlayerProfileUuidRequest request, CancellationToken c) {
+		ThrowError("This endpoint is deprecated and will be removed in a future version. Please use the new endpoints for leaderboard functionality.", StatusCodes.Status410Gone);
+		return Task.CompletedTask;
 	}
 }
