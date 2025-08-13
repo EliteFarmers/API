@@ -17,9 +17,7 @@ public class CropCactusLeaderboard : IMemberLeaderboardDefinition {
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
-		var crop = member.Collections.RootElement.TryGetProperty(CropId.Cactus, out var value) 
-			? value.GetInt64() 
-			: 0;
+		var crop = member.Collections.GetValueOrDefault(CropId.Cactus, 0);
 		
 		return crop;
 	}

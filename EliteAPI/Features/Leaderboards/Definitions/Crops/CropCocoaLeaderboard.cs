@@ -17,9 +17,7 @@ public class CropCocoaLeaderboard : IMemberLeaderboardDefinition {
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
-		var crop = member.Collections.RootElement.TryGetProperty(CropId.CocoaBeans, out var value) 
-			? value.GetInt64() 
-			: 0;
+		var crop = member.Collections.GetValueOrDefault(CropId.CocoaBeans, 0);
 		
 		return crop;
 	}

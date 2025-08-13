@@ -53,8 +53,7 @@ public class CollectionTests {
             { Crop.Mushroom, 210 }
         };
         
-        var jsonDoc = JsonSerializer.SerializeToDocument(input);
-        var actual = jsonDoc.ExtractCropCollections();
+        var actual = input.ExtractCropCollections();
 
         actual.ShouldBe(expected);
     }
@@ -84,12 +83,11 @@ public class CollectionTests {
             { Crop.Mushroom, 0 }
         };
         
-        var jsonDoc = JsonSerializer.SerializeToDocument(input);
-        var actual = jsonDoc.ExtractCropCollections();
+        var actual = input.ExtractCropCollections();
         
         actual.ShouldBe(expected);
         
-        var withSeeds = jsonDoc.ExtractCropCollections(true);
+        var withSeeds = input.ExtractCropCollections(true);
         expected.Add(Crop.Seeds, 12);
         
         withSeeds.ShouldBe(expected);

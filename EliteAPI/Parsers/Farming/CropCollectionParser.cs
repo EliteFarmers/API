@@ -12,10 +12,8 @@ public static class CropCollectionParser {
         return member.Collections.ExtractCropCollections(includeSeeds);
     }
 
-    public static Dictionary<Crop, long> ExtractCropCollections(this JsonDocument collectionDocument, bool includeSeeds = false) {
+    public static Dictionary<Crop, long> ExtractCropCollections(this Dictionary<string, long> collections, bool includeSeeds = false) {
         try {
-            var collections = collectionDocument.Deserialize<Dictionary<string, long>>() ??
-                              new Dictionary<string, long>();
             var crops = new Dictionary<Crop, long>();
 
             foreach (var cropId in FarmingWeightConfig.Settings.CropItemIds) {

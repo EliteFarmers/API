@@ -1,6 +1,6 @@
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.Common;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 

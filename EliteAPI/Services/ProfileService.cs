@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.Interfaces;

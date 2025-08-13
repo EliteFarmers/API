@@ -28,7 +28,7 @@ public class Profile
     public long LastUpdated { get; set; }
 }
 
-public class ProfileMember : IDisposable
+public class ProfileMember
 {
     [Key] public required Guid Id { get; set; }
     
@@ -49,7 +49,7 @@ public class ProfileMember : IDisposable
     public long LastUpdated { get; set; } = 0;
 
     [Column(TypeName = "jsonb")]
-    public JsonDocument Collections { get; set; } = JsonDocument.Parse("{}");
+    public Dictionary<string, long> Collections { get; set; } = new();
 
     [Column(TypeName = "jsonb")] 
     public UnparsedApiData Unparsed { get; set; } = new();
@@ -70,8 +70,6 @@ public class ProfileMember : IDisposable
     public string? ProfileName { get; set; }
 
     public List<EventMember> EventEntries { get; set; } = [];
-
-    public void Dispose() => Collections?.Dispose();
 }
 
 [Owned]

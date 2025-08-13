@@ -1,9 +1,9 @@
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Events.Services;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Events;
-using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;

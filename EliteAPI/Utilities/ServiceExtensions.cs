@@ -101,7 +101,6 @@ public static class ServiceExtensions
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IHypixelService, HypixelService>();
         services.AddScoped<IMojangService, MojangService>();
-        services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();

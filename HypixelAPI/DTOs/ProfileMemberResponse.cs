@@ -19,7 +19,7 @@ public class ProfileMemberResponse
 	[JsonPropertyName("jacobs_contest")]
 	public RawJacobData? Jacob { get; set; }
     
-	public JsonDocument? Collection { get; set; }
+	public Dictionary<string, long>? Collection { get; set; }
     
 	[JsonPropertyName("accessory_bag_storage")]
 	public JsonObject? AccessoryBagSettings { get; set; }

@@ -3,7 +3,7 @@ using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Monetization.Models;
-using EliteAPI.Services.Interfaces;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Utilities;
 using ErrorOr;
 using FastEndpoints;

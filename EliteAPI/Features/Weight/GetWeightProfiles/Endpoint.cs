@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using EliteAPI.Data;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Parsers.Farming;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
