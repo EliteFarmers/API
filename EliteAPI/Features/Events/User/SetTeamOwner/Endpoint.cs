@@ -23,8 +23,6 @@ internal sealed class SetTeamOwnerEndpoint(
 	public override void Configure() {
 		Put("/event/{EventId}/team/{TeamId}/owner");
 		Version(0);
-		
-		Description(s => s.Accepts<ChangeTeamOwnerRequest>());
 
 		Summary(s => {
 			s.Summary = "Set player as team owner";

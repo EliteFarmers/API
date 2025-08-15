@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using EliteAPI.Features.Auth;
 using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
@@ -13,8 +14,6 @@ internal sealed class CreateAnnouncementEndpoint(
         Policies(ApiUserPolicies.Admin);
         Version(0);
         
-        Description(x => x.Accepts<CreateAnnouncementDto>());
-
         Summary(s => {
             s.Summary = "Create an announcement";
             s.Description = "Creates a new announcement that will be displayed to users";

@@ -24,8 +24,6 @@ internal sealed class CreateTeamEndpoint(
 		Post("/event/{EventId}/teams");
 		Version(0);
 		
-		Description(x => x.Accepts<CreateTeamRequest>());
-
 		Summary(s => {
 			s.Summary = "Create a team";
 		});
