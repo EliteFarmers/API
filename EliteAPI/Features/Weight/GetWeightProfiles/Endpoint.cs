@@ -35,7 +35,7 @@ internal sealed class GetWeightForProfilesEndpoint(
 			s.Description = "Get farming weight for all profiles of a player";
 		});
 		
-		ResponseCache(120);
+		ResponseCache(120, varyByQueryKeys: [ "collections" ]);
 		Options(o => {
 			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
 		});

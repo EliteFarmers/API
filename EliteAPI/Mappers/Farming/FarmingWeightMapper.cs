@@ -26,6 +26,7 @@ public class FarmingWeightMapper : Profile
             .ForMember(x => x.UncountedCrops, opt => opt.MapFrom(x => x.Farming.UncountedCrops
                 .ToDictionary(pair => FormatUtils.GetFormattedCropName(pair.Key), pair => pair.Value)
             ))
+            .ForMember(x => x.Pests, opt => opt.MapFrom(x => x.Farming.Pests))
             .ForMember(x => x.ProfileId, opt => opt.MapFrom(x => x.ProfileId))
             .ForMember(x => x.ProfileName, opt => opt.MapFrom(x => x.ProfileName ?? x.Profile.ProfileName))
             .ForMember(x => x.LastUpdated, opt => opt.MapFrom(x => x.LastUpdated));
