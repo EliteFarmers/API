@@ -36,12 +36,10 @@ public class GuildService(
             Name = "leaderboardInit",
             GuildId = guildId.ToString(),
             AuthorId = authorId,
-            Data = $$"""
-                 {
-                     "channelId": "{{channelId}}",
-                     "leaderboardId": "{{lbId}}"
-                 }
-            """
+            Data = new Dictionary<string, object> {
+                { "channelId", channelId },
+                { "leaderboardId", lbId }
+            }
         };
         
         messageService.SendMessage(message);

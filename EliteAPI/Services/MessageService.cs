@@ -45,14 +45,12 @@ public class MessageService(
             Name = "error",
             GuildId = _messagingSettings.ErrorAlertServer,
             AuthorId = _messagingSettings.ErrorAlertChannel,
-            Data = $$"""
-            {
-                "channelId": "{{_messagingSettings.ErrorAlertChannel}}",
-                "title": "{{title}}",
-                "message": "{{message}}",
-                "ping": "{{_messagingSettings.ErrorAlertPing}}"
+            Data = new Dictionary<string, object>() {
+                { "channelId", _messagingSettings.ErrorAlertChannel },
+                { "title", title },
+                { "message", message },
+                { "ping", _messagingSettings.ErrorAlertPing ?? "" }
             }
-            """
         });
     }
 
@@ -63,13 +61,11 @@ public class MessageService(
             Name = "purchase",
             GuildId = _messagingSettings.ErrorAlertServer,
             AuthorId = accountId,
-            Data = $$"""
-            {
-                "userId": "{{accountId}}",
-                "skuId": "{{skuId}}",
-                "skuName": "{{skuName}}"
+            Data = new Dictionary<string, object>() {
+                { "userId", accountId },
+                { "skuId", skuId },
+                { "skuName", skuName }
             }
-            """
         });
     }
     
@@ -80,13 +76,11 @@ public class MessageService(
             Name = "claim",
             GuildId = _messagingSettings.ErrorAlertServer,
             AuthorId = accountId,
-            Data = $$"""
-                     {
-                         "userId": "{{accountId}}",
-                         "skuId": "{{skuId}}",
-                         "skuName": "{{skuName}}"
-                     }
-                     """
+            Data = new Dictionary<string, object>() {
+                { "userId", accountId },
+                { "skuId", skuId },
+                { "skuName", skuName }
+            }
         });
     }
 
@@ -97,15 +91,13 @@ public class MessageService(
             Name = "wipe",
             GuildId = _messagingSettings.WipeServer,
             AuthorId = _messagingSettings.WipeChannel,
-            Data = $$"""
-                     {
-                         "channelId": "{{_messagingSettings.WipeChannel}}",
-                         "uuid": "{{uuid}}",
-                         "ign": "{{ign}}",
-                         "profileId": "{{profileId}}",
-                         "discord": "{{discordId}}"
-                     }
-                     """
+            Data = new Dictionary<string, object>() {
+                { "channelId", _messagingSettings.WipeChannel },
+                { "uuid", uuid },
+                { "ign", ign },
+                { "profileId", profileId },
+                { "discord", discordId }
+            }
         });
     }
 }

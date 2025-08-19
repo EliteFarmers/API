@@ -4,5 +4,5 @@ public class MessageDto {
     public required string Name { get; init; }
     public required string GuildId { get; init; }
     public required string AuthorId { get; init; }
-    public required string Data { get; init; }
+    public required Dictionary<string, object> Data { get; init; }
 }
