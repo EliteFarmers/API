@@ -37,7 +37,7 @@ internal sealed class GetWeightForProfileEndpoint(
 	}
 
 	public override async Task<Result> ExecuteAsync(GetWeightProfilesRequest request, CancellationToken c) {
-		var query = await memberService.ProfileMemberQuery(request.PlayerUuidFormatted, 16);
+		var query = await memberService.ProfileMemberQuery(request.PlayerUuidFormatted, 32);
 		if (query is null) return TypedResults.NotFound();
 
 		var weight = await query

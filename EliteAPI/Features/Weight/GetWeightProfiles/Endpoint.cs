@@ -43,7 +43,7 @@ internal sealed class GetWeightForProfilesEndpoint(
 
 	public override async Task<Result> ExecuteAsync(GetWeightForProfilesRequest request, CancellationToken c) {
 		var uuid = request.PlayerUuidFormatted;
-		await memberService.UpdatePlayerIfNeeded(uuid, 16);
+		await memberService.UpdatePlayerIfNeeded(uuid, 32);
 
 		var members = await context.ProfileMembers
 			.AsNoTracking()

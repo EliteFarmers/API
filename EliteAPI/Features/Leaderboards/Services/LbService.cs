@@ -625,7 +625,7 @@ public class LbService(
 				return null;
 			}
 
-			await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 4f);
+			await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
 
 			memberId = member.Id.ToString();
 		}
