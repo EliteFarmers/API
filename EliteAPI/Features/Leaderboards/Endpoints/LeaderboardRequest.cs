@@ -39,7 +39,6 @@ public class LeaderboardRequest {
 
 internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest> {
 	public LeaderboardRequestValidator() {
-		var lbSettings = Resolve<IOptions<ConfigLeaderboardSettings>>();
 		var newLbService = Resolve<ILeaderboardRegistrationService>();
 		
 		RuleFor(x => x.Leaderboard)

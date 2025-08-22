@@ -32,9 +32,18 @@ public interface ILbService
 	Task<PlayerLeaderboardEntryWithRankDto?> GetLeaderboardEntryAsync(string leaderboardSlug, string memberOrProfileId,
 		string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null);
 
-	Task<LeaderboardPositionDto?> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId,
+	Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
+		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null,
+		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
+		string? identifier = null, CancellationToken? c = null);
+	
+	Task<LeaderboardPositionDto> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId,
 		int? upcoming = null, int? atRank = null, string? gameMode = null,
-		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, CancellationToken? c = null);
+		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false, CancellationToken? c = null);
+	
+	Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(string leaderboardId, string resourceId,
+		int? upcoming = null, int? atRank = null, string? gameMode = null,
+		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false, CancellationToken? c = null);
 
 	(long start, long end) GetCurrentTimeRange(LeaderboardType type);
 }
@@ -45,6 +54,7 @@ public class LbService(
 	ILogger<LbService> logger,
 	IConnectionMultiplexer redis,
 	IMemberService memberService,
+	IServiceProvider serviceProvider, 
 	DataContext context)
 	: ILbService
 {
@@ -602,35 +612,113 @@ public class LbService(
 			Type = entry.Leaderboard.ScoreDataType
 		};
 	}
-
-	public async Task<LeaderboardPositionDto?> GetLeaderboardRank(
-		string leaderboardId, string playerUuid, string profileId, int? upcoming = null,
+	
+	public async Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
+		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, CancellationToken? c = null)
 	{
-		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
-
 		var memberId = profileId;
+		
+		var member = await context.ProfileMembers
+			.Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
+			.Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
+			.FirstOrDefaultAsync(cancellationToken: c ?? CancellationToken.None);
 
-		// Set the memberId to the profile member ID if the leaderboard is not a profile leaderboard
-		if (definition.IsMemberLeaderboard())
+		if (member is not null && member.Id != Guid.Empty) {
+			await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
+			
+			memberId = member.Id.ToString();
+		}
+		
+		var result = new Dictionary<string, LeaderboardPositionDto?>();
+		
+		foreach (var leaderboard in leaderboards)
 		{
+			var resourceId = memberId;
+			if (registrationService.LeaderboardsById.TryGetValue(leaderboard, out var definition) &&
+			    definition.IsProfileLeaderboard())
+			{
+				resourceId = profileId; // If the leaderboard is a profile leaderboard, use the profile ID
+			}
+
+			result[leaderboard] = await GetLeaderboardRankByResourceId(
+				leaderboardId: leaderboard,
+				resourceId: resourceId,
+				upcoming: upcoming,
+				atRank: atRank,
+				gameMode: gameMode,
+				removedFilter: removedFilter,
+				identifier: identifier,
+				c: c
+			);
+		}
+		
+		return result;
+	}
+	
+	public async Task<LeaderboardPositionDto> GetLeaderboardRank(
+		string leaderboardId, string playerUuid, string profileId, int? upcoming = null,
+		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
+		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null)
+	{
+		var memberId = profileId;
+		
+		if (registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition) && definition.IsMemberLeaderboard())
+		{
+			// Set the memberId to the profile member ID if the leaderboard is not a profile leaderboard
 			var member = await context.ProfileMembers
 				.Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
 				.Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
 				.FirstOrDefaultAsync(cancellationToken: c ?? CancellationToken.None);
 
-			if (member is null || member.Id == Guid.Empty)
-			{
-				return null;
+			if (member is null || member.Id == Guid.Empty) {
+				memberId = null;
+			} else {
+				if (!skipUpdate) {
+					await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
+				}
+
+				memberId = member.Id.ToString();
 			}
-
-			await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
-
-			memberId = member.Id.ToString();
 		}
+		
+		var result = memberId is not null ? await GetLeaderboardRankByResourceId(
+			leaderboardId: leaderboardId,
+			resourceId: memberId,
+			upcoming: upcoming,
+			atRank: atRank,
+			gameMode: gameMode,
+			removedFilter: removedFilter,
+			identifier: identifier,
+			skipUpdate: skipUpdate,
+			c: c) : null;
 
-		var entry = await GetLeaderboardEntryAsync(leaderboardId, memberId, gameMode, removedFilter, identifier);
+		if (result is not null) return result;
+		
+		var last = await GetLastLeaderboardEntry(
+			leaderboardId: leaderboardId,
+			removedFilter: removedFilter,
+			gameMode: gameMode,
+			identifier: identifier);
+			
+		return new LeaderboardPositionDto {
+			Rank = -1,
+			Amount = 0,
+			MinAmount = GetLeaderboardMinScore(leaderboardId),
+			UpcomingRank = last?.Rank ?? 10_000,
+			UpcomingPlayers = upcoming > 0 && last is not null ? [last] : null,
+		};
+	}
+
+	public async Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(
+		string leaderboardId, string resourceId, int? upcoming = null,
+		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
+		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null)
+	{
+		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
+
+		var entry = await GetLeaderboardEntryAsync(leaderboardId, resourceId, gameMode, removedFilter, identifier);
 
 		var position = entry?.Rank ?? -1;
 		List<LeaderboardEntryDto>? upcomingPlayers = null;

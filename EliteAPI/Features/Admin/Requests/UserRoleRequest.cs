@@ -2,7 +2,7 @@ using EliteAPI.Models.Common;
 using FastEndpoints;
 using FluentValidation;
 
-namespace EliteAPI.Features.Admin.Admins;
+namespace EliteAPI.Features.Admin.Requests;
 
 public class UserRoleRequest : DiscordIdRequest {
 	public required string Role { get; set; }

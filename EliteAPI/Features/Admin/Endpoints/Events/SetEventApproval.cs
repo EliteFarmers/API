@@ -1,10 +1,17 @@
+using System.ComponentModel;
 using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Models.Common;
 using FastEndpoints;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Admin.Events.SetEventApproval;
+namespace EliteAPI.Features.Admin.Endpoints.Events;
+
+public class SetEventApprovalRequest : EventIdRequest {
+	[QueryParam, DefaultValue(false)]
+	public bool? Approve { get; set; } = false;
+}
 
 internal sealed class SetEventApprovalEndpoint(
 	DataContext context,
@@ -40,5 +47,11 @@ internal sealed class SetEventApprovalEndpoint(
 		await cacheStore.EvictByTagAsync("upcoming-events", c);
 		
 		await Send.NoContentAsync(cancellation: c);
+	}
+}
+
+internal sealed class SetEventApprovalRequestValidator : Validator<SetEventApprovalRequest> {
+	public SetEventApprovalRequestValidator() {
+		Include(new EventIdRequestValidator());
 	}
 }

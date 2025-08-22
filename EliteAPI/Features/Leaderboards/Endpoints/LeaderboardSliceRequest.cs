@@ -22,7 +22,7 @@ public class LeaderboardSliceRequest : LeaderboardRequest {
 }
 
 internal sealed class LeaderboardSliceRequestValidator : Validator<LeaderboardSliceRequest> {
-	public LeaderboardSliceRequestValidator(IOptions<ConfigLeaderboardSettings> lbSettings) {
+	public LeaderboardSliceRequestValidator() {
 		Include(new LeaderboardRequestValidator());
 		
 		RuleFor(x => x.Offset)

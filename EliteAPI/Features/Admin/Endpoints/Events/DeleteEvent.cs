@@ -5,7 +5,7 @@ using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Admin.Events.DeleteEvent;
+namespace EliteAPI.Features.Admin.Endpoints.Events;
 
 internal sealed class DeleteEventApprovalEndpoint(
 	DataContext context,

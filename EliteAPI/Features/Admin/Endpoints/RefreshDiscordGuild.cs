@@ -4,7 +4,7 @@ using EliteAPI.Models.Common;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Admin.RefreshDiscordGuild;
+namespace EliteAPI.Features.Admin.Endpoints;
 
 internal sealed class RefreshDiscordGuildEndpoint(
 	IDiscordService discordService)

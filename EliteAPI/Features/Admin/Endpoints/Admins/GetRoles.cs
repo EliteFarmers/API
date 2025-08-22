@@ -3,11 +3,11 @@ using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Admin.GetRoles;
+namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
 internal sealed class GetRolesEndpoint(
 	DataContext context)
-	: EndpointWithoutRequest<string[]> 
+	: EndpointWithoutRequest<List<string>> 
 {
 	public override void Configure() {
 		Get("/admin/roles");
@@ -23,7 +23,7 @@ internal sealed class GetRolesEndpoint(
 		var result = await context.Roles.AsNoTracking()
 			.Select(r => r.Name)
 			.Where(r => r != null)
-			.ToArrayAsync(cancellationToken: c) as string[];
+			.ToListAsync(cancellationToken: c);
 		
 		await Send.OkAsync(result, cancellation: c);
 	}

@@ -6,7 +6,7 @@ using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
-namespace EliteAPI.Features.Admin.ClearPlayerCooldowns;
+namespace EliteAPI.Features.Admin.Endpoints;
 
 internal sealed class ClearPlayerCooldownsEndpoint(
 	DataContext context,

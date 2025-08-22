@@ -3,7 +3,7 @@ using EliteAPI.Features.Auth.Models;
 using ErrorOr;
 using FastEndpoints;
 
-namespace EliteAPI.Features.Admin.UnlinkAccount;
+namespace EliteAPI.Features.Admin.Endpoints;
 
 internal sealed class AdminUnlinkAccountRequest {
 	public required string DiscordId { get; set; }

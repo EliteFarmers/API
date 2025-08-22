@@ -4,7 +4,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Admin.Events.GetPendingEvents;
+namespace EliteAPI.Features.Admin.Endpoints.Events;
 
 internal sealed class GetPendingEventsEndpoint(
 	DataContext context,

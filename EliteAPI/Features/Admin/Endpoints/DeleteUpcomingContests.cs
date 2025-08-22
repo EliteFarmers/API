@@ -3,7 +3,7 @@ using EliteAPI.Utilities;
 using FastEndpoints;
 using StackExchange.Redis;
 
-namespace EliteAPI.Features.Admin.DeleteUpcomingContests;
+namespace EliteAPI.Features.Admin.Endpoints;
 
 internal sealed class DeleteUpcomingContestsEndpoint(
 	IConnectionMultiplexer redis)

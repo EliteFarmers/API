@@ -1,12 +1,11 @@
 using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Auth.Models;
-using EliteAPI.Models.DTOs.Outgoing;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Admin.GetAdmins;
+namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
 internal sealed class GetAdminsEndpoint(
 	DataContext context)

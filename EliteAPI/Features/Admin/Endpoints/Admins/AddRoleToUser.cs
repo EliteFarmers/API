@@ -1,22 +1,23 @@
 using EliteAPI.Data;
+using EliteAPI.Features.Admin.Requests;
 using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
-namespace EliteAPI.Features.Admin.Admins.RemoveRoleFromUser;
+namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
-internal sealed class RemoveRoleFromUserEndpoint(
+internal sealed class AddRoleToUserEndpoint(
 	DataContext context,
 	UserManager userManager)
 	: Endpoint<UserRoleRequest> 
 {
 	public override void Configure() {
-		Delete("/admin/user/{DiscordId}/roles/{Role}");
+		Post("/admin/user/{DiscordId}/roles/{Role}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 		
 		Summary(s => {
-			s.Summary = "Remove a role from a user";
+			s.Summary = "Add a role to a user";
 		});
 	}
 
@@ -37,7 +38,7 @@ internal sealed class RemoveRoleFromUserEndpoint(
 		}
         
 		// Add role to user
-		var result = await userManager.RemoveFromRoleAsync(user, request.Role);
+		var result = await userManager.AddToRoleAsync(user, request.Role);
         
 		if (!result.Succeeded) {
 			ThrowError("Failed to add role");
