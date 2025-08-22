@@ -68,7 +68,9 @@ public class AuctionsIngestionService(
 
                 var variedBy = variantKeyGenerator.Generate(itemDto, auction.Tier ?? "COMMON");
                 if (variedBy is null) continue; // No SkyblockId found
-                decimal price = auction.StartingBid;
+                
+                var count = itemDto.Count > 0 ? itemDto.Count : 1;
+                var price = (decimal) auction.StartingBid / count;
 
                 newRawPrices.Add(new AuctionBinPrice
                 {
