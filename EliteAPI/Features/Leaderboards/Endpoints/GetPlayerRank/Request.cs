@@ -1,10 +1,8 @@
 using System.ComponentModel;
-using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Common;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRank;
 
@@ -25,6 +23,12 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 	/// </summary>
 	[QueryParam, DefaultValue(0)]
 	public int? Upcoming { get; set; } = 0;
+	
+	/// <summary>
+	/// Amount of passed players to include (max 3).
+	/// </summary>
+	[QueryParam, DefaultValue(0)]
+	public int? Previous { get; set; } = 0;
 	
 	/// <summary>
 	/// Start at a specified rank for upcoming players
@@ -59,7 +63,7 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest> {
 	public GetPlayerRankRequestValidator() {
 		Include(new PlayerProfileUuidRequestValidator());
-		var lbSettings = Resolve<IOptions<ConfigLeaderboardSettings>>();
+		
 		var newLbService = Resolve<ILeaderboardRegistrationService>();
 		RuleFor(x => x.Leaderboard)
 			.NotEmpty()
@@ -71,6 +75,11 @@ internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankReq
 			.GreaterThanOrEqualTo(0)
 			.LessThanOrEqualTo(100)
 			.WithMessage("Upcoming must be between 0 and 100");
+		
+		RuleFor(x => x.Previous)
+			.GreaterThanOrEqualTo(0)
+			.LessThanOrEqualTo(3)
+			.WithMessage("Previous must be between 0 and 3");
 		
 		RuleFor(x => x.Interval)
 			.Matches(@"^\d{4}-\d{2}$")

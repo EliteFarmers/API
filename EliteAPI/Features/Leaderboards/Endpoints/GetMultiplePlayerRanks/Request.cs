@@ -23,10 +23,16 @@ public class GetMultiplePlayerRanksRequest : PlayerProfileUuidRequest {
 	public bool? IncludeUpcoming { get; set; } = false;
 	
 	/// <summary>
-	/// Amount of upcoming players to include (max 100). Only works with new leaderboard backend
+	/// Amount of upcoming players to include (max 10).
 	/// </summary>
 	[QueryParam, DefaultValue(0)]
 	public int? Upcoming { get; set; } = 0;
+	
+	/// <summary>
+	/// Amount of passed players to include (max 3).
+	/// </summary>
+	[QueryParam, DefaultValue(0)]
+	public int? Previous { get; set; } = 0;
 	
 	/// <summary>
 	/// Start at a specified rank for upcoming players
@@ -77,6 +83,11 @@ internal sealed class GetMultiplePlayerRanksRequestValidator : Validator<GetMult
 			.GreaterThanOrEqualTo(0)
 			.LessThanOrEqualTo(10)
 			.WithMessage("Upcoming must be between 0 and 10");
+		
+		RuleFor(x => x.Previous)
+			.GreaterThanOrEqualTo(0)
+			.LessThanOrEqualTo(3)
+			.WithMessage("Previous must be between 0 and 3");
 		
 		RuleFor(x => x.Interval)
 			.Matches(@"^\d{4}-\d{2}$")

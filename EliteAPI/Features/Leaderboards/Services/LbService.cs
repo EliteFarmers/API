@@ -33,16 +33,16 @@ public interface ILbService
 		string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null);
 
 	Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
-		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null,
+		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, CancellationToken? c = null);
 	
 	Task<LeaderboardPositionDto> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId,
-		int? upcoming = null, int? atRank = null, string? gameMode = null,
+		int? upcoming = null, int? previous = null, int? atRank = null, string? gameMode = null,
 		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false, CancellationToken? c = null);
 	
 	Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(string leaderboardId, string resourceId,
-		int? upcoming = null, int? atRank = null, string? gameMode = null,
+		int? upcoming = null, int? previous = null, int? atRank = null, string? gameMode = null,
 		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false, CancellationToken? c = null);
 
 	(long start, long end) GetCurrentTimeRange(LeaderboardType type);
@@ -614,7 +614,7 @@ public class LbService(
 	}
 	
 	public async Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
-		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null,
+		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, CancellationToken? c = null)
 	{
@@ -646,6 +646,7 @@ public class LbService(
 				leaderboardId: leaderboard,
 				resourceId: resourceId,
 				upcoming: upcoming,
+				previous: previous,
 				atRank: atRank,
 				gameMode: gameMode,
 				removedFilter: removedFilter,
@@ -658,7 +659,7 @@ public class LbService(
 	}
 	
 	public async Task<LeaderboardPositionDto> GetLeaderboardRank(
-		string leaderboardId, string playerUuid, string profileId, int? upcoming = null,
+		string leaderboardId, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null)
 	{
@@ -687,6 +688,7 @@ public class LbService(
 			leaderboardId: leaderboardId,
 			resourceId: memberId,
 			upcoming: upcoming,
+			previous: previous,
 			atRank: atRank,
 			gameMode: gameMode,
 			removedFilter: removedFilter,
@@ -712,7 +714,7 @@ public class LbService(
 	}
 
 	public async Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(
-		string leaderboardId, string resourceId, int? upcoming = null,
+		string leaderboardId, string resourceId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null)
 	{
@@ -722,14 +724,30 @@ public class LbService(
 
 		var position = entry?.Rank ?? -1;
 		List<LeaderboardEntryDto>? upcomingPlayers = null;
+		List<LeaderboardEntryDto>? previousPlayers = null;
 
 		var rank = atRank is -1 or null ? position : Math.Max(1, atRank.Value);
 		rank = position != -1 ? Math.Min(position, rank) : rank;
 
+		var sliceOffset = upcoming.HasValue ? Math.Max(rank - upcoming.Value - 1, 0) : 0;
+		var sliceLimit = upcoming.HasValue ? Math.Min(rank - 1, upcoming.Value) : 0;
+
 		if (upcoming > 0 && rank > 1)
 		{
-			upcomingPlayers = await GetLeaderboardSlice(leaderboardId, Math.Max(rank - upcoming.Value - 1, 0),
-				Math.Min(rank - 1, upcoming.Value), gameMode, removedFilter, identifier);
+			upcomingPlayers = await GetLeaderboardSlice(leaderboardId, sliceOffset, sliceLimit, gameMode, removedFilter, identifier);
+		}
+		
+		if (previous > 0 && position != -1)
+		{
+			var willHavePlayer = position > rank && previous.Value + rank > position;
+			var limit = willHavePlayer ? previous.Value + 1 : previous.Value;
+			
+			previousPlayers = await GetLeaderboardSlice(leaderboardId, rank, limit, gameMode, removedFilter, identifier);
+
+			if (willHavePlayer) {
+				// Remove the player from the previous players list if they are included
+				previousPlayers.RemoveAt(position - rank - 1);
+			}
 		}
 
 		// Reverse the list of upcoming players to show the closest upcoming player first
@@ -743,6 +761,7 @@ public class LbService(
 			MinAmount = (double)definition.Info.MinimumScore,
 			UpcomingRank = rank == -1 ? -1 : rank - 1,
 			UpcomingPlayers = upcomingPlayers ?? [],
+			Previous = previousPlayers,
 		};
 
 		return result;

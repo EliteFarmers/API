@@ -32,6 +32,7 @@ internal sealed class GetProfileRankEndpoint(
 			playerUuid: string.Empty,
 			profileId: request.ProfileUuidFormatted,
 			upcoming: request.Upcoming,
+			previous: request.Previous,
 			atRank: request.AtRank ?? -1,
 			identifier: request.Interval,
 			gameMode: request.Mode,

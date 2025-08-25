@@ -143,4 +143,9 @@ public class LeaderboardPositionDto {
     /// List of upcoming players
     /// </summary>
     public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
+    /// <summary>
+    /// List of previous players
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public List<LeaderboardEntryDto>? Previous { get; set; }
 }

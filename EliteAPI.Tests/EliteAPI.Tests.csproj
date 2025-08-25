@@ -34,8 +34,4 @@
       <Link>Configuration\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Features\" />
-  </ItemGroup>
 </Project>
