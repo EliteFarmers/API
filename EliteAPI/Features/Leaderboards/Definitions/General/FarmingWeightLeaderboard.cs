@@ -9,7 +9,7 @@ public class FarmingWeightLeaderboard : IMemberLeaderboardDefinition {
 		ShortTitle = "Farming Weight",
 		Slug = "farmingweight",
 		Category = "General",
-		MinimumScore = 1_000,
+		MinimumScore = 500,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
