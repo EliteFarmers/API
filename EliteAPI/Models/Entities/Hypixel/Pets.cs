@@ -10,4 +10,5 @@ public class Pet
     public string? HeldItem { get; set; }
     public short CandyUsed { get; set; } = 0;
     public string? Skin { get; set; }
+    public int Level { get; set; } = 1;
 }
