@@ -79,6 +79,9 @@ public static class FarmingWeightParser
         var mushroomWeight = doubleBreakRatio * ((double) mushroomAmount / (mushroomPerWeight * 2)) +
                              normalCropRatio * ((double) mushroomAmount / mushroomPerWeight);
 
+        // Check if mushroomWeight is NaN (can happen if totalWeight is 0)
+        if (double.IsNaN(mushroomWeight)) mushroomWeight = 0;
+
         crops["Mushroom"] = mushroomWeight;
 
         return crops;
