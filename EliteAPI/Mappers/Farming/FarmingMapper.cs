@@ -38,6 +38,7 @@ public class JacobContestsMapper : Profile
         CreateMap<JacobContest, JacobContestWithParticipationsDto>()
             .ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)))
             .ForMember(j => j.Timestamp, opt => opt.MapFrom(x => x.Timestamp))
+            .ForMember(j => j.Brackets, opt => opt.MapFrom(x => x.GetBrackets()))
             .ForMember(j => j.Participants, opt => opt.MapFrom(x => x.Participants));
     }
 }
