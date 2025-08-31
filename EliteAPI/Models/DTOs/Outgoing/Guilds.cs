@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Models.Entities.Discord;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 

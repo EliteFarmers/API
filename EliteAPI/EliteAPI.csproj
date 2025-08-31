@@ -60,6 +60,7 @@
 		<Folder Include="Data\Grafana\Dashboards\" />
 		<Folder Include="Features\Auth\Endpoints\" />
 		<Folder Include="Features\Events\Admin\Members\" />
+		<Folder Include="Features\Guilds\Endpoints\" />
 		<Folder Include="Features\Profiles\Models\" />
 		<Folder Include="Models\Entities\Accounts\" />
 	</ItemGroup>

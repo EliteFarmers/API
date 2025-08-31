@@ -2,7 +2,6 @@ using EliteAPI.Data;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.Entities.Discord;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.Admin.SetEvents;

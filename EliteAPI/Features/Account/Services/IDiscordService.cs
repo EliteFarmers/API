@@ -4,7 +4,6 @@ using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
-using EliteAPI.Models.Entities.Images;
 
 namespace EliteAPI.Features.Account.Services;
 
@@ -23,6 +22,4 @@ public interface IDiscordService
     Task FetchUserRoles(GuildMember member);
     Task<Guild?> GetGuild(ulong guildId, bool skipCache = false, bool replaceImages = false, int cooldown = -1);
     Task RefreshDiscordGuild(ulong guildId, bool replaceImages = false, int cooldown = -1);
-    Task<Image?> UpdateGuildBanner(ulong guildId, string bannerHash, Image? image = null, bool force = false);
-    Task<Image?> UpdateGuildIcon(ulong guildId, string iconHash, Image? image = null, bool force = false);
 }

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Models.Entities.Images;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;

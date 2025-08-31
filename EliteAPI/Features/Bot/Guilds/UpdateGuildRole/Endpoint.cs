@@ -1,5 +1,5 @@
 using EliteAPI.Authentication;
-using EliteAPI.Services.Interfaces;
+using EliteAPI.Features.Guilds.Services;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Bot.Guilds.UpdateGuildRole;

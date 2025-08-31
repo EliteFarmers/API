@@ -1,7 +1,7 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
-using EliteAPI.Models.Entities.Images;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Services.Interfaces;
 
 namespace EliteAPI.Services;
@@ -73,11 +73,11 @@ public class ObjectStorageService : IObjectStorageService {
 	/// <param name="token"></param>
 	/// <returns></returns>
 	public async Task<Image> UploadImageAsync(string path, string remoteUrl, Dictionary<string, string>? metadata = null, CancellationToken token = default) {
-		var formFile = await DownloadImageAsync(remoteUrl, token);
+		var formFile = await DownloadRemoteImageAsync(remoteUrl, token);
 		return await UploadImageAsync(path, formFile, metadata, token);
 	}
 	
-	private async Task<IFormFile> DownloadImageAsync(string remoteUrl, CancellationToken token = default) {
+	public async Task<IFormFile> DownloadRemoteImageAsync(string remoteUrl, CancellationToken token = default) {
 		using var client = _httpClientFactory.CreateClient("EliteAPI");
 		var response = await client.GetAsync(remoteUrl, token);
 		
@@ -112,7 +112,7 @@ public class ObjectStorageService : IObjectStorageService {
 	}
 
 	public async Task UpdateImageAsync(Image image, string remoteUrl, string? newPath = null, CancellationToken token = default) {
-		var file = await DownloadImageAsync(remoteUrl, token);
+		var file = await DownloadRemoteImageAsync(remoteUrl, token);
 		await UpdateImageAsync(image, file, newPath, token);
 	}
 

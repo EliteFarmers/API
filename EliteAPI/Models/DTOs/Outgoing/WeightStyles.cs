@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using EliteAPI.Models.Entities.Images;
+using EliteAPI.Features.Images.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
@@ -36,32 +36,6 @@ public class WeightStyleLinkedDto
     public int Id { get; set; }
     [MaxLength(64)]
     public string? Name { get; set; }
-}
-
-public class ImageAttachmentDto
-{
-    /// <summary>
-    /// Image title
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault), MaxLength(64)]
-    public string? Title { get; set; }
-    
-    /// <summary>
-    /// Image description
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault), MaxLength(512)]
-    public string? Description { get; set; }
-    
-    /// <summary>
-    /// Image ordering number
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public int? Order { get; set; }
-    
-    /// <summary>
-    /// Full image URL
-    /// </summary>
-    public string Url { get; set; } = null!;
 }
 
 public class UploadImageDto

@@ -3,7 +3,7 @@ using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EliteAPI.Services.Interfaces; 
+namespace EliteAPI.Features.Guilds.Services; 
 
 public interface IGuildService {
     Task<ActionResult> SendLeaderboardPanel(ulong guildId, string channelId, string authorId, string lbId);

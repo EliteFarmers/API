@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using EliteAPI.Data;
+﻿using EliteAPI.Data;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Models.DTOs.Incoming;
@@ -7,13 +6,17 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.DTOs.Outgoing.Messaging;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
+using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using IMapper = AutoMapper.IMapper;
 
-namespace EliteAPI.Services; 
+namespace EliteAPI.Features.Guilds.Services; 
 
+[RegisterService<IGuildService>(LifeTime.Scoped)]
 public class GuildService(
     IDiscordService discordService,
+    IGuildImageService guildImageService,
     DataContext context,
     IMapper mapper,
     IMessageService messageService)
@@ -59,8 +62,8 @@ public class GuildService(
         var hasPerms = ulong.TryParse(guild.BotPermissions, out var botPermissions);
         
         if (dbGuild is null) {
-            var icon = guild.Icon is not null ? await discordService.UpdateGuildIcon(guildId, guild.Icon) : null;
-            var banner = guild.Banner is not null ? await discordService.UpdateGuildBanner(guildId, guild.Banner) : null;
+            var icon = guild.Icon is not null ? await guildImageService.UpdateGuildIconAsync(guildId, guild.Icon) : null;
+            var banner = guild.Banner is not null ? await guildImageService.UpdateGuildBannerAsync(guildId, guild.Banner) : null;
             
             dbGuild = new Guild {
                 Id = guildId,
@@ -78,9 +81,9 @@ public class GuildService(
             
             if (guild.Icon is not null && guild.Icon != dbGuild.Icon?.Hash) {
                 if (dbGuild.Icon is null) {
-                    dbGuild.Icon = await discordService.UpdateGuildIcon(guildId, guild.Icon);
+                    dbGuild.Icon = await guildImageService.UpdateGuildIconAsync(guildId, guild.Icon);
                 } else {
-                    await discordService.UpdateGuildIcon(guildId, guild.Icon, dbGuild.Icon);
+                    await guildImageService.UpdateGuildIconAsync(guildId, guild.Icon, dbGuild.Icon);
                 }
             }
         }
