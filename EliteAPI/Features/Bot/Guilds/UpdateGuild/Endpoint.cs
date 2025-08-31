@@ -1,6 +1,6 @@
 using EliteAPI.Authentication;
+using EliteAPI.Features.Guilds.Services;
 using EliteAPI.Models.Common;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Bot.Guilds.UpdateGuild;

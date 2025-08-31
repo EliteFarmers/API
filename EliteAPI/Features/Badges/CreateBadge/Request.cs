@@ -1,4 +1,4 @@
-using EliteAPI.Models.Entities.Images;
+using EliteAPI.Features.Images.Models;
 using FastEndpoints;
 using FluentValidation;
 

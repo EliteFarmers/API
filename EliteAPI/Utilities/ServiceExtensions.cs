@@ -6,6 +6,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
@@ -102,7 +103,6 @@ public static class ServiceExtensions
         services.AddScoped<IHypixelService, HypixelService>();
         services.AddScoped<IMojangService, MojangService>();
         services.AddScoped<IProfileService, ProfileService>();
-        services.AddScoped<IGuildService, GuildService>();
         services.AddScoped<ITimescaleService, TimescaleService>();
         services.RegisterServicesFromEliteAPI();
 
@@ -184,6 +184,8 @@ public static class ServiceExtensions
 
         builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
             .Bind(ConfigGlobalRateLimitSettings.Settings);
+        
+        ImageMapper.Initialize(builder.Configuration);
         
         return builder;
     }

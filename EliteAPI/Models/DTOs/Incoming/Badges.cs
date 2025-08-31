@@ -1,4 +1,4 @@
-﻿using EliteAPI.Models.DTOs.Outgoing;
+﻿using EliteAPI.Features.Images.Models;
 
 namespace EliteAPI.Models.DTOs.Incoming;
 

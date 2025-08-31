@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
@@ -10,7 +11,6 @@ using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
-using EliteAPI.Models.Entities.Images;
 using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Models.Entities.Timescale;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

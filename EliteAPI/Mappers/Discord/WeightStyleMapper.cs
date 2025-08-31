@@ -1,6 +1,6 @@
 using AutoMapper;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Models.DTOs.Outgoing;
-using EliteAPI.Models.Entities.Images;
 using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Mappers.Discord;
@@ -23,11 +23,8 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.Products, opt => opt.MapFrom(w => w.Products));
 
 		CreateMap<Image, ImageAttachmentDto>()
-			.ForMember(i => i.Title, opt => opt.MapFrom(i => i.Title))
-			.ForMember(i => i.Description, opt => opt.MapFrom(i => i.Description))
-			.ForMember(i => i.Order, opt => opt.MapFrom(i => i.Order))
-			.ForMember(i => i.Url, opt => opt.MapFrom<ImagePathResolver>());
-		
+			.ConvertUsing(image => image.ToDto()!);
+			
 		CreateMap<WeightStyleData, WeightStyleDataDto>()
 			.ForMember(w => w.Decal, opt => opt.MapFrom(w => w.Decal))
 			.ForMember(w => w.Elements, opt => opt.MapFrom(w => w.Elements))

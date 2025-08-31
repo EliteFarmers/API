@@ -1,7 +1,8 @@
 ﻿using System.Net.Http.Headers;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
-using EliteAPI.Features.Account.Services;
+using EliteAPI.Features.Guilds.Services;
+using EliteAPI.Features.Images.Services;
 using EliteAPI.Models.DTOs.Incoming;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Services.Interfaces;
@@ -20,8 +21,8 @@ public class RefreshBotGuildsBackgroundJob(
     IHttpClientFactory httpClientFactory,
     IOptions<ConfigCooldownSettings> coolDowns,
     IMessageService messageService,
-    IDiscordService discordService,
-    IObjectStorageService objectStorageService
+    IGuildImageService guildImageService,
+    IImageService imageService
 	) : IJob
 {
     public static readonly JobKey Key = new(nameof(RefreshBotGuildsBackgroundJob));
@@ -73,7 +74,7 @@ public class RefreshBotGuildsBackgroundJob(
                 .FirstOrDefaultAsync(g => g.Id == guild.Id, cancellationToken: ct);
             
             if (existingGuild is null) {
-                var icon = guild.Icon is null ? null : await discordService.UpdateGuildIcon(guild.Id, guild.Icon);
+                var icon = guild.Icon is null ? null : await guildImageService.UpdateGuildIconAsync(guild.Id, guild.Icon);
                 
                 context.Guilds.Add(new Guild {
                     Id = guild.Id,
@@ -92,10 +93,10 @@ public class RefreshBotGuildsBackgroundJob(
                 existingGuild.HasBot = true;
                 
                 if (guild.Icon is not null && guild.Icon != existingGuild.Icon?.Hash) {
-                    await discordService.UpdateGuildIcon(guild.Id, guild.Icon, existingGuild.Icon);
+                    await guildImageService.UpdateGuildIconAsync(guild.Id, guild.Icon, existingGuild.Icon);
                     await Task.Delay(1500, ct);
                 } else if (guild.Icon is null && existingGuild.Icon is not null) {
-                    await objectStorageService.DeleteAsync(existingGuild.Icon.Path, ct);
+                    await imageService.DeleteImageVariantsAsync(existingGuild.Icon);
                     context.Images.Remove(existingGuild.Icon);
                     existingGuild.Icon = null;
                 }
