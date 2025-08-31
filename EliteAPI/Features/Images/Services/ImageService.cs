@@ -105,7 +105,9 @@ public class ImageService(
         {
             Quality = variant.Quality,
             SkipMetadata = true,
-            FileFormat = variant.Width <= 64 ? WebpFileFormatType.Lossless : WebpFileFormatType.Lossy
+            Method = WebpEncodingMethod.Level5,
+            FileFormat = variant.Width <= 64 ? WebpFileFormatType.Lossless : WebpFileFormatType.Lossy,
+            NearLossless = variant.Width <= 128
         };
         
         await image.SaveAsWebpAsync(memoryStream, encoder, token);
