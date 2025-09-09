@@ -6,7 +6,7 @@ EXPOSE 80
 EXPOSE 443
 EXPOSE 9102
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["EliteAPI/EliteAPI.csproj", "EliteAPI/"]
 RUN dotnet restore "EliteAPI/EliteAPI.csproj"
