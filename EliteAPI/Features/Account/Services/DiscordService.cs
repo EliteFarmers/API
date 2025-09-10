@@ -457,7 +457,7 @@ public class DiscordService(
         await GetGuild(guildId, cooldown == -1, replaceImages: replaceImages, cooldown: cooldown);
     }
 
-    private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true, bool replaceImages = true) {
+    private async Task<Guild?> UpdateDiscordGuild(FullDiscordGuild? incoming, bool fetchChannels = true, bool replaceImages = false) {
         if (incoming is null) return null;
         if (!ulong.TryParse(incoming.Id, out var guildId)) return null;
         
