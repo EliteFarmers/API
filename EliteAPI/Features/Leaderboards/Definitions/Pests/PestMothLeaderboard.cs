@@ -10,7 +10,7 @@ public class PestMothLeaderboard : IMemberLeaderboardDefinition {
 		Slug = "moth",
 		Category = "Pests",
 		MinimumScore = 100,
-		IntervalType = [LeaderboardType.Current],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 

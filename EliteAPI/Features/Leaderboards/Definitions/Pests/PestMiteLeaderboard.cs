@@ -10,7 +10,7 @@ public class PestMiteLeaderboard : IMemberLeaderboardDefinition {
 		Slug = "mite",
 		Category = "Pests",
 		MinimumScore = 100,
-		IntervalType = [LeaderboardType.Current],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 

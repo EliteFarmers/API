@@ -10,7 +10,7 @@ public class PestRatLeaderboard : IMemberLeaderboardDefinition {
 		Slug = "rat",
 		Category = "Pests",
 		MinimumScore = 100,
-		IntervalType = [LeaderboardType.Current],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 

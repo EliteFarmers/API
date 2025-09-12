@@ -10,7 +10,7 @@ public class PestFieldMouseLeaderboard : IMemberLeaderboardDefinition {
 		Slug = "mouse",
 		Category = "Pests",
 		MinimumScore = 50,
-		IntervalType = [LeaderboardType.Current],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
