@@ -37,7 +37,8 @@ builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
 
-builder.Services.AddHypixelApi(DotNetEnv.Env.GetString("HYPIXEL_API_KEY"), "EliteAPI");
+builder.Services.AddHypixelApi(DotNetEnv.Env.GetString("HYPIXEL_API_KEY"), "EliteAPI")
+    .AddStandardResilienceHandler();
 
 builder.Services.AddRouting(options => {
     options.LowercaseUrls = true;
@@ -97,10 +98,11 @@ var app = builder.Build();
 
 app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
+app.UseEliteRateLimiting();
+
 app.UseResponseCaching();
 app.UseResponseCompression();
 app.UseRouting();
-app.UseRateLimiter();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

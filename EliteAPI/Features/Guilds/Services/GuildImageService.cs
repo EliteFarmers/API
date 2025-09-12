@@ -25,7 +25,7 @@ public class GuildImageService(
             
             var iconType = iconHash.StartsWith("a_") ? "gif" : "webp";
             var remoteUrl = $"https://cdn.discordapp.com/icons/{guildId}/{iconHash}.{iconType}?size=64";
-            var basePath = $"guilds/{guildId}/icons/{Guid.CreateVersion7()}";
+            var basePath = $"guilds/{guildId}/icons/{iconHash}";
 
             if (image is null) {
                 image = await imageService.CreateImageFromRemoteAsync(remoteUrl, basePath, "icon");
@@ -49,7 +49,7 @@ public class GuildImageService(
             }
             
             var remoteUrl = $"https://cdn.discordapp.com/splashes/{guildId}/{bannerHash}.webp?size=1280";
-            var basePath = $"guilds/{guildId}/{Guid.CreateVersion7()}";
+            var basePath = $"guilds/{guildId}/banners/{bannerHash}";
             
             if (image is null) {
                 image = await imageService.CreateImageFromRemoteAsync(remoteUrl, basePath, "hero");

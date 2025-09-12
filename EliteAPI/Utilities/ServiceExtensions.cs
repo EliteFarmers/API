@@ -189,52 +189,7 @@ public static class ServiceExtensions
         
         return builder;
     }
-
-    public static IServiceCollection AddEliteRateLimiting(this IServiceCollection services) {
-        var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
-            
-        services.AddRateLimiter(limiterOptions => {
-            limiterOptions.OnRejected = (context, _) => {
-                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)) {
-                    context.HttpContext.Response.Headers.RetryAfter =
-                        ((int)retryAfter.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo);
-                }
-
-                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                // Log the rate limit rejection
-                var logger = context.HttpContext.RequestServices.GetService<ILogger<ApiRateLimiterPolicy>>();
-                logger?.LogWarning("Rate limit exceeded for {Ip}", context.HttpContext.Connection.RemoteIpAddress);
-                
-                return new ValueTask();
-            };
-
-            limiterOptions.AddPolicy<string, ApiRateLimiterPolicy>(ConfigApiRateLimitSettings.RateLimitName);
-            
-            limiterOptions.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context => {
-                var remoteIpAddress = context.Connection.RemoteIpAddress;
-
-                // Check if IP address is from docker network
-                if (remoteIpAddress is null || remoteIpAddress.IsPrivate())
-                {
-                    return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
-                }
-                
-                return RateLimitPartition.GetTokenBucketLimiter(remoteIpAddress, _ =>
-                    new TokenBucketRateLimiterOptions
-                    {
-                        TokenLimit = globalRateLimitSettings.TokenLimit,
-                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                        QueueLimit = globalRateLimitSettings.QueueLimit,
-                        ReplenishmentPeriod = TimeSpan.FromSeconds(globalRateLimitSettings.ReplenishmentPeriod),
-                        TokensPerPeriod = globalRateLimitSettings.TokensPerPeriod,
-                        AutoReplenishment = globalRateLimitSettings.AutoReplenishment
-                    });
-            });
-        });
-        
-        return services;
-    }
-
+    
     /// <summary>
     /// Determines if an IP address is within one of the RFC 1918 private ranges.
     /// </summary>

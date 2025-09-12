@@ -99,6 +99,14 @@ public partial class AuthService(
 
 	private async Task<string?> GenerateAndStoreRefreshToken(ApiUser user)
 	{
+		// Check if there's a token that was created in the last minute
+		var exisingToken = await context.RefreshTokens
+			.FirstOrDefaultAsync(rt => rt.UserId == user.Id && rt.RevokedUtc == null && rt.CreatedUtc > DateTime.UtcNow.AddMinutes(-1));
+		
+		if (exisingToken is not null) {
+			return exisingToken.Token; // Return existing token if found
+		}
+		
 		var randomNumber = new byte[64]; // Generate a secure random token
 		using var rng = RandomNumberGenerator.Create();
 		rng.GetBytes(randomNumber);
@@ -139,8 +147,10 @@ public partial class AuthService(
 	public async Task<AuthResponseDto?> VerifyRefreshToken(string userId, string refreshToken) {
 		var user = await userManager.FindByIdAsync(userId);
 		if (user is null) return null;
-		
-		refreshToken = HttpUtility.UrlDecode(refreshToken);
+
+		if (refreshToken.Contains('%')) {
+			refreshToken = HttpUtility.UrlDecode(refreshToken);
+		}
 		
 		var storedToken = await context.RefreshTokens
 			.FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == refreshToken);

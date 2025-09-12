@@ -9,12 +9,12 @@ namespace HypixelAPI;
 
 public static class DependencyInjection 
 {
-	public static IServiceCollection AddHypixelApi(this IServiceCollection services, string hypixelApiKey, string? userAgent = null) {
+	public static IHttpClientBuilder AddHypixelApi(this IServiceCollection services, string hypixelApiKey, string? userAgent = null) {
 		services.AddSingleton<IHypixelKeyUsageCounter, HypixelKeyUsageCounter>();
 		services.AddSingleton<IHypixelRequestLimiter, HypixelRequestLimiter>();
 		services.AddScoped<HypixelRateLimitHandler>();
 		
-		services.AddRefitClient<IHypixelApi>(new RefitSettings()
+		return services.AddRefitClient<IHypixelApi>(new RefitSettings()
 			{
 				ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
 				{
@@ -29,9 +29,8 @@ public static class DependencyInjection
 				if (!string.IsNullOrWhiteSpace(userAgent)) {
 					opt.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
 				}
+				opt.Timeout = TimeSpan.FromSeconds(15);
 			})
 			.AddHttpMessageHandler<HypixelRateLimitHandler>();
-
-		return services;
 	}
 }
