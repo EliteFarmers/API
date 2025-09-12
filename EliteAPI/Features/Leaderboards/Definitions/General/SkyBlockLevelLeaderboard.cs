@@ -10,7 +10,7 @@ public class SkyblockLevelLeaderboard : IMemberLeaderboardDefinition {
 		Slug = "skyblockxp",
 		Category = "General",
 		MinimumScore = 5_000, // Skyblock level 50
-		IntervalType = [LeaderboardType.Current],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 
