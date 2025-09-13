@@ -41,7 +41,7 @@ public class AuctionsIngestionService(
             var response = await hypixelApi.FetchAuctionHouse(page);
             if (response.Content == null || !response.IsSuccessful)
             {
-                logger.LogError("Failed to fetch auctions for page {Page} or API call was unsuccessful", page);
+                logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful", page);
                 if (page == 0 && response is { IsSuccessful: false }) break;
                 continue;
             }

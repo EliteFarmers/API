@@ -6,7 +6,7 @@ namespace EliteAPI.Features.Leaderboards.Definitions;
 public class SkillCombatLeaderboard : IMemberLeaderboardDefinition {
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Combat Experience",
-		ShortTitle = "Combat",
+		ShortTitle = "Combat XP",
 		Slug = "combat",
 		Category = "Skills",
 		MinimumScore = 1_000_000,

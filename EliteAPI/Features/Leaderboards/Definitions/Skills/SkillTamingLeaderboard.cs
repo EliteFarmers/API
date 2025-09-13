@@ -6,7 +6,7 @@ namespace EliteAPI.Features.Leaderboards.Definitions;
 public class SkillTamingLeaderboard : IMemberLeaderboardDefinition {
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Taming Experience",
-		ShortTitle = "Taming",
+		ShortTitle = "Taming XP",
 		Slug = "taming",
 		Category = "Skills",
 		MinimumScore = 1_000_000,

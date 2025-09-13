@@ -6,7 +6,7 @@ namespace EliteAPI.Features.Leaderboards.Definitions;
 public class SkillRunecraftingLeaderboard : IMemberLeaderboardDefinition {
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Runecrafting Experience",
-		ShortTitle = "Runecrafting",
+		ShortTitle = "Runecrafting XP",
 		Slug = "runecrafting",
 		Category = "Skills",
 		MinimumScore = 100_000,

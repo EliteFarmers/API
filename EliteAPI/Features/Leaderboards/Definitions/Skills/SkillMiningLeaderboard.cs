@@ -6,7 +6,7 @@ namespace EliteAPI.Features.Leaderboards.Definitions;
 public class SkillMiningLeaderboard : IMemberLeaderboardDefinition {
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Mining Experience",
-		ShortTitle = "Mining",
+		ShortTitle = "Mining XP",
 		Slug = "mining",
 		Category = "Skills",
 		MinimumScore = 1_000_000,

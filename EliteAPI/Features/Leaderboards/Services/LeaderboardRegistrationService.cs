@@ -154,6 +154,7 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		new SkillRunecraftingLeaderboard(),
 		new SkillSocialLeaderboard(),
 		new SkillTamingLeaderboard(),
+		new SkillSocialProfileLeaderboard(),
 		new CoalLeaderboard(),
 		new CobblestoneLeaderboard(),
 		new DiamondLeaderboard(),
