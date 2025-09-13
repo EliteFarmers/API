@@ -39,6 +39,19 @@ public class ResourceJobsConfiguration(
 				});
 			});
 		
+		var firesalesJobKey = FiresalesUpdateJob.Key;
+		options.AddJob<FiresalesUpdateJob>(builder => builder.WithIdentity(firesalesJobKey))
+			.AddTrigger(trigger =>
+			{
+				trigger.ForJob(firesalesJobKey);
+				trigger.StartAt(DateTimeOffset.Now.AddSeconds(10));
+				trigger.WithSimpleSchedule(schedule =>
+				{
+					schedule.WithIntervalInSeconds(_cooldowns.ItemsRefreshInterval);
+					schedule.RepeatForever();
+				});
+			});
+		
 		var auctionJobKey = AuctionsUpdateJob.Key;
 		options.AddJob<AuctionsUpdateJob>(builder => builder.WithIdentity(auctionJobKey))
 			.AddTrigger(trigger =>

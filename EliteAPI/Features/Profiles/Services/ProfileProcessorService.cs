@@ -243,8 +243,10 @@ public class ProfileProcessorService(
         
         profile.BankBalance = profileData.Banking?.Balance ?? 0.0;
 
+        profile.SocialXp = 0;
         foreach (var member in members.Values) {
 	        profile.CombineMinions(member.PlayerData?.CraftedGenerators);
+	        profile.SocialXp += member.PlayerData?.Experience?.SkillSocial ?? 0;
         }
 
         if (existing is not null) { 

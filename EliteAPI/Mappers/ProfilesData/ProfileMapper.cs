@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using EliteAPI.Features.Leaderboards;
 using EliteAPI.Features.Profiles;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
@@ -27,6 +26,7 @@ public class ProfileMemberMapper : Profile
             .ForMember(x => x.Collections, opt => opt.MapFrom(x => x.Collections))
             .ForMember(x => x.CollectionTiers, opt => opt.MapFrom(x => x.CollectionTiers))
             .ForMember(x => x.CraftedMinions, opt => opt.MapFrom(x => x.Profile.CraftedMinions))
+            .ForMember(x => x.SocialXp, opt => opt.MapFrom(x => x.Profile.SocialXp))
             .ForMember(x => x.Jacob, opt => opt.MapFrom(x => x.JacobData))
             .ForMember(x => x.Pets, opt => opt.MapFrom(x => x.Pets))
             .ForMember(x => x.Skills, opt => opt.MapFrom(x => x.Skills))

@@ -44,6 +44,7 @@ public class ProfileMemberDto
     public ApiAccessDto Api { get; set; } = new();
     
     public int SkyblockXp { get; set; }
+    public double SocialXp { get; set; }
     public double Purse { get; set; }
     public double BankBalance { get; set; }
 

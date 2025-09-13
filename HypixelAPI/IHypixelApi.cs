@@ -30,5 +30,5 @@ public interface IHypixelApi {
 	
 	[Get("/skyblock/firesales")]
 	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
-	Task<ApiResponse<AuctionHouseResponse>> FetchFiresales(int page);
+	Task<ApiResponse<FiresalesResponse>> FetchFiresales();
 }

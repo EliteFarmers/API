@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Models.Entities.Events;
@@ -17,6 +16,7 @@ public class Profile
     public string? GameMode { get; set; }
     public bool IsDeleted { get; set; } = false;
     public double BankBalance { get; set; }
+    public double SocialXp { get; set; }
 
     public List<ProfileMember> Members { get; set; } = new();
 

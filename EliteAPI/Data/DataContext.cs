@@ -6,6 +6,7 @@ using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
+using EliteAPI.Features.Resources.Firesales.Models;
 using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
@@ -144,6 +145,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     // Auction House
     public DbSet<AuctionBinPrice> AuctionBinPrices { get; set; } = null!;
     public DbSet<AuctionItem> AuctionItems { get; set; } = null!;
+    
+    // Firesales
+    public DbSet<SkyblockFiresale> SkyblockFiresales { get; set; } = null!;
+    public DbSet<SkyblockFiresaleItem> SkyblockFiresaleItems { get; set; } = null!;
     
     // Annoucements 
     public DbSet<Announcement> Announcements { get; set; } = null!;
