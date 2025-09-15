@@ -5,7 +5,7 @@ namespace EliteFarmers.HypixelAPI.DTOs;
 public class FiresalesResponse
 {
 	public bool Success { get; set; }
-	public List<FiresaleItem> Sales { get; set; }
+	public List<FiresaleItem> Sales { get; set; } = [];
 }
 
 public class FiresaleItem

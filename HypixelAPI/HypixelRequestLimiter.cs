@@ -13,8 +13,13 @@ public interface IHypixelRequestLimiter {
 public class HypixelRequestLimiter(ILogger<IHypixelRequestLimiter> logger) : IHypixelRequestLimiter 
 {
 	private volatile SlidingWindowRateLimiter? _limiter;
-	private readonly Lock _lock = new();
 	private int _configuredPermitLimit = -1;
+	
+#if NET9_0_OR_GREATER
+	private readonly Lock _lock = new();
+#else
+	private readonly object _lock = new();
+#endif
 	
 	private readonly RateLimiter _bootstrapLimiter = new FixedWindowRateLimiter(
 		new FixedWindowRateLimiterOptions

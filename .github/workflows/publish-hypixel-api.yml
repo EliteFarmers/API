@@ -18,10 +18,7 @@ jobs:
       run: dotnet restore HypixelAPI
       
     - name: Build
-      run: dotnet build --no-restore HypixelAPI
-      
-    - name: Pack
-      run: dotnet pack HypixelAPI/HypixelAPI.csproj -o ./artifacts
+      run: dotnet build --no-restore HypixelAPI -c Release
       
     - name: Publish
-      run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push HypixelAPI/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
