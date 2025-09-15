@@ -1,6 +1,6 @@
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Hypixel;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 

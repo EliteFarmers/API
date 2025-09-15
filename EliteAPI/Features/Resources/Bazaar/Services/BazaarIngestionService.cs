@@ -1,7 +1,7 @@
-using HypixelAPI;
-using HypixelAPI.DTOs;
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Items.Models;
+using EliteFarmers.HypixelAPI;
+using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +17,7 @@ public class BazaarIngestionService(
     private const int VwapTakeOrders = 8; // Number of subsequent orders to use for VWAP
 
     public async Task IngestBazaarDataAsync() {
-        var apiResponse = await hypixelApi.FetchBazaar();
+        var apiResponse = await hypixelApi.FetchBazaarAsync();
         if (!apiResponse.IsSuccessStatusCode || apiResponse.Content is not { Success: true }) {
             var errorContent = apiResponse.Error != null
                 ? apiResponse.Error.ToString()

@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Services.Interfaces;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Quartz;
 
 namespace EliteAPI.Background.Profiles;

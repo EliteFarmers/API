@@ -1,7 +1,8 @@
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Firesales.Models;
+using EliteFarmers.HypixelAPI;
 using FastEndpoints;
-using HypixelAPI;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Firesales.Services;
@@ -13,7 +14,7 @@ public class SkyblockFiresalesIngestionService(
     ILogger<SkyblockFiresalesIngestionService> logger) 
 {
     public async Task IngestItemsDataAsync() {
-        var apiResponse = await hypixelApi.FetchFiresales();
+        var apiResponse = await hypixelApi.FetchFiresalesAsync();
         
         if (!apiResponse.IsSuccessStatusCode || apiResponse.Content is not { Success: true }) {
             var errorContent = apiResponse.Error != null

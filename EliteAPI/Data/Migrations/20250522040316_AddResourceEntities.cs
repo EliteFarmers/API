@@ -1,5 +1,5 @@
 ﻿using System;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 

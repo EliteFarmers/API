@@ -2,7 +2,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.Farming;

@@ -1,7 +1,8 @@
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Items.Models;
+using EliteFarmers.HypixelAPI;
 using FastEndpoints;
-using HypixelAPI;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Items.Services;
@@ -13,7 +14,7 @@ public class SkyblockItemsIngestionService(
     ILogger<SkyblockItemsIngestionService> logger) 
 {
     public async Task IngestItemsDataAsync() {
-        var apiResponse = await hypixelApi.FetchItems();
+        var apiResponse = await hypixelApi.FetchItemsAsync();
         
         if (!apiResponse.IsSuccessStatusCode || apiResponse.Content is not { Success: true }) {
             var errorContent = apiResponse.Error != null

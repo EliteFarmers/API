@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Bazaar;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

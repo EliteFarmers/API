@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Nodes;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Models.Entities.Hypixel; 
 

@@ -1,4 +1,4 @@
-﻿using HypixelAPI.DTOs;
+﻿using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Services.Interfaces;

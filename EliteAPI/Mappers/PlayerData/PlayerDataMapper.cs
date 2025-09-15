@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.PlayerData;

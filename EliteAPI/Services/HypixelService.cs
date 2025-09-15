@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using EliteAPI.Services.Interfaces;
-using HypixelAPI;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI;
+using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Refit;
 
@@ -19,7 +19,7 @@ public class HypixelService(
     public async Task<ActionResult<ProfilesResponse>> FetchProfiles(string uuid) 
     {
         if (uuid.Length is not (32 or 36)) return new BadRequestResult();
-        var response = await hypixelApi.FetchProfiles(uuid);
+        var response = await hypixelApi.FetchProfilesAsync(uuid);
         
         if (!response.IsSuccessStatusCode)
         {
@@ -39,7 +39,7 @@ public class HypixelService(
     public async Task<ActionResult<PlayerResponse>> FetchPlayer(string uuid)
     {
         if (uuid.Length is not (32 or 36)) return new BadRequestResult();
-        var response = await hypixelApi.FetchPlayer(uuid);
+        var response = await hypixelApi.FetchPlayerAsync(uuid);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -59,7 +59,7 @@ public class HypixelService(
     public async Task<ActionResult<GardenResponse>> FetchGarden(string profileId)
     {
         if (profileId.Length is not (32 or 36)) return new BadRequestResult();
-        var response = await hypixelApi.FetchGarden(profileId);
+        var response = await hypixelApi.FetchGardenAsync(profileId);
 
         if (!response.IsSuccessStatusCode)
         {

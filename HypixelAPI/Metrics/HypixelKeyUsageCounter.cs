@@ -1,6 +1,6 @@
 using System.Diagnostics.Metrics;
 
-namespace HypixelAPI.Metrics;
+namespace EliteFarmers.HypixelAPI.Metrics;
 
 public interface IHypixelKeyUsageCounter {
 	void Increment(int value = 1);

@@ -3,8 +3,8 @@ using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Utilities;
+using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
-using HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Profiles.Services;

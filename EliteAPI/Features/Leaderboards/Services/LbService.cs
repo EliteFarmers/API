@@ -54,7 +54,6 @@ public class LbService(
 	ILogger<LbService> logger,
 	IConnectionMultiplexer redis,
 	IMemberService memberService,
-	IServiceProvider serviceProvider, 
 	DataContext context)
 	: ILbService
 {

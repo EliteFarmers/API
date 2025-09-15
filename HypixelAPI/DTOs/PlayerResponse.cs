@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace HypixelAPI.DTOs;
+namespace EliteFarmers.HypixelAPI.DTOs;
 
 public class PlayerResponse
 {

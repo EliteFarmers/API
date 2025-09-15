@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using EliteAPI.Models.Entities.Hypixel;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

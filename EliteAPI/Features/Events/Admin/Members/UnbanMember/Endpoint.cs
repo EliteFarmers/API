@@ -14,7 +14,6 @@ internal sealed class UnbanMemberRequest : PlayerUuidRequest {
 }
 
 internal sealed class UnbanMemberAdminEndpoint(
-	IEventTeamService teamService,
 	DataContext context
 ) : Endpoint<UnbanMemberRequest> {
 

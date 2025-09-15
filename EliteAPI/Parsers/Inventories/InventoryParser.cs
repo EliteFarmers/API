@@ -1,5 +1,5 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Inventories; 
 

@@ -2,7 +2,7 @@
 using Profile = AutoMapper.Profile;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Inventories;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Mappers.ProfilesData;
 

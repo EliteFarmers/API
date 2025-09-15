@@ -1,7 +1,7 @@
 ﻿using System.Threading.RateLimiting;
 using Microsoft.Extensions.Logging;
 
-namespace HypixelAPI;
+namespace EliteFarmers.HypixelAPI;
 
 public interface IHypixelRequestLimiter {
 	void Sync(int serverLimit, int serverRemaining);

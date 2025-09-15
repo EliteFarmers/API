@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace HypixelAPI.DTOs;
+namespace EliteFarmers.HypixelAPI.DTOs;
 
 public class BazaarResponse {
 	public bool Success { get; set; }

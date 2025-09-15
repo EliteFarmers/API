@@ -1,4 +1,4 @@
-﻿using HypixelAPI.DTOs;
+﻿using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Models.DTOs.Outgoing; 
 

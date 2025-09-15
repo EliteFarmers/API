@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using HypixelAPI.Converters;
+using EliteFarmers.HypixelAPI.Converters;
 
-namespace HypixelAPI.DTOs;
+namespace EliteFarmers.HypixelAPI.DTOs;
 
 public class ProfilesResponse {
     public bool Success { get; set; }

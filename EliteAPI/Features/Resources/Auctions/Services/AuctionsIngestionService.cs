@@ -3,8 +3,9 @@ using EliteAPI.Data;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Items.Models;
 using EliteAPI.Parsers.Inventories;
+using EliteFarmers.HypixelAPI;
 using FastEndpoints;
-using HypixelAPI;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -38,7 +39,7 @@ public class AuctionsIngestionService(
         {
             if (cancellationToken.IsCancellationRequested) { logger.LogInformation("Ingestion staging cancelled"); break; }
 
-            var response = await hypixelApi.FetchAuctionHouse(page);
+            var response = await hypixelApi.FetchAuctionHouseAsync(page);
             if (response.Content == null || !response.IsSuccessful)
             {
                 logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful", page);

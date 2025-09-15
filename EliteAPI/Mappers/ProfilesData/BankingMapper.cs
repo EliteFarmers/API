@@ -1,6 +1,6 @@
 ﻿using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;
@@ -9,7 +9,7 @@ public class ProfileBankingMapper : Profile
 {
     public ProfileBankingMapper()
     {
-        CreateMap<HypixelAPI.DTOs.ProfileBankingResponse, ProfileBanking>()
+        CreateMap<ProfileBankingResponse, ProfileBanking>()
             .ForMember(x => x.Transactions, x => x.MapFrom(y => y.Transactions));
 
         CreateMap<ProfileBanking, ProfileBankingDto>()

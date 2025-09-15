@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Threading.RateLimiting;
-using HypixelAPI.Metrics;
+using EliteFarmers.HypixelAPI.Metrics;
 
-namespace HypixelAPI.Handlers;
+namespace EliteFarmers.HypixelAPI.Handlers;
 
 public class HypixelRateLimitHandler(
 	IHypixelRequestLimiter limiter,

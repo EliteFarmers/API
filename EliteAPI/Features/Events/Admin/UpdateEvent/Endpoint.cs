@@ -16,9 +16,7 @@ internal sealed class UpdateEventRequest : DiscordIdRequest {
 }
 
 internal sealed class UpdateEventAdminEndpoint(
-	DataContext context,
-	IEventService eventService,
-	AutoMapper.IMapper mapper
+	DataContext context
 ) : Endpoint<UpdateEventRequest, EventDetailsDto> {
 
 	public override void Configure() {

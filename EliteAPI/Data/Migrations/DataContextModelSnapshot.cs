@@ -10,7 +10,7 @@ using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Monetization;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

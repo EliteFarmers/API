@@ -1,6 +1,6 @@
 using EliteAPI.Data;
+using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
-using HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Items.Endpoints;

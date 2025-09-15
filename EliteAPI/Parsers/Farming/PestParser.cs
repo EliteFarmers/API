@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 

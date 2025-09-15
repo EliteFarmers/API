@@ -1,7 +1,7 @@
 ﻿using System.Collections.Frozen;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
-using HypixelAPI.DTOs;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 

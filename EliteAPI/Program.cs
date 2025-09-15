@@ -9,7 +9,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Utilities;
-using HypixelAPI;
+using EliteFarmers.HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -37,8 +37,10 @@ builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
 builder.Services.AddEliteBackgroundJobs();
 
-builder.Services.AddHypixelApi(DotNetEnv.Env.GetString("HYPIXEL_API_KEY"), "EliteAPI")
-    .AddStandardResilienceHandler();
+builder.Services.AddHypixelApi(opt => {
+    opt.ApiKey = DotNetEnv.Env.GetString("HYPIXEL_API_KEY");
+    opt.UserAgent = "EliteAPI (+https://api.eliteapi.dev)";
+}).AddStandardResilienceHandler();
 
 builder.Services.AddRouting(options => {
     options.LowercaseUrls = true;

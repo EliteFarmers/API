@@ -4,12 +4,30 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Version>1.0.0</Version>
+        <Authors>EliteFarmers</Authors>
+        <Company>EliteFarmers</Company>
+        <Description>A .NET client for the Hypixel API.</Description>
+        <RepositoryUrl>https://github.com/EliteFarmers/EliteAPI</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RootNamespace>EliteFarmers.HypixelAPI</RootNamespace>
+        <PackageId>EliteFarmers.HypixelAPI</PackageId>
+
+        <PackageProjectUrl>https://github.com/EliteFarmers/API</PackageProjectUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>git@github.com:EliteFarmers/API.git</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Refit" Version="8.0.0" />
       <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
-      <PackageReference Include="System.Threading.RateLimiting" Version="9.0.7" />
+      <PackageReference Include="System.Threading.RateLimiting" Version="9.0.9" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="/" />
+        <None Include="LICENSE" Pack="true" PackagePath="/" />
+    </ItemGroup>
 </Project>

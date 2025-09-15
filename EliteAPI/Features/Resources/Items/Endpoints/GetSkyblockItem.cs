@@ -2,8 +2,8 @@ using System.Text.Json.Serialization;
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Auctions.DTOs;
 using EliteAPI.Features.Resources.Bazaar.Endpoints;
+using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
-using HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Items.Endpoints;
