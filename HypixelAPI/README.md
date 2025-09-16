@@ -1,13 +1,11 @@
-<h1 align="center">Hypixel .NET API</h1>
-<hr>
+# Hypixel .NET API
 
 This is a package that contains an HttpClient for interacting with the [Hypixel API](https://developer.hypixel.net/). It is used by the Elite API
 which powers https://elitebot.dev.
 
 Not affiliated with Mojang or Hypixel in any way.
 
-<h2 align="center">Usage</h2>
-<hr>
+## Usage
 
 1. Install the package from NuGet
 
@@ -75,7 +73,6 @@ I have only implemented the endpoints and data that I need for the Elite API. If
 | /skyblock/firesales       | FetchFiresalesAsync    | Full    | All properties are mapped                                                          |
 | /resources/skyblock/items | FetchItemsAsync+       | Partial | Most properties are mapped, the rest are passed through with \[JsonExtensionData\] |
 
-<h2 align="center">Development</h2>
-<hr>
+## Development
 
 Contributions are welcome! You just need to clone the repo and open it in your IDE of choice.
