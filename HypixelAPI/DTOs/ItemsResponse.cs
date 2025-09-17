@@ -117,7 +117,7 @@ public class ItemResponse
     public JsonDocument? ItemSpecific { get; set; }
     
     [JsonExtensionData]
-    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
 public class ItemSkin
@@ -144,7 +144,7 @@ public class ItemGemstoneSlotCosts {
 	[JsonPropertyName("coins"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int Coins { get; set; }
 	[JsonExtensionData]
-	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
+	public SortedDictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class ItemRequirement {
@@ -155,7 +155,7 @@ public class ItemRequirement {
 	[JsonPropertyName("level"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int Level { get; set; }
 	[JsonExtensionData]
-	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
+	public SortedDictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class ItemMuseumData {
@@ -171,7 +171,7 @@ public class ItemMuseumData {
 	public string? GameStage { get; set; }
 	
 	[JsonExtensionData]
-	public Dictionary<string, JsonElement>? ExtensionData { get; set; } = new();
+	public SortedDictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
 public class DungeonItemConversionCost
@@ -181,7 +181,7 @@ public class DungeonItemConversionCost
     [JsonPropertyName("amount"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Amount { get; set; }
     [JsonExtensionData]
-    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
 public class UpgradeCosts
@@ -196,7 +196,7 @@ public class UpgradeCosts
     public int Amount { get; set; }
     
     [JsonExtensionData]
-    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
 public class CatacombsRequirements
@@ -208,5 +208,5 @@ public class CatacombsRequirements
     [JsonPropertyName("level"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Level { get; set; }
     [JsonExtensionData]
-    public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+    public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
