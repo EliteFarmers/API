@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using SkyblockRepo;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -94,6 +95,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 
 builder.Services.AddFastEndpoints(o => {
     o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All;
+});
+
+builder.Services.AddSkyblockRepo(opt =>
+{
+    opt.UseNeuRepo = true;
 });
 
 var app = builder.Build();
@@ -191,6 +197,9 @@ using (var scope = app.Services.CreateScope())
 
     var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     logging.LogInformation("Starting EliteAPI...");
+    
+    var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
+    await repo.InitializeAsync();
     
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try

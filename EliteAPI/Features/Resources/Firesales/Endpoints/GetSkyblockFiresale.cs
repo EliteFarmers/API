@@ -19,9 +19,9 @@ internal sealed class SkyblockFiresaleEndpoint(
             s.Description = "Get the current/upcoming Skyblock firesales.";
         });
 		
-        // Options(o => {
-        //     o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)).Tag("firesales"));
-        // });
+        Options(o => {
+            o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)).Tag("firesales"));
+        });
     }
 
     public override async Task HandleAsync(CancellationToken c) {
