@@ -50,6 +50,7 @@ public class JacobPerks
 {
     public int DoubleDrops { get; set; } = 0;
     public int LevelCap { get; set; } = 0;
+    public bool PersonalBests { get; set; } = false;
 }
 
 public class JacobStats {

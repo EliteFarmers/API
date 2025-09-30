@@ -210,6 +210,9 @@ public class RawJacobPerks
 
     [JsonPropertyName("double_drops")]
     public int? DoubleDrops { get; set; }
+    
+    [JsonPropertyName("personal_bests")]
+    public bool PersonalBests { get; set; } = false;
 }
 
 public class RawJacobUniqueBrackets {

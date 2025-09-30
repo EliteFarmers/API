@@ -28,6 +28,7 @@ public static class JacobDataParser
         {
             jacob.Perks.DoubleDrops = incomingJacob.Perks.DoubleDrops ?? 0;
             jacob.Perks.LevelCap = incomingJacob.Perks.FarmingLevelCap ?? 0;
+            jacob.Perks.PersonalBests = incomingJacob.Perks.PersonalBests;
         }
         
         jacob.Stats = new JacobStats();
