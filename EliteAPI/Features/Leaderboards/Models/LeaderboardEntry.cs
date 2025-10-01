@@ -119,6 +119,8 @@ public static class LeaderboardEntryExtensions {
 			_ => query
 		};
 		
+		query = query.Where(e => e.Score > 0);
+		
 		return query;
 	}
 
