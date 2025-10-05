@@ -22,45 +22,57 @@ public class ItemDto {
 	/// <summary>
 	/// Item UUID to uniquely identify a specific instance of this item
 	/// </summary>
-	public string? Uuid { get; set; }
-
-	/// <summary>
-	/// Item name, first line of the lore
-	/// </summary>
-	public string? Name { get; set; }
-
-	/// <summary>
-	/// List of item lore in order
-	/// </summary>
-	public List<string>? Lore { get; set; }
-
-	/// <summary>
-	/// Applied enchantments with their levels
-	/// </summary>
-	public Dictionary<string, int>? Enchantments { get; set; }
-
-	/// <summary>
-	/// ExtraAttributes not included elsewhere
-	/// </summary>
-	public Dictionary<string, string>? Attributes { get; set; }
-
-	/// <summary>
-	/// ExtraAtrributes.Attributes for attribute shards
-	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public Dictionary<string, string>? ItemAttributes { get; set; }
-
-	/// <summary>
-	/// Applied gems with gem rarity, null for an unlocked gem slot without a gem
-	/// </summary>
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public Dictionary<string, string?>? Gems { get; set; }
-
-	/// <summary>
-	/// Pet info if item is a pet
-	/// </summary>
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public ItemPetInfoDto? PetInfo { get; set; }
+    public string? Uuid { get; set; }
+    
+    /// <summary>
+    /// Item name, first line of the lore
+    /// </summary>
+    public string? Name { get; set; }
+    
+    /// <summary>
+    /// List of item lore in order
+    /// </summary>
+    public List<string>? Lore { get; set; }
+    
+    /// <summary>
+    /// Applied enchantments with their levels
+    /// </summary>
+    public Dictionary<string, int>? Enchantments { get; set; }
+    
+    /// <summary>
+    /// ExtraAttributes not included elsewhere
+    /// </summary>
+    public Dictionary<string, string>? Attributes { get; set; }
+    
+    /// <summary>
+    /// ExtraAtrributes.Attributes for attribute shards
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string>? ItemAttributes { get; set; }
+    
+    /// <summary>
+    /// Applied gems with gem rarity, null for an unlocked gem slot without a gem
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, string?>? Gems { get; set; }
+    
+    /// <summary>
+    /// Pet info if item is a pet
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ItemPetInfoDto? PetInfo { get; set; }
+    
+    /// <summary>
+    /// Texture ID for the item
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string TextureId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Slot identifier where the item was located, if applicable
+    /// </summary>
+    public string? Slot { get; set; } = string.Empty;
 }
 
 public class ItemPetInfoDto {

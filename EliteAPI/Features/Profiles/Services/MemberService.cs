@@ -77,7 +77,9 @@ public class MemberService(
 			.Include(p => p.JacobData)
 			.ThenInclude(j => j.Contests)
 			.ThenInclude(c => c.JacobContest)
-			.AsNoTracking()
+			.Include(p => p.Inventories)
+            .ThenInclude(i => i.Items)
+            .AsNoTracking()
 			.AsSplitQuery();
 	}
 

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.Entities.Hypixel;
@@ -39,7 +40,7 @@ public class ProfileMember {
 	public ChocolateFactory ChocolateFactory { get; set; } = new();
 	public ProfileMemberMetadata? Metadata { get; set; }
 	// public Inventories Inventories { get; set; } = new(); // Likely to be added in the future
-
+    public List<HypixelInventory> Inventories { get; set; } = [];
 	public bool IsSelected { get; set; } = false;
 	public bool WasRemoved { get; set; } = false;
 	public long LastUpdated { get; set; } = 0;

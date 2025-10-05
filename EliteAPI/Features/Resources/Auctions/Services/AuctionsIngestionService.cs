@@ -38,29 +38,28 @@ public class AuctionsIngestionService(
 				break;
 			}
 
-			var response = await hypixelApi.FetchAuctionHouseAsync(page);
-			if (response.Content == null || !response.IsSuccessful) {
-				logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful",
-					page);
-				if (page == 0 && response is { IsSuccessful: false }) break;
-				continue;
-			}
-
-			var apiResponse = response.Content;
-
-			var lastUpdated = apiResponse.LastUpdated;
-			if (_pagesLastUpdated.TryGetValue(page, out var lastUpdate) && lastUpdate >= lastUpdated) {
-				logger.LogDebug("Skipping page {Page} as it has not been updated since last ingestion", page);
-				continue;
-			}
-
-			_pagesLastUpdated[page] = lastUpdated;
-
-			totalPages = Math.Min(apiResponse.TotalPages, maxPages);
-
-			var auctionItems = await apiResponse.Auctions.ToAsyncEnumerable()
-				.SelectAwait(async a => new { a.Uuid, Item = await NbtParser.NbtToItem(a.ItemBytes) })
-				.ToDictionaryAsync(a => a.Uuid, a => a.Item, cancellationToken);
+            var response = await hypixelApi.FetchAuctionHouseAsync(page, cancellationToken);
+            if (response.Content == null || !response.IsSuccessful)
+            {
+                logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful", page);
+                if (page == 0 && response is { IsSuccessful: false }) break;
+                continue;
+            }
+            var apiResponse = response.Content;
+            
+            var lastUpdated = apiResponse.LastUpdated;
+            if (_pagesLastUpdated.TryGetValue(page, out var lastUpdate) && lastUpdate >= lastUpdated)
+            {
+                logger.LogDebug("Skipping page {Page} as it has not been updated since last ingestion", page);
+                continue;
+            }
+            _pagesLastUpdated[page] = lastUpdated;
+            
+            totalPages = Math.Min(apiResponse.TotalPages, maxPages);
+            
+            var auctionItems = apiResponse.Auctions
+                .Select(a => new { a.Uuid, Item = NbtParser.NbtToItem(a.ItemBytes) })
+                .ToDictionary(a => a.Uuid, a => a.Item);
 
 			foreach (var auction in apiResponse.Auctions) {
 				if (!auction.Bin || !allSeenAuctionUuidsThisRun.Add(auction.Uuid) ||

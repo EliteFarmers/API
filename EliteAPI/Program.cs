@@ -8,6 +8,7 @@ using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Textures.Services;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
@@ -184,8 +185,10 @@ using (var scope = app.Services.CreateScope()) {
 	var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
 	await repo.InitializeAsync();
 
-	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-	try {
+	await RendererConfiguration.DownloadMinecraftTexturesAsync(builder.Configuration);
+    
+    var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+    try{
 		await db.Database.MigrateAsync();
 	}
 	catch (Exception e) {

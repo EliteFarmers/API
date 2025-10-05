@@ -42,7 +42,6 @@ internal sealed class AddTeamMemberAdminEndpoint(
 			.AsNoTracking()
 			.Where(team => team.EventId == @event.Id && team.Id == request.TeamId)
 			.FirstOrDefaultAsync(c);
-
 		if (team is null) {
 			await Send.NotFoundAsync(c);
 			return;

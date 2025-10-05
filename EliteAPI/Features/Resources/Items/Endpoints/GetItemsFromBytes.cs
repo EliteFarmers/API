@@ -21,7 +21,7 @@ internal sealed class GetItemsFromBytesEndpoint : Endpoint<GetItemsFromBytesRequ
 	}
 
 	public override async Task HandleAsync(GetItemsFromBytesRequest request, CancellationToken c) {
-		var items = await NbtParser.NbtToItems(request.Bytes);
+		var items = NbtParser.NbtToItems(request.Bytes);
 		await Send.OkAsync(new GetItemsFromBytesResponse { Items = items ?? [] }, c);
 	}
 }
