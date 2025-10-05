@@ -22,6 +22,7 @@ public class ItemDto {
     /// <summary>
     /// Item UUID to uniquely identify a specific instance of this item
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Uuid { get; set; }
     
     /// <summary>
@@ -61,6 +62,17 @@ public class ItemDto {
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ItemPetInfoDto? PetInfo { get; set; }
+    
+    /// <summary>
+    /// Texture ID for the item
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string TextureId { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Slot identifier where the item was located, if applicable
+    /// </summary>
+    public string? Slot { get; set; } = string.Empty;
 }
 
 public class ItemPetInfoDto

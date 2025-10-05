@@ -142,7 +142,7 @@ public class MemberInventoriesResponse {
     public RawInventoryData? InventoryContents { get; set; }
 
     [JsonPropertyName("backpack_icons")]
-    public RawInventoryData? BackpackIcons { get; set; }
+    public Dictionary<int, RawInventoryData>? BackpackIcons { get; set; }
     
     [JsonPropertyName("personal_vault_contents")]
     public RawInventoryData? PersonalVaultContents { get; set; }
@@ -166,7 +166,12 @@ public class RawMemberBagContents {
     
     [JsonPropertyName("potion_bag")]
     public RawInventoryData? PotionBag { get; set; }
-
+    
+    [JsonPropertyName("quiver")]
+    public RawInventoryData? Quiver { get; set; }
+    
+    [JsonPropertyName("sacks_bag")]
+    public RawInventoryData? SacksBag { get; set; }
 }
 
 public class RawInventoryData

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Profiles.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -56,13 +57,13 @@ public class ProfileMemberDto
     public Dictionary<string, int> CraftedMinions { get; set; } = new();
     public List<PetDto> Pets { get; set; } = [];
     public UnparsedApiDataDto Unparsed { get; set; } = new();
-
     public required JacobDataDto Jacob { get; set; }
     public required FarmingWeightDto FarmingWeight { get; set; }
     public GardenDto? Garden { get; set; }
     public SkillsDto Skills { get; set; } = new();
     public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
     public List<ProfileEventMemberDto> Events { get; set; } = [];
+    public List<HypixelInventoryDto> Inventories { get; set; } = [];
 
     public bool IsSelected { get; set; }
     public bool WasRemoved { get; set; }

@@ -5,6 +5,7 @@ using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
+using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Firesales.Models;
 using EliteAPI.Features.Resources.Items.Models;
@@ -88,6 +89,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
     public DbSet<Skills> Skills { get; set; } = null!;
     public DbSet<Farming> Farming { get; set; } = null!;
     public DbSet<ChocolateFactory> ChocolateFactories { get; set; } = null!;
+    public DbSet<HypixelInventory> HypixelInventory { get; set; } = null!;
+    public DbSet<HypixelItem> HypixelItems { get; set; } = null!;
 
     // Discord
     public DbSet<Guild> Guilds { get; set; } = null!;
