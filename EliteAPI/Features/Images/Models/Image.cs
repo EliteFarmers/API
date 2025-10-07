@@ -27,6 +27,7 @@ public class ImageEntityConfiguration : IEntityTypeConfiguration<Image> {
 	public void Configure(EntityTypeBuilder<Image> builder) {
 		builder.HasKey(image => image.Id);
 		builder.HasIndex(image => image.Path);
+		builder.HasIndex(image => image.Hash);
 	}
 }
 

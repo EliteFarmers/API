@@ -7,6 +7,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Images.Models;
+using EliteAPI.Features.Textures.Services;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
@@ -35,8 +36,9 @@ public static class ServiceExtensions {
 		services.AddSingleton<IObjectStorageService, ObjectStorageService>();
 
 		services.AddHostedService<BackgroundQueueWorker>();
-
-		services.AddHttpClient(HypixelService.HttpClientName,
+		services.AddHostedService<MinecraftRendererInitializer>();
+        
+        services.AddHttpClient(HypixelService.HttpClientName, 
 			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });
 
 		services.AddDbContext<DataContext>();

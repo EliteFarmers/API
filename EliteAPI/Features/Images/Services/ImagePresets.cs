@@ -47,6 +47,13 @@ public static class ImagePresets {
 				new ImageVariantDefinition { Name = "small", Width = 32, Mode = ResizeMode.Crop },
 				new ImageVariantDefinition { Name = "tiny", Width = 16, Mode = ResizeMode.Crop }
 			]
+		},
+		// A preset for small, Hypixel item renders
+		["item"] = new ImagePreset {
+			Variants =
+			[
+				new ImageVariantDefinition { Name = "default", Width = 64 },
+			]
 		}
 	};
 

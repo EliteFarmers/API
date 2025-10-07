@@ -179,13 +179,11 @@ using (var scope = app.Services.CreateScope()) {
 	FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
 	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
 
-	var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-	logging.LogInformation("Starting EliteAPI...");
-
-	var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
-	await repo.InitializeAsync();
-
-	await RendererConfiguration.DownloadMinecraftTexturesAsync(builder.Configuration);
+    var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logging.LogInformation("Starting EliteAPI...");
+    
+    var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
+    await repo.InitializeAsync();
     
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try{

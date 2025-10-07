@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -16,6 +17,7 @@ public class HypixelItem
 	public required string SkyblockId { get; set; }
     
 	public short Id { get; set; }
+	public short Damage { get; set; } = 0;
 	public short Count { get; set; } = 1;
 
 	public string? Name { get; set; }
@@ -33,7 +35,9 @@ public class HypixelItem
 	public Dictionary<string, string>? Attributes { get; set; }
 	[Column(TypeName = "jsonb")]
 	public Dictionary<string, string?>? Gems { get; set; }
-	public string? TextureId { get; set; }
+	
+	public string? ImageId { get; set; }
+	public Image? Image { get; set; }
 	
 	public string? Slot { get; set; }
 	
@@ -50,5 +54,10 @@ public class HypixelItemConfiguration : IEntityTypeConfiguration<HypixelItem>
 		builder.HasKey(item => item.HypixelItemId);
 
 		builder.HasIndex(item => item.SkyblockId);
+		
+		builder.HasOne<Image>(item => item.Image)
+			.WithMany()
+			.HasForeignKey(item => item.ImageId)
+			.OnDelete(DeleteBehavior.SetNull);
 	}
 }

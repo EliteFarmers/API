@@ -1,64 +1,25 @@
-using EliteAPI.Parsers.Inventories;
+using EliteAPI.Features.Profiles.Models;
 using FastEndpoints;
 using MinecraftRenderer;
+using MinecraftRenderer.Hypixel;
+using MinecraftRenderer.Nbt;
 using MinecraftRenderer.TexturePacks;
 using SixLabors.ImageSharp;
 using SkyblockRepo;
+using NbtParser = EliteAPI.Parsers.Inventories.NbtParser;
 
 namespace EliteAPI.Features.Textures.Services;
 
 [RegisterService<ItemTextureResolver>(LifeTime.Singleton)]
-public class ItemTextureResolver
+public class ItemTextureResolver(MinecraftRendererProvider provider, ILogger<ItemTextureResolver> logger, ISkyblockRepoClient repoClient)
 {
-    public static MinecraftBlockRenderer Renderer { get; set; } = null!;
-    private static MinecraftBlockRenderer.BlockRenderOptions Options { get; set; } = null!;
-    private ILogger Logger { get; }
-    private ISkyblockRepoClient RepoClient { get; }
-
-    public ItemTextureResolver(
-        ILogger<ItemTextureResolver> logger, 
-        ISkyblockRepoClient repoClient,
-        IConfiguration configuration)
-    {
-        Logger = logger;
-        RepoClient = repoClient;
-        
-        var assetsPath = configuration["MinecraftRenderer:AssetsPath"] 
-                         ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EliteAPI");
-        var texturePacksPath = Path.Combine(assetsPath, "texturepacks");
-        var assetsPathRoot = Path.Combine(assetsPath, "minecraft", "assets", "minecraft");
-        
-        var texturePackRegistry = TexturePackRegistry.Create();
-        texturePackRegistry.RegisterAllPacks(texturePacksPath);
-        
-        Renderer = MinecraftBlockRenderer.CreateFromMinecraftAssets(
-            assetsDirectory: assetsPathRoot,
-            texturePackRegistry: texturePackRegistry);
-        
-        Options = MinecraftBlockRenderer.BlockRenderOptions.Default with
-        {
-            Size = 128,
-            SkullTextureResolver = (customDataId, profile) =>
-            {
-                if (profile is not null || customDataId is null) return null;
-                var item = RepoClient.FindItem(customDataId);
-                return item?.Data?.Skin?.Value ?? null;
-            },
-            PackIds = ["hypixelplus"]
-        };
-        
-        Renderer.PreloadRegisteredPacks();
-        
-        NbtParser.SetRenderer(Renderer);
-        
-        Logger.LogInformation("MinecraftBlockRenderer initialized successfully");
-    }
     
     public async Task<byte[]> RenderItemAsync(string itemId, int size = 128)
     {
         try
         {
-            using var image = Renderer.RenderGuiItemFromTextureId(itemId, Options with { Size = size });
+            var renderer = await provider.GetRendererAsync();
+            using var image = renderer.RenderGuiItemFromTextureId(itemId, provider.Options with { Size = size });
             
             using var ms = new MemoryStream();
             await image.SaveAsPngAsync(ms);
@@ -66,8 +27,50 @@ public class ItemTextureResolver
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to render item {ItemId}", itemId);
+            logger.LogError(ex, "Failed to render item {ItemId}", itemId);
             throw;
         }
+    }
+    
+    public async Task<byte[]> RenderItemAsync(HypixelItem item, int size = 128)
+    {
+        var extraAttributes = item.Attributes?.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value))) ?? [];
+        var itemId = LegacyItemMappings.MapNumericIdOrDefault(item.Id, item.Damage);
+        
+        // Color is 3 RGB numbers with commas, e.g. "255,0,0"
+        // We convert to decimal integer for Minecraft NBT
+        var dyeColor = repoClient.FindItem(item.SkyblockId)?.Data?.Color;
+        var decimalColor = dyeColor != null
+            ? Convert.ToInt32(string.Join("", dyeColor.Split(',').Select(c => int.Parse(c).ToString("X2"))), 16)
+            : (int?)null;
+
+        var components = new List<KeyValuePair<string, NbtTag>>()
+        {
+            new(
+                "minecraft:custom_data",
+                new NbtCompound([
+                    new KeyValuePair<string, NbtTag>("id", new NbtString(item.SkyblockId)),
+                    ..extraAttributes
+                ])),
+        };
+        
+        if (decimalColor.HasValue) 
+        {
+            components.Add(new KeyValuePair<string, NbtTag>("minecraft:dyed_color", new NbtInt(decimalColor.Value)));
+        }
+        
+        var root = new NbtCompound(new Dictionary<string, NbtTag>
+        {
+            ["id"] = new NbtString(itemId),
+            ["count"] = new NbtByte((sbyte)item.Count),
+            ["components"] = new NbtCompound(components),
+        });
+        
+        var renderer = await provider.GetRendererAsync();
+        using var image = renderer.RenderItemFromNbt(root, provider.Options with { Size = size });
+            
+        using var ms = new MemoryStream();
+        await image.SaveAsWebpAsync(ms);
+        return ms.ToArray();
     }
 }
