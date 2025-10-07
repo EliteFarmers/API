@@ -9,8 +9,10 @@ namespace EliteAPI.Features.Profiles.Models;
 
 public class HypixelInventory
 {
-	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), MapperIgnore]
-	public long HypixelInventoryId { get; set; }
+	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	public long Id { get; set; }
+	
+	public Guid HypixelInventoryId { get; set; } = Guid.CreateVersion7();
 	
 	[MaxLength(64)]
 	public required string Name { get; set; }
@@ -39,5 +41,7 @@ public class HypixelInventoryConfiguration : IEntityTypeConfiguration<HypixelInv
 			.WithMany(pm => pm.Inventories)
 			.HasForeignKey(i => i.ProfileMemberId)
 			.OnDelete(DeleteBehavior.Cascade);
+		
+		builder.HasIndex(i => i.HypixelInventoryId).IsUnique();
 	}
 }

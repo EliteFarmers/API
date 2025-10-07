@@ -6,6 +6,8 @@ namespace EliteAPI.Features.Profiles.Models;
 
 public class HypixelInventoryDto
 {
+	public required Guid Id { get; set; }
+	
 	[MaxLength(64)]
 	public required string Name { get; set; }
 	

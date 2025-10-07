@@ -1,3 +1,4 @@
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using Riok.Mapperly.Abstractions;
@@ -5,8 +6,11 @@ using Riok.Mapperly.Abstractions;
 namespace EliteAPI.Features.Profiles.Mappers;
 
 [Mapper]
+[UseStaticMapper(typeof(ImageMapper))]
 public static partial class HypixelItemMapper
 {
+	[MapperIgnoreSource(nameof(HypixelInventory.Id))]
+	[MapProperty(nameof(HypixelInventory.HypixelInventoryId), nameof(HypixelInventoryDto.Id))]
 	public static partial HypixelInventoryDto ToDto(this HypixelInventory item);
 	
 	public static HypixelItem ToHypixelItem(this ItemDto dto)
@@ -15,12 +19,13 @@ public static partial class HypixelItemMapper
 		{
 			Uuid = Guid.TryParse(dto.Uuid, out var guid) ? guid : null,
 			SkyblockId = dto.SkyblockId ?? "UNKNOWN",
+			Id = (short)dto.Id,
+			Damage = dto.Damage,
 			Count = dto.Count,
 			Name = dto.Name,
 			Lore = dto.Lore != null ? string.Join("\n", dto.Lore) : null,
 			Enchantments = dto.Enchantments,
 			Gems = dto.Gems,
-			TextureId = dto.TextureId,
 			Slot = dto.Slot,
 			LastUpdated = DateTimeOffset.UtcNow
 		};
@@ -60,12 +65,14 @@ public static partial class HypixelItemMapper
 		{
 			Uuid = item.Uuid?.ToString(),
 			SkyblockId = item.SkyblockId,
+			Id = item.Id,
+			Damage = item.Damage,
 			Count = (byte)item.Count,
 			Name = item.Name,
 			Lore = item.Lore?.Split('\n').ToList(),
 			Enchantments = item.Enchantments,
 			Gems = item.Gems,
-			TextureId = item.TextureId ?? string.Empty,
+			ImageUrl = item.Image?.ToPrimaryUrl(),
 			Slot = item.Slot,
 			Attributes = item.Attributes ?? new Dictionary<string, string>()
 		};

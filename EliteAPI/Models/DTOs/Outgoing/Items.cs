@@ -15,6 +15,11 @@ public class ItemDto {
     public byte Count { get; set; }
     
     /// <summary>
+    /// Minecraft damage value of the item
+    /// </summary>
+    public short Damage { get; set; }
+    
+    /// <summary>
     /// Skyblock ID of the item
     /// </summary>
     public string? SkyblockId { get; set; }
@@ -64,10 +69,16 @@ public class ItemDto {
     public ItemPetInfoDto? PetInfo { get; set; }
     
     /// <summary>
-    /// Texture ID for the item
+    /// Image url for the item
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string TextureId { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
+    
+    /// <summary>
+    /// Texture id for the item, used to look up the image in our image service
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? TextureId { get; set; }
     
     /// <summary>
     /// Slot identifier where the item was located, if applicable

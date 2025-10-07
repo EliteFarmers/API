@@ -202,8 +202,6 @@ using (var scope = app.Services.CreateScope())
     var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
     await repo.InitializeAsync();
     
-    await RendererConfiguration.DownloadMinecraftTexturesAsync(builder.Configuration);
-    
     var db = scope.ServiceProvider.GetRequiredService<DataContext>();
     try
     {

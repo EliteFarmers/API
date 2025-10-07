@@ -136,6 +136,7 @@ public static class NbtParser
 	{
 		// Extract basic item info
 		var itemId = tag.GetShort("id") ?? 0;
+		var damage = tag.GetShort("Damage") ?? 0;
 		var count = tag.GetByte("Count") ?? 0;
 
 		// Get tag compound
@@ -213,7 +214,7 @@ public static class NbtParser
 			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) &&
 			              kvp.Key != "id" &&
 			              kvp.Key != "uuid" &&
-			              kvp.Key != "petInfo" &&
+			              // kvp.Key != "petInfo" &&
 			              kvp.Key != "enchantments" &&
 			              kvp.Key != "gems" &&
 			              kvp.Key != "attributes" &&
@@ -230,21 +231,13 @@ public static class NbtParser
 				kvp.Key,
 				GetValueAsString(kvp.Value) ?? string.Empty))
 			.ToDictionary(x => x.Key, x => x.Value);
-
-		// Get the item identifier for rendering
-		var hypixelItem = new HypixelItemData(
-			ItemId: itemId == 0 ? "minecraft:air" : $"minecraft.numeric:{itemId}",
-			Count: count,
-			Damage: tag.GetShort("Damage") ?? 0,
-			Tag: tagCompound
-		);
-		var itemIdentifier = TextureResolver.GetTextureId(hypixelItem);
-
+		
 		// Create ItemDto
 		var item = new ItemDto
 		{
 			Id = itemId,
 			Count = count,
+			Damage = damage,
 			SkyblockId = skyblockId,
 			Uuid = extraAttributes?.GetString("uuid"),
 			Name = displayName,
@@ -253,7 +246,6 @@ public static class NbtParser
 			Attributes = attributes,
 			ItemAttributes = itemAttributes,
 			Gems = gems.Count > 0 ? gems : null,
-			TextureId = itemIdentifier
 		};
 
 		// Parse pet info if present
