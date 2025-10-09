@@ -1,12 +1,10 @@
 using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Parsers.Inventories;
 using FastEndpoints;
-using MinecraftRenderer;
 using MinecraftRenderer.Hypixel;
 using MinecraftRenderer.Nbt;
-using MinecraftRenderer.TexturePacks;
 using SixLabors.ImageSharp;
 using SkyblockRepo;
-using NbtParser = EliteAPI.Parsers.Inventories.NbtParser;
 
 namespace EliteAPI.Features.Textures.Services;
 
@@ -65,6 +63,19 @@ public class ItemTextureResolver(MinecraftRendererProvider provider, ILogger<Ite
             ["count"] = new NbtByte((sbyte)item.Count),
             ["components"] = new NbtCompound(components),
         });
+
+        if (item.Attributes?.TryGetValue("petInfo", out var petInfo) is true)
+        {
+            var info = PetParser.ParsePetInfoOrDefault(petInfo);
+            if (info is not null && SkyblockRepoClient.Data.Pets.TryGetValue(info.Type, out var pet))
+            {
+                var skin = pet.Rarities.Values.FirstOrDefault()?.Skin?.Value;
+                if (skin is not null)
+                {
+                    root = root.WithProfileComponent(skin);
+                }
+            }
+        }
         
         var renderer = await provider.GetRendererAsync();
         using var image = renderer.RenderItemFromNbt(root, provider.Options with { Size = size });
