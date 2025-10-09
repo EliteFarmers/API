@@ -101,6 +101,8 @@ builder.Services.AddFastEndpoints(o => {
 builder.Services.AddSkyblockRepo(opt =>
 {
     opt.UseNeuRepo = true;
+    opt.Matcher.Register(new EliteItemRepoMatcher());
+    opt.Matcher.Register(new RenderContextRepoMatcher());
 });
 
 var app = builder.Build();

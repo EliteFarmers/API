@@ -58,16 +58,14 @@ public class MinecraftRendererProvider
             Options = MinecraftBlockRenderer.BlockRenderOptions.Default with
             {
                 Size = 128,
-                SkullTextureResolver = (customDataId, profile) =>
+                SkullTextureResolver = (context) =>
                 {
-                    if (profile is not null || customDataId is null) return null;
-                    var item = repoClient.FindItem(customDataId);
-                    if (item is null && SkyblockRepoClient.Data.Pets.TryGetValue(customDataId, out var pet))
-                    {
-                        
-                    }
+                    if (context.Profile is not null || context.CustomDataId is null) return null;
                     
-                    return item?.Data?.Skin?.Value ?? null;
+                    var match = repoClient.MatchItem(context);
+                    if (match is null) return null;
+                    
+                    return match.VariantData?.Data?.Skin?.Value ?? match.Item.Data?.Skin?.Value;
                 },
                 PackIds = ["hypixelplus"]
             };

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteFarmers.HypixelAPI.DTOs;
@@ -6,6 +7,22 @@ namespace EliteAPI.Parsers.Inventories;
 
 public static class PetParser
 {
+	public static ItemPetInfoDto? ParsePetInfoOrDefault(string? petInfo)
+	{
+		if (string.IsNullOrEmpty(petInfo)) return null;
+		try {
+			var info = JsonSerializer.Deserialize<ItemPetInfoDto>(petInfo);
+			if (info is not null)
+			{
+				info.Level = info.GetLevel();
+				return info;
+			}
+		} catch {
+			// Ignored
+		}
+		return null;
+	}
+	
     public static int GetLevel(this ItemPetInfoDto pet)
     {
 	    return GetPetLevel(pet.Type, pet.Tier, pet.Exp);
