@@ -16,42 +16,39 @@ internal sealed class UnbanMemberRequest : PlayerUuidRequest {
 internal sealed class UnbanMemberAdminEndpoint(
 	DataContext context
 ) : Endpoint<UnbanMemberRequest> {
-
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/bans/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Unban an Event Member";
-		});
+		Summary(s => { s.Summary = "Unban an Event Member"; });
 	}
 
 	public override async Task HandleAsync(UnbanMemberRequest request, CancellationToken c) {
 		var @event = await context.Events
-			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, c);
+
 		if (@event is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var member = await context.EventMembers
 			.Include(m => m.ProfileMember)
 			.Where(em => em.EventId == @event.Id && em.ProfileMember.PlayerUuid == request.PlayerUuidFormatted)
-			.FirstOrDefaultAsync(cancellationToken: c);
-        
+			.FirstOrDefaultAsync(c);
+
 		if (member is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		member.Status = EventMemberStatus.Active;
 		member.TeamId = null;
 		member.Team = null;
 		await context.SaveChangesAsync(c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }
 

@@ -14,25 +14,19 @@ public class ShopCategoryDto {
 }
 
 public class CreateCategoryDto {
-	[MaxLength(256)]
-	public required string Title { get; set; }
-	
-	[MaxLength(32)]
-	public required string Slug { get; set; }
-	
-	[MaxLength(512)]
-	public string? Description { get; set; }
+	[MaxLength(256)] public required string Title { get; set; }
+
+	[MaxLength(32)] public required string Slug { get; set; }
+
+	[MaxLength(512)] public string? Description { get; set; }
 }
 
 public class EditCategoryDto {
-	[MaxLength(256)]
-	public string? Title { get; set; }
-	
-	[MaxLength(32)]
-	public string? Slug { get; set; }
-	
-	[MaxLength(512)]
-	public string? Description { get; set; }
-	
+	[MaxLength(256)] public string? Title { get; set; }
+
+	[MaxLength(32)] public string? Slug { get; set; }
+
+	[MaxLength(512)] public string? Description { get; set; }
+
 	public bool? Published { get; set; }
 }

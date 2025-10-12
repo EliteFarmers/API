@@ -7,18 +7,15 @@ namespace EliteAPI.Features.Graphs.Medals.GetMedalBrackets;
 
 internal sealed class GetMedalBracketsEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetMedalBracketsRequest, ContestBracketsDetailsDto> 
-{
+	: Endpoint<GetMedalBracketsRequest, ContestBracketsDetailsDto> {
 	public override void Configure() {
 		Get("/graph/medals/{Year:int}/{Month:int}");
 		AllowAnonymous();
 		ResponseCache(600);
-		
+
 		Description(s => s.Accepts<GetMedalBracketsRequest>());
-		
-		Summary(s => {
-			s.Summary = "Get average medal brackets for a specific SkyBlock month";
-		});
+
+		Summary(s => { s.Summary = "Get average medal brackets for a specific SkyBlock month"; });
 	}
 
 	public override async Task HandleAsync(GetMedalBracketsRequest request, CancellationToken c) {
@@ -42,15 +39,15 @@ internal sealed class GetMedalBracketsEndpoint(
 
 		var start = new SkyblockDate(request.Year - 1, request.Month - (request.Months ?? 2), 0).UnixSeconds;
 		var end = new SkyblockDate(request.Year - 1, request.Month, 0).UnixSeconds;
-        
+
 		var brackets = await contestsService.GetAverageMedalBrackets(start, end);
 
 		var result = new ContestBracketsDetailsDto {
 			Start = start.ToString(),
 			End = end.ToString(),
-			Brackets = brackets ?? new Dictionary<string, ContestBracketsDto>(),
+			Brackets = brackets ?? new Dictionary<string, ContestBracketsDto>()
 		};
-		
-		await Send.OkAsync(result, cancellation: c);
+
+		await Send.OkAsync(result, c);
 	}
 }

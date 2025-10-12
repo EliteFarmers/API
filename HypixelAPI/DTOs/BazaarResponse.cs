@@ -10,19 +10,20 @@ public class BazaarResponse {
 
 public class BazaarItem {
 	public string? ProductId { get; set; }
+
 	/// <summary>
 	/// The current top 30 buy orders
 	/// </summary>
 	[JsonPropertyName("buy_summary")]
 	public List<BazaarOrder> BuySummary { get; set; } = [];
+
 	/// <summary>
 	/// The current top 30 sell orders
 	/// </summary>
 	[JsonPropertyName("sell_summary")]
 	public List<BazaarOrder> SellSummary { get; set; } = [];
-	
-	[JsonPropertyName("quick_status")]
-	public ProductQuickStatus QuickStatus { get; set; } = new();
+
+	[JsonPropertyName("quick_status")] public ProductQuickStatus QuickStatus { get; set; } = new();
 }
 
 public class BazaarOrder {

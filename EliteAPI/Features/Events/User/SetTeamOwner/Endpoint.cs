@@ -19,14 +19,11 @@ internal sealed class SetTeamOwnerEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
 ) : Endpoint<ChangeTeamOwnerRequest> {
-
 	public override void Configure() {
 		Put("/event/{EventId}/team/{TeamId}/owner");
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Set player as team owner";
-		});
+		Summary(s => { s.Summary = "Set player as team owner"; });
 	}
 
 	public override async Task HandleAsync(ChangeTeamOwnerRequest request, CancellationToken c) {
@@ -35,24 +32,24 @@ internal sealed class SetTeamOwnerEndpoint(
 			await Send.UnauthorizedAsync(c);
 			return;
 		}
-		
+
 		var team = await context.EventTeams
 			.AsNoTracking()
-			.FirstOrDefaultAsync(t => t.EventId == request.EventId && t.Id == request.TeamId, cancellationToken: c);
+			.FirstOrDefaultAsync(t => t.EventId == request.EventId && t.Id == request.TeamId, c);
 
 		if (team is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var result = await teamService.SetTeamOwnerValidateAsync(request.TeamId, userId, request.Player);
-		
+
 		if (result is BadRequestObjectResult badRequest) {
-			await Send.OkAsync(badRequest.Value?.ToString(), cancellation: c);
+			await Send.OkAsync(badRequest.Value?.ToString(), c);
 			return;
 		}
 
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

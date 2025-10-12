@@ -14,11 +14,11 @@ public class CropMushroomLeaderboard : IMemberLeaderboardDefinition {
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 		var crop = member.Collections.GetValueOrDefault(CropId.Mushroom, 0);
-		
+
 		return crop;
 	}
 }
@@ -36,7 +36,7 @@ public class MilestoneMushroomLeaderboard : IProfileLeaderboardDefinition {
 
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		var crop = garden.Crops.Mushroom;
-		
+
 		return crop;
 	}
 }

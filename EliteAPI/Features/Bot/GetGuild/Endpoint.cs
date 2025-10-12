@@ -11,16 +11,13 @@ internal sealed class GetBotGuildEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<DiscordIdRequest, PrivateGuildDto> {
-	
 	public override void Configure() {
 		Get("/bot/{DiscordId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
 		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get guild";
-		});
+		Summary(s => { s.Summary = "Get guild"; });
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
@@ -29,7 +26,7 @@ internal sealed class GetBotGuildEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
-		await Send.OkAsync(mapper.Map<PrivateGuildDto>(guild), cancellation: c);
+
+		await Send.OkAsync(mapper.Map<PrivateGuildDto>(guild), c);
 	}
 }

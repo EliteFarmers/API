@@ -4,8 +4,8 @@ using FluentValidation;
 namespace EliteAPI.Features.Badges.UpdateBadge;
 
 public class UpdateBadgeRequest : BadgeRequest {
-	[FromForm]
-	public required UpdateBadge Badge { get; set; }
+	[FromForm] public required UpdateBadge Badge { get; set; }
+
 	public class UpdateBadge {
 		public string? Name { get; set; }
 		public string? Description { get; set; }
@@ -17,7 +17,7 @@ public class UpdateBadgeRequest : BadgeRequest {
 internal sealed class UpdateBadgeRequestValidator : Validator<UpdateBadgeRequest> {
 	public UpdateBadgeRequestValidator() {
 		Include(new BadgeRequestValidator());
-		
+
 		RuleFor(x => x.Badge.Name)
 			.MaximumLength(50)
 			.WithMessage("Name must be less than 50 characters")

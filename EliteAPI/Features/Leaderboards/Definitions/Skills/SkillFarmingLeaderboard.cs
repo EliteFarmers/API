@@ -16,6 +16,6 @@ public class SkillFarmingLeaderboard : IMemberLeaderboardDefinition {
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Skills) return 0;
-		return (decimal) member.Skills.Farming;
+		return (decimal)member.Skills.Farming;
 	}
 }

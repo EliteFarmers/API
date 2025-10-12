@@ -6,39 +6,34 @@ namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRank;
 
 internal sealed class GetPlayerRankEndpoint(
 	ILbService lbService
-	) : Endpoint<GetPlayerRankRequest, LeaderboardPositionDto>
-{
-	
+) : Endpoint<GetPlayerRankRequest, LeaderboardPositionDto> {
 	public override void Configure() {
-		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}", "/leaderboard/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");
+		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}",
+			"/leaderboard/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();
 		Version(0);
-		
-		Summary(s => {
-			s.Summary = "Get a Player's Leaderboard Rank";
-		});
+
+		Summary(s => { s.Summary = "Get a Player's Leaderboard Rank"; });
 	}
 
 	public override async Task HandleAsync(GetPlayerRankRequest request, CancellationToken c) {
 #pragma warning disable CS0618 // Type or member is obsolete
-		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) {
-			request.Upcoming = 10;
-		}
+		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) request.Upcoming = 10;
 #pragma warning restore CS0618 // Type or member is obsolete
-		
+
 		var result = await lbService.GetLeaderboardRank(
-			leaderboardId: request.Leaderboard,
-			playerUuid: request.PlayerUuidFormatted,
-			profileId: request.ProfileUuidFormatted,
-			upcoming: request.Upcoming,
-			previous: request.Previous,
-			atRank: request.AtRank ?? -1,
+			request.Leaderboard,
+			request.PlayerUuidFormatted,
+			request.ProfileUuidFormatted,
+			request.Upcoming,
+			request.Previous,
+			request.AtRank ?? -1,
 			identifier: request.Interval,
 			gameMode: request.Mode,
 			removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
 			c: c
 		);
-		
-		await Send.OkAsync(result, cancellation: c);
+
+		await Send.OkAsync(result, c);
 	}
 }

@@ -12,7 +12,7 @@ internal sealed class RemoveCosmeticToProductRequest {
 	/// Id of the produc to add the cosmetic to
 	/// </summary>
 	public required long ProductId { get; set; }
-	
+
 	/// <summary>
 	/// Id of the cosmetic to add to the product
 	/// </summary>
@@ -24,31 +24,28 @@ internal sealed class RemoveCosmeticToProductEndpoint(
 	IOutputCacheStore cacheStore,
 	IConnectionMultiplexer redis
 ) : Endpoint<RemoveCosmeticToProductRequest> {
-	
 	public override void Configure() {
 		Delete("/product/{ProductId}/cosmetics/{CosmeticId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Remove Cosmetic from Product";
-		});
+		Summary(s => { s.Summary = "Remove Cosmetic from Product"; });
 	}
 
 	public override async Task HandleAsync(RemoveCosmeticToProductRequest request, CancellationToken c) {
 		var link = await context.ProductWeightStyles
-			.FirstOrDefaultAsync(p => 
-					p.ProductId == (ulong) request.ProductId 
-					&& p.WeightStyleId == request.CosmeticId, c);
-		
+			.FirstOrDefaultAsync(p =>
+				p.ProductId == (ulong)request.ProductId
+				&& p.WeightStyleId == request.CosmeticId, c);
+
 		if (link is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		context.ProductWeightStyles.Remove(link);
 		await context.SaveChangesAsync(c);
-		
+
 		// Clear the style list cache
 		var db = redis.GetDatabase();
 		await db.KeyDeleteAsync("bot:stylelist");
@@ -56,6 +53,6 @@ internal sealed class RemoveCosmeticToProductEndpoint(
 
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

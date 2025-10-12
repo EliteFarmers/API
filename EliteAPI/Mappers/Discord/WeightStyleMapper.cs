@@ -5,11 +5,10 @@ using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Mappers.Discord;
 
-public class WeightStyleMapper : Profile 
-{
+public class WeightStyleMapper : Profile {
 	public WeightStyleMapper() {
 		CreateMap<WeightStyle, WeightStyleLinkedDto>();
-		
+
 		CreateMap<WeightStyle, WeightStyleDto>()
 			.ForMember(w => w.Image, opt => opt.MapFrom(w => w.Image))
 			.ForMember(w => w.Images, opt => opt.MapFrom(w => w.Images))
@@ -24,7 +23,7 @@ public class WeightStyleMapper : Profile
 
 		CreateMap<Image, ImageAttachmentDto>()
 			.ConvertUsing(image => image.ToDto()!);
-			
+
 		CreateMap<WeightStyleData, WeightStyleDataDto>()
 			.ForMember(w => w.Decal, opt => opt.MapFrom(w => w.Decal))
 			.ForMember(w => w.Elements, opt => opt.MapFrom(w => w.Elements))
@@ -35,7 +34,7 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.Start, opt => opt.MapFrom(w => w.Start))
 			.ForMember(w => w.End, opt => opt.MapFrom(w => w.End))
 			.ReverseMap();
-		
+
 		CreateMap<WeightStyleElements, WeightStyleElementsDto>()
 			.ForMember(w => w.Background, opt => opt.MapFrom(w => w.Background))
 			.ForMember(w => w.Gradients, opt => opt.MapFrom(w => w.Gradients))
@@ -47,7 +46,7 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.Rank, opt => opt.MapFrom(w => w.Rank))
 			.ForMember(w => w.RankWithBadge, opt => opt.MapFrom(w => w.RankWithBadge))
 			.ReverseMap();
-		
+
 		CreateMap<LeaderboardStyleData, LeaderboardStyleDataDto>()
 			.ForMember(w => w.Background, opt => opt.MapFrom(w => w.Background))
 			.ForMember(w => w.Overlay, opt => opt.MapFrom(w => w.Overlay))
@@ -59,7 +58,7 @@ public class WeightStyleMapper : Profile
 
 		CreateMap<LeaderboardStyleLayer, LeaderboardStyleLayerDto>()
 			.ReverseMap();
-		
+
 		CreateMap<LeaderboardStyleText, LeaderboardStyleTextDto>()
 			.ReverseMap();
 
@@ -67,7 +66,7 @@ public class WeightStyleMapper : Profile
 			.ForMember(w => w.Size, opt => opt.MapFrom(w => w.Size))
 			.ForMember(w => w.Rects, opt => opt.MapFrom(w => w.Rects))
 			.ReverseMap();
-		
+
 		CreateMap<WeightStyleGradient, WeightStyleGradientDto>()
 			.ForMember(w => w.Bounds, opt => opt.MapFrom(w => w.Bounds))
 			.ForMember(w => w.Direction, opt => opt.MapFrom(w => w.Direction))
@@ -75,7 +74,7 @@ public class WeightStyleMapper : Profile
 			.ReverseMap();
 
 		CreateMap<WeightStyleDirection, WeightStyleDirectionDto>().ReverseMap();
-		
+
 		CreateMap<WeightStyleGradientStop, WeightStyleGradientStopDto>().ReverseMap();
 
 		CreateMap<WeightStyleElement, WeightStyleElementDto>()
@@ -87,7 +86,7 @@ public class WeightStyleMapper : Profile
 		CreateMap<WeightStyleTextBackground, WeightStyleTextBackgroundDto>().ReverseMap();
 
 		CreateMap<WeightStyleElementOutline, WeightStyleElementOutlineDto>().ReverseMap();
-		
+
 		CreateMap<WeightStyleBackgroundRect, WeightStyleBackgroundRectDto>()
 			.ForMember(w => w.Start, opt => opt.MapFrom(w => w.Start))
 			.ForMember(w => w.End, opt => opt.MapFrom(w => w.End))

@@ -8,26 +8,21 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.User.UpdateTeam;
 
-internal sealed class UpdateTeamRequest
-{
-    public ulong EventId { get; set; }
-    public int TeamId { get; set; }
-    [FastEndpoints.FromBody]
-    public required UpdateEventTeamDto Team { get; set; }
+internal sealed class UpdateTeamRequest {
+	public ulong EventId { get; set; }
+	public int TeamId { get; set; }
+	[FastEndpoints.FromBody] public required UpdateEventTeamDto Team { get; set; }
 }
 
 internal sealed class UpdateTeamEndpoint(
 	IOutputCacheStore cacheStore,
-    IEventTeamService teamService)
-	: Endpoint<UpdateTeamRequest>
-{
+	IEventTeamService teamService)
+	: Endpoint<UpdateTeamRequest> {
 	public override void Configure() {
 		Patch("/event/{EventId}/team/{TeamId}");
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Update a team";
-		});
+		Summary(s => { s.Summary = "Update a team"; });
 	}
 
 	public override async Task HandleAsync(UpdateTeamRequest request, CancellationToken c) {
@@ -40,15 +35,11 @@ internal sealed class UpdateTeamEndpoint(
 		var admin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
 		var response = await teamService.UpdateTeamAsync(request.TeamId, request.Team, userId, admin);
 
-		if (response is BadRequestObjectResult bad) {
-			ThrowError(bad.Value?.ToString() ?? "Failed to update team");
-		}
+		if (response is BadRequestObjectResult bad) ThrowError(bad.Value?.ToString() ?? "Failed to update team");
 
-		if (request.Team.ChangeCode is true) {
-			await teamService.RegenerateJoinCodeAsync(request.TeamId, userId);
-		}
-		
+		if (request.Team.ChangeCode is true) await teamService.RegenerateJoinCodeAsync(request.TeamId, userId);
+
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

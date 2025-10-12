@@ -5,10 +5,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Monetization.Endpoints.GetEntitlements;
 
-public class GetEntitlementsRequest : DiscordIdRequest 
-{
-	[QueryParam]
-	public EntitlementTarget? Target { get; set; } = EntitlementTarget.User;	
+public class GetEntitlementsRequest : DiscordIdRequest {
+	[QueryParam] public EntitlementTarget? Target { get; set; } = EntitlementTarget.User;
 }
 
 internal sealed class GetEntitlementsRequestValidator : Validator<GetEntitlementsRequest> {

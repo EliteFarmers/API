@@ -20,93 +20,88 @@ namespace EliteAPI.Features.Auth;
 
 [RegisterService<IAuthService>(LifeTime.Scoped)]
 public partial class AuthService(
-	IDiscordService discordService, 
+	IDiscordService discordService,
 	UserManager userManager,
 	IConfiguration configuration,
 	ISchedulerFactory schedulerFactory,
 	ILogger<AuthService> logger,
-	DataContext context) 
-	: IAuthService 
-{
+	DataContext context)
+	: IAuthService {
 	private const string LoginProvider = "EliteAPI";
 	private const string RefreshToken = "RefreshToken";
-	
+
 	[GeneratedRegex("^[0-9]$")]
 	private static partial Regex DiscordIdRegex();
-	
+
 	public async Task<AuthResponseDto?> LoginAsync(DiscordLoginDto dto) {
 		var login = await discordService.FetchRefreshToken(dto.Code, dto.RedirectUri);
 		if (login is null) {
 			logger.LogWarning("Failed to fetch refresh token for user login with access code!");
 			return null;
 		}
-		
+
 		var account = await discordService.GetDiscordUser(login.AccessToken);
-		
+
 		if (account is null) {
 			logger.LogWarning("Failed to fetch Discord user account for login!");
 			return null;
 		}
-		
+
 		// Register the user if they do not exist
 		var user = await userManager.FindByIdAsync(account.Id.ToString());
-		if (user is null) 
-		{
+		if (user is null) {
 			var errors = await RegisterUser(account, login);
 			var identityErrors = errors.ToList();
-			if (identityErrors.Count != 0)
-			{
-				logger.LogWarning("Failed to register user {UserId} with errors: {Errors}", account.Id, string.Join(", ", identityErrors.Select(e => e.Description)));
+			if (identityErrors.Count != 0) {
+				logger.LogWarning("Failed to register user {UserId} with errors: {Errors}", account.Id,
+					string.Join(", ", identityErrors.Select(e => e.Description)));
 				return null;
 			}
-			
+
 			user = await userManager.FindByIdAsync(account.Id.ToString());
 			if (user is null) {
 				logger.LogError("User {UserId} was not found after registration!", account.Id);
 				return null; // Should not happen if registration succeeded
 			}
-		} 
-		else 
-		{
+		}
+		else {
 			// Update existing user if necessary
 			if (user.UserName != account.Username) {
 				await ObtainUserName(account.Username);
 				user.UserName = account.Username;
 			}
-			
+
 			UpdateUserDiscordTokens(user, login);
 			await userManager.UpdateAsync(user);
 		}
-		
+
 		UpdateUserDiscordTokens(user, login);
-		
+
 		await userManager.UpdateAsync(user);
-			
+
 		var (token, expiry) = await GenerateJwtToken(user);
 		var refreshToken = await GenerateAndStoreRefreshToken(user);
-		
+
 		if (refreshToken.IsNullOrEmpty()) {
 			logger.LogWarning("Failed to generate or store refresh token for user {UserId}", user.Id);
 			return null;
 		}
-		
+
 		return new AuthResponseDto {
 			AccessToken = token,
 			ExpiresIn = expiry.ToUnixTimeSeconds().ToString(),
-			RefreshToken = refreshToken,
+			RefreshToken = refreshToken
 		};
 	}
 
-	private async Task<string?> GenerateAndStoreRefreshToken(ApiUser user)
-	{
+	private async Task<string?> GenerateAndStoreRefreshToken(ApiUser user) {
 		// Check if there's a token that was created in the last minute
 		var exisingToken = await context.RefreshTokens
-			.FirstOrDefaultAsync(rt => rt.UserId == user.Id && rt.RevokedUtc == null && rt.CreatedUtc > DateTime.UtcNow.AddMinutes(-1));
-		
-		if (exisingToken is not null) {
-			return exisingToken.Token; // Return existing token if found
-		}
-		
+			.FirstOrDefaultAsync(rt =>
+				rt.UserId == user.Id && rt.RevokedUtc == null && rt.CreatedUtc > DateTime.UtcNow.AddMinutes(-1));
+
+		if (exisingToken is not null) return exisingToken.Token; // Return existing token if found
+
 		var randomNumber = new byte[64]; // Generate a secure random token
 		using var rng = RandomNumberGenerator.Create();
 		rng.GetBytes(randomNumber);
@@ -114,8 +109,7 @@ public partial class AuthService(
 
 		var refreshTokenValidityInDays = configuration.GetValue("Jwt:RefreshTokenExpirationInDays", 30);
 
-		var refreshToken = new RefreshToken
-		{
+		var refreshToken = new RefreshToken {
 			Token = refreshTokenValue,
 			UserId = user.Id,
 			CreatedUtc = DateTime.UtcNow,
@@ -129,16 +123,14 @@ public partial class AuthService(
 	}
 
 	public async Task<AuthResponseDto?> VerifyRefreshToken(AuthRefreshDto dto) {
-		if (DiscordIdRegex().IsMatch(dto.UserId)) {
-			return await VerifyRefreshToken(dto.UserId, dto.RefreshToken);
-		}
-		
+		if (DiscordIdRegex().IsMatch(dto.UserId)) return await VerifyRefreshToken(dto.UserId, dto.RefreshToken);
+
 		var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 		var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(dto.UserId);
-		
+
 		var userId = tokenContent.Claims
 			.FirstOrDefault(q => q.Type == ClaimNames.NameId)?.Value;
-		
+
 		if (userId is null) return null;
 
 		return await VerifyRefreshToken(userId, dto.RefreshToken);
@@ -148,34 +140,28 @@ public partial class AuthService(
 		var user = await userManager.FindByIdAsync(userId);
 		if (user is null) return null;
 
-		if (refreshToken.Contains('%')) {
-			refreshToken = HttpUtility.UrlDecode(refreshToken);
-		}
-		
+		if (refreshToken.Contains('%')) refreshToken = HttpUtility.UrlDecode(refreshToken);
+
 		var storedToken = await context.RefreshTokens
 			.FirstOrDefaultAsync(rt => rt.UserId == userId && rt.Token == refreshToken);
 
-		if (storedToken is null || !storedToken.IsActive) {
-			return null;
-		}
-		
+		if (storedToken is null || !storedToken.IsActive) return null;
+
 		// Load user settings relationship
 		await context.Entry(user).Reference(x => x.Account).LoadAsync();
 		await context.Entry(user.Account).Collection(x => x.MinecraftAccounts).LoadAsync();
 		await context.Entry(user.Account).Reference(x => x.UserSettings).LoadAsync();
-		
+
 		var newRefreshTokenValue = await GenerateAndStoreRefreshToken(user);
-		if (newRefreshTokenValue.IsNullOrEmpty()) {
-			return null;
-		}
-		
+		if (newRefreshTokenValue.IsNullOrEmpty()) return null;
+
 		storedToken.RevokedUtc = DateTime.UtcNow;
 		context.RefreshTokens.Update(storedToken);
 		await context.SaveChangesAsync();
-		
+
 		// Update stored discord tokens
 		await discordService.RefreshDiscordUserIfNeeded(user);
-		
+
 		var (token, expiry) = await GenerateJwtToken(user);
 		return new AuthResponseDto {
 			AccessToken = token,
@@ -188,10 +174,10 @@ public partial class AuthService(
 		// Load user accounts (and minecraft accounts)
 		await context.Entry(user).Reference(x => x.Account).LoadAsync();
 		await context.Entry(user.Account).Collection(x => x.MinecraftAccounts).LoadAsync();
-		
+
 		var primaryAccount = user.Account.MinecraftAccounts.FirstOrDefault(q => q.Selected)
-			?? user.Account.MinecraftAccounts.FirstOrDefault();
-		
+		                     ?? user.Account.MinecraftAccounts.FirstOrDefault();
+
 		var claims = new List<Claim> {
 			new(ClaimNames.Name, user.UserName ?? string.Empty),
 			new(ClaimNames.NameId, user.Id),
@@ -199,9 +185,9 @@ public partial class AuthService(
 			new(ClaimNames.Avatar, user.Account.Avatar ?? string.Empty),
 			new(ClaimNames.Ign, primaryAccount?.Name ?? string.Empty),
 			new(ClaimNames.FormattedIgn, user.Account.GetFormattedIgn()),
-			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty),
+			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty)
 		};
-		
+
 		// Add roles to the claims
 		var roles = await userManager.GetRolesAsync(user);
 		claims.AddRange(roles.Select(role => new Claim(ClaimNames.Role, role)));
@@ -209,7 +195,7 @@ public partial class AuthService(
 		var expiresAt = configuration["Jwt:TokenExpirationInMinutes"] is { } expiration
 			? DateTime.UtcNow.AddMinutes(int.Parse(expiration))
 			: DateTime.UtcNow.AddMinutes(30);
-		
+
 		var token = JwtBearer.CreateToken(o => {
 			o.User.Claims.AddRange(claims);
 			o.ExpireAt = expiresAt;
@@ -217,7 +203,7 @@ public partial class AuthService(
 
 		return (token, expiresAt);
 	}
-	
+
 	/// <summary>
 	/// Usernames are unique per Discord account, but a user might not have logged in since changing their username,
 	/// which would allow a different user to register with the same username.
@@ -232,13 +218,12 @@ public partial class AuthService(
 			.FirstOrDefaultAsync(u => u.UserName == username);
 
 		if (existingUser is null) return;
-		
+
 		var placeholderUsername = Guid.NewGuid().ToString();
 		existingUser.UserName = placeholderUsername;
 		var updateResult = await userManager.UpdateAsync(existingUser);
-		
-		if (!updateResult.Succeeded)
-		{
+
+		if (!updateResult.Succeeded) {
 			logger.LogWarning("Failed to update existing user {UserId} with placeholder username: {Errors}",
 				existingUser.Id,
 				string.Join(", ", updateResult.Errors.Select(e => e.Description)));
@@ -252,31 +237,29 @@ public partial class AuthService(
 
 	private async Task<IEnumerable<IdentityError>> RegisterUser(EliteAccount account, DiscordUpdateResponse dto) {
 		await ObtainUserName(account.Username);
-		
+
 		var user = new ApiUser {
 			Id = account.Id.ToString(),
 			AccountId = account.Id,
 			UserName = account.Username
 		};
-		
+
 		UpdateUserDiscordTokens(user, dto);
-		
+
 		var result = await userManager.CreateAsync(user);
 
-		if (result.Succeeded) {
-			await userManager.AddToRoleAsync(user, "User");
-		}
-		
+		if (result.Succeeded) await userManager.AddToRoleAsync(user, "User");
+
 		return result.Errors;
 	}
-	
+
 	private static void UpdateUserDiscordTokens(ApiUser user, DiscordUpdateResponse dto) {
 		user.DiscordAccessToken = dto.AccessToken;
 		user.DiscordAccessTokenExpires = dto.AccessTokenExpires;
 		user.DiscordRefreshToken = dto.RefreshToken;
 		user.DiscordAccessTokenExpires = dto.RefreshTokenExpires;
 	}
-	
+
 	public async Task TriggerAuthTokenRefresh(string userId) {
 		var data = new JobDataMap { { "AccountId", userId } };
 		var scheduler = await schedulerFactory.GetScheduler();

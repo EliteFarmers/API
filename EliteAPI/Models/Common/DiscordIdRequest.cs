@@ -9,9 +9,8 @@ public class DiscordIdRequest {
 	/// Discord Snowflake ID of the requested resource (guild, user, etc.)
 	/// </summary>
 	public required long DiscordId { get; set; }
-	
-	[JsonIgnore]
-	public ulong DiscordIdUlong => (ulong) DiscordId;
+
+	[JsonIgnore] public ulong DiscordIdUlong => (ulong)DiscordId;
 }
 
 internal sealed class DiscordIdRequestValidator : Validator<DiscordIdRequest> {

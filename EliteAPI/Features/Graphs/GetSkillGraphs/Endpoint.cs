@@ -9,12 +9,11 @@ namespace EliteAPI.Features.Graphs.GetSkillGraphs;
 internal sealed class GetSkillGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<SkillsDataPointDto>> 
-{
+	: Endpoint<GraphRequest, List<SkillsDataPointDto>> {
 	public override void Configure() {
 		Get("/graph/{PlayerUuid}/{ProfileUuid}/skills");
 		AllowAnonymous();
-		
+
 		Summary(s => {
 			s.Summary = "Get Skill XP Over Time";
 			s.ExampleRequest = new GraphRequest {
@@ -28,12 +27,10 @@ internal sealed class GetSkillGraphsEndpoint(
 		var profile = await context.ProfileMembers.AsNoTracking()
 			.Where(m => m.PlayerUuid == request.PlayerUuidFormatted && m.ProfileId == request.ProfileUuidFormatted)
 			.Select(p => p.Id)
-			.FirstOrDefaultAsync(cancellationToken: c);
+			.FirstOrDefaultAsync(c);
 
-		if (profile == Guid.Empty) {
-			await Send.NotFoundAsync(c);
-		}
-        
+		if (profile == Guid.Empty) await Send.NotFoundAsync(c);
+
 		var points = await timescaleService.GetSkills(profile, request.Start, request.End, request.PerDay ?? 4);
 		await Send.OkAsync(points, c);
 	}

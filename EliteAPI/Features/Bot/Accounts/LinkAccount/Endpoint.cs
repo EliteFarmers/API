@@ -9,7 +9,6 @@ namespace EliteAPI.Features.Bot.Accounts.LinkAccount;
 internal sealed class LinkAccountBotEndpoint(
 	IAccountService accountService
 ) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
-	
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/{Player}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
@@ -18,9 +17,7 @@ internal sealed class LinkAccountBotEndpoint(
 
 		Description(x => x.Accepts<DiscordIdPlayerRequest>());
 
-		Summary(s => {
-			s.Summary = "Link Account";
-		});
+		Summary(s => { s.Summary = "Link Account"; });
 	}
 
 	public override async Task<ErrorOr<Success>> ExecuteAsync(DiscordIdPlayerRequest request, CancellationToken c) {

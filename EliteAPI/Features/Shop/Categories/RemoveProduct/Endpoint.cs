@@ -11,7 +11,7 @@ internal sealed class RemoveProductFromCategoryRequest {
 	/// Id of the category to add the product to
 	/// </summary>
 	public required int CategoryId { get; set; }
-	
+
 	/// <summary>
 	/// Id of the product to add to the category
 	/// </summary>
@@ -22,23 +22,20 @@ internal sealed class RemoveProductToCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
 ) : Endpoint<RemoveProductFromCategoryRequest> {
-	
 	public override void Configure() {
 		Delete("/shop/category/{CategoryId}/product/{ProductId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
+
 		Description(s => s.Accepts<RemoveProductFromCategoryRequest>());
 
-		Summary(s => {
-			s.Summary = "Remove Product from Shop Category";
-		});
+		Summary(s => { s.Summary = "Remove Product from Shop Category"; });
 	}
 
 	public override async Task HandleAsync(RemoveProductFromCategoryRequest request, CancellationToken c) {
 		var existing = await context.ProductCategories
-			.FirstOrDefaultAsync(e => e.CategoryId == request.CategoryId && e.ProductId == (ulong) request.ProductId, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.CategoryId == request.CategoryId && e.ProductId == (ulong)request.ProductId, c);
+
 		if (existing is null) {
 			await Send.NotFoundAsync(c);
 			return;
@@ -46,9 +43,9 @@ internal sealed class RemoveProductToCategoryEndpoint(
 
 		context.ProductCategories.Remove(existing);
 		await context.SaveChangesAsync(c);
-		
+
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

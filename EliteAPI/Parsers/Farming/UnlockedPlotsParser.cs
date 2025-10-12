@@ -28,11 +28,10 @@ public static class UnlockedPlotsParser {
 		{ "expert_1", UnlockedPlots.Expert1 },
 		{ "expert_2", UnlockedPlots.Expert2 },
 		{ "expert_3", UnlockedPlots.Expert3 },
-		{ "expert_4", UnlockedPlots.Expert4 },
+		{ "expert_4", UnlockedPlots.Expert4 }
 	};
-	
-	public static uint CombinePlots(List<string> plots)
-	{
+
+	public static uint CombinePlots(List<string> plots) {
 		var combined = UnlockedPlots.None;
 
 		foreach (var plot in plots) {
@@ -40,27 +39,24 @@ public static class UnlockedPlotsParser {
 			combined |= value;
 		}
 
-		return (uint) combined;
+		return (uint)combined;
 	}
-	
-	public static uint CombinePlots(this GardenResponseData garden)
-	{
+
+	public static uint CombinePlots(this GardenResponseData garden) {
 		return CombinePlots(garden.UnlockedPlots);
 	}
-	
-	public static List<string> SeperatePlots(uint plots)
-	{
+
+	public static List<string> SeperatePlots(uint plots) {
 		var seperated = new List<string>();
 
 		foreach (var (key, value) in PlotsMap) {
-			if ((plots & (uint) value) != 0) seperated.Add(key);
+			if ((plots & (uint)value) != 0) seperated.Add(key);
 		}
 
 		return seperated;
 	}
-	
-	public static List<string> SeparatePlots(this UnlockedPlots plots)
-	{
-		return SeperatePlots((uint) plots);
+
+	public static List<string> SeparatePlots(this UnlockedPlots plots) {
+		return SeperatePlots((uint)plots);
 	}
 }

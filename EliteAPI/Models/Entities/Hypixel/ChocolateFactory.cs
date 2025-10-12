@@ -5,25 +5,25 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Models.Entities.Hypixel;
 
 public class ChocolateFactory {
-	[Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	[Key]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
-	
+
 	public long Chocolate { get; set; }
 	public long TotalChocolate { get; set; }
 	public long ChocolateSincePrestige { get; set; }
 	public long ChocolateSpent { get; set; }
 	public long LastViewedChocolateFactory { get; set; }
 	public int Prestige { get; set; }
-	
+
 	public ChocolateFactoryRabbits UniqueRabbits { get; set; } = new();
 	public ChocolateFactoryRabbits TotalRabbits { get; set; } = new();
-	
+
 	public bool UnlockedZorro { get; set; }
 	public int RefinedTrufflesConsumed { get; set; }
 	public int CocoaFortuneUpgrades { get; set; }
-	
-	[ForeignKey("ProfileMember")]
-	public Guid ProfileMemberId { get; set; }
+
+	[ForeignKey("ProfileMember")] public Guid ProfileMemberId { get; set; }
 	public ProfileMember? ProfileMember { get; set; }
 }
 

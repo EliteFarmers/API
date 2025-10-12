@@ -12,37 +12,29 @@ internal sealed class GetAccountFromDiscordEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<DiscordIdRequest, MinecraftAccountDto> {
-	
 	public override void Configure() {
 		Get("/account/{DiscordId:long:minlength(17)}");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Minecraft Account from Discord Id";
-		});
-		
+		Summary(s => { s.Summary = "Get Minecraft Account from Discord Id"; });
+
 		ResponseCache(120);
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
-		});
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2))); });
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
-		var account = await accountService.GetAccount(request.DiscordIdUlong) 
+		var account = await accountService.GetAccount(request.DiscordIdUlong)
 		              ?? await accountService.GetAccountByIgnOrUuid(request.DiscordId.ToString());
 
-		if (account is null) {
-			ThrowError("Minecraft account not found", StatusCodes.Status404NotFound);
-		}
-        
-		var minecraftAccount = account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
-		if (minecraftAccount is null) {
-			ThrowError("Linked account not found", StatusCodes.Status404NotFound);
-		}
+		if (account is null) ThrowError("Minecraft account not found", StatusCodes.Status404NotFound);
+
+		var minecraftAccount = account.MinecraftAccounts.Find(m => m.Selected) ??
+		                       account.MinecraftAccounts.FirstOrDefault();
+		if (minecraftAccount is null) ThrowError("Linked account not found", StatusCodes.Status404NotFound);
 
 		var profileDetails = await profileService.GetProfilesDetails(minecraftAccount.Id);
-        
+
 		var playerData = await profileService.GetPlayerData(minecraftAccount.Id);
 		var result = mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
@@ -53,6 +45,6 @@ internal sealed class GetAccountFromDiscordEndpoint(
 		result.Profiles = profileDetails;
 		result.Settings = mapper.Map<UserSettingsDto>(account.UserSettings);
 
-		await Send.OkAsync(result, cancellation: c);
+		await Send.OkAsync(result, c);
 	}
 }

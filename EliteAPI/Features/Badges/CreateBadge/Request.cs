@@ -5,16 +5,14 @@ using FluentValidation;
 namespace EliteAPI.Features.Badges.CreateBadge;
 
 public class CreateBadgeRequest {
-	[FromForm]
-	public required CreateBadge Badge { get; set; }
-	
+	[FromForm] public required CreateBadge Badge { get; set; }
+
 	public class CreateBadge {
 		public required string Name { get; set; }
 		public required string Description { get; set; }
 		public required string Requirements { get; set; }
 		public bool TieToAccount { get; set; } = false;
-		[AllowedFileExtensions]
-		public IFormFile? Image { get; set; }
+		[AllowedFileExtensions] public IFormFile? Image { get; set; }
 	}
 }
 

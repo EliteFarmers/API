@@ -14,10 +14,8 @@ public class LeaderboardRanksQueryResult {
 	public required string ScoreDataType { get; set; }
 }
 
-public class LeaderboardRanksQueryResultConfiguration : IEntityTypeConfiguration<LeaderboardRanksQueryResult>
-{
-	public void Configure(EntityTypeBuilder<LeaderboardRanksQueryResult> builder)
-	{
+public class LeaderboardRanksQueryResultConfiguration : IEntityTypeConfiguration<LeaderboardRanksQueryResult> {
+	public void Configure(EntityTypeBuilder<LeaderboardRanksQueryResult> builder) {
 		builder.HasNoKey();
 		builder.ToTable("LeaderboardRanksQueryResult", t => t.ExcludeFromMigrations());
 	}

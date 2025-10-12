@@ -11,20 +11,15 @@ internal sealed class GetCategoriesEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetCategoriesRequest, List<ShopCategoryDto>> {
-	
 	public override void Configure() {
 		Get("/shop/categories");
 		Options(o => o.WithMetadata(new OptionalAuthorizeAttribute()));
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Shop Categories";
-		});
-		
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(1)).Tag("categories"));
-		});
+		Summary(s => { s.Summary = "Get Shop Categories"; });
+
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromHours(1)).Tag("categories")); });
 	}
 
 	public override async Task HandleAsync(GetCategoriesRequest request, CancellationToken c) {
@@ -36,25 +31,26 @@ internal sealed class GetCategoriesEndpoint(
 				.ThenInclude(product => product.ProductCategories)
 				.OrderBy(category => category.Order)
 				.Where(category => admin || category.Published)
-				.ToListAsync(cancellationToken: c);
-			
+				.ToListAsync(c);
+
 			foreach (var category in results) {
 				category.Products = category.Products
 					.OrderBy(p => p.ProductCategories.First(pc => pc.CategoryId == category.Id).Order)
 					.ToList();
 			}
-			
+
 			var result = mapper.Map<List<ShopCategoryDto>>(results);
-			
-			await Send.OkAsync(result, cancellation: c);
-		} else {
+
+			await Send.OkAsync(result, c);
+		}
+		else {
 			var result = await context.Categories
 				.OrderBy(category => category.Order)
 				.Where(category => admin || category.Published)
 				.Select(category => mapper.Map<ShopCategoryDto>(category))
-				.ToListAsync(cancellationToken: c);
-			
-			await Send.OkAsync(result, cancellation: c);
+				.ToListAsync(c);
+
+			await Send.OkAsync(result, c);
 		}
 	}
 }

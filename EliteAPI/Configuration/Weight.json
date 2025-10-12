@@ -1,6 +1,17 @@
 {
   "FarmingWeight": {
-    "CropItemIds": [ "CACTUS", "CARROT_ITEM", "INK_SACK:3", "MELON", "MUSHROOM_COLLECTION", "NETHER_STALK", "POTATO_ITEM", "PUMPKIN", "SUGAR_CANE", "WHEAT" ],
+    "CropItemIds": [
+      "CACTUS",
+      "CARROT_ITEM",
+      "INK_SACK:3",
+      "MELON",
+      "MUSHROOM_COLLECTION",
+      "NETHER_STALK",
+      "POTATO_ITEM",
+      "PUMPKIN",
+      "SUGAR_CANE",
+      "WHEAT"
+    ],
     "CropsPerOneWeight": {
       "CACTUS": "178730.65",
       "CARROT_ITEM": "300000.00",
@@ -76,104 +87,125 @@
         "crop": 0,
         "items": 2,
         "base": 160,
-        "scaling":  17.5,
-        "rare": [{
-          "drops": 153600,
-          "chance": 0.005
-        }]
+        "scaling": 17.5,
+        "rare": [
+          {
+            "drops": 153600,
+            "chance": 0.005
+          }
+        ]
       },
       "1": {
         "crop": 1,
         "items": 3,
         "base": 160,
         "scaling": 10.5,
-        "rare": [{
-          "drops": 245760,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 245760,
+            "chance": 0.005
+          }
+        ]
       },
       "2": {
         "crop": 2,
         "items": 3,
         "base": 160,
         "scaling": 12,
-        "rare": [{
-          "drops": 225280,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 225280,
+            "chance": 0.005
+          }
+        ]
       },
       "3": {
         "crop": 3,
         "items": 5,
         "base": 160,
         "scaling": 7,
-        "rare": [{
-          "drops": 384000,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 384000,
+            "chance": 0.005
+          }
+        ]
       },
       "4": {
         "crop": 4,
         "items": 1,
         "base": 160,
         "scaling": 35,
-        "rare": [{
-          "drops": 76800,
-          "chance": 0.0025
-        }, {
-          "drops": 76800,
-          "chance": 0.0025
-        }]
+        "rare": [
+          {
+            "drops": 76800,
+            "chance": 0.0025
+          },
+          {
+            "drops": 76800,
+            "chance": 0.0025
+          }
+        ]
       },
       "5": {
         "crop": 5,
         "items": 3,
         "base": 160,
         "scaling": 12,
-        "rare": [{
-          "drops": 230400,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 230400,
+            "chance": 0.005
+          }
+        ]
       },
       "6": {
         "crop": 6,
         "items": 3,
         "base": 160,
         "scaling": 10.5,
-        "rare": [{
-          "drops": 256000,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 256000,
+            "chance": 0.005
+          }
+        ]
       },
       "7": {
         "crop": 7,
         "items": 1,
         "base": 160,
         "scaling": 35,
-        "rare": [{
-          "drops": 76800,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 76800,
+            "chance": 0.005
+          }
+        ]
       },
       "8": {
         "crop": 8,
         "items": 2,
         "base": 160,
         "scaling": 17.5,
-        "rare": [{
-          "drops": 153600,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 153600,
+            "chance": 0.005
+          }
+        ]
       },
       "9": {
         "crop": 9,
         "items": 1,
         "base": 160,
         "scaling": 35,
-        "rare": [{
-          "drops": 76800,
-          "chance": 0.005
-        }]
+        "rare": [
+          {
+            "drops": 76800,
+            "chance": 0.005
+          }
+        ]
       }
     }
   }

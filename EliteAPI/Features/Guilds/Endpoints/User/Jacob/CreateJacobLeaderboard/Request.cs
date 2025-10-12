@@ -4,11 +4,9 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.CreateJacobLeaderboard;
 
-public class CreateJacobLeaderboardRequest : DiscordIdRequest 
-{
-	[FromBody]
-	public required CreateJacobLeaderboard Leaderboard { get; set; }
-	
+public class CreateJacobLeaderboardRequest : DiscordIdRequest {
+	[FromBody] public required CreateJacobLeaderboard Leaderboard { get; set; }
+
 	public class CreateJacobLeaderboard {
 		public required string Title { get; set; }
 
@@ -30,7 +28,7 @@ public class CreateJacobLeaderboardRequest : DiscordIdRequest
 internal sealed class CreateJacobFeatureRequestValidator : Validator<CreateJacobLeaderboardRequest> {
 	public CreateJacobFeatureRequestValidator() {
 		Include(new DiscordIdRequestValidator());
-		
+
 		RuleFor(x => x.Leaderboard.Title)
 			.NotEmpty()
 			.WithMessage("Title is required")

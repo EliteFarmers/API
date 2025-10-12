@@ -5,8 +5,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.GetSession;
 
-internal sealed class GetSessionEndpoint() : EndpointWithoutRequest<AuthSessionDto> 
-{
+internal sealed class GetSessionEndpoint() : EndpointWithoutRequest<AuthSessionDto> {
 	public override void Configure() {
 		Get("/auth/me");
 		Version(0);
@@ -17,8 +16,7 @@ internal sealed class GetSessionEndpoint() : EndpointWithoutRequest<AuthSessionD
 		});
 	}
 
-	public override async Task HandleAsync(CancellationToken c) 
-	{
+	public override async Task HandleAsync(CancellationToken c) {
 		await Send.OkAsync(new AuthSessionDto {
 			Id = User.FindFirstValue(ClaimNames.NameId) ?? string.Empty,
 			Username = User.FindFirstValue(ClaimNames.Name) ?? string.Empty,
@@ -27,6 +25,6 @@ internal sealed class GetSessionEndpoint() : EndpointWithoutRequest<AuthSessionD
 			FIgn = User.FindFirstValue(ClaimNames.FormattedIgn) ?? string.Empty,
 			Uuid = User.FindFirstValue(ClaimNames.Uuid) ?? string.Empty,
 			Roles = User.Claims.Where(l => l.Type == ClaimNames.Role).Select(a => a.Value).ToArray()
-		}, cancellation: c);
+		}, c);
 	}
 }

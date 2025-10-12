@@ -7,10 +7,10 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Weight.GetAllWeights;
 
-internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> weightSettings) : EndpointWithoutRequest<WeightsDto> {
-	
+internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> weightSettings)
+	: EndpointWithoutRequest<WeightsDto> {
 	private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
-	
+
 	public override void Configure() {
 		Get("/weights/all");
 		AllowAnonymous();
@@ -28,14 +28,14 @@ internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings
 	public override async Task HandleAsync(CancellationToken c) {
 		var rawWeights = _weightSettings.CropsPerOneWeight;
 		var crops = new Dictionary<string, double>();
-        
+
 		foreach (var (key, value) in rawWeights) {
 			var formattedKey = FormatUtils.GetFormattedCropName(key);
 			if (formattedKey is null) continue;
-            
+
 			crops.TryAdd(formattedKey, value);
 		}
-        
+
 		var reversed = _weightSettings.PestDropBrackets
 			.DistinctBy(p => p.Value)
 			.ToDictionary(pair => pair.Value, pair => pair.Key);
@@ -47,15 +47,15 @@ internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings
 				Values = _weightSettings.PestCropDropChances
 					.DistinctBy(p => p.Key.ToString().ToLowerInvariant())
 					.ToDictionary(
-						pair => pair.Key.ToString().ToLowerInvariant(), 
+						pair => pair.Key.ToString().ToLowerInvariant(),
 						pair => pair.Value.GetPrecomputed().ToDictionary(
-							valuePair => reversed[valuePair.Key], 
+							valuePair => reversed[valuePair.Key],
 							valuePair => valuePair.Value
 						)
 					)
 			}
 		};
 
-		await Send.OkAsync(result, cancellation: c);
+		await Send.OkAsync(result, c);
 	}
 }

@@ -7,9 +7,10 @@ public class SearchRequest {
 	/// <summary>
 	/// Search query string
 	/// </summary>
-	[QueryParam, BindFrom("q")]
+	[QueryParam]
+	[BindFrom("q")]
 	public required string Query { get; set; }
-	
+
 	/// <summary>
 	/// Start of results for pagination
 	/// </summary>
@@ -24,7 +25,7 @@ internal sealed class SearchRequestValidator : Validator<SearchRequest> {
 			.WithMessage("Query is required")
 			.Matches("^[a-zA-Z0-9_]+$")
 			.WithMessage("Query must match ^[a-zA-Z0-9_]+$");
-		
+
 		RuleFor(x => x.Start)
 			.Matches("^[a-zA-Z0-9_]+$")
 			.When(x => x.Start is not null)

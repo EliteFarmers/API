@@ -9,9 +9,7 @@ public static class QuartzExtensions {
 	public static void AddEliteBackgroundJobs(this IServiceCollection services) {
 		services.AddQuartz();
 
-		services.AddQuartzHostedService(options => {
-			options.WaitForJobsToComplete = true;
-		});
+		services.AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; });
 
 		services.ConfigureOptions<DiscordJobsConfiguration>();
 		services.ConfigureOptions<HypixelJobsConfiguration>();

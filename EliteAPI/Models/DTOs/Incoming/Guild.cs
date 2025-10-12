@@ -7,7 +7,7 @@ public class IncomingGuildDto {
 	public string? Banner { get; set; }
 	public string? Permissions { get; set; }
 	public string? BotPermissions { get; set; }
-	
+
 	public List<string>? Features { get; set; }
 	public List<IncomingGuildChannelDto>? Channels { get; set; }
 	public List<IncomingGuildRoleDto>? Roles { get; set; }

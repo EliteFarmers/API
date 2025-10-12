@@ -3,26 +3,27 @@ using System.Text.Json.Serialization;
 
 namespace EliteAPI.Features.Images.Models;
 
-public class ImageAttachmentDto
-{
+public class ImageAttachmentDto {
 	/// <summary>
 	/// Image title
 	/// </summary>
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault), MaxLength(64)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	[MaxLength(64)]
 	public string? Title { get; set; }
-    
+
 	/// <summary>
 	/// Image description
 	/// </summary>
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault), MaxLength(512)]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	[MaxLength(512)]
 	public string? Description { get; set; }
-    
+
 	/// <summary>
 	/// Image ordering number
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int? Order { get; set; }
-	
+
 	/// <summary>
 	/// The original width of the image.
 	/// </summary>
@@ -37,7 +38,7 @@ public class ImageAttachmentDto
 	/// A dictionary of available image sources, keyed by a logical name (e.g., "small", "medium").
 	/// </summary>
 	public required Dictionary<string, ImageSourceDto> Sources { get; init; }
-    
+
 	/// <summary>
 	/// Lowest quality image URL
 	/// </summary>

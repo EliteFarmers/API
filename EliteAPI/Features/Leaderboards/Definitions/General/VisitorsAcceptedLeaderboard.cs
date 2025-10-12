@@ -12,7 +12,7 @@ public class VisitorsAcceptedLeaderboard : IProfileLeaderboardDefinition {
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
-	
+
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		return garden.CompletedVisitors;
 	}

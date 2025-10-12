@@ -13,7 +13,7 @@ public class PestSlugLeaderboard : IMemberLeaderboardDefinition {
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long
 	};
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		return member.Farming.Pests.Slug;
 	}

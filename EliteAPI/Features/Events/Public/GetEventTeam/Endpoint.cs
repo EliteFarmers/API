@@ -15,38 +15,34 @@ internal sealed class GetEventTeamRequest {
 internal sealed class GetEventTeamEndpoint(
 	IEventTeamService teamService,
 	AutoMapper.IMapper mapper)
-	: Endpoint<GetEventTeamRequest, EventTeamWithMembersDto>
-{
+	: Endpoint<GetEventTeamRequest, EventTeamWithMembersDto> {
 	public override void Configure() {
 		Get("/event/{EventId}/team/{TeamId}");
 		Options(o => o.WithMetadata(new OptionalAuthorizeAttribute()));
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get an event team";
-		});
+		Summary(s => { s.Summary = "Get an event team"; });
 	}
 
 	public override async Task HandleAsync(GetEventTeamRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		var isAdmin = User.IsInRole(ApiUserPolicies.Admin);
-		
+
 		var team = await teamService.GetTeamAsync(request.TeamId);
 		if (team is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
-		var result = mapper.Map<EventTeamWithMembersDto>(team);
-		
-		// If the user is the owner of the team, return the join code
-		if (userId is not null && (team.UserId == userId || isAdmin)) {
-			result.JoinCode = team.JoinCode;
-		} else {
-			result.JoinCode = null;
-		}
 
-		await Send.OkAsync(result, cancellation: c);
+		var result = mapper.Map<EventTeamWithMembersDto>(team);
+
+		// If the user is the owner of the team, return the join code
+		if (userId is not null && (team.UserId == userId || isAdmin))
+			result.JoinCode = team.JoinCode;
+		else
+			result.JoinCode = null;
+
+		await Send.OkAsync(result, c);
 	}
 }

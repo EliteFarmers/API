@@ -1,24 +1,26 @@
 ﻿namespace EliteAPI.Authentication;
 
 public class DiscordBotOnlyFilter : IEndpointFilter {
-    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next) {
-        if (context.HttpContext.Request.Headers.Authorization.Count < 1) {
-            return Results.Problem("Only the bot can access this endpoint.", statusCode: StatusCodes.Status403Forbidden);
-        }
-        
-        var auth = context.HttpContext.Request.Headers.Authorization.ToString();
-        
-        // Only allow local requests once bot has moved to share the same network as the API
-        if (!auth.StartsWith("Bearer EliteDiscordBot ") /* || context.HttpContext.Connection.RemoteIpAddress?.IsFromDockerNetwork() != true*/ ) {
-            return Results.Problem("Only the bot can access this endpoint.", statusCode: StatusCodes.Status403Forbidden);
-        }
+	public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next) {
+		if (context.HttpContext.Request.Headers.Authorization.Count < 1)
+			return Results.Problem("Only the bot can access this endpoint.",
+				statusCode: StatusCodes.Status403Forbidden);
 
-        if (auth.Replace("Bearer EliteDiscordBot ", "") != Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN")) {
-            return Results.Problem("Only the bot can access this endpoint.", statusCode: StatusCodes.Status403Forbidden);
-        }
-        
-        return await next(context);
-    }
+		var auth = context.HttpContext.Request.Headers.Authorization.ToString();
+
+		// Only allow local requests once bot has moved to share the same network as the API
+		if (!auth.StartsWith(
+			    "Bearer EliteDiscordBot ") /* || context.HttpContext.Connection.RemoteIpAddress?.IsFromDockerNetwork() != true*/
+		   )
+			return Results.Problem("Only the bot can access this endpoint.",
+				statusCode: StatusCodes.Status403Forbidden);
+
+		if (auth.Replace("Bearer EliteDiscordBot ", "") != Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN"))
+			return Results.Problem("Only the bot can access this endpoint.",
+				statusCode: StatusCodes.Status403Forbidden);
+
+		return await next(context);
+	}
 }
 
 // sealed class DiscordBotAuth(IOptionsMonitor<AuthenticationSchemeOptions> options,

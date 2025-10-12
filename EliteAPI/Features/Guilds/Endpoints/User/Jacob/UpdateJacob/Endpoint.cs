@@ -10,15 +10,12 @@ internal sealed class UpdateGuildJacobFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<UpdateJacobFeatureRequest> {
-	
 	public override void Configure() {
 		Patch("/user/guild/{DiscordId}/jacob");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Update Jacob leaderboards for a guild";
-		});
+		Summary(s => { s.Summary = "Update Jacob leaderboards for a guild"; });
 	}
 
 	public override async Task HandleAsync(UpdateJacobFeatureRequest request, CancellationToken c) {
@@ -32,7 +29,7 @@ internal sealed class UpdateGuildJacobFeatureEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var feature = guild.Features.JacobLeaderboard;
 
 		feature.BlockedRoles = request.Feature.BlockedRoles;
@@ -40,10 +37,10 @@ internal sealed class UpdateGuildJacobFeatureEndpoint(
 		feature.RequiredRoles = request.Feature.RequiredRoles;
 		feature.ExcludedParticipations = request.Feature.ExcludedParticipations;
 		feature.ExcludedTimespans = request.Feature.ExcludedTimespans;
-        
+
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

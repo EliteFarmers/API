@@ -12,11 +12,11 @@ public class LapisLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 500_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "INK_SACK:4";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -33,11 +33,11 @@ public class RedstoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 500_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "REDSTONE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -54,11 +54,11 @@ public class EmeraldLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "EMERALD";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -75,11 +75,11 @@ public class DiamondLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "DIAMOND";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -96,11 +96,11 @@ public class CoalLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 500_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "COAL";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -117,11 +117,11 @@ public class NetherQuartzLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "QUARTZ";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -138,11 +138,11 @@ public class GoldLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "GOLD_INGOT";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -159,11 +159,11 @@ public class IronLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "IRON_INGOT";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -180,11 +180,11 @@ public class SandLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SAND";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -201,11 +201,11 @@ public class RedSandLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SAND:1";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -222,11 +222,11 @@ public class CobblestoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "COBBLESTONE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -243,11 +243,11 @@ public class ObsidianLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "OBSIDIAN";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -264,11 +264,11 @@ public class EndStoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "ENDER_STONE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -285,11 +285,11 @@ public class GlowstoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "GLOWSTONE_DUST";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -306,11 +306,11 @@ public class GravelLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "GRAVEL";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -327,11 +327,11 @@ public class NetherrackLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "NETHERRACK";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -348,11 +348,11 @@ public class IceLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "ICE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -369,11 +369,11 @@ public class MyceliumLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "MYCEL";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -390,11 +390,11 @@ public class GemstoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "GEMSTONE_COLLECTION";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -411,11 +411,11 @@ public class MithrilLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "MITHRIL_ORE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -432,11 +432,11 @@ public class HardStoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "HARD_STONE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -453,11 +453,11 @@ public class TungstenLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "TUNGSTEN";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -474,11 +474,11 @@ public class UmberLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "UMBER";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -495,11 +495,11 @@ public class GlaciteLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "GLACITE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -516,11 +516,11 @@ public class SulphurLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Mining",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SULPHUR_ORE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 

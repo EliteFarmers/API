@@ -12,11 +12,11 @@ public class ClayLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "CLAY_BALL";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -33,11 +33,11 @@ public class ClownfishLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "RAW_FISH:2";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -54,11 +54,11 @@ public class InkSacLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 10_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "INK_SACK";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -75,11 +75,11 @@ public class LilyPadLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "WATER_LILY";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -96,11 +96,11 @@ public class MagmafishLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "MAGMA_FISH";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -117,11 +117,11 @@ public class PrismarineCrystalsLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "PRISMARINE_CRYSTALS";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -138,11 +138,11 @@ public class PrismarineShardLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "PRISMARINE_SHARD";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -159,11 +159,11 @@ public class PufferfishLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "RAW_FISH:3";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -180,11 +180,11 @@ public class RawFishLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "RAW_FISH";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -201,11 +201,11 @@ public class RawSalmonLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "RAW_FISH:1";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -222,11 +222,11 @@ public class SpongeLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Fishing",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SPONGE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 

@@ -12,11 +12,11 @@ public class BlazeRodLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "BLAZE_ROD";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -33,11 +33,11 @@ public class BoneLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "BONE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -54,11 +54,11 @@ public class ChiliPepperLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 10,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "CHILI_PEPPER";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -75,11 +75,11 @@ public class EnderPearlLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "ENDER_PEARL";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -96,11 +96,11 @@ public class GhastTearLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 10_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "GHAST_TEAR";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -117,11 +117,11 @@ public class GunpowderLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SULPHUR";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -138,11 +138,11 @@ public class MagmaCreamLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "MAGMA_CREAM";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -159,11 +159,11 @@ public class RottenFleshLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "ROTTEN_FLESH";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -180,11 +180,11 @@ public class SlimeballLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SLIME_BALL";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -201,11 +201,11 @@ public class SpiderEyeLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SPIDER_EYE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -222,11 +222,11 @@ public class StringLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Combat",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "STRING";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 

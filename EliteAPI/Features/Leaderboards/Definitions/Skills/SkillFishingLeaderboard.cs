@@ -15,6 +15,6 @@ public class SkillFishingLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Fishing;
+		return (decimal)member.Skills.Fishing;
 	}
 }

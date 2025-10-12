@@ -18,7 +18,7 @@ public class CropSugarCaneLeaderboard : IMemberLeaderboardDefinition {
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 		var crop = member.Collections.GetValueOrDefault(CropId.SugarCane, 0);
-		
+
 		return crop;
 	}
 }
@@ -36,7 +36,7 @@ public class MilestoneSugarCaneLeaderboard : IProfileLeaderboardDefinition {
 
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		var crop = garden.Crops.SugarCane;
-		
+
 		return crop;
 	}
 }

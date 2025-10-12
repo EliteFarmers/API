@@ -12,28 +12,22 @@ namespace EliteAPI.Features.Weight.GetWeightForSelected;
 using Result = Results<Ok<FarmingWeightDto>, NotFound>;
 
 internal sealed class GetWeightSelectedProfileRequest : PlayerUuidRequest {
-	[QueryParam, DefaultValue(false)]
-	public bool? Collections { get; set; } = false;
+	[QueryParam] [DefaultValue(false)] public bool? Collections { get; set; } = false;
 }
 
 internal sealed class GetWeightForSelectedEndpoint(
 	IMemberService memberService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetWeightSelectedProfileRequest, Result> {
-	
 	public override void Configure() {
 		Get("/weight/{PlayerUuid}/selected");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get farming weight for a player's selected profile";
-		});
-		
+		Summary(s => { s.Summary = "Get farming weight for a player's selected profile"; });
+
 		ResponseCache(120);
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
-		});
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2))); });
 	}
 
 	public override async Task<Result> ExecuteAsync(GetWeightSelectedProfileRequest request, CancellationToken c) {
@@ -43,16 +37,16 @@ internal sealed class GetWeightForSelectedEndpoint(
 		var weight = await query
 			.Where(x => x.IsSelected)
 			.Include(x => x.Farming)
-			.FirstOrDefaultAsync(cancellationToken: c);
-        
+			.FirstOrDefaultAsync(c);
+
 		if (weight is null) return TypedResults.NotFound();
-        
+
 		var mapped = mapper.Map<FarmingWeightDto>(weight.Farming);
 		if (request.Collections is not null) return TypedResults.Ok(mapped);
 
 		mapped.Crops = weight.ExtractCropCollections()
 			.ToDictionary(k => k.Key.ProperName(), v => v.Value);
-        
+
 		return TypedResults.Ok(mapped);
 	}
 }

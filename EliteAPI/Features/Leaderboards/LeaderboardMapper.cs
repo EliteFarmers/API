@@ -16,9 +16,9 @@ public static partial class LeaderboardMapper {
 	[MapperIgnoreTarget(nameof(LeaderboardEntryDto.Meta))]
 	[MapperIgnoreTarget(nameof(LeaderboardEntryDto.Mode))]
 	public static partial LeaderboardEntryDto MapToDto(this LeaderboardEntry entry);
-	
+
 	public static partial LeaderboardEntryWithRankDto MapToDto(this LeaderboardEntryWithRankDto entry);
-	
+
 	[MapperIgnoreSource(nameof(Leaderboard.ScoreFormat))]
 	[MapperIgnoreSource(nameof(Leaderboard.Order))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.Offset))]
@@ -31,9 +31,9 @@ public static partial class LeaderboardMapper {
 	[MapperIgnoreTarget(nameof(LeaderboardDto.StartsAt))]
 	[MapperIgnoreTarget(nameof(LeaderboardDto.EndsAt))]
 	public static partial LeaderboardDto MapToDto(this Leaderboard leaderboard);
-	
+
 	[MapperIgnoreTarget(nameof(ProfileLeaderboardMemberDto.Removed))]
 	public static partial ProfileLeaderboardMemberDto MapToDto(this ProfileLeaderboardMember dto);
-	
+
 	public static partial MemberCosmeticsDto? MapToDto(this ProfileMemberMetadataCosmetics? meta);
 }

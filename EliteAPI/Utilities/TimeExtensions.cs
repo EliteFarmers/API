@@ -1,45 +1,37 @@
 ﻿namespace EliteAPI.Utilities;
 
-public static class TimeExtensions
-{
-    public static bool IsValidJacobContestTime(this long unixTimeSeconds, int fromYear = -1)
-    {
-        var time = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds);
-        var correctMinute = time is { Minute: 15, Second: 0, Millisecond: 0 };
-        if (fromYear == -1) return correctMinute;
-        
-        return correctMinute && new SkyblockDate(unixTimeSeconds).Year == fromYear;
-    }
-    
-    public static bool OlderThanSeconds(this DateTimeOffset dateTime, int seconds)
-    {
-        return dateTime.UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);
-    }
-    
-    public static bool OlderThanSeconds(this long unixTimeSeconds, int seconds)
-    {
-        return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);
-    }
+public static class TimeExtensions {
+	public static bool IsValidJacobContestTime(this long unixTimeSeconds, int fromYear = -1) {
+		var time = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds);
+		var correctMinute = time is { Minute: 15, Second: 0, Millisecond: 0 };
+		if (fromYear == -1) return correctMinute;
 
-    public static bool OlderThanMinutes(this long unixTimeSeconds, int minutes)
-    {
-        return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddMinutes(-minutes);
-    }
+		return correctMinute && new SkyblockDate(unixTimeSeconds).Year == fromYear;
+	}
 
-    public static bool OlderThanHours(this long unixTimeSeconds, int hours)
-    {
-        return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddHours(-hours);
-    }
+	public static bool OlderThanSeconds(this DateTimeOffset dateTime, int seconds) {
+		return dateTime.UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);
+	}
 
-    public static bool OlderThanDays(this long unixTimeSeconds, int days)
-    {
-        return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddDays(-days);
-    }
+	public static bool OlderThanSeconds(this long unixTimeSeconds, int seconds) {
+		return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddSeconds(-seconds);
+	}
 
-    public static string ToReadableSkyblockDate(this long unixTimeSeconds)
-    {
-        var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds);
+	public static bool OlderThanMinutes(this long unixTimeSeconds, int minutes) {
+		return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddMinutes(-minutes);
+	}
 
-        return FormatUtils.GetReadableSkyblockDate(dateTimeOffset.UtcDateTime);
-    }
+	public static bool OlderThanHours(this long unixTimeSeconds, int hours) {
+		return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddHours(-hours);
+	}
+
+	public static bool OlderThanDays(this long unixTimeSeconds, int days) {
+		return DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds).UtcDateTime < DateTime.UtcNow.AddDays(-days);
+	}
+
+	public static string ToReadableSkyblockDate(this long unixTimeSeconds) {
+		var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds);
+
+		return FormatUtils.GetReadableSkyblockDate(dateTimeOffset.UtcDateTime);
+	}
 }

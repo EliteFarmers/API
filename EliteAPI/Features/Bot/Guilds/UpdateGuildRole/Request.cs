@@ -5,8 +5,7 @@ using FastEndpoints;
 namespace EliteAPI.Features.Bot.Guilds.UpdateGuildRole;
 
 public class BotUpdateGuildRoleRequest : DiscordIdRequest {
-	[FromBody]
-	public required IncomingGuildRoleDto Role { get; set; }
+	[FromBody] public required IncomingGuildRoleDto Role { get; set; }
 }
 
 internal sealed class BotUpdateGuildRoleRequestValidator : Validator<BotUpdateGuildRoleRequest> {

@@ -18,7 +18,7 @@ public class CropPumpkinLeaderboard : IMemberLeaderboardDefinition {
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 		var crop = member.Collections.GetValueOrDefault(CropId.Pumpkin, 0);
-		
+
 		return crop;
 	}
 }
@@ -36,7 +36,7 @@ public class MilestonePumpkinLeaderboard : IProfileLeaderboardDefinition {
 
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		var crop = garden.Crops.Pumpkin;
-		
+
 		return crop;
 	}
 }

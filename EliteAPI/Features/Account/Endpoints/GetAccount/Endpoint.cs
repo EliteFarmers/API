@@ -15,7 +15,6 @@ internal sealed class GetAccountEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<PlayerRequest, MinecraftAccountDto> {
-	
 	public override void Configure() {
 		Get("/account/{Player}");
 		AllowAnonymous();
@@ -23,36 +22,32 @@ internal sealed class GetAccountEndpoint(
 
 		Summary(s => {
 			s.Summary = "Get Account";
-			s.Description = "Retrieves the Minecraft account information for a given player, along with an overview of their profiles and player data.";
-			s.ExampleRequest = new PlayerRequest()
-			{
+			s.Description =
+				"Retrieves the Minecraft account information for a given player, along with an overview of their profiles and player data.";
+			s.ExampleRequest = new PlayerRequest {
 				Player = "Ke5o"
 			};
 		});
-		
+
 		ResponseCache(30);
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromSeconds(30)));
-		});
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromSeconds(30))); });
 	}
 
 	public override async Task HandleAsync(PlayerRequest request, CancellationToken c) {
 		await memberService.UpdatePlayerIfNeeded(request.Player);
-        
+
 		var account = await accountService.GetAccountByIgnOrUuid(request.Player);
-        
+
 		var minecraftAccount = account is null
 			? await mojangService.GetMinecraftAccountByUuidOrIgn(request.Player)
-			: account.MinecraftAccounts.Find(m => m.Id.Equals(request.Player) || m.Name.Equals(request.Player)) 
+			: account.MinecraftAccounts.Find(m => m.Id.Equals(request.Player) || m.Name.Equals(request.Player))
 			  ?? account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
 
-		if (minecraftAccount is null) {
-			ThrowError("Minecraft account not found", StatusCodes.Status404NotFound);
-		}
-        
+		if (minecraftAccount is null) ThrowError("Minecraft account not found", StatusCodes.Status404NotFound);
+
 		var profilesDetails = await profileService.GetProfilesDetails(minecraftAccount.Id);
 		var playerData = await profileService.GetPlayerData(minecraftAccount.Id);
-        
+
 		var mappedPlayerData = mapper.Map<PlayerDataDto>(playerData);
 		var result = mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
@@ -63,6 +58,6 @@ internal sealed class GetAccountEndpoint(
 		result.Profiles = profilesDetails;
 		result.Settings = mapper.Map<UserSettingsDto>(account?.UserSettings);
 
-		await Send.OkAsync(result, cancellation: c);
+		await Send.OkAsync(result, c);
 	}
 }

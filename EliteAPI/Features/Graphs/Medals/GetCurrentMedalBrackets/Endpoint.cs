@@ -6,29 +6,26 @@ using EliteAPI.Utilities;
 
 namespace EliteAPI.Features.Graphs.Medals.GetCurrentMedalBrackets;
 
-internal sealed class GetCurrentMedalBracketsRequest
-{
+internal sealed class GetCurrentMedalBracketsRequest {
 	/// <summary>
 	/// Amount of previous SkyBlock months to include in the average
 	/// </summary>
-	[QueryParam, DefaultValue(2)]
+	[QueryParam]
+	[DefaultValue(2)]
 	public int? Months { get; set; } = 2;
 }
 
 internal sealed class GetCurrentMedalBracketsEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetCurrentMedalBracketsRequest, ContestBracketsDetailsDto> 
-{
+	: Endpoint<GetCurrentMedalBracketsRequest, ContestBracketsDetailsDto> {
 	public override void Configure() {
 		Get("/graph/medals/now");
 		AllowAnonymous();
 		ResponseCache(600);
 
 		Description(s => s.Accepts<GetCurrentMedalBracketsRequest>());
-		
-		Summary(s => {
-			s.Summary = "Get current average medal brackets";
-		});
+
+		Summary(s => { s.Summary = "Get current average medal brackets"; });
 	}
 
 	public override async Task HandleAsync(GetCurrentMedalBracketsRequest request, CancellationToken c) {
@@ -44,7 +41,7 @@ internal sealed class GetCurrentMedalBracketsEndpoint(
 		// Exclude the last 3 hours to minimize the chance of inaccurate data from new contests
 		var end = new SkyblockDate(DateTimeOffset.UtcNow.AddHours(-3).ToUnixTimeSeconds());
 		var start = new SkyblockDate(end.Year - 1, end.Month - (request.Months ?? 2), end.Day).UnixSeconds;
-        
+
 		var brackets = await contestsService.GetAverageMedalBrackets(start, end.UnixSeconds);
 
 		var result = new ContestBracketsDetailsDto {
@@ -52,7 +49,7 @@ internal sealed class GetCurrentMedalBracketsEndpoint(
 			End = end.UnixSeconds.ToString(),
 			Brackets = brackets ?? new Dictionary<string, ContestBracketsDto>()
 		};
-		
-		await Send.OkAsync(result, cancellation: c);
+
+		await Send.OkAsync(result, c);
 	}
 }

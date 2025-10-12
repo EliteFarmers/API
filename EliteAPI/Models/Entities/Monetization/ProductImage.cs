@@ -6,19 +6,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace EliteAPI.Models.Entities.Monetization;
 
 public class ProductImage {
-	[ForeignKey("Product")]
-	public ulong ProductId { get; set; }
+	[ForeignKey("Product")] public ulong ProductId { get; set; }
 	public Product Product { get; set; } = null!;
-	
-	[ForeignKey("Image")]
-	public required string ImageId { get; set; }
+
+	[ForeignKey("Image")] public required string ImageId { get; set; }
 	public Image Image { get; set; } = null!;
 }
 
-public class ProductImageEntityConfiguration : IEntityTypeConfiguration<ProductImage>
-{
-	public void Configure(EntityTypeBuilder<ProductImage> builder)
-	{
+public class ProductImageEntityConfiguration : IEntityTypeConfiguration<ProductImage> {
+	public void Configure(EntityTypeBuilder<ProductImage> builder) {
 		builder.HasKey(pi => new { pi.ProductId, pi.ImageId });
 	}
 }

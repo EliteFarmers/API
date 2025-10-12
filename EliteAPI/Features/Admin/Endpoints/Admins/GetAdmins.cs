@@ -9,22 +9,18 @@ namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
 internal sealed class GetAdminsEndpoint(
 	DataContext context)
-	: EndpointWithoutRequest<List<AccountWithPermsDto>> 
-{
+	: EndpointWithoutRequest<List<AccountWithPermsDto>> {
 	public override void Configure() {
 		Get("/admins");
 		Policies(ApiUserPolicies.Moderator);
 		Version(0);
-		
-		Summary(s => {
-			s.Summary = "Get list of admins";
-		});
-		
+
+		Summary(s => { s.Summary = "Get list of admins"; });
+
 		Description(d => d.AutoTagOverride("Admin"));
 	}
 
-	public override async Task HandleAsync(CancellationToken c) 
-	{
+	public override async Task HandleAsync(CancellationToken c) {
 		// I'm sure this query can be optimized further.
 		// Right now it's not expected to handle a large amount of users.
 		var users = from user in context.Users
@@ -44,12 +40,12 @@ internal sealed class GetAdminsEndpoint(
 				Discriminator = g.Max(x => x.account.Discriminator),
 				Roles = g.Where(x => x.role != null).Select(x => x.role.Name).ToList()
 			};
-        
+
 		var result = await users
 			.AsNoTracking()
 			.AsSplitQuery()
-			.ToListAsync(cancellationToken: c);
-		
-		await Send.OkAsync(result, cancellation: c);
+			.ToListAsync(c);
+
+		await Send.OkAsync(result, c);
 	}
 }

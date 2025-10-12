@@ -4,10 +4,8 @@ using FastEndpoints;
 namespace EliteAPI.Features.Events.User.KickTeamMember;
 
 internal sealed class KickTeamMemberRequest : PlayerRequest {
-	[BindFrom("eventId")]
-	public ulong EventId { get; set; }
-	[BindFrom("teamId")]
-	public int TeamId { get; set; }
+	[BindFrom("eventId")] public ulong EventId { get; set; }
+	[BindFrom("teamId")] public int TeamId { get; set; }
 }
 
 internal sealed class KickTeamMemberRequestValidator : Validator<KickTeamMemberRequest> {

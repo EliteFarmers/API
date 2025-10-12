@@ -13,21 +13,17 @@ internal sealed class AdminLinkAccountRequest {
 internal sealed class LinkUserAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<AdminLinkAccountRequest, ErrorOr<Success>> {
-	
 	public override void Configure() {
 		Post("/admin/link-account");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Link an Account";
-		});
+		Summary(s => { s.Summary = "Link an Account"; });
 	}
 
 	public override async Task<ErrorOr<Success>> ExecuteAsync(AdminLinkAccountRequest request, CancellationToken c) {
-		if (!ulong.TryParse(request.DiscordId, out var discordId)) {
+		if (!ulong.TryParse(request.DiscordId, out var discordId))
 			ThrowError("Invalid Discord ID", StatusCodes.Status400BadRequest);
-		}
 
 		return await accountService.LinkAccount(discordId, request.Player);
 	}

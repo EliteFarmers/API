@@ -5,12 +5,10 @@ using FastEndpoints;
 namespace EliteAPI.Features.Guilds.User.Jacob.UpdateJacob;
 
 public class UpdateJacobFeatureRequest : DiscordIdRequest {
-	[QueryParam]
-	public string? Reason { get; set; }
+	[QueryParam] public string? Reason { get; set; }
 
-	[FromBody]
-	public required UpdateJacobFeature Feature { get; set; }
-	
+	[FromBody] public required UpdateJacobFeature Feature { get; set; }
+
 	public class UpdateJacobFeature {
 		/// <summary>
 		/// Blocked roles from participating in the guild's Jacob Leaderboards

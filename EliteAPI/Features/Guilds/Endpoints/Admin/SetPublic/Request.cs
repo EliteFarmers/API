@@ -5,8 +5,7 @@ using FastEndpoints;
 namespace EliteAPI.Features.Guilds.Admin.SetPublic;
 
 public class SetGuildPublicRequest : DiscordIdRequest {
-	[QueryParam, DefaultValue(true)]
-	public bool? Public { get; set; } = true;
+	[QueryParam] [DefaultValue(true)] public bool? Public { get; set; } = true;
 }
 
 internal sealed class SetGuildPublicRequestValidator : Validator<SetGuildPublicRequest> {

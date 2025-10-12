@@ -13,15 +13,12 @@ internal sealed class GetSelectedProfileEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<PlayerUuidRequest, Result> {
-	
 	public override void Configure() {
 		Get("/profile/{PlayerUuid}/selected");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Profile Member";
-		});
+		Summary(s => { s.Summary = "Get Profile Member"; });
 	}
 
 	public override async Task<Result> ExecuteAsync(PlayerUuidRequest request, CancellationToken c) {

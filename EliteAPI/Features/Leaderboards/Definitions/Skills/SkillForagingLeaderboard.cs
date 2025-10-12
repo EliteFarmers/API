@@ -15,6 +15,6 @@ public class SkillForagingLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Foraging;
+		return (decimal)member.Skills.Foraging;
 	}
 }

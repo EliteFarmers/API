@@ -2,18 +2,15 @@
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class PlayerResponse
-{
+public class PlayerResponse {
 	public bool Success { get; set; }
 	public PlayerDataResponse? Player { get; set; }
 }
 
-public class PlayerDataResponse
-{
+public class PlayerDataResponse {
 	public required string Uuid { get; set; }
 
-	[JsonPropertyName("displayname")]
-	public string? DisplayName { get; set; }
+	[JsonPropertyName("displayname")] public string? DisplayName { get; set; }
 
 	public long FirstLogin { get; set; }
 	public long LastLogin { get; set; }
@@ -21,7 +18,7 @@ public class PlayerDataResponse
 
 	public double Karma { get; set; }
 	public double NetworkExp { get; set; }
-   
+
 	public int RewardHighScore { get; set; }
 	public int RewardScore { get; set; }
 	public int RewardStreak { get; set; }
@@ -46,17 +43,12 @@ public class PlayerDataResponse
 	*/
 }
 
-public class SocialMediaResponse
-{
+public class SocialMediaResponse {
 	public SocialMediaLinksResponse? Links { get; set; }
 }
 
-public class SocialMediaLinksResponse
-{
-	[JsonPropertyName("DISCORD")]
-	public string? Discord { get; set; }
-	[JsonPropertyName("HYPIXEL")]
-	public string? Hypixel { get; set; }
-	[JsonPropertyName("YOUTUBE")]
-	public string? Youtube { get; set; }
+public class SocialMediaLinksResponse {
+	[JsonPropertyName("DISCORD")] public string? Discord { get; set; }
+	[JsonPropertyName("HYPIXEL")] public string? Hypixel { get; set; }
+	[JsonPropertyName("YOUTUBE")] public string? Youtube { get; set; }
 }

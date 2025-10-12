@@ -15,6 +15,6 @@ public class SkillAlchemyLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Alchemy;
+		return (decimal)member.Skills.Alchemy;
 	}
 }

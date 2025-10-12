@@ -15,44 +15,50 @@ public class GetMultiplePlayerRanksRequest : PlayerProfileUuidRequest {
 	public required string Leaderboards { get; set; }
 
 	[JsonIgnore] public List<string> LeaderboardList => Leaderboards.ToLowerInvariant().Split(',').ToList();
-	
+
 	/// <summary>
 	/// Include upcoming players
 	/// </summary>
-	[QueryParam, DefaultValue(false), Obsolete("Use Upcoming instead")]
+	[QueryParam]
+	[DefaultValue(false)]
+	[Obsolete("Use Upcoming instead")]
 	public bool? IncludeUpcoming { get; set; } = false;
-	
+
 	/// <summary>
 	/// Amount of upcoming players to include (max 10).
 	/// </summary>
-	[QueryParam, DefaultValue(0)]
+	[QueryParam]
+	[DefaultValue(0)]
 	public int? Upcoming { get; set; } = 0;
-	
+
 	/// <summary>
 	/// Amount of passed players to include (max 3).
 	/// </summary>
-	[QueryParam, DefaultValue(0)]
+	[QueryParam]
+	[DefaultValue(0)]
 	public int? Previous { get; set; } = 0;
-	
+
 	/// <summary>
 	/// Start at a specified rank for upcoming players
 	/// </summary>
 	[QueryParam]
 	public int? AtRank { get; set; } = -1;
-	
+
 	/// <summary>
 	/// Time interval key of a monthly leaderboard. Format: yyyy-MM
 	/// </summary>
-	[QueryParam, DefaultValue(null)]
+	[QueryParam]
+	[DefaultValue(null)]
 	public string? Interval { get; set; } = null;
-	
+
 	/// <summary>
 	/// Game mode to filter leaderboard by. Leave empty to get all modes.
 	/// Options: "ironman", "island", "classic"
 	/// </summary>
-	[QueryParam, DefaultValue(null)]
+	[QueryParam]
+	[DefaultValue(null)]
 	public string? Mode { get; set; } = null;
-	
+
 	/// <summary>
 	/// Removed filter to get leaderboard entries that have been removed from the leaderboard.
 	/// Default is profiles that have not been removed/wiped.
@@ -60,14 +66,15 @@ public class GetMultiplePlayerRanksRequest : PlayerProfileUuidRequest {
 	/// 1 = Removed
 	/// 2 = All
 	/// </summary>
-	[QueryParam, DefaultValue(RemovedFilter.NotRemoved)]
+	[QueryParam]
+	[DefaultValue(RemovedFilter.NotRemoved)]
 	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
 }
 
 internal sealed class GetMultiplePlayerRanksRequestValidator : Validator<GetMultiplePlayerRanksRequest> {
 	public GetMultiplePlayerRanksRequestValidator() {
 		Include(new PlayerProfileUuidRequestValidator());
-		
+
 		var newLbService = Resolve<ILeaderboardRegistrationService>();
 		RuleFor(x => x.Leaderboards)
 			.NotEmpty()
@@ -78,17 +85,17 @@ internal sealed class GetMultiplePlayerRanksRequestValidator : Validator<GetMult
 			.WithMessage("Leaderboard cannot be empty")
 			.Must(newLbService.LeaderboardsById.ContainsKey)
 			.WithMessage("Leaderboard does not exist");
-		
+
 		RuleFor(x => x.Upcoming)
 			.GreaterThanOrEqualTo(0)
 			.LessThanOrEqualTo(10)
 			.WithMessage("Upcoming must be between 0 and 10");
-		
+
 		RuleFor(x => x.Previous)
 			.GreaterThanOrEqualTo(0)
 			.LessThanOrEqualTo(3)
 			.WithMessage("Previous must be between 0 and 3");
-		
+
 		RuleFor(x => x.Interval)
 			.Matches(@"^\d{4}-\d{2}$")
 			.When(x => x.Interval is not null)

@@ -4,8 +4,7 @@ using EliteAPI.Models.Entities.Hypixel;
 namespace EliteAPI.Models.Entities.Events;
 
 public class PestEvent : Event {
-	[Column("Data", TypeName = "jsonb")]
-	public PestEventData Data { get; set; } = new();
+	[Column("Data", TypeName = "jsonb")] public PestEventData Data { get; set; } = new();
 
 	public PestEvent() {
 		Type = EventType.Pests;
@@ -13,8 +12,7 @@ public class PestEvent : Event {
 }
 
 public class PestEventMember : EventMember {
-	[Column("Data", TypeName = "jsonb")]
-	public PestEventMemberData Data { get; set; } = new();
+	[Column("Data", TypeName = "jsonb")] public PestEventMemberData Data { get; set; } = new();
 
 	public PestEventMember() {
 		Type = EventType.Pests;
@@ -33,7 +31,7 @@ public class PestEventData {
 		{ Pest.Rat, 1 },
 		{ Pest.Mosquito, 1 },
 		{ Pest.Fly, 1 },
-		{ Pest.Mouse, 10 },
+		{ Pest.Mouse, 10 }
 	};
 }
 

@@ -10,6 +10,6 @@ public class UpdateBadgesRequest : PlayerUuidRequest {
 
 internal sealed class UpdateBadgesRequestValidator : Validator<UpdateBadgesRequest> {
 	public UpdateBadgesRequestValidator() {
-		Include(new PlayerUuidRequestValidator());	
+		Include(new PlayerUuidRequestValidator());
 	}
 }

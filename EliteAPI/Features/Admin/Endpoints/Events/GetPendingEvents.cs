@@ -9,26 +9,22 @@ namespace EliteAPI.Features.Admin.Endpoints.Events;
 internal sealed class GetPendingEventsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper)
-	: EndpointWithoutRequest<List<EventDetailsDto>> 
-{
+	: EndpointWithoutRequest<List<EventDetailsDto>> {
 	public override void Configure() {
 		Get("/admin/events/pending");
 		Policies(ApiUserPolicies.Moderator);
 		Version(0);
-		
-		Summary(s => {
-			s.Summary = "Get events pending approval";
-		});
+
+		Summary(s => { s.Summary = "Get events pending approval"; });
 	}
 
-	public override async Task HandleAsync(CancellationToken c) 
-	{
+	public override async Task HandleAsync(CancellationToken c) {
 		var events = await context.Events
 			.Where(e => !e.Approved)
-			.ToListAsync(cancellationToken: c);
-        
+			.ToListAsync(c);
+
 		var result = mapper.Map<List<EventDetailsDto>>(events);
-		
-		await Send.OkAsync(result, cancellation: c);
+
+		await Send.OkAsync(result, c);
 	}
 }

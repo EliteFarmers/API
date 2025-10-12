@@ -14,55 +14,54 @@ internal sealed class AddProductImageEndpoint(
 	IConnectionMultiplexer redis,
 	IObjectStorageService objectStorageService
 ) : Endpoint<AddProductImageRequest> {
-	
 	public override void Configure() {
 		Post("/product/{DiscordId}/images");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
+
 		AllowFileUploads();
 
-		Summary(s => {
-			s.Summary = "Add Image To Product";
-		});
+		Summary(s => { s.Summary = "Add Image To Product"; });
 	}
 
 	public override async Task HandleAsync(AddProductImageRequest request, CancellationToken c) {
-		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, cancellationToken: c);
+		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, c);
 		if (product is null) {
-			await Send.NotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
-		
-		var image = await objectStorageService.UploadImageAsync($"products/{request.DiscordIdUlong}/{Guid.NewGuid()}.png", request.Image.Image, token: c);
-		
+
+		var image = await objectStorageService.UploadImageAsync(
+			$"products/{request.DiscordIdUlong}/{Guid.NewGuid()}.png", request.Image.Image, token: c);
+
 		image.Title = request.Image.Title;
 		image.Description = request.Image.Description;
 
 		if (request.Thumbnail is true) {
 			if (product.Thumbnail is not null) {
 				await objectStorageService.DeleteAsync(product.Thumbnail.Path, c);
-				
+
 				product.Thumbnail = null;
 				product.ThumbnailId = null;
-				
+
 				await context.SaveChangesAsync(c);
 			}
-			
+
 			product.Thumbnail = image;
 			product.ThumbnailId = image.Id;
-		} else {
+		}
+		else {
 			product.Images.Add(image);
 		}
-		
+
 		await context.SaveChangesAsync(c);
-		
+
 		// Clear the product list cache
 		var db = redis.GetDatabase();
 		await db.KeyDeleteAsync("bot:productlist");
-		
+
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

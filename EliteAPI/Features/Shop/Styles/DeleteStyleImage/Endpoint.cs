@@ -18,15 +18,12 @@ internal sealed class DeleteStyleImageEndpoint(
 	IOutputCacheStore cacheStore,
 	IObjectStorageService objectStorageService
 ) : Endpoint<DeleteStyleImageRequest> {
-	
 	public override void Configure() {
 		Delete("/product/style/{StyleId}/images/{ImagePath}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
-		Summary(s => {
-			s.Summary = "Remove Image from Style";
-		});
+
+		Summary(s => { s.Summary = "Remove Image from Style"; });
 	}
 
 	public override async Task HandleAsync(DeleteStyleImageRequest request, CancellationToken c) {
@@ -34,32 +31,31 @@ internal sealed class DeleteStyleImageEndpoint(
 			.Include(s => s.Images)
 			.Include(s => s.Image)
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
-		
+
 		if (style is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var decoded = HttpUtility.UrlDecode(request.ImagePath);
 		var styleImage = style.Images.FirstOrDefault(i => decoded.EndsWith(i.Path))
 		                 ?? (style.Image?.Path == decoded ? style.Image : null);
-		
+
 		if (styleImage is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
-		if (style.Image == styleImage) {
+
+		if (style.Image == styleImage)
 			style.Image = null;
-		} else {
+		else
 			style.Images.Remove(styleImage);
-		}
-		
+
 		await context.SaveChangesAsync(c);
 		await objectStorageService.DeleteAsync(styleImage.Path, c);
-		
+
 		await cacheStore.EvictByTagAsync("styles", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

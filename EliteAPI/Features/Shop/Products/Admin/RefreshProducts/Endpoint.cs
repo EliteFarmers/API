@@ -15,28 +15,25 @@ internal sealed class RefreshProductsEndpoint(
 	IOutputCacheStore cacheStore,
 	ISchedulerFactory schedulerFactory
 ) : EndpointWithoutRequest<List<ProductDto>> {
-	
 	public override void Configure() {
 		Post("/products/refresh");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Refresh Shop Products";
-		});
-		
+		Summary(s => { s.Summary = "Refresh Shop Products"; });
+
 		Description(d => d.AutoTagOverride("Product"));
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
 		var db = redis.GetDatabase();
 		await db.KeyDeleteAsync("bot:products");
-		
+
 		var scheduler = await schedulerFactory.GetScheduler(c);
 		await scheduler.TriggerJob(RefreshProductsBackgroundJob.Key, c);
-		
+
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

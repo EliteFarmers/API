@@ -6,9 +6,8 @@ namespace EliteAPI.Models.Common;
 
 public class GuildIdRequest {
 	public required long GuildId { get; set; }
-	
-	[JsonIgnore]
-	public ulong GuildIdUlong => (ulong) GuildId;
+
+	[JsonIgnore] public ulong GuildIdUlong => (ulong)GuildId;
 }
 
 internal sealed class GuildIdRequestValidator : Validator<GuildIdRequest> {

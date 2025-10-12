@@ -9,18 +9,15 @@ namespace EliteAPI.Features.Bot.DisableContestPings;
 internal sealed class DisableContestPingsPingsEndpoint(
 	DataContext context
 ) : Endpoint<DisableContestPingsRequest> {
-	
 	public override void Configure() {
 		Delete("/bot/contestpings/{DiscordId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
 		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
-		
+
 		Description(x => x.Accepts<DisableContestPingsRequest>());
 
-		Summary(s => {
-			s.Summary = "Disable contest pings for a guild";
-		});
+		Summary(s => { s.Summary = "Disable contest pings for a guild"; });
 	}
 
 	public override async Task HandleAsync(DisableContestPingsRequest request, CancellationToken c) {
@@ -34,12 +31,12 @@ internal sealed class DisableContestPingsPingsEndpoint(
 
 		pings.Enabled = false;
 		pings.DisabledReason = request.Reason;
-        
+
 		guild.Features.ContestPings = pings;
 		context.Entry(guild).Property(g => g.Features).IsModified = true;
 
 		await context.SaveChangesAsync(c);
-		
-		await Send.NoContentAsync(cancellation: c);
+
+		await Send.NoContentAsync(c);
 	}
 }

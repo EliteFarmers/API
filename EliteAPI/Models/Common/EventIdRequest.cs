@@ -6,9 +6,8 @@ namespace EliteAPI.Models.Common;
 
 public class EventIdRequest {
 	public required long EventId { get; set; }
-	
-	[JsonIgnore]
-	public ulong EventIdUlong => (ulong) EventId;
+
+	[JsonIgnore] public ulong EventIdUlong => (ulong)EventId;
 }
 
 internal sealed class EventIdRequestValidator : Validator<EventIdRequest> {

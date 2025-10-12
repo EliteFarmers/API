@@ -9,22 +9,18 @@ namespace EliteAPI.Features.Guilds.Admin.SetEvents;
 internal sealed class SetEventFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context)
-	: Endpoint<SetEventFeatureRequest>
-{
+	: Endpoint<SetEventFeatureRequest> {
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
+
 		Description(x => x.Accepts<SetEventFeatureRequest>());
-		
-		Summary(s => {
-			s.Summary = "Modify guild event permissions";
-		});
+
+		Summary(s => { s.Summary = "Modify guild event permissions"; });
 	}
 
-	public override async Task HandleAsync(SetEventFeatureRequest request, CancellationToken c) 
-	{
+	public override async Task HandleAsync(SetEventFeatureRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await Send.NotFoundAsync(c);
@@ -37,7 +33,7 @@ internal sealed class SetEventFeatureEndpoint(
 
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
-		
-		await Send.NoContentAsync(cancellation: c);
+
+		await Send.NoContentAsync(c);
 	}
 }

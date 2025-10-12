@@ -9,12 +9,11 @@ namespace EliteAPI.Features.Graphs.GetCropGraphs;
 internal sealed class GetCropGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>> 
-{
+	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>> {
 	public override void Configure() {
 		Get("/graph/{PlayerUuid}/{ProfileUuid}/crops");
 		AllowAnonymous();
-		
+
 		Summary(s => {
 			s.Summary = "Get Crop Collections Over Time";
 			s.ExampleRequest = new GraphRequest {
@@ -28,13 +27,12 @@ internal sealed class GetCropGraphsEndpoint(
 		var profile = await context.ProfileMembers.AsNoTracking()
 			.Where(m => m.PlayerUuid == request.PlayerUuidFormatted && m.ProfileId == request.ProfileUuidFormatted)
 			.Select(p => p.Id)
-			.FirstOrDefaultAsync(cancellationToken: c);
+			.FirstOrDefaultAsync(c);
 
-		if (profile == Guid.Empty) {
-			await Send.NotFoundAsync(c);
-		}
-        
-		var points = await timescaleService.GetCropCollections(profile, request.Start, request.End, request.PerDay ?? 4);
+		if (profile == Guid.Empty) await Send.NotFoundAsync(c);
+
+		var points =
+			await timescaleService.GetCropCollections(profile, request.Start, request.End, request.PerDay ?? 4);
 		await Send.OkAsync(points, c);
 	}
 }

@@ -13,10 +13,8 @@ namespace EliteAPI.Features.Events.Admin.CreateTeam;
 
 internal sealed class CreateTeamRequest : DiscordIdRequest {
 	public ulong EventId { get; set; }
-	[FastEndpoints.FromBody]
-	public required CreateEventTeamDto Team { get; set; }
-	[QueryParam]
-	public string? UserId { get; set; }
+	[FastEndpoints.FromBody] public required CreateEventTeamDto Team { get; set; }
+	[QueryParam] public string? UserId { get; set; }
 }
 
 internal sealed class CreateTeamAdminEndpoint(
@@ -24,7 +22,6 @@ internal sealed class CreateTeamAdminEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
 ) : Endpoint<CreateTeamRequest> {
-
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/teams");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -40,22 +37,22 @@ internal sealed class CreateTeamAdminEndpoint(
 	public override async Task HandleAsync(CreateTeamRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		var @event = await context.Events
-			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordIdUlong, c);
+
 		if (userId is null || @event is null) {
 			await Send.UnauthorizedAsync(c);
 			return;
 		}
-		
+
 		var result = await teamService.CreateAdminTeamAsync(request.EventId, request.Team, request.UserId ?? userId);
-		
+
 		if (result is BadRequestObjectResult badRequest) {
-			await Send.OkAsync(badRequest.Value?.ToString(), cancellation: c);
+			await Send.OkAsync(badRequest.Value?.ToString(), c);
 			return;
 		}
 
 		await cacheStore.EvictByTagAsync("event-teams", c);
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }
 

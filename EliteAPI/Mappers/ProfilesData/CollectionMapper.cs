@@ -6,13 +6,11 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
-public class PetMapper : Profile
-{
-    public PetMapper()
-    {
-        CreateMap<PetResponse, Pet>()
-            .ForMember(p => p.Level, opt => opt.MapFrom(src => src.GetLevel()));
-        
-        CreateMap<Pet, PetDto>().ReverseMap();
-    }
+public class PetMapper : Profile {
+	public PetMapper() {
+		CreateMap<PetResponse, Pet>()
+			.ForMember(p => p.Level, opt => opt.MapFrom(src => src.GetLevel()));
+
+		CreateMap<Pet, PetDto>().ReverseMap();
+	}
 }

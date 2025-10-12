@@ -12,26 +12,23 @@ internal sealed class GetProfileNamesEndpoint(
 	DataContext context,
 	IProfileService profileService
 ) : Endpoint<PlayerRequest, List<ProfileNamesDto>> {
-	
 	public override void Configure() {
 		Get("/profiles/{Player}/names");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get names of a player's profiles";
-		});
-		
+		Summary(s => { s.Summary = "Get names of a player's profiles"; });
+
 		Description(d => d.AutoTagOverride("Profile"));
 	}
 
 	public override async Task HandleAsync(PlayerRequest request, CancellationToken c) {
 		var player = await profileService.GetPlayerDataByUuidOrIgn(request.Player);
 		if (player is null) {
-			await Send.OkAsync([], cancellation: c);
+			await Send.OkAsync([], c);
 			return;
 		}
-		
+
 		var profiles = await context.ProfileMembers
 			.AsNoTracking()
 			.Where(m => m.PlayerUuid.Equals(player.Uuid) && !m.WasRemoved)
@@ -39,8 +36,8 @@ internal sealed class GetProfileNamesEndpoint(
 				Id = m.ProfileId,
 				Name = m.ProfileName ?? m.Profile.ProfileName,
 				Selected = m.IsSelected
-			}).ToListAsync(cancellationToken: c);
+			}).ToListAsync(c);
 
-		await Send.OkAsync(profiles, cancellation: c);
+		await Send.OkAsync(profiles, c);
 	}
 }

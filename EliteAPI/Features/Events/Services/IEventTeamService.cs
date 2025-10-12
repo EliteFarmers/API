@@ -23,7 +23,7 @@ public interface IEventTeamService {
 	Task<ActionResult> KickMemberAsync(int teamId, string playerUuidOrIgn);
 	Task<ActionResult> SetTeamOwnerValidateAsync(int teamId, string userId, string playerUuidOrIgn);
 	Task<ActionResult> SetTeamOwnerAsync(int teamId, string playerUuidOrIgn);
-	
+
 	EventTeamsWordListDto GetEventTeamNameWords();
 	bool IsValidTeamName(List<string>? name);
 }

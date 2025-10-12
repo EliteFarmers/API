@@ -15,6 +15,6 @@ public class SkillEnchantingLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Enchanting;
+		return (decimal)member.Skills.Enchanting;
 	}
 }

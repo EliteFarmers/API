@@ -23,223 +23,197 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Utilities;
 
-public static class ServiceExtensions
-{
-    public static IServiceCollection AddEliteServices(this IServiceCollection services) {
-        // Add AutoMapper
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+public static class ServiceExtensions {
+	public static IServiceCollection AddEliteServices(this IServiceCollection services) {
+		// Add AutoMapper
+		services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        // Add services to the container.
-        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        services.AddSingleton<IMessageService, MessageService>();
-        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-        services.AddSingleton<IObjectStorageService, ObjectStorageService>();
+		// Add services to the container.
+		services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+		services.AddSingleton<IMessageService, MessageService>();
+		services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+		services.AddSingleton<IObjectStorageService, ObjectStorageService>();
 
-        services.AddHostedService<BackgroundQueueWorker>();
-        
-        services.AddHttpClient(HypixelService.HttpClientName, client => {
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI");
-        });
+		services.AddHostedService<BackgroundQueueWorker>();
 
-        services.AddDbContext<DataContext>();
-        
-        // Not the best way to do this, but it works for now running on a single instance
-        services.AddDataProtection()
-            .PersistKeysToFileSystem(new DirectoryInfo("TempKeys"))
-            .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration() {
-                EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
-                ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
-            });
-        
-        return services;
-    }
+		services.AddHttpClient(HypixelService.HttpClientName,
+			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });
 
-    public static IServiceCollection AddEliteAuthentication(this IServiceCollection services,
-        IConfiguration configuration) {
-        var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
+		services.AddDbContext<DataContext>();
 
-        services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
+		// Not the best way to do this, but it works for now running on a single instance
+		services.AddDataProtection()
+			.PersistKeysToFileSystem(new DirectoryInfo("TempKeys"))
+			.UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration {
+				EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+				ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+			});
 
-        services.AddIdentityCore<ApiUser>(o => {
-                o.ClaimsIdentity.RoleClaimType = ClaimNames.Role;
-                o.ClaimsIdentity.UserIdClaimType = ClaimNames.NameId;
-                o.ClaimsIdentity.UserNameClaimType = ClaimNames.Name;
-            })
-            .AddRoles<IdentityRole>()
-            .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
-            .AddDefaultTokenProviders()
-            .AddEntityFrameworkStores<DataContext>();
+		return services;
+	}
 
-        services.AddAuthenticationJwtBearer(options => {
-            options.SigningKey = secret;
-        });
-        
-        services.Configure<JwtCreationOptions>(options => {
-            options.SigningKey = secret;
-        });
+	public static IServiceCollection AddEliteAuthentication(this IServiceCollection services,
+		IConfiguration configuration) {
+		var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
 
-        services.AddAuthorization(options => {
-            options.AddPolicy(ApiUserPolicies.Admin, 
-                policy => policy.RequireRole(ApiUserPolicies.Admin));
-            options.AddPolicy(ApiUserPolicies.Moderator,
-                policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
-            options.AddPolicy(ApiUserPolicies.Support,
-                policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
-            options.AddPolicy(ApiUserPolicies.Wiki,
-                policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
-            options.AddPolicy(ApiUserPolicies.User, 
-                policy => policy.RequireRole(ApiUserPolicies.User));
-            options.AddGuildAdminPolicies();
-        });
+		services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
 
-        return services;
-    }
+		services.AddIdentityCore<ApiUser>(o => {
+				o.ClaimsIdentity.RoleClaimType = ClaimNames.Role;
+				o.ClaimsIdentity.UserIdClaimType = ClaimNames.NameId;
+				o.ClaimsIdentity.UserNameClaimType = ClaimNames.Name;
+			})
+			.AddRoles<IdentityRole>()
+			.AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("EliteAPI")
+			.AddDefaultTokenProviders()
+			.AddEntityFrameworkStores<DataContext>();
 
-    public static IServiceCollection AddEliteScopedServices(this IServiceCollection services)
-    {
-        services.AddHttpContextAccessor();
-        
-        services.AddScoped<ICacheService, CacheService>();
-        services.AddScoped<IHypixelService, HypixelService>();
-        services.AddScoped<IMojangService, MojangService>();
-        services.AddScoped<IProfileService, ProfileService>();
-        services.AddScoped<ITimescaleService, TimescaleService>();
-        services.RegisterServicesFromEliteAPI();
+		services.AddAuthenticationJwtBearer(options => { options.SigningKey = secret; });
 
-        services.AddScoped<LocalOnlyMiddleware>();
-        services.AddScoped<DiscordBotOnlyFilter>();
-        
-        return services;
-    }
+		services.Configure<JwtCreationOptions>(options => { options.SigningKey = secret; });
 
-    public static IServiceCollection AddEliteRedisCache(this IServiceCollection services)
-    {
-        var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6380";
-        var config = new ConfigurationOptions {
-            EndPoints = { redisConnection },
-            Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD"),
-            AbortOnConnectFail = false,
-            ConnectRetry = 5
-        };
-        var multiplexer = ConnectionMultiplexer.Connect(config);
-        
-        services
-            .AddSingleton<IConnectionMultiplexer>(multiplexer)
-            .AddOutputCache(options => {
-                options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
-                
-                options.AddPolicy(CachePolicy.Hours, policy => {
-                    policy.Cache();
-                    policy.Expire(TimeSpan.FromHours(4));
-                    policy.Tag("hours");
-                });
-                
-                options.AddPolicy(CachePolicy.NoCache, policy => {
-                    policy.NoCache();
-                });
-            }).AddStackExchangeRedisOutputCache(options => {
-                options.Configuration = config.ToString();
-                options.InstanceName = "EliteAPI-OutputCache";
-            }).AddStackExchangeRedisCache(options => {
-                options.Configuration = config.ToString();
-                options.InstanceName = "EliteAPI";
-            });
-        
-        return services;
-    }
-    
-    public static IConfigurationBuilder RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder, string directoryPath = "Configuration")
-    {
-        configurationBuilder.Sources.AddRange(new List<JsonConfigurationSource>
-        {
-            new() { Path = $"{directoryPath}/Weight.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Cooldown.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Leaderboards.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Farming.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Pets.json", ReloadOnChange = true, Optional = false },
-            new() { Path = $"{directoryPath}/Auctions.json", ReloadOnChange = true, Optional = false },
-        });
-        
-        return configurationBuilder;
-    }
+		services.AddAuthorization(options => {
+			options.AddPolicy(ApiUserPolicies.Admin,
+				policy => policy.RequireRole(ApiUserPolicies.Admin));
+			options.AddPolicy(ApiUserPolicies.Moderator,
+				policy => policy.RequireRole(ApiUserPolicies.Moderator, ApiUserPolicies.Admin));
+			options.AddPolicy(ApiUserPolicies.Support,
+				policy => policy.RequireRole(ApiUserPolicies.Support, ApiUserPolicies.Moderator,
+					ApiUserPolicies.Admin));
+			options.AddPolicy(ApiUserPolicies.Wiki,
+				policy => policy.RequireRole(ApiUserPolicies.Wiki, ApiUserPolicies.Support, ApiUserPolicies.Moderator,
+					ApiUserPolicies.Admin));
+			options.AddPolicy(ApiUserPolicies.User,
+				policy => policy.RequireRole(ApiUserPolicies.User));
+			options.AddGuildAdminPolicies();
+		});
 
-    public static WebApplicationBuilder RegisterEliteConfigFiles(this WebApplicationBuilder builder)
-    {
-        builder.Configuration.RegisterEliteConfigFiles();
+		return services;
+	}
 
-        builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
-        builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
-        builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
-        builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("Farming"));
-        builder.Services.Configure<ChocolateFactorySettings>(builder.Configuration.GetSection("ChocolateFactory"));
-        builder.Services.Configure<MessagingSettings>(builder.Configuration.GetSection("Messaging"));
-        builder.Services.Configure<ConfigEventSettings>(builder.Configuration.GetSection("Events"));
-        builder.Services.Configure<SkyblockPetSettings>(builder.Configuration.GetSection("Pets"));
-        builder.Services.Configure<AuctionHouseSettings>(builder.Configuration.GetSection("Auctions"));
+	public static IServiceCollection AddEliteScopedServices(this IServiceCollection services) {
+		services.AddHttpContextAccessor();
 
-        builder.Services.Configure<ConfigApiRateLimitSettings>(
-            builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));
+		services.AddScoped<ICacheService, CacheService>();
+		services.AddScoped<IHypixelService, HypixelService>();
+		services.AddScoped<IMojangService, MojangService>();
+		services.AddScoped<IProfileService, ProfileService>();
+		services.AddScoped<ITimescaleService, TimescaleService>();
+		services.RegisterServicesFromEliteAPI();
 
-        builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
-            .Bind(ConfigGlobalRateLimitSettings.Settings);
-        
-        ImageMapper.Initialize(builder.Configuration);
-        
-        return builder;
-    }
-    
-    /// <summary>
-    /// Determines if an IP address is within one of the RFC 1918 private ranges.
-    /// </summary>
-    public static bool IsPrivate(this IPAddress ip)
-    {
-        if (IPAddress.IsLoopback(ip))
-        {
-            return true;
-        }
+		services.AddScoped<LocalOnlyMiddleware>();
+		services.AddScoped<DiscordBotOnlyFilter>();
 
-        if (ip.IsIPv4MappedToIPv6)
-        {
-            ip = ip.MapToIPv4();
-        }
-        
-        if (ConfigGlobalRateLimitSettings.Settings.WhitelistedIp != string.Empty)
-        {
-            if (ip.ToString() == ConfigGlobalRateLimitSettings.Settings.WhitelistedIp)
-            {
-                return true;
-            }
-        }
+		return services;
+	}
 
-        if (ip.AddressFamily != AddressFamily.InterNetwork)
-        {
-            return false;
-        }
+	public static IServiceCollection AddEliteRedisCache(this IServiceCollection services) {
+		var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6380";
+		var config = new ConfigurationOptions {
+			EndPoints = { redisConnection },
+			Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD"),
+			AbortOnConnectFail = false,
+			ConnectRetry = 5
+		};
+		var multiplexer = ConnectionMultiplexer.Connect(config);
 
-        var ipBytes = ip.GetAddressBytes();
+		services
+			.AddSingleton<IConnectionMultiplexer>(multiplexer)
+			.AddOutputCache(options => {
+				options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
 
-        return ipBytes[0] switch
-        {
-            // Range: 10.0.0.0/8
-            10 => true,
-            // Range: 172.16.0.0/12
-            172 => ipBytes[1] >= 16 && ipBytes[1] <= 31,
-            // Range: 192.168.0.0/16
-            192 => ipBytes[1] == 168,
-            _ => false
-        };
-    }
+				options.AddPolicy(CachePolicy.Hours, policy => {
+					policy.Cache();
+					policy.Expire(TimeSpan.FromHours(4));
+					policy.Tag("hours");
+				});
 
-    public static bool IsKnownBot(this HttpContext? context)
-    {
-        if (context is null) return false;
-        return context.Items.TryGetValue("known_bot", out var isKnownBot) && isKnownBot is true;
-    }
+				options.AddPolicy(CachePolicy.NoCache, policy => { policy.NoCache(); });
+			}).AddStackExchangeRedisOutputCache(options => {
+				options.Configuration = config.ToString();
+				options.InstanceName = "EliteAPI-OutputCache";
+			}).AddStackExchangeRedisCache(options => {
+				options.Configuration = config.ToString();
+				options.InstanceName = "EliteAPI";
+			});
+
+		return services;
+	}
+
+	public static IConfigurationBuilder RegisterEliteConfigFiles(this IConfigurationBuilder configurationBuilder,
+		string directoryPath = "Configuration") {
+		configurationBuilder.Sources.AddRange(new List<JsonConfigurationSource> {
+			new() { Path = $"{directoryPath}/Weight.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/Cooldown.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/Leaderboards.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/Farming.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/Pets.json", ReloadOnChange = true, Optional = false },
+			new() { Path = $"{directoryPath}/Auctions.json", ReloadOnChange = true, Optional = false }
+		});
+
+		return configurationBuilder;
+	}
+
+	public static WebApplicationBuilder RegisterEliteConfigFiles(this WebApplicationBuilder builder) {
+		builder.Configuration.RegisterEliteConfigFiles();
+
+		builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
+		builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
+		builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
+		builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("Farming"));
+		builder.Services.Configure<ChocolateFactorySettings>(builder.Configuration.GetSection("ChocolateFactory"));
+		builder.Services.Configure<MessagingSettings>(builder.Configuration.GetSection("Messaging"));
+		builder.Services.Configure<ConfigEventSettings>(builder.Configuration.GetSection("Events"));
+		builder.Services.Configure<SkyblockPetSettings>(builder.Configuration.GetSection("Pets"));
+		builder.Services.Configure<AuctionHouseSettings>(builder.Configuration.GetSection("Auctions"));
+
+		builder.Services.Configure<ConfigApiRateLimitSettings>(
+			builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));
+
+		builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
+			.Bind(ConfigGlobalRateLimitSettings.Settings);
+
+		ImageMapper.Initialize(builder.Configuration);
+
+		return builder;
+	}
+
+	/// <summary>
+	/// Determines if an IP address is within one of the RFC 1918 private ranges.
+	/// </summary>
+	public static bool IsPrivate(this IPAddress ip) {
+		if (IPAddress.IsLoopback(ip)) return true;
+
+		if (ip.IsIPv4MappedToIPv6) ip = ip.MapToIPv4();
+
+		if (ConfigGlobalRateLimitSettings.Settings.WhitelistedIp != string.Empty)
+			if (ip.ToString() == ConfigGlobalRateLimitSettings.Settings.WhitelistedIp)
+				return true;
+
+		if (ip.AddressFamily != AddressFamily.InterNetwork) return false;
+
+		var ipBytes = ip.GetAddressBytes();
+
+		return ipBytes[0] switch {
+			// Range: 10.0.0.0/8
+			10 => true,
+			// Range: 172.16.0.0/12
+			172 => ipBytes[1] >= 16 && ipBytes[1] <= 31,
+			// Range: 192.168.0.0/16
+			192 => ipBytes[1] == 168,
+			_ => false
+		};
+	}
+
+	public static bool IsKnownBot(this HttpContext? context) {
+		if (context is null) return false;
+		return context.Items.TryGetValue("known_bot", out var isKnownBot) && isKnownBot is true;
+	}
 }
 
 public static class CachePolicy {
-    public const string NoCache = "NoCache";
-    public const string Hours = "Hours";
+	public const string NoCache = "NoCache";
+	public const string Hours = "Hours";
 }

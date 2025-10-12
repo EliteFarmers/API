@@ -6,24 +6,22 @@ using FastEndpoints;
 namespace EliteAPI.Features.Announcements;
 
 internal sealed class CreateAnnouncementEndpoint(
-    IAnnouncementService announcementService
-) : Endpoint<CreateAnnouncementDto> 
-{
-    public override void Configure() {
-        Post("/announcements/create");
-        Policies(ApiUserPolicies.Admin);
-        Version(0);
-        
-        Summary(s => {
-            s.Summary = "Create an announcement";
-            s.Description = "Creates a new announcement that will be displayed to users";
-        });
-    }
+	IAnnouncementService announcementService
+) : Endpoint<CreateAnnouncementDto> {
+	public override void Configure() {
+		Post("/announcements/create");
+		Policies(ApiUserPolicies.Admin);
+		Version(0);
 
-    public override async Task HandleAsync(CreateAnnouncementDto request, CancellationToken c)
-    {
-        await announcementService.CreateAnnouncementAsync(request, c);
-		
-        await Send.NoContentAsync(c);
-    }
+		Summary(s => {
+			s.Summary = "Create an announcement";
+			s.Description = "Creates a new announcement that will be displayed to users";
+		});
+	}
+
+	public override async Task HandleAsync(CreateAnnouncementDto request, CancellationToken c) {
+		await announcementService.CreateAnnouncementAsync(request, c);
+
+		await Send.NoContentAsync(c);
+	}
 }

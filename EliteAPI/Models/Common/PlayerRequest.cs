@@ -7,7 +7,8 @@ public class PlayerRequest {
 	/// <summary>
 	/// Player uuid or ign
 	/// </summary>
-	[RouteParam, BindFrom("player")]
+	[RouteParam]
+	[BindFrom("player")]
 	public required string Player { get; set; }
 }
 

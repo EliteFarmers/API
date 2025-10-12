@@ -9,16 +9,13 @@ namespace EliteAPI.Features.Contests.GetSelectedMemberParticipations;
 internal sealed class GetSelectedMemberParticipationsEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context)
-	: Endpoint<PlayerUuidRequest, List<ContestParticipationDto>> 
-{
+	: Endpoint<PlayerUuidRequest, List<ContestParticipationDto>> {
 	public override void Configure() {
 		Get("/contests/{PlayerUuid}/selected");
 		AllowAnonymous();
 		ResponseCache(600);
-		
-		Summary(s => {
-			s.Summary = "Get contests for the player's selected profile member";
-		});
+
+		Summary(s => { s.Summary = "Get contests for the player's selected profile member"; });
 	}
 
 	public override async Task HandleAsync(PlayerUuidRequest request, CancellationToken ct) {
@@ -28,15 +25,15 @@ internal sealed class GetSelectedMemberParticipationsEndpoint(
 			.ThenInclude(j => j.Contests)
 			.ThenInclude(c => c.JacobContest)
 			.AsSplitQuery()
-			.FirstOrDefaultAsync(cancellationToken: ct);
-		
+			.FirstOrDefaultAsync(ct);
+
 		if (profileMember is null) {
 			await Send.NotFoundAsync(ct);
 			return;
 		}
 
 		var data = mapper.Map<List<ContestParticipationDto>>(profileMember.JacobData.Contests);
-		
-		await Send.OkAsync(data, cancellation: ct);
+
+		await Send.OkAsync(data, ct);
 	}
 }

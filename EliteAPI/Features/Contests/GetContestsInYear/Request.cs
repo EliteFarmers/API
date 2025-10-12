@@ -7,6 +7,7 @@ internal sealed class GetContestsInYearRequest : SkyBlockYearRequest {
 	/// <summary>
 	/// If the year being requested is the current year. Not required.
 	/// </summary>
-	[QueryParam, DefaultValue(false)]
+	[QueryParam]
+	[DefaultValue(false)]
 	public bool? Now { get; set; }
 }

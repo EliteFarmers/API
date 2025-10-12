@@ -12,11 +12,11 @@ public class AcaciaLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LOG_2";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -33,11 +33,11 @@ public class BirchLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LOG:2";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -54,11 +54,11 @@ public class DarkOakLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LOG_2:1";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -75,11 +75,11 @@ public class JungleLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LOG:3";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -96,11 +96,11 @@ public class OakLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LOG";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -117,11 +117,11 @@ public class SpruceLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LOG:1";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -138,11 +138,11 @@ public class SeaLumiesLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 5_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "SEA_LUMIES";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -159,11 +159,11 @@ public class VinesapLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 1_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "VINESAP";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -180,11 +180,11 @@ public class LushlilacLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 500,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "LUSHLILAC";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -201,11 +201,11 @@ public class MangroveLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "MANGROVE_LOG";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -222,11 +222,11 @@ public class FigLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "FIG_LOG";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -243,11 +243,11 @@ public class TenderWoodLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Foraging",
 		MinimumScore = 1_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "TENDER_WOOD";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 

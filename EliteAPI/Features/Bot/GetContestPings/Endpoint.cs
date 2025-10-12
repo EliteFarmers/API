@@ -10,16 +10,13 @@ namespace EliteAPI.Features.Bot.GetContestPings;
 internal sealed class GetContestPingsEndpoint(
 	DataContext context
 ) : EndpointWithoutRequest<List<ContestPingsFeatureDto>> {
-	
 	public override void Configure() {
 		Get("/bot/contestpings");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
 		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get list of guilds with contest pings enabled";
-		});
+		Summary(s => { s.Summary = "Get list of guilds with contest pings enabled"; });
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
@@ -27,7 +24,7 @@ internal sealed class GetContestPingsEndpoint(
 			.Where(g => g.Features.ContestPingsEnabled == true
 			            && g.Features.ContestPings != null
 			            && g.Features.ContestPings.Enabled)
-			.ToListAsync(cancellationToken: c);
+			.ToListAsync(c);
 
 		var result = guilds
 			.Where(g => !string.IsNullOrWhiteSpace(g.Features.ContestPings!.ChannelId))
@@ -40,7 +37,7 @@ internal sealed class GetContestPingsEndpoint(
 				DisabledReason = g.Features.ContestPings?.DisabledReason ?? string.Empty,
 				Enabled = g.Features.ContestPings?.Enabled ?? false
 			}).ToList();
-		
-		await Send.OkAsync(result, cancellation: c);
+
+		await Send.OkAsync(result, c);
 	}
 }

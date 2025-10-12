@@ -15,6 +15,6 @@ public class SkillMiningLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Mining;
+		return (decimal)member.Skills.Mining;
 	}
 }

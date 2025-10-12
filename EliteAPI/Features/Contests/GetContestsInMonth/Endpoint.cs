@@ -9,16 +9,13 @@ namespace EliteAPI.Features.Contests.GetContestsInMonth;
 internal sealed class GetContestsInMonthEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context)
-	: Endpoint<SkyBlockMonthRequest, Dictionary<int, List<JacobContestDto>>> 
-{
+	: Endpoint<SkyBlockMonthRequest, Dictionary<int, List<JacobContestDto>>> {
 	public override void Configure() {
 		Get("/contests/at/{Year}/{Month}");
 		AllowAnonymous();
 		ResponseCache(600);
-		
-		Summary(s => {
-			s.Summary = "Get all contests in a SkyBlock month";
-		});
+
+		Summary(s => { s.Summary = "Get all contests in a SkyBlock month"; });
 	}
 
 	public override async Task HandleAsync(SkyBlockMonthRequest request, CancellationToken ct) {
@@ -27,7 +24,7 @@ internal sealed class GetContestsInMonthEndpoint(
 
 		var contests = await context.JacobContests
 			.Where(j => j.Timestamp >= startTime && j.Timestamp < endTime)
-			.ToListAsync(cancellationToken: ct);
+			.ToListAsync(ct);
 
 		var mappedContests = mapper.Map<List<JacobContestDto>>(contests);
 
@@ -38,15 +35,11 @@ internal sealed class GetContestsInMonthEndpoint(
 			var day = skyblockDate.Day + 1;
 
 			if (data.TryGetValue(day, out var value))
-			{
 				value.Add(contest);
-			}
 			else
-			{
 				data.Add(day, [contest]);
-			}
 		}
-		
-		await Send.OkAsync(data, cancellation: ct);
+
+		await Send.OkAsync(data, ct);
 	}
 }

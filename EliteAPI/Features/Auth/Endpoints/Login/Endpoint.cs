@@ -5,8 +5,7 @@ namespace EliteAPI.Features.Auth.Login;
 
 internal sealed class LoginEndpoint(
 	IAuthService authService
-	) : Endpoint<DiscordLoginDto, AuthResponseDto> 
-{
+) : Endpoint<DiscordLoginDto, AuthResponseDto> {
 	public override void Configure() {
 		Post("/auth/login");
 		AllowAnonymous();
@@ -18,15 +17,14 @@ internal sealed class LoginEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(DiscordLoginDto request, CancellationToken c) 
-	{
+	public override async Task HandleAsync(DiscordLoginDto request, CancellationToken c) {
 		var user = await authService.LoginAsync(request);
-		
+
 		if (user is null) {
-			await Send.UnauthorizedAsync(cancellation: c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
-		
-		await Send.OkAsync(user, cancellation: c);
+
+		await Send.OkAsync(user, c);
 	}
 }

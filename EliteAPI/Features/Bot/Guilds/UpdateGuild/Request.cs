@@ -5,8 +5,7 @@ using FastEndpoints;
 namespace EliteAPI.Features.Bot.Guilds.UpdateGuild;
 
 public class BotUpdateGuildRequest : DiscordIdRequest {
-	[FromBody]
-	public required IncomingGuildDto Guild { get; set; }
+	[FromBody] public required IncomingGuildDto Guild { get; set; }
 }
 
 internal sealed class BotUpdateGuildRequestValidator : Validator<BotUpdateGuildRequest> {

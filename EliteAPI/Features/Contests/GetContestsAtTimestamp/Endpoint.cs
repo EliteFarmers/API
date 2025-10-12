@@ -6,6 +6,7 @@ namespace EliteAPI.Features.Contests.GetContestsAtTimestamp;
 
 public class GetContestsAtTimestampRequest {
 	public long Timestamp { get; set; }
+
 	/// <summary>
 	/// Limit the number of participations returned in each contest.
 	/// </summary>
@@ -15,26 +16,21 @@ public class GetContestsAtTimestampRequest {
 
 internal sealed class GetContestsAtTimestampEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetContestsAtTimestampRequest, List<JacobContestWithParticipationsDto>> 
-{
+	: Endpoint<GetContestsAtTimestampRequest, List<JacobContestWithParticipationsDto>> {
 	public override void Configure() {
 		Get("/contests/{Timestamp:long}");
 		AllowAnonymous();
-		ResponseCache(600, varyByQueryKeys: [ "limit" ]);
-		
-		Summary(s => {
-			s.Summary = "Get the three contests that start at a specific timestamp";
-		});
+		ResponseCache(600, varyByQueryKeys: ["limit"]);
+
+		Summary(s => { s.Summary = "Get the three contests that start at a specific timestamp"; });
 	}
 
 	public override async Task HandleAsync(GetContestsAtTimestampRequest request, CancellationToken ct) {
 		var skyblockDate = new SkyblockDate(request.Timestamp);
-		if (!skyblockDate.IsValid()) {
-			ThrowError("Invalid timestamp");
-		}
+		if (!skyblockDate.IsValid()) ThrowError("Invalid timestamp");
 
 		var result = await contestsService.GetContestsAt(skyblockDate.StartOfDayTimestamp(), request.Limit);
-		
-		await Send.OkAsync(result, cancellation: ct);
+
+		await Send.OkAsync(result, ct);
 	}
 }

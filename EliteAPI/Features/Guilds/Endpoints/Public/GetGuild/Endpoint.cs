@@ -9,20 +9,15 @@ namespace EliteAPI.Features.Guilds.Public.GetGuild;
 internal sealed class GetPublicGuildEndpoint(
 	IDiscordService discordService,
 	AutoMapper.IMapper mapper
-	) : Endpoint<DiscordIdRequest, PublicGuildDto>
-{
+) : Endpoint<DiscordIdRequest, PublicGuildDto> {
 	public override void Configure() {
 		Get("/guild/{DiscordId}");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get public guild";
-		});
-		
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(2)).Tag("guild"));
-		});
+		Summary(s => { s.Summary = "Get public guild"; });
+
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromHours(2)).Tag("guild")); });
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
@@ -31,8 +26,8 @@ internal sealed class GetPublicGuildEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-        
+
 		var mapped = mapper.Map<PublicGuildDto>(guild);
-		await Send.OkAsync(mapped, cancellation: c);
+		await Send.OkAsync(mapped, c);
 	}
 }

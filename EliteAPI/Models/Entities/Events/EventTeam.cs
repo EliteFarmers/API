@@ -6,27 +6,23 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace EliteAPI.Models.Entities.Events;
 
 public class EventTeam {
-	[Key] [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	[Key]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
-	
-	[MaxLength(64)]
-	public required string Name { get; set; }
-	[MaxLength(6)]
-	public string? Color { get; set; }
 
-	[MaxLength(6)] 
-	public string JoinCode { get; set; } = NewJoinCode();
+	[MaxLength(64)] public required string Name { get; set; }
+	[MaxLength(6)] public string? Color { get; set; }
+
+	[MaxLength(6)] public string JoinCode { get; set; } = NewJoinCode();
 
 	public List<EventMember> Members { get; set; } = [];
 	public double Score => Members.Sum(m => m.Score);
-	
-	[MaxLength(22)]
-	public required string UserId { get; set; }
-	
-	[ForeignKey("Event")]
-	public ulong EventId { get; set; }
+
+	[MaxLength(22)] public required string UserId { get; set; }
+
+	[ForeignKey("Event")] public ulong EventId { get; set; }
 	public Event Event { get; set; } = null!;
-	
+
 	public static string NewJoinCode() {
 		return Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..6].ToUpperInvariant();
 	}
@@ -36,10 +32,8 @@ public class EventTeam {
 	}
 }
 
-public class EventTeamEntityConfiguration : IEntityTypeConfiguration<EventTeam>
-{
-	public void Configure(EntityTypeBuilder<EventTeam> builder)
-	{
+public class EventTeamEntityConfiguration : IEntityTypeConfiguration<EventTeam> {
+	public void Configure(EntityTypeBuilder<EventTeam> builder) {
 		builder.HasIndex(e => new { e.EventId, e.UserId }).IsUnique();
 	}
 }

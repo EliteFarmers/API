@@ -12,7 +12,6 @@ internal sealed class UpdateJacobFeatureEndpoint(
 	DataContext context,
 	IDiscordService discordService
 ) : Endpoint<UpdateJacobFeatureRequest, GuildJacobLeaderboardFeature> {
-
 	public override void Configure() {
 		Put("/bot/{DiscordId}/jacob");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
@@ -46,6 +45,6 @@ internal sealed class UpdateJacobFeatureEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

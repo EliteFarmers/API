@@ -12,16 +12,13 @@ internal sealed class GetAllProductsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : EndpointWithoutRequest<List<ProductDto>> {
-	
 	public override void Configure() {
 		Get("/products/admin");
 		Policies(ApiUserPolicies.Moderator);
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Admin Shop Products";
-		});
-		
+		Summary(s => { s.Summary = "Get Admin Shop Products"; });
+
 		Description(d => d.AutoTagOverride("Product"));
 	}
 
@@ -30,8 +27,8 @@ internal sealed class GetAllProductsEndpoint(
 			.Include(p => p.WeightStyles)
 			.Include(p => p.Images)
 			.Select(x => mapper.Map<ProductDto>(x))
-			.ToListAsync(cancellationToken: c);
-		
-		await Send.OkAsync(result, cancellation: c);
+			.ToListAsync(c);
+
+		await Send.OkAsync(result, c);
 	}
 }

@@ -16,29 +16,27 @@ public partial class DefaultApiVersionFilter(IOptions<ApiExplorerOptions> option
 	public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context) {
 		var versionSegment = DefaultApiVersion.ToString(ApiVersionFormat);
 
-		foreach (var apiDescription in context.ApiDescriptions)
-		{
+		foreach (var apiDescription in context.ApiDescriptions) {
 			if (apiDescription.RelativePath == null) continue;
-			
+
 			// If the version is default remove paths like: v1/[controller]/
 			if (apiDescription.GetApiVersion() == DefaultApiVersion) {
 				if (!apiDescription.RelativePath.Contains(versionSegment)) continue;
-				
+
 				var path = "/" + apiDescription.RelativePath;
 				swaggerDoc.Paths.Remove(path);
 			}
 			// If the version is not default remove paths like [controller]/
-			else
-			{
+			else {
 				var match = PathRegex().Match(apiDescription.RelativePath);
 				if (match.Success) continue;
-				
+
 				var path = "/" + apiDescription.RelativePath;
 				swaggerDoc.Paths.Remove(path);
 			}
 		}
 	}
 
-    [GeneratedRegex(@"^\/v\d+")]
-    private static partial Regex PathRegex();
+	[GeneratedRegex(@"^\/v\d+")]
+	private static partial Regex PathRegex();
 }

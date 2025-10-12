@@ -5,24 +5,20 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
-public class ProfileBankingMapper : Profile
-{
-    public ProfileBankingMapper()
-    {
-        CreateMap<ProfileBankingResponse, ProfileBanking>()
-            .ForMember(x => x.Transactions, x => x.MapFrom(y => y.Transactions));
+public class ProfileBankingMapper : Profile {
+	public ProfileBankingMapper() {
+		CreateMap<ProfileBankingResponse, ProfileBanking>()
+			.ForMember(x => x.Transactions, x => x.MapFrom(y => y.Transactions));
 
-        CreateMap<ProfileBanking, ProfileBankingDto>()
-            .ForMember(x => x.Balance, x => x.MapFrom(y => y.Balance));
-    }
+		CreateMap<ProfileBanking, ProfileBankingDto>()
+			.ForMember(x => x.Balance, x => x.MapFrom(y => y.Balance));
+	}
 }
 
-public class ProfileBankingTransactionMapper : Profile
-{
-    public ProfileBankingTransactionMapper()
-    {
-        CreateMap<RawTransaction, ProfileBankingTransaction>();
+public class ProfileBankingTransactionMapper : Profile {
+	public ProfileBankingTransactionMapper() {
+		CreateMap<RawTransaction, ProfileBankingTransaction>();
 
-        CreateMap<ProfileBankingTransaction, ProfileBankingTransactionDto>();
-    }
+		CreateMap<ProfileBankingTransaction, ProfileBankingTransactionDto>();
+	}
 }

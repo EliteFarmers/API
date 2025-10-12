@@ -13,8 +13,7 @@ namespace EliteAPI.Features.Weight.GetWeightProfiles;
 using Result = Results<Ok<FarmingWeightAllProfilesDto>, NotFound>;
 
 internal sealed class GetWeightForProfilesRequest : PlayerUuidRequest {
-	[QueryParam, DefaultValue(false)]
-	public bool? Collections { get; set; } = false;
+	[QueryParam] [DefaultValue(false)] public bool? Collections { get; set; } = false;
 }
 
 internal sealed class GetWeightForProfilesEndpoint(
@@ -22,23 +21,20 @@ internal sealed class GetWeightForProfilesEndpoint(
 	IMemberService memberService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetWeightForProfilesRequest, Result> {
-	
 	public override void Configure() {
 		Get("/weight/{PlayerUuid}");
 		AllowAnonymous();
 		Version(0);
-		
+
 		Description(x => x.Accepts<GetWeightForProfilesRequest>());
 
 		Summary(s => {
 			s.Summary = "Get farming weight for all profiles of a player";
 			s.Description = "Get farming weight for all profiles of a player";
 		});
-		
-		ResponseCache(120, varyByQueryKeys: [ "collections" ]);
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)));
-		});
+
+		ResponseCache(120, varyByQueryKeys: ["collections"]);
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2))); });
 	}
 
 	public override async Task<Result> ExecuteAsync(GetWeightForProfilesRequest request, CancellationToken c) {
@@ -50,25 +46,21 @@ internal sealed class GetWeightForProfilesEndpoint(
 			.Where(x => x.PlayerUuid.Equals(uuid) && !x.WasRemoved)
 			.Include(x => x.Farming)
 			.Include(x => x.Profile)
-			.ToListAsync(cancellationToken: c);
-        
-		if (members.Count == 0)
-		{
-			return TypedResults.NotFound();
-		}
+			.ToListAsync(c);
+
+		if (members.Count == 0) return TypedResults.NotFound();
 
 		var dto = new FarmingWeightAllProfilesDto {
 			SelectedProfileId = members.FirstOrDefault(p => p.IsSelected)?.ProfileId,
 			Profiles = members.Select(m => {
 				var mapped = mapper.Map<FarmingWeightWithProfileDto>(m);
-				if (request.Collections is true) {
+				if (request.Collections is true)
 					mapped.Crops = m.ExtractCropCollections()
 						.ToDictionary(k => k.Key.ProperName(), v => v.Value);
-				}
 				return mapped;
 			}).ToList()
 		};
-		
+
 		return TypedResults.Ok(dto);
 	}
 }

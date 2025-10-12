@@ -9,7 +9,6 @@ namespace EliteAPI.Features.Bot.Accounts.MakePrimary;
 internal sealed class MakePrimaryAccountEndpoint(
 	IAccountService accountService
 ) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
-	
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/{Player}/primary");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
@@ -17,10 +16,8 @@ internal sealed class MakePrimaryAccountEndpoint(
 		Version(0);
 
 		Description(x => x.Accepts<DiscordIdPlayerRequest>());
-		
-		Summary(s => {
-			s.Summary = "Make Primary Account";
-		});
+
+		Summary(s => { s.Summary = "Make Primary Account"; });
 	}
 
 	public override async Task<ErrorOr<Success>> ExecuteAsync(DiscordIdPlayerRequest request, CancellationToken c) {

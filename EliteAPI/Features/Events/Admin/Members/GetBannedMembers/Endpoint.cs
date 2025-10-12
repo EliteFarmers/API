@@ -16,28 +16,25 @@ internal sealed class GetBannedMembersAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<GetBannedMembersRequest, List<AdminEventMemberDto>> {
-
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/bans");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get banned event members";
-		});
+		Summary(s => { s.Summary = "Get banned event members"; });
 	}
 
 	public override async Task HandleAsync(GetBannedMembersRequest request, CancellationToken c) {
 		var @event = await context.Events
-			.Where(e => e.GuildId == request.DiscordIdUlong && e.Id == request.EventId) 
+			.Where(e => e.GuildId == request.DiscordIdUlong && e.Id == request.EventId)
 			.AsNoTracking()
-			.FirstOrDefaultAsync(cancellationToken: c);
+			.FirstOrDefaultAsync(c);
 
 		if (@event is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var members = await context.EventMembers
 			.Include(m => m.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)
@@ -46,10 +43,10 @@ internal sealed class GetBannedMembersAdminEndpoint(
 			.AsNoTracking()
 			.Where(em => em.EventId == @event.Id &&
 			             (em.Status == EventMemberStatus.Disqualified || em.Status == EventMemberStatus.Left))
-			.ToListAsync(cancellationToken: c);
-        
+			.ToListAsync(c);
+
 		var result = mapper.Map<List<AdminEventMemberDto>>(members);
-		await Send.OkAsync(result, cancellation: c);
+		await Send.OkAsync(result, c);
 	}
 }
 

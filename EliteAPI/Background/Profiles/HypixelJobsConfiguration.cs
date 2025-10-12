@@ -4,20 +4,19 @@ using Quartz;
 namespace EliteAPI.Background.Profiles;
 
 public class HypixelJobsConfiguration : IConfigureOptions<QuartzOptions> {
-	public void Configure(QuartzOptions options)
-	{
+	public void Configure(QuartzOptions options) {
 		// Process Contests
 		options.AddJob<ProcessContestsBackgroundJob>(builder => {
 			builder.WithIdentity(ProcessContestsBackgroundJob.Key);
 			builder.StoreDurably();
 		});
-		
+
 		// Process Remaining Members
 		options.AddJob<ProcessRemainingMembersBackgroundJob>(builder => {
 			builder.WithIdentity(ProcessRemainingMembersBackgroundJob.Key);
 			builder.StoreDurably();
 		});
-		
+
 		// Refresh Garden
 		options.AddJob<RefreshGardenBackgroundJob>(builder => {
 			builder.WithIdentity(RefreshGardenBackgroundJob.Key);

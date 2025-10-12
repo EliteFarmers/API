@@ -11,22 +11,18 @@ internal sealed class SetGuildPublicEndpoint(
 	IDiscordService discordService,
 	IOutputCacheStore cacheStore,
 	DataContext context)
-	: Endpoint<SetGuildPublicRequest>
-{
+	: Endpoint<SetGuildPublicRequest> {
 	public override void Configure() {
 		Post("/guild/{DiscordId}/public");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
+
 		Description(x => x.Accepts<SetGuildPublicRequest>());
 
-		Summary(s => {
-			s.Summary = "Set a guild to public or private";
-		});
+		Summary(s => { s.Summary = "Set a guild to public or private"; });
 	}
 
-	public override async Task HandleAsync(SetGuildPublicRequest request, CancellationToken c) 
-	{
+	public override async Task HandleAsync(SetGuildPublicRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await Send.NotFoundAsync(c);
@@ -34,12 +30,12 @@ internal sealed class SetGuildPublicEndpoint(
 		}
 
 		guild.IsPublic = request.Public ?? true;
-		
+
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
-		
+
 		await cacheStore.EvictByTagAsync("guilds", c);
-		
-		await Send.NoContentAsync(cancellation: c);
+
+		await Send.NoContentAsync(c);
 	}
 }

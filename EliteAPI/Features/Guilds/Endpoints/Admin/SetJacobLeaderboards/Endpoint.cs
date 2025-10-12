@@ -10,8 +10,7 @@ namespace EliteAPI.Features.Guilds.Admin.SetJacobLeaderboards;
 internal sealed class SetJacobFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context)
-	: Endpoint<SetJacobFeatureRequest>
-{
+	: Endpoint<SetJacobFeatureRequest> {
 	public override void Configure() {
 		Post("/guild/{DiscordId}/jacob");
 		Policies(ApiUserPolicies.Admin);
@@ -19,13 +18,10 @@ internal sealed class SetJacobFeatureEndpoint(
 
 		Description(x => x.Accepts<SetJacobFeatureRequest>());
 
-		Summary(s => {
-			s.Summary = "Modify guild jacob permissions";
-		});
+		Summary(s => { s.Summary = "Modify guild jacob permissions"; });
 	}
 
-	public override async Task HandleAsync(SetJacobFeatureRequest request, CancellationToken c) 
-	{
+	public override async Task HandleAsync(SetJacobFeatureRequest request, CancellationToken c) {
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await Send.NotFoundAsync(c);
@@ -33,12 +29,13 @@ internal sealed class SetJacobFeatureEndpoint(
 		}
 
 		guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
-		guild.Features.JacobLeaderboard.MaxLeaderboards = request.Max ?? guild.Features.JacobLeaderboard.MaxLeaderboards;
+		guild.Features.JacobLeaderboard.MaxLeaderboards =
+			request.Max ?? guild.Features.JacobLeaderboard.MaxLeaderboards;
 		guild.Features.JacobLeaderboardEnabled = request.Enable ?? guild.Features.JacobLeaderboardEnabled;
 
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
-		
-		await Send.NoContentAsync(cancellation: c);
+
+		await Send.NoContentAsync(c);
 	}
 }

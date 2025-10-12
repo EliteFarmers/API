@@ -13,8 +13,7 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Features.Leaderboards.Services;
 
-public interface ILbService
-{
+public interface ILbService {
 	Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId);
 
 	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20,
@@ -22,10 +21,11 @@ public interface ILbService
 
 	Task<LeaderboardEntryWithRankDto?> GetLastLeaderboardEntry(string leaderboardId, string? gameMode = null,
 		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null);
+
 	Task<string?> GetFirstInterval(string leaderboardId);
 	double GetLeaderboardMinScore(string leaderboardId);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
-	Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile, CancellationToken c);
+	Task UpdateProfileLeaderboardsAsync(Profile profile, CancellationToken c);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(string profileId);
 
@@ -36,14 +36,16 @@ public interface ILbService
 		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, CancellationToken? c = null);
-	
+
 	Task<LeaderboardPositionDto> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId,
 		int? upcoming = null, int? previous = null, int? atRank = null, string? gameMode = null,
-		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false, CancellationToken? c = null);
-	
+		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false,
+		CancellationToken? c = null);
+
 	Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(string leaderboardId, string resourceId,
 		int? upcoming = null, int? previous = null, int? atRank = null, string? gameMode = null,
-		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false, CancellationToken? c = null);
+		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false,
+		CancellationToken? c = null);
 
 	(long start, long end) GetCurrentTimeRange(LeaderboardType type);
 }
@@ -55,10 +57,8 @@ public class LbService(
 	IConnectionMultiplexer redis,
 	IMemberService memberService,
 	DataContext context)
-	: ILbService
-{
-	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId)
-	{
+	: ILbService {
+	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return (null, null);
 
 		var lb = await context.Leaderboards
@@ -70,13 +70,11 @@ public class LbService(
 
 	public async Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0,
 		int limit = 20, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
-		string? identifier = null)
-	{
+		string? identifier = null) {
 		var (lb, definition) = await GetLeaderboard(leaderboardId);
 		if (lb is null || definition is null) return [];
 
 		if (definition is IMemberLeaderboardDefinition)
-		{
 			return await context.LeaderboardEntries.AsNoTracking()
 				.FromLeaderboard(lb.LeaderboardId, true)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
@@ -85,10 +83,8 @@ public class LbService(
 				.Take(limit)
 				.MapToMemberLeaderboardEntries(limit <= 20)
 				.ToListAsync();
-		}
 
 		if (definition is IProfileLeaderboardDefinition)
-		{
 			return await context.LeaderboardEntries.AsNoTracking()
 				.FromLeaderboard(lb.LeaderboardId, false)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
@@ -97,39 +93,31 @@ public class LbService(
 				.Take(limit)
 				.MapToProfileLeaderboardEntries(removedFilter)
 				.ToListAsync();
-		}
 
 		return [];
 	}
 
 	public async Task<LeaderboardEntryWithRankDto?> GetLastLeaderboardEntry(string leaderboardId,
-		string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null)
-	{
+		string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null) {
 		var (lb, definition) = await GetLeaderboard(leaderboardId);
 		if (lb is null || definition is null) return null;
 
 		var key = $"leaderboard-max:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "current"}:{removedFilter}";
 		var db = redis.GetDatabase();
-		if (await db.KeyExistsAsync(key))
-		{
+		if (await db.KeyExistsAsync(key)) {
 			var uuid = await db.StringGetAsync(key);
-			if (uuid.HasValue)
-			{
-				return JsonSerializer.Deserialize<LeaderboardEntryWithRankDto>(uuid.ToString());
-			}
+			if (uuid.HasValue) return JsonSerializer.Deserialize<LeaderboardEntryWithRankDto>(uuid.ToString());
 		}
 
 		LeaderboardEntryWithRankDto? entry = null;
 		var rank = -1;
 
-		if (definition is IMemberLeaderboardDefinition)
-		{
+		if (definition is IMemberLeaderboardDefinition) {
 			entry = await context.LeaderboardEntries.AsNoTracking()
 				.FromLeaderboard(lb.LeaderboardId, true)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.OrderBy(e => e.Score)
-				.Select(e => new LeaderboardEntryWithRankDto
-				{
+				.Select(e => new LeaderboardEntryWithRankDto {
 					Uuid = e.ProfileMember!.PlayerUuid,
 					Profile = e.ProfileMember.ProfileName,
 					Amount = (double)e.Score,
@@ -145,15 +133,13 @@ public class LbService(
 				.CountAsync() + 1;
 		}
 
-		if (definition is IProfileLeaderboardDefinition)
-		{
+		if (definition is IProfileLeaderboardDefinition) {
 			entry = await context.LeaderboardEntries.AsNoTracking()
 				.FromLeaderboard(lb.LeaderboardId, false)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.Include(e => e.Profile)
 				.OrderBy(e => e.Score)
-				.Select(e => new LeaderboardEntryWithRankDto
-				{
+				.Select(e => new LeaderboardEntryWithRankDto {
 					Uuid = e.Profile!.ProfileId,
 					Profile = e.Profile!.ProfileName,
 					Amount = (double)e.Score,
@@ -165,8 +151,7 @@ public class LbService(
 							(removedFilter == RemovedFilter.NotRemoved && m.WasRemoved == false)
 							|| (removedFilter == RemovedFilter.Removed && m.WasRemoved == true)
 							|| removedFilter == RemovedFilter.All)
-						.Select(m => new ProfileLeaderboardMemberDto
-						{
+						.Select(m => new ProfileLeaderboardMemberDto {
 							Ign = m.MinecraftAccount.Name,
 							Uuid = m.PlayerUuid,
 							Xp = m.SkyblockXp,
@@ -180,14 +165,10 @@ public class LbService(
 				.CountAsync() + 1;
 		}
 
-		if (entry is not null)
-		{
+		if (entry is not null) {
 			entry.Rank = rank;
 
-			if (rank != -1)
-			{
-				await db.StringSetAsync(key, JsonSerializer.Serialize(entry), TimeSpan.FromMinutes(1));
-			}
+			if (rank != -1) await db.StringSetAsync(key, JsonSerializer.Serialize(entry), TimeSpan.FromMinutes(1));
 
 			return entry;
 		}
@@ -200,20 +181,15 @@ public class LbService(
 	/// </summary>
 	/// <param name="leaderboardId"></param>
 	/// <returns></returns>
-	public async Task<string?> GetFirstInterval(string leaderboardId)
-	{
+	public async Task<string?> GetFirstInterval(string leaderboardId) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
-		
+
 		// Check redis cache first
 		var db = redis.GetDatabase();
 		var cacheKey = $"leaderboard-first-interval:{leaderboardId}";
-		if (await db.KeyExistsAsync(cacheKey))
-		{
+		if (await db.KeyExistsAsync(cacheKey)) {
 			var cachedValue = await db.StringGetAsync(cacheKey);
-			if (cachedValue.HasValue)
-			{
-				return cachedValue.ToString();
-			}
+			if (cachedValue.HasValue) return cachedValue.ToString();
 		}
 
 		var lb = await context.Leaderboards
@@ -227,23 +203,21 @@ public class LbService(
 			.OrderBy(e => e.IntervalIdentifier)
 			.Select(e => e.IntervalIdentifier)
 			.FirstOrDefaultAsync();
-		
+
 		if (firstEntry is null) return null;
-		
+
 		// Store the first interval in the cache for 1 hour
 		await db.StringSetAsync(cacheKey, firstEntry, TimeSpan.FromHours(3));
 
 		return firstEntry;
 	}
 
-	public double GetLeaderboardMinScore(string leaderboardId)
-	{
+	public double GetLeaderboardMinScore(string leaderboardId) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return 0;
 		return (double)definition.Info.MinimumScore;
 	}
 
-	public async Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c)
-	{
+	public async Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c) {
 		if (member.Profile?.GameMode == "bingo") return;
 		var time = DateTime.UtcNow;
 
@@ -261,21 +235,19 @@ public class LbService(
 				e.ProfileMemberId == member.Id
 				&& (e.IntervalIdentifier == monthlyInterval || e.IntervalIdentifier == weeklyInterval ||
 				    e.IntervalIdentifier == null))
-			.ToListAsync(cancellationToken: c);
+			.ToListAsync(c);
 
 		var existingEntries = new Dictionary<int, Models.LeaderboardEntry>();
 		List<Models.LeaderboardEntry>? failed = null;
 
 		// Add existing entries to a dictionary to check for duplicates
-		foreach (var entry in existingEntryList.Where(entry => !existingEntries.TryAdd(entry.LeaderboardId, entry)))
-		{
+		foreach (var entry in existingEntryList.Where(entry => !existingEntries.TryAdd(entry.LeaderboardId, entry))) {
 			failed ??= [];
 			failed.Add(entry);
 		}
 
 		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
-		if (failed is { Count: > 0 })
-		{
+		if (failed is { Count: > 0 }) {
 			await context.BulkDeleteAsync(failed, cancellationToken: c);
 			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Player}", failed.Count,
 				member.PlayerUuid);
@@ -285,16 +257,14 @@ public class LbService(
 		var newEntries = new List<Models.LeaderboardEntry>();
 		var ranRestore = false;
 
-		foreach (var (slug, definition) in registrationService.LeaderboardsById)
-		{
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
 			if (definition is not IMemberLeaderboardDefinition memberLb) continue;
 
 			var useIncrease = definition.Info.UseIncreaseForInterval;
 			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
 
 			var type = GetTypeFromSlug(slug);
-			var intervalIdentifier = type switch
-			{
+			var intervalIdentifier = type switch {
 				LeaderboardType.Monthly => monthlyInterval,
 				LeaderboardType.Weekly => weeklyInterval,
 				_ => null
@@ -302,47 +272,38 @@ public class LbService(
 
 			var score = memberLb.GetScoreFromMember(member, type);
 
-			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry))
-			{
+			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				var changed = false;
 
-				if (entry.IsRemoved != member.WasRemoved)
-				{
+				if (entry.IsRemoved != member.WasRemoved) {
 					entry.IsRemoved = member.WasRemoved;
 					changed = true;
 
-					if (entry.IsRemoved == false && !ranRestore)
-					{
+					if (entry.IsRemoved == false && !ranRestore) {
 						await RestoreMemberLeaderboards(member.Id, c);
 						ranRestore = true;
 					}
 				}
 
-				if (score >= 0 && (score >= entry.InitialScore || !useIncrease))
-				{
-					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
+				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
+					var newScore = entry.IntervalIdentifier is not null && useIncrease
 						? score - entry.InitialScore
 						: score;
 
-					if (entry.Score != newScore)
-					{
+					if (entry.Score != newScore) {
 						entry.Score = newScore;
 						changed = true;
 					}
 				}
 
-				if (changed)
-				{
-					updatedEntries.Add(entry);
-				}
+				if (changed) updatedEntries.Add(entry);
 
 				continue;
 			}
 
 			if (score <= 0 || score < lb.MinimumScore) continue;
 
-			var newEntry = new Models.LeaderboardEntry()
-			{
+			var newEntry = new Models.LeaderboardEntry {
 				LeaderboardId = lb.LeaderboardId,
 				IntervalIdentifier = intervalIdentifier,
 
@@ -358,12 +319,9 @@ public class LbService(
 			newEntries.Add(newEntry);
 		}
 
-		if (updatedEntries.Count != 0)
-		{
-			var options = new BulkConfig()
-			{
-				PropertiesToIncludeOnUpdate =
-				[
+		if (updatedEntries.Count != 0) {
+			var options = new BulkConfig {
+				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
 					nameof(Models.LeaderboardEntry.InitialScore),
 					nameof(Models.LeaderboardEntry.IsRemoved)
@@ -373,10 +331,8 @@ public class LbService(
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 
-		if (newEntries.Count != 0)
-		{
-			var options = new BulkConfig()
-			{
+		if (newEntries.Count != 0) {
+			var options = new BulkConfig {
 				ConflictOption = ConflictOption.Ignore
 			};
 			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
@@ -390,16 +346,14 @@ public class LbService(
 		);
 	}
 
-	private async Task RestoreMemberLeaderboards(Guid profileMemberId, CancellationToken c = default)
-	{
+	private async Task RestoreMemberLeaderboards(Guid profileMemberId, CancellationToken c = default) {
 		await context.LeaderboardEntries
 			.Where(e => e.ProfileMemberId == profileMemberId && e.IsRemoved == true)
-			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), cancellationToken: c);
+			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), c);
 	}
 
-	public async Task UpdateProfileLeaderboardsAsync(EliteAPI.Models.Entities.Hypixel.Profile profile,
-		CancellationToken c)
-	{
+	public async Task UpdateProfileLeaderboardsAsync(Profile profile,
+		CancellationToken c) {
 		if (profile.GameMode == "bingo") return;
 		var time = DateTime.UtcNow;
 
@@ -423,15 +377,13 @@ public class LbService(
 		List<Models.LeaderboardEntry>? failed = null;
 
 		// Add existing entries to a dictionary to check for duplicates
-		foreach (var entry in existingEntryList.Where(entry => !existingEntries.TryAdd(entry.LeaderboardId, entry)))
-		{
+		foreach (var entry in existingEntryList.Where(entry => !existingEntries.TryAdd(entry.LeaderboardId, entry))) {
 			failed ??= [];
 			failed.Add(entry);
 		}
 
 		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
-		if (failed is { Count: > 0 })
-		{
+		if (failed is { Count: > 0 }) {
 			await context.BulkDeleteAsync(failed, cancellationToken: c);
 			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Profile}", failed.Count,
 				profile.ProfileId);
@@ -441,67 +393,53 @@ public class LbService(
 		var newEntries = new List<Models.LeaderboardEntry>();
 		var ranRestore = false;
 
-		foreach (var (slug, definition) in registrationService.LeaderboardsById)
-		{
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
 			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
 
 			var useIncrease = definition.Info.UseIncreaseForInterval;
 			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
 
 			var type = GetTypeFromSlug(slug);
-			var intervalIdentifier = type switch
-			{
+			var intervalIdentifier = type switch {
 				LeaderboardType.Monthly => monthlyInterval,
 				LeaderboardType.Weekly => weeklyInterval,
 				_ => null
 			};
 
 			var score = profileLb.GetScoreFromProfile(profile, type);
-			if (score == -1 && profile.Garden is not null)
-			{
-				score = profileLb.GetScoreFromGarden(profile.Garden, type);
-			}
+			if (score == -1 && profile.Garden is not null) score = profileLb.GetScoreFromGarden(profile.Garden, type);
 
-			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry))
-			{
+			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				var changed = false;
-				if (entry.IsRemoved != profile.IsDeleted)
-				{
+				if (entry.IsRemoved != profile.IsDeleted) {
 					entry.IsRemoved = profile.IsDeleted;
 					changed = true;
 
-					if (entry.IsRemoved == false && !ranRestore)
-					{
+					if (entry.IsRemoved == false && !ranRestore) {
 						await RestoreProfileLeaderboards(profile.ProfileId, c);
 						ranRestore = true;
 					}
 				}
 
-				if (score >= 0 && (score >= entry.InitialScore || !useIncrease))
-				{
-					var newScore = (entry.IntervalIdentifier is not null && useIncrease)
+				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
+					var newScore = entry.IntervalIdentifier is not null && useIncrease
 						? score - entry.InitialScore
 						: score;
 
-					if (entry.Score != newScore)
-					{
+					if (entry.Score != newScore) {
 						entry.Score = newScore;
 						changed = true;
 					}
 				}
 
-				if (changed)
-				{
-					updatedEntries.Add(entry);
-				}
+				if (changed) updatedEntries.Add(entry);
 
 				continue;
 			}
 
 			if (score <= 0 || score < lb.MinimumScore) continue;
 
-			var newEntry = new Models.LeaderboardEntry
-			{
+			var newEntry = new Models.LeaderboardEntry {
 				LeaderboardId = lb.LeaderboardId,
 				IntervalIdentifier = intervalIdentifier,
 
@@ -517,12 +455,9 @@ public class LbService(
 			newEntries.Add(newEntry);
 		}
 
-		if (updatedEntries.Count != 0)
-		{
-			var options = new BulkConfig()
-			{
-				PropertiesToIncludeOnUpdate =
-				[
+		if (updatedEntries.Count != 0) {
+			var options = new BulkConfig {
+				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
 					nameof(Models.LeaderboardEntry.InitialScore),
 					nameof(Models.LeaderboardEntry.IsRemoved)
@@ -532,10 +467,8 @@ public class LbService(
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 
-		if (newEntries.Count != 0)
-		{
-			var options = new BulkConfig()
-			{
+		if (newEntries.Count != 0) {
+			var options = new BulkConfig {
 				ConflictOption = ConflictOption.Ignore
 			};
 			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
@@ -548,17 +481,15 @@ public class LbService(
 		);
 	}
 
-	private async Task RestoreProfileLeaderboards(string profileId, CancellationToken c = default)
-	{
+	private async Task RestoreProfileLeaderboards(string profileId, CancellationToken c = default) {
 		await context.LeaderboardEntries
 			.Where(e => e.ProfileId == profileId && e.IsRemoved == true)
-			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), cancellationToken: c);
+			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), c);
 	}
 
 	public async Task<PlayerLeaderboardEntryWithRankDto?> GetLeaderboardEntryAsync(string leaderboardSlug,
 		string memberOrProfileId, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
-		string? identifier = null)
-	{
+		string? identifier = null) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardSlug, out var definition)) return null;
 
 		var lb = await context.Leaderboards
@@ -572,12 +503,11 @@ public class LbService(
 				? context.LeaderboardEntries
 					.Where(e => e.ProfileMemberId == Guid.Parse(memberOrProfileId) &&
 					            e.LeaderboardId == lb.LeaderboardId)
-					.EntryFilter(interval: identifier, removedFilter: removedFilter, gameMode: gameMode)
+					.EntryFilter(identifier, removedFilter, gameMode)
 				: context.LeaderboardEntries
 					.Where(e => e.ProfileId == memberOrProfileId && e.LeaderboardId == lb.LeaderboardId)
-					.EntryFilter(interval: identifier, removedFilter: removedFilter, gameMode: gameMode))
-			.Select(le => new
-			{
+					.EntryFilter(identifier, removedFilter, gameMode))
+			.Select(le => new {
 				le.LeaderboardId,
 				le.IntervalIdentifier,
 				le.Score,
@@ -594,12 +524,11 @@ public class LbService(
 			? -1
 			: await context.LeaderboardEntries
 				.FromLeaderboard(entry.LeaderboardId, definition.IsMemberLeaderboard())
-				.EntryFilter(interval: identifier, removedFilter: removedFilter, gameMode: gameMode)
+				.EntryFilter(identifier, removedFilter, gameMode)
 				.Where(otherEntry => otherEntry.Score > entry.Score)
 				.CountAsync() + 1; // Rank is 1 + the number of entries with a higher score
 
-		return new PlayerLeaderboardEntryWithRankDto
-		{
+		return new PlayerLeaderboardEntryWithRankDto {
 			IntervalIdentifier = entry.IntervalIdentifier,
 			Amount = (double)entry.Score,
 			InitialAmount = (double)entry.InitialScore,
@@ -611,112 +540,107 @@ public class LbService(
 			Type = entry.Leaderboard.ScoreDataType
 		};
 	}
-	
+
 	public async Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
 		List<string> leaderboards, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
-		string? identifier = null, CancellationToken? c = null)
-	{
+		string? identifier = null, CancellationToken? c = null) {
 		var memberId = profileId;
-		
+
 		var member = await context.ProfileMembers
 			.Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
 			.Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
-			.FirstOrDefaultAsync(cancellationToken: c ?? CancellationToken.None);
+			.FirstOrDefaultAsync(c ?? CancellationToken.None);
 
 		if (member is not null && member.Id != Guid.Empty) {
 			await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
-			
+
 			memberId = member.Id.ToString();
 		}
-		
+
 		var result = new Dictionary<string, LeaderboardPositionDto?>();
-		
-		foreach (var leaderboard in leaderboards)
-		{
+
+		foreach (var leaderboard in leaderboards) {
 			var resourceId = memberId;
 			if (registrationService.LeaderboardsById.TryGetValue(leaderboard, out var definition) &&
 			    definition.IsProfileLeaderboard())
-			{
 				resourceId = profileId; // If the leaderboard is a profile leaderboard, use the profile ID
-			}
 
 			result[leaderboard] = await GetLeaderboardRankByResourceId(
-				leaderboardId: leaderboard,
-				resourceId: resourceId,
-				upcoming: upcoming,
-				previous: previous,
-				atRank: atRank,
-				gameMode: gameMode,
-				removedFilter: removedFilter,
-				identifier: identifier,
+				leaderboard,
+				resourceId,
+				upcoming,
+				previous,
+				atRank,
+				gameMode,
+				removedFilter,
+				identifier,
 				c: c
 			);
 		}
-		
+
 		return result;
 	}
-	
+
 	public async Task<LeaderboardPositionDto> GetLeaderboardRank(
 		string leaderboardId, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
-		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null)
-	{
+		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null) {
 		var memberId = profileId;
-		
-		if (registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition) && definition.IsMemberLeaderboard())
-		{
+
+		if (registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition) &&
+		    definition.IsMemberLeaderboard()) {
 			// Set the memberId to the profile member ID if the leaderboard is not a profile leaderboard
 			var member = await context.ProfileMembers
 				.Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
 				.Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
-				.FirstOrDefaultAsync(cancellationToken: c ?? CancellationToken.None);
+				.FirstOrDefaultAsync(c ?? CancellationToken.None);
 
 			if (member is null || member.Id == Guid.Empty) {
 				memberId = null;
-			} else {
-				if (!skipUpdate) {
-					await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
-				}
+			}
+			else {
+				if (!skipUpdate) await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
 
 				memberId = member.Id.ToString();
 			}
 		}
-		
-		var result = memberId is not null ? await GetLeaderboardRankByResourceId(
-			leaderboardId: leaderboardId,
-			resourceId: memberId,
-			upcoming: upcoming,
-			previous: previous,
-			atRank: atRank,
-			gameMode: gameMode,
-			removedFilter: removedFilter,
-			identifier: identifier,
-			skipUpdate: skipUpdate,
-			c: c) : null;
+
+		var result = memberId is not null
+			? await GetLeaderboardRankByResourceId(
+				leaderboardId,
+				memberId,
+				upcoming,
+				previous,
+				atRank,
+				gameMode,
+				removedFilter,
+				identifier,
+				skipUpdate,
+				c)
+			: null;
 
 		if (result is not null) return result;
-		
+
 		var last = await GetLastLeaderboardEntry(
-			leaderboardId: leaderboardId,
+			leaderboardId,
 			removedFilter: removedFilter,
 			gameMode: gameMode,
 			identifier: identifier);
-			
+
 		return new LeaderboardPositionDto {
 			Rank = -1,
 			Amount = 0,
 			MinAmount = GetLeaderboardMinScore(leaderboardId),
 			UpcomingRank = last?.Rank ?? 10_000,
-			UpcomingPlayers = upcoming > 0 && last is not null ? [last] : null,
+			UpcomingPlayers = upcoming > 0 && last is not null ? [last] : null
 		};
 	}
 
 	public async Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(
 		string leaderboardId, string resourceId, int? upcoming = null, int? previous = null,
 		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
-		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null)
-	{
+		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
 
 		var entry = await GetLeaderboardEntryAsync(leaderboardId, resourceId, gameMode, removedFilter, identifier);
@@ -732,44 +656,39 @@ public class LbService(
 		var sliceLimit = upcoming.HasValue ? Math.Min(rank - 1, upcoming.Value) : 0;
 
 		if (upcoming > 0 && rank > 1)
-		{
-			upcomingPlayers = await GetLeaderboardSlice(leaderboardId, sliceOffset, sliceLimit, gameMode, removedFilter, identifier);
-		}
-		
-		if (previous > 0 && position != -1)
-		{
+			upcomingPlayers = await GetLeaderboardSlice(leaderboardId, sliceOffset, sliceLimit, gameMode, removedFilter,
+				identifier);
+
+		if (previous > 0 && position != -1) {
 			var willHavePlayer = position > rank && previous.Value + rank > position;
 			var limit = willHavePlayer ? previous.Value + 1 : previous.Value;
-			
-			previousPlayers = await GetLeaderboardSlice(leaderboardId, rank, limit, gameMode, removedFilter, identifier);
 
-			if (willHavePlayer) {
+			previousPlayers =
+				await GetLeaderboardSlice(leaderboardId, rank, limit, gameMode, removedFilter, identifier);
+
+			if (willHavePlayer)
 				// Remove the player from the previous players list if they are included
 				previousPlayers.RemoveAt(position - rank - 1);
-			}
 		}
 
 		// Reverse the list of upcoming players to show the closest upcoming player first
 		upcomingPlayers?.Reverse();
 
-		var result = new LeaderboardPositionDto
-		{
+		var result = new LeaderboardPositionDto {
 			Rank = position,
 			Amount = entry?.Amount ?? 0,
 			InitialAmount = entry?.InitialAmount ?? 0,
 			MinAmount = (double)definition.Info.MinimumScore,
 			UpcomingRank = rank == -1 ? -1 : rank - 1,
 			UpcomingPlayers = upcomingPlayers ?? [],
-			Previous = previousPlayers,
+			Previous = previousPlayers
 		};
 
 		return result;
 	}
 
-	public static string? GetCurrentIdentifier(LeaderboardType type)
-	{
-		switch (type)
-		{
+	public static string? GetCurrentIdentifier(LeaderboardType type) {
+		switch (type) {
 			case LeaderboardType.Current:
 				return null;
 			case LeaderboardType.Weekly:
@@ -783,10 +702,8 @@ public class LbService(
 		}
 	}
 
-	public (long start, long end) GetCurrentTimeRange(LeaderboardType type)
-	{
-		switch (type)
-		{
+	public (long start, long end) GetCurrentTimeRange(LeaderboardType type) {
+		switch (type) {
 			case LeaderboardType.Current:
 				return (0, 0);
 			case LeaderboardType.Weekly:
@@ -812,10 +729,8 @@ public class LbService(
 		}
 	}
 
-	public static LeaderboardType GetTypeFromSlug(string slug)
-	{
-		return slug switch
-		{
+	public static LeaderboardType GetTypeFromSlug(string slug) {
+		return slug switch {
 			_ when slug.EndsWith("-monthly") => LeaderboardType.Monthly,
 			_ when slug.EndsWith("-weekly") => LeaderboardType.Weekly,
 			_ => LeaderboardType.Current
@@ -823,11 +738,10 @@ public class LbService(
 	}
 
 	public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(
-		Guid profileMemberId)
-	{
+		Guid profileMemberId) {
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
-		
+
 		var sql = @"
 	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
 	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND o.""Score"" > le.""Score"") END AS ""Rank""
@@ -851,8 +765,7 @@ public class LbService(
 				new Npgsql.NpgsqlParameter("weeklyInterval", weeklyInterval))
 			.ToListAsync();
 
-		return results.Select(r => new PlayerLeaderboardEntryWithRankDto
-		{
+		return results.Select(r => new PlayerLeaderboardEntryWithRankDto {
 			IntervalIdentifier = r.IntervalIdentifier,
 			Amount = (double)r.Score,
 			InitialAmount = (double)r.InitialScore,
@@ -865,11 +778,10 @@ public class LbService(
 	}
 
 	public async Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(
-		string profileId)
-	{
+		string profileId) {
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
-		
+
 		var sql = @"
 	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
 	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND o.""Score"" > le.""Score"") END AS ""Rank""
@@ -893,8 +805,7 @@ public class LbService(
 				new Npgsql.NpgsqlParameter("weeklyInterval", weeklyInterval))
 			.ToListAsync();
 
-		return results.Select(r => new PlayerLeaderboardEntryWithRankDto
-		{
+		return results.Select(r => new PlayerLeaderboardEntryWithRankDto {
 			IntervalIdentifier = r.IntervalIdentifier,
 			Amount = (double)r.Score,
 			InitialAmount = (double)r.InitialScore,
@@ -908,8 +819,7 @@ public class LbService(
 	}
 }
 
-public class PlayerLeaderboardEntryWithRankDto
-{
+public class PlayerLeaderboardEntryWithRankDto {
 	public required string Title { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -934,8 +844,7 @@ public class PlayerLeaderboardEntryWithRankDto
 	public LeaderboardScoreDataType Type { get; set; }
 }
 
-public enum RemovedFilter
-{
+public enum RemovedFilter {
 	NotRemoved = 0,
 	Removed = 1,
 	All = 2

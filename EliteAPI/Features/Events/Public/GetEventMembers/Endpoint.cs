@@ -13,29 +13,26 @@ internal sealed class GetEventMembersRequest {
 internal sealed class GetEventMembersEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper)
-	: Endpoint<GetEventMembersRequest, List<EventMemberDetailsDto>>
-{
+	: Endpoint<GetEventMembersRequest, List<EventMemberDetailsDto>> {
 	public override void Configure() {
 		Get("/event/{EventId}/members");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get event members";
-		});
-		
+		Summary(s => { s.Summary = "Get event members"; });
+
 		Options(opt => opt.CacheOutput(o => o.Expire(TimeSpan.FromMinutes(2))));
 	}
 
 	public override async Task HandleAsync(GetEventMembersRequest request, CancellationToken c) {
 		var eliteEvent = await context.Events.AsNoTracking()
-			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.Approved, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.Approved, c);
+
 		if (eliteEvent is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-        
+
 		var isTeamEvent = eliteEvent.GetMode() != EventTeamMode.Solo;
 
 		var members = await context.EventMembers.AsNoTracking()
@@ -45,20 +42,19 @@ internal sealed class GetEventMembersEndpoint(
 			.Include(e => e.ProfileMember)
 			.ThenInclude(p => p.Metadata)
 			.AsNoTracking()
-			.Where(e => e.EventId == request.EventId 
-			            && e.Status != EventMemberStatus.Disqualified 
+			.Where(e => e.EventId == request.EventId
+			            && e.Status != EventMemberStatus.Disqualified
 			            && e.Status != EventMemberStatus.Left
 			            && (e.TeamId != null || !isTeamEvent))
 			.OrderByDescending(e => e.Score)
 			.AsSplitQuery()
-			.ToListAsync(cancellationToken: c);
+			.ToListAsync(c);
 
-		if (eliteEvent.Type == EventType.Medals) {
+		if (eliteEvent.Type == EventType.Medals)
 			members = members.OrderByDescending(e => e as MedalEventMember).ToList();
-		}
 
 		var result = members.Select(mapper.Map<EventMemberDetailsDto>).ToList();
 
-		await Send.OkAsync(result, cancellation: c);
+		await Send.OkAsync(result, c);
 	}
 }

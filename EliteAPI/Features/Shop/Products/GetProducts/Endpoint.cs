@@ -11,21 +11,16 @@ internal sealed class GetProductsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : EndpointWithoutRequest<List<ProductDto>> {
-	
 	public override void Configure() {
 		Get("/products");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Shop Products";
-		});
-		
+		Summary(s => { s.Summary = "Get Shop Products"; });
+
 		Description(d => d.AutoTagOverride("Product"));
-		
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromHours(1)).Tag("products"));
-		});
+
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromHours(1)).Tag("products")); });
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
@@ -34,8 +29,8 @@ internal sealed class GetProductsEndpoint(
 			.Include(p => p.Images)
 			.Where(p => p.Available)
 			.Select(x => mapper.Map<ProductDto>(x))
-			.ToListAsync(cancellationToken: c);
-		
-		await Send.OkAsync(result, cancellation: c);
+			.ToListAsync(c);
+
+		await Send.OkAsync(result, c);
 	}
 }

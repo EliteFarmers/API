@@ -11,8 +11,7 @@ namespace EliteAPI.Features.Shop.Styles.UpdateStyle;
 
 internal sealed class UpdateStyleRequest {
 	public int StyleId { get; set; }
-	[FromBody]
-	public WeightStyleWithDataDto Data { get; set; } = null!;
+	[FromBody] public WeightStyleWithDataDto Data { get; set; } = null!;
 }
 
 internal sealed class UpdateStyleEndpoint(
@@ -20,44 +19,41 @@ internal sealed class UpdateStyleEndpoint(
 	AutoMapper.IMapper mapper,
 	IOutputCacheStore outputCacheStore
 ) : Endpoint<UpdateStyleRequest> {
-	
 	public override void Configure() {
 		Post("/product/style/{StyleId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Update Shop Style";
-		});
+		Summary(s => { s.Summary = "Update Shop Style"; });
 	}
 
 	public override async Task HandleAsync(UpdateStyleRequest request, CancellationToken c) {
 		var existing = await context.WeightStyles
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
-		
+
 		if (existing is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var incoming = request.Data;
 		existing.Name = incoming.Name ?? existing.Name;
 		existing.Collection = incoming.Collection ?? existing.Collection;
 		existing.StyleFormatter = incoming.StyleFormatter ?? existing.StyleFormatter;
 		existing.Description = incoming.Description ?? existing.Description;
-		existing.Data = incoming.Data is not null 
-			? mapper.Map<WeightStyleData>(incoming.Data) 
+		existing.Data = incoming.Data is not null
+			? mapper.Map<WeightStyleData>(incoming.Data)
 			: existing.Data;
-		existing.Leaderboard = incoming.Leaderboard is not null 
-			? mapper.Map<LeaderboardStyleData>(incoming.Leaderboard) 
+		existing.Leaderboard = incoming.Leaderboard is not null
+			? mapper.Map<LeaderboardStyleData>(incoming.Leaderboard)
 			: existing.Leaderboard;
-		
+
 		context.WeightStyles.Update(existing);
 		await context.SaveChangesAsync(c);
-		
+
 		await outputCacheStore.EvictByTagAsync("styles", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }
 

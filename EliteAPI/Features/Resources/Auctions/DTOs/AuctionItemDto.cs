@@ -16,6 +16,7 @@ public class AuctionItemDto {
 	/// Lowest price seen recently (excluding outliers)
 	/// </summary>
 	public decimal Lowest { get; set; } = -1;
+
 	/// <summary>
 	/// Volume of prices used to get the lowest recent price
 	/// </summary>
@@ -25,6 +26,7 @@ public class AuctionItemDto {
 	/// Lowest price seen in 3 days (excluding outliers)
 	/// </summary>
 	public decimal Lowest3Day { get; set; } = -1;
+
 	/// <summary>
 	/// Volume of prices used to get the lowest 3 day price
 	/// </summary>
@@ -34,6 +36,7 @@ public class AuctionItemDto {
 	/// Lowest price seen in 7 days (excluding outliers)
 	/// </summary>
 	public decimal Lowest7Day { get; set; } = -1;
+
 	/// <summary>
 	/// Volume of prices ued to get lowest 3 day price
 	/// </summary>

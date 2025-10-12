@@ -8,7 +8,8 @@ public class SetGuildLockedRequest : DiscordIdRequest {
 	/// <summary>
 	/// If server subscriptions shouldn't override feature values
 	/// </summary>
-	[QueryParam, DefaultValue(true)]
+	[QueryParam]
+	[DefaultValue(true)]
 	public bool? Locked { get; set; } = true;
 }
 

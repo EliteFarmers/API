@@ -7,28 +7,24 @@ namespace EliteAPI.Features.Contests.GetRecordsInYear;
 
 internal sealed class GetRecordsInYearEndpoint(
 	IContestsService contestsService)
-	: Endpoint<SkyBlockYearRequest, YearlyCropRecordsDto> 
-{
+	: Endpoint<SkyBlockYearRequest, YearlyCropRecordsDto> {
 	public override void Configure() {
 		Get("/contests/records/{Year:int}");
 		AllowAnonymous();
 		ResponseCache(600);
-		
-		Summary(s => {
-			s.Summary = "Get contest records for a SkyBlock year";
-		});
-		
+
+		Summary(s => { s.Summary = "Get contest records for a SkyBlock year"; });
+
 		Options(o => o.CacheOutput(b => b.Expire(TimeSpan.FromMinutes(20))));
 	}
 
 	public override async Task HandleAsync(SkyBlockYearRequest request, CancellationToken ct) {
 		var startTime = FormatUtils.GetTimeFromSkyblockDate(request.Year - 1, 0, 0);
 		var endTime = FormatUtils.GetTimeFromSkyblockDate(request.Year, 0, 0);
-        
-		if (startTime > SkyblockDate.Now.UnixSeconds) {
+
+		if (startTime > SkyblockDate.Now.UnixSeconds)
 			ThrowError("Cannot fetch records for a year that hasn't happened yet!");
-		}
-        
+
 		var result = new YearlyCropRecordsDto {
 			Year = request.Year,
 			Crops = new Dictionary<string, List<ContestParticipationWithTimestampDto>> {
@@ -44,7 +40,7 @@ internal sealed class GetRecordsInYearEndpoint(
 				{ "wheat", await contestsService.FetchRecords(Crop.Wheat, startTime, endTime) }
 			}
 		};
-		
-		await Send.OkAsync(result, cancellation: ct);
+
+		await Send.OkAsync(result, ct);
 	}
 }

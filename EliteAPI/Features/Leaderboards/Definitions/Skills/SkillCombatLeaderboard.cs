@@ -15,6 +15,6 @@ public class SkillCombatLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Combat;
+		return (decimal)member.Skills.Combat;
 	}
 }

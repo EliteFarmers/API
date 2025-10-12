@@ -19,8 +19,8 @@ services:
       - "9102:9102"
     volumes:
       - ./EliteAPI/TempKeys:/app/TempKeys
-    networks: 
-        - eliteapi-network
+    networks:
+      - eliteapi-network
   database:
     image: timescale/timescaledb:latest-pg15
     shm_size: 512mb
@@ -29,14 +29,14 @@ services:
       - ./EliteAPI/.env
     command: -c 'max_connections=${POSTGRES_MAX_CONNECTIONS:-100}'
     ports:
-        - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432' 
+      - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432'
     expose:
-        - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}'
+      - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}'
     volumes:
-        - db-data:/var/lib/postgresql/data
-        - ./EliteAPI/Data/setup.sql:/docker-entrypoint-initdb.d/init.sql
+      - db-data:/var/lib/postgresql/data
+      - ./EliteAPI/Data/setup.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-        - eliteapi-network
+      - eliteapi-network
   cache:
     image: redis:7.4.1
     restart: always
@@ -44,47 +44,47 @@ services:
     ports:
       - '${REDIS_PORT:?REDIS_PORT env variable is required}:6379'
     expose:
-        - '${REDIS_PORT:?REDIS_PORT env variable is required}'
+      - '${REDIS_PORT:?REDIS_PORT env variable is required}'
     volumes:
-        - redis-data:/data
+      - redis-data:/data
     networks:
-        - eliteapi-network
+      - eliteapi-network
   logging:
     image: grafana/grafana-oss:latest
     restart: unless-stopped
     ports:
-        - '8081:3000'
+      - '8081:3000'
     expose:
-        - '8081'
+      - '8081'
     volumes:
-        - ./EliteAPI/Data/Grafana/Datasources:/etc/grafana/provisioning/datasources
-        - ./EliteAPI/Data/Grafana/Dashboards:/etc/grafana/provisioning/dashboards
-        - ./EliteAPI/Data/Grafana/config.ini:/etc/grafana/config.ini
-        - grafana-data:/var/lib/grafana
+      - ./EliteAPI/Data/Grafana/Datasources:/etc/grafana/provisioning/datasources
+      - ./EliteAPI/Data/Grafana/Dashboards:/etc/grafana/provisioning/dashboards
+      - ./EliteAPI/Data/Grafana/config.ini:/etc/grafana/config.ini
+      - grafana-data:/var/lib/grafana
     depends_on:
-        - prometheus
+      - prometheus
     networks:
-        - eliteapi-network
+      - eliteapi-network
   prometheus:
     image: prom/prometheus:v3.5.0
     restart: unless-stopped
     ports:
-        - '9090:9090'
+      - '9090:9090'
     expose:
-        - '9090'
+      - '9090'
     volumes:
-        - ./EliteAPI/Data/Prometheus:/etc/prometheus
-        - prometheus-data:/data
+      - ./EliteAPI/Data/Prometheus:/etc/prometheus
+      - prometheus-data:/data
     networks:
-        - eliteapi-network
-        
+      - eliteapi-network
+
 networks:
-    eliteapi-network:
-        name: elite-network
-        driver: bridge
+  eliteapi-network:
+    name: elite-network
+    driver: bridge
 
 volumes:
-    db-data: {}
-    grafana-data: {}
-    prometheus-data: {}
-    redis-data: {}
+  db-data: { }
+  grafana-data: { }
+  prometheus-data: { }
+  redis-data: { }

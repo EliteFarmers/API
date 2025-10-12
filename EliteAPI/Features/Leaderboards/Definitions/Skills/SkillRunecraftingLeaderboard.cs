@@ -15,6 +15,6 @@ public class SkillRunecraftingLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Runecrafting;
+		return (decimal)member.Skills.Runecrafting;
 	}
 }

@@ -15,23 +15,17 @@ internal sealed class GetUserGuildEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
 ) : Endpoint<DiscordIdRequest, AuthorizedGuildDto> {
-	
 	public override void Configure() {
 		Get("/user/guild/{DiscordId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get a guild membership for the current user";
-		});
-		
+		Summary(s => { s.Summary = "Get a guild membership for the current user"; });
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
 		var userId = User.GetId();
-		if (userId is null) {
-			ThrowError("User not found", StatusCodes.Status404NotFound);
-		}
+		if (userId is null) ThrowError("User not found", StatusCodes.Status404NotFound);
 
 		var guildMember = await discordService.GetGuildMemberIfAdmin(User, request.DiscordIdUlong);
 
@@ -43,13 +37,13 @@ internal sealed class GetUserGuildEndpoint(
 		var guild = await context.Guilds
 			.Include(g => g.Roles)
 			.Include(g => g.Channels).AsNoTracking()
-			.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, cancellationToken: c);
-        
+			.FirstOrDefaultAsync(g => g.Id == request.DiscordIdUlong, c);
+
 		await Send.OkAsync(new AuthorizedGuildDto {
 			Id = request.DiscordIdUlong.ToString(),
 			Permissions = guildMember.Permissions.ToString(),
 			Guild = mapper.Map<PrivateGuildDto>(guild),
 			Member = mapper.Map<GuildMemberDto>(guildMember)
-		}, cancellation: c);
+		}, c);
 	}
 }

@@ -2,6 +2,7 @@ using EliteAPI.Models.DTOs.Incoming;
 using FluentValidation;
 
 namespace EliteAPI.Models.Common;
+
 using FastEndpoints;
 
 public class ReorderIntRequest {

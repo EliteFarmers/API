@@ -4,17 +4,15 @@ using EliteAPI.Models.Entities.Hypixel;
 namespace EliteAPI.Models.Entities.Events;
 
 public class WeightEvent : Event {
-	[Column("Data", TypeName = "jsonb")]
-	public WeightEventData Data { get; set; } = new();
-	
+	[Column("Data", TypeName = "jsonb")] public WeightEventData Data { get; set; } = new();
+
 	public WeightEvent() {
 		Type = EventType.FarmingWeight;
 	}
 }
 
 public class WeightEventMember : EventMember {
-	[Column("Data", TypeName = "jsonb")]
-	public EventMemberWeightData Data { get; set; } = new();
+	[Column("Data", TypeName = "jsonb")] public EventMemberWeightData Data { get; set; } = new();
 
 	public WeightEventMember() {
 		Type = EventType.FarmingWeight;
@@ -71,9 +69,10 @@ public static class ToolCounterStateExtensions {
 			var initial = e.Initial - int.MaxValue - int.MaxValue;
 			return e.Current - initial - e.Uncounted;
 		}
-        
+
 		return e.Current - e.Initial - e.Uncounted;
 	}
+
 	public static long IncreaseFromPrevious(this EventToolCounterState e) {
 		return e.Current - e.Previous - e.Uncounted;
 	}

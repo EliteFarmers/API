@@ -11,7 +11,7 @@ namespace EliteAPI.Features.Events.Admin.DeleteMember;
 internal sealed class DeleteMemberRequest : PlayerUuidRequest {
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
-	
+
 	[QueryParam] public string? ProfileUuid { get; set; } = null;
 	[QueryParam] public int? RecordId { get; set; } = -1;
 }
@@ -19,50 +19,47 @@ internal sealed class DeleteMemberRequest : PlayerUuidRequest {
 internal sealed class DeleteMemberAdminEndpoint(
 	DataContext context
 ) : Endpoint<DeleteMemberRequest> {
-
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/members/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
-		
+
 		Description(x => x.Accepts<DeleteMemberRequest>());
 
-		Summary(s => {
-			s.Summary = "Delete an Event Member";
-		});
+		Summary(s => { s.Summary = "Delete an Event Member"; });
 	}
 
 	public override async Task HandleAsync(DeleteMemberRequest request, CancellationToken c) {
 		var userId = User.GetId();
 		var @event = await context.Events
-			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.Id == request.EventId && e.GuildId == request.DiscordId, c);
+
 		if (userId is null || @event is null) {
 			await Send.UnauthorizedAsync(c);
 			return;
 		}
-		
-		var member = (request.RecordId == -1) 
+
+		var member = request.RecordId == -1
 			? await context.EventMembers
 				.Include(m => m.ProfileMember)
 				.Where(em => em.EventId == @event.Id
 				             && em.ProfileMember.PlayerUuid == request.PlayerUuidFormatted
 				             && (request.ProfileUuid == null || em.ProfileMember.ProfileId == request.ProfileUuid))
-				.FirstOrDefaultAsync(cancellationToken: c)
+				.FirstOrDefaultAsync(c)
 			: await context.EventMembers
 				.Include(m => m.ProfileMember)
 				.Where(em => em.EventId == @event.Id && em.Id == request.RecordId)
-				.FirstOrDefaultAsync(cancellationToken: c);
-        
+				.FirstOrDefaultAsync(c);
+
 		if (member is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		context.EventMembers.Remove(member);
 		await context.SaveChangesAsync(c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }
 

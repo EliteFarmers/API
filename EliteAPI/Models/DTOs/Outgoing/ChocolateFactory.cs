@@ -7,12 +7,12 @@ public class ChocolateFactoryDto {
 	public long ChocolateSpent { get; set; }
 	public int Prestige { get; set; }
 	public long LastViewed { get; set; }
-	
+
 	public ChocolateFactoryRabbitsDto UniqueRabbits { get; set; } = new();
 	public ChocolateFactoryRabbitsDto TotalRabbits { get; set; } = new();
-	
+
 	public bool UnlockedZorro { get; set; }
-	
+
 	public int RefinedTrufflesConsumed { get; set; }
 	public int CocoaFortuneUpgrades { get; set; }
 }

@@ -12,11 +12,11 @@ public class AgaricusCapLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "AGARICUS_CAP";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -33,11 +33,11 @@ public class CaducousStemLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "CADUCOUS_STEM";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -54,11 +54,11 @@ public class HalfEatenCarrotLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "HALF_EATEN_CARROT";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -75,11 +75,11 @@ public class HemovibeLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "HEMOVIBE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -96,11 +96,11 @@ public class LivingMetalHeartLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "METAL_HEART";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -117,11 +117,11 @@ public class WiltedBerberisLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "WILTED_BERBERIS";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 
@@ -138,11 +138,11 @@ public class TimiteLeaderboard : IMemberLeaderboardDefinition {
 		Category = "Rift",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long,
+		ScoreDataType = LeaderboardScoreDataType.Long
 	};
 
 	private const string CollectionId = "TIMITE";
-	
+
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		if (type != LeaderboardType.Current && !member.Api.Collections) return 0;
 

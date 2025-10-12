@@ -6,8 +6,7 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Events.Public.GetEventDefaults;
 
-internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDefaultsDto>
-{
+internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDefaultsDto> {
 	public override void Configure() {
 		Get("/event/defaults");
 		AllowAnonymous();
@@ -25,9 +24,9 @@ internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDef
 		var result = new EventDefaultsDto {
 			CropWeights = FarmingWeightConfig.Settings.EventCropWeights,
 			MedalValues = new MedalEventData().MedalWeights,
-			PestWeights = new PestEventData().PestWeights,
+			PestWeights = new PestEventData().PestWeights
 		};
 
-		await Send.OkAsync(result, cancellation: c);
+		await Send.OkAsync(result, c);
 	}
 }

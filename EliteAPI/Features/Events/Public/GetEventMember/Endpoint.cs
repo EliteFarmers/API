@@ -13,21 +13,19 @@ namespace EliteAPI.Features.Events.Public.GetEventMember;
 internal sealed class GetEventMemberRequest : PlayerUuidRequest {
 	public ulong EventId { get; set; }
 }
+
 internal sealed class GetEventMemberEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper)
-	: Endpoint<GetEventMemberRequest, EventMemberDto>
-{
+	: Endpoint<GetEventMemberRequest, EventMemberDto> {
 	public override void Configure() {
 		Get("/event/{EventId}/member/{PlayerUuid}");
 		Options(o => o.WithMetadata(new OptionalAuthorizeAttribute()));
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get an event member";
-		});
-		
+		Summary(s => { s.Summary = "Get an event member"; });
+
 		Options(opt => opt.CacheOutput(o => o.Expire(TimeSpan.FromMinutes(2))));
 	}
 
@@ -36,13 +34,14 @@ internal sealed class GetEventMemberEndpoint(
 			.Include(e => e.ProfileMember)
 			.ThenInclude(p => p.MinecraftAccount)
 			.AsNoTracking()
-			.FirstOrDefaultAsync(e => e.EventId == request.EventId && e.ProfileMember.PlayerUuid == request.PlayerUuid, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.EventId == request.EventId && e.ProfileMember.PlayerUuid == request.PlayerUuid,
+				c);
+
 		if (member is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-        
+
 		var mapped = mapper.Map<EventMemberDto>(member);
 
 		mapped.Data = member switch {
@@ -52,15 +51,15 @@ internal sealed class GetEventMemberEndpoint(
 			PestEventMember m => m.Data,
 			_ => mapped.Data
 		};
-		
+
 		// If the user is the member or a moderator, send the notes
 		if (User.GetDiscordId() is { } id && (id == member.UserId || User.IsInRole(ApiUserPolicies.Moderator))) {
-			await Send.OkAsync(mapped, cancellation: c);
+			await Send.OkAsync(mapped, c);
 			return;
 		}
 
 		mapped.Notes = null;
-		await Send.OkAsync(mapped, cancellation: c);
+		await Send.OkAsync(mapped, c);
 	}
 }
 

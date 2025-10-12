@@ -15,53 +15,51 @@ internal sealed class DeleteProductImageEndpoint(
 	IConnectionMultiplexer redis,
 	IObjectStorageService objectStorageService
 ) : Endpoint<DeleteProductImageRequest> {
-	
 	public override void Configure() {
 		Delete("/product/{DiscordId}/images/{ImagePath}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
-		Summary(s => {
-			s.Summary = "Remove Image from Product";
-		});
+
+		Summary(s => { s.Summary = "Remove Image from Product"; });
 	}
 
 	public override async Task HandleAsync(DeleteProductImageRequest request, CancellationToken c) {
 		var product = await context.Products
 			.Include(p => p.Thumbnail)
 			.Include(p => p.Images)
-			.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(p => p.Id == request.DiscordIdUlong, c);
+
 		if (product is null) {
-			await Send.NotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var decoded = HttpUtility.UrlDecode(request.ImagePath);
 		var productImage = product.Images.FirstOrDefault(i => decoded.EndsWith(i.Path))
 		                   ?? (product.Thumbnail?.Path == decoded ? product.Thumbnail : null);
-		
+
 		if (productImage is null) {
-			await Send.NotFoundAsync(cancellation: c);
+			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		if (product.Thumbnail == productImage) {
 			product.Thumbnail = null;
 			product.ThumbnailId = null;
-		} else {
+		}
+		else {
 			product.Images.Remove(productImage);
 		}
-		
+
 		await context.SaveChangesAsync(c);
 		await objectStorageService.DeleteAsync(productImage.Path, c);
 
 		// Clear the product list cache
 		var db = redis.GetDatabase();
 		await db.KeyDeleteAsync("bot:productlist");
-		
+
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

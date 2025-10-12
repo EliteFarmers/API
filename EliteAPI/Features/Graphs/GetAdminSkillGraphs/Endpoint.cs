@@ -10,12 +10,11 @@ namespace EliteAPI.Features.Graphs.GetAdminSkillGraphs;
 internal sealed class GetAdminSkillGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<SkillsDataPointDto>> 
-{
+	: Endpoint<GraphRequest, List<SkillsDataPointDto>> {
 	public override void Configure() {
 		Get("/graph/admin/{PlayerUuid}/{ProfileUuid}/skills");
 		Policies(ApiUserPolicies.Support);
-		
+
 		Summary(s => {
 			s.Summary = "Get Admin Skill XP";
 			s.ExampleRequest = new GraphRequest {
@@ -29,12 +28,10 @@ internal sealed class GetAdminSkillGraphsEndpoint(
 		var profile = await context.ProfileMembers.AsNoTracking()
 			.Where(m => m.PlayerUuid == request.PlayerUuidFormatted && m.ProfileId == request.ProfileUuidFormatted)
 			.Select(p => p.Id)
-			.FirstOrDefaultAsync(cancellationToken: c);
+			.FirstOrDefaultAsync(c);
 
-		if (profile == Guid.Empty) {
-			await Send.NotFoundAsync(c);
-		}
-        
+		if (profile == Guid.Empty) await Send.NotFoundAsync(c);
+
 		var points = await timescaleService.GetSkills(profile, request.Start, request.End, -1);
 		await Send.OkAsync(points, c);
 	}

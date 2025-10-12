@@ -12,7 +12,7 @@ public class GardenXpLeaderboard : IProfileLeaderboardDefinition {
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
-	
+
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {
 		return garden.GardenExperience;
 	}

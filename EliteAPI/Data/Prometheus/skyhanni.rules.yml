@@ -11,7 +11,7 @@ groups:
               "major_version", "$1", "sh_version", "(\\d+)\\..*"
             )
           )
-        
+      
       # SkyHanni Version Metrics
       - record: skyhanni:sh_version:requests_rate:5m
         expr: >
@@ -25,7 +25,7 @@ groups:
           sum by (mc_version) (
           rate(http_server_request_duration_seconds_count{user_agent="SkyHanni", mc_version!=""}[5m])
           )
-          
+      
       # SkyHanni Major Version and Minecraft Version Metrics
       - record: skyhanni:sh_major_version_mc_version:requests_rate:5m
         expr: >

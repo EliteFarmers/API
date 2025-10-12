@@ -7,27 +7,23 @@ namespace EliteAPI.Features.Leaderboards.Endpoints.GetLeaderboard;
 internal sealed class GetLeaderboardEndpoint(
 	ILbService lbService,
 	ILeaderboardRegistrationService leaderboardRegistrationService
-	) : Endpoint<LeaderboardSliceRequest, LeaderboardDto> 
-{
+) : Endpoint<LeaderboardSliceRequest, LeaderboardDto> {
 	public override void Configure() {
 		Get("/leaderboard/{Leaderboard}");
 		AllowAnonymous();
 		Version(0);
-		
+
 		Description(s => s.Accepts<LeaderboardSliceRequest>());
 
-		Summary(s => {
-			s.Summary = "Get Leaderboard";
-		});
+		Summary(s => { s.Summary = "Get Leaderboard"; });
 	}
 
 	public override async Task HandleAsync(LeaderboardSliceRequest request, CancellationToken c) {
-		if (!leaderboardRegistrationService.LeaderboardsById.TryGetValue(request.Leaderboard, out var newLb)) {
+		if (!leaderboardRegistrationService.LeaderboardsById.TryGetValue(request.Leaderboard, out var newLb))
 			ThrowError("Leaderboard does not exist", StatusCodes.Status404NotFound);
-		}
 
 		var newEntries = await lbService.GetLeaderboardSlice(
-			request.Leaderboard, 
+			request.Leaderboard,
 			request.OffsetFormatted,
 			request.LimitFormatted,
 			removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
@@ -36,14 +32,14 @@ internal sealed class GetLeaderboardEndpoint(
 
 		var type = LbService.GetTypeFromSlug(request.Leaderboard);
 		var time = lbService.GetCurrentTimeRange(type);
-		
+
 		var lastEntry = await lbService.GetLastLeaderboardEntry(
 			request.Leaderboard,
 			removedFilter: request.Removed ?? RemovedFilter.NotRemoved,
 			gameMode: request.Mode,
 			identifier: request.Interval);
 
-		var firstInterval = await lbService.GetFirstInterval(request.Leaderboard);	
+		var firstInterval = await lbService.GetFirstInterval(request.Leaderboard);
 
 		var newLeaderboard = new LeaderboardDto {
 			Id = request.Leaderboard,
@@ -56,11 +52,11 @@ internal sealed class GetLeaderboardEndpoint(
 			MinimumScore = newLb.Info.MinimumScore,
 			StartsAt = time.start,
 			EndsAt = time.end,
-			MaxEntries = lastEntry?.Rank ?? -1, 
+			MaxEntries = lastEntry?.Rank ?? -1,
 			Profile = newLb is IProfileLeaderboardDefinition,
 			Entries = newEntries
 		};
 
-		await Send.OkAsync(newLeaderboard, cancellation: c);
+		await Send.OkAsync(newLeaderboard, c);
 	}
 }

@@ -6,13 +6,13 @@ using FastEndpoints;
 namespace EliteAPI.Features.Shop.Products.Admin.AddProductImage;
 
 internal sealed class AddProductImageRequest : DiscordIdRequest {
-	[FromForm]
-	public required UploadImageDto Image { get; set; }
-	
+	[FromForm] public required UploadImageDto Image { get; set; }
+
 	/// <summary>
 	/// Use this to set the image as the product's thumbnail
 	/// </summary>
-	[QueryParam, DefaultValue(false)]
+	[QueryParam]
+	[DefaultValue(false)]
 	public bool? Thumbnail { get; set; }
 }
 

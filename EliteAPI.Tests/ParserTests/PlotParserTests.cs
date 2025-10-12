@@ -4,7 +4,6 @@ using EliteAPI.Parsers.Farming;
 namespace EliteAPI.Tests.ParserTests;
 
 public class PlotParserTests {
-	
 	[Fact]
 	public void CombinePlotsTest() {
 		List<string> plots = [
@@ -38,7 +37,7 @@ public class PlotParserTests {
 		var unlocked = (UnlockedPlots)result;
 
 		(unlocked == UnlockedPlots.All).ShouldBeTrue();
-		
+
 		UnlockedPlotsParser.SeperatePlots(result).ShouldBe(plots);
 	}
 }

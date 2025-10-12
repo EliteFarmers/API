@@ -39,9 +39,9 @@ public class GardenMapper : Profile {
 			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()));
 
 		CreateMap<CropUpgrades, CropSettings<int>>();
-		
+
 		CreateMap<Garden, GardenDto>()
-			.ForMember(g => g.Experience, o => o.MapFrom(g => (int) g.GardenExperience))
+			.ForMember(g => g.Experience, o => o.MapFrom(g => (int)g.GardenExperience))
 			.ForMember(g => g.Plots, o => o.MapFrom(g => g.UnlockedPlots.SeparatePlots()))
 			.ForMember(g => g.Composter, o => o.MapFrom(g => g.Composter))
 			.ForMember(g => g.Crops, o => o.MapFrom(g => g.Crops))

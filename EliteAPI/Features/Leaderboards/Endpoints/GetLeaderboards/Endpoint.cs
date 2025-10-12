@@ -10,17 +10,14 @@ internal sealed class LeaderboardsResponse {
 
 internal sealed class GetLeaderboardsEndpoint(
 	ILeaderboardRegistrationService lbRegistrationService)
-	: EndpointWithoutRequest<LeaderboardsResponse> 
-{
+	: EndpointWithoutRequest<LeaderboardsResponse> {
 	public override void Configure() {
 		Get("/leaderboards");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Leaderboards";
-		});
-		
+		Summary(s => { s.Summary = "Get Leaderboards"; });
+
 		Description(d => d.AutoTagOverride("Leaderboard"));
 		Options(opt => opt.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(30)).Tag("leaderboards")));
 	}
@@ -36,9 +33,9 @@ internal sealed class GetLeaderboardsEndpoint(
 				IntervalType = LbService.GetTypeFromSlug(l.Key),
 				ScoreDataType = l.Value.Info.ScoreDataType
 			});
-		
-		await Send.OkAsync(new LeaderboardsResponse() {
-			Leaderboards = leaderboards,
-		}, cancellation: c);
+
+		await Send.OkAsync(new LeaderboardsResponse {
+			Leaderboards = leaderboards
+		}, c);
 	}
 }

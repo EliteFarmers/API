@@ -13,13 +13,12 @@ using Result = Results<Ok<GardenDto>, NotFound>;
 internal sealed class GetGardenEndpoint(
 	IProfileService profileService,
 	IMapper mapper)
-	: Endpoint<ProfileUuidRequest, Result> 
-{
+	: Endpoint<ProfileUuidRequest, Result> {
 	public override void Configure() {
 		Get("/garden/{ProfileUuid}");
 		AllowAnonymous();
 		ResponseCache(600, ResponseCacheLocation.Any);
-		
+
 		Summary(s => {
 			s.Summary = "Get Garden data for a profile";
 			s.Description = "Get Garden data for a specific profile by UUID";
@@ -31,10 +30,8 @@ internal sealed class GetGardenEndpoint(
 
 	public override async Task<Result> ExecuteAsync(ProfileUuidRequest request, CancellationToken c) {
 		var garden = await profileService.GetProfileGarden(request.ProfileUuidFormatted);
-		if (garden is null) {
-			return TypedResults.NotFound();
-		}
-		
+		if (garden is null) return TypedResults.NotFound();
+
 		var mapped = mapper.Map<GardenDto>(garden);
 		return TypedResults.Ok(mapped);
 	}

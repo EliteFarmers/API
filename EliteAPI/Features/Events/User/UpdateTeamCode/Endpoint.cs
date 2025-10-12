@@ -5,25 +5,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Events.User.UpdateTeamCode;
 
-internal sealed class UpdateTeamJoinCodeRequest
-{
-    public ulong EventId { get; set; }
-    public int TeamId { get; set; }
+internal sealed class UpdateTeamJoinCodeRequest {
+	public ulong EventId { get; set; }
+	public int TeamId { get; set; }
 }
 
 internal sealed class UpdateTeamJoinCodeEndpoint(
-    IEventTeamService teamService)
-	: Endpoint<UpdateTeamJoinCodeRequest>
-{
+	IEventTeamService teamService)
+	: Endpoint<UpdateTeamJoinCodeRequest> {
 	public override void Configure() {
 		Post("/event/{EventId}/team/{TeamId}/code");
 		Version(0);
-		
+
 		Description(s => s.Accepts<UpdateTeamJoinCodeRequest>());
 
-		Summary(s => {
-			s.Summary = "Generate new team join code";
-		});
+		Summary(s => { s.Summary = "Generate new team join code"; });
 	}
 
 	public override async Task HandleAsync(UpdateTeamJoinCodeRequest request, CancellationToken c) {
@@ -43,7 +39,7 @@ internal sealed class UpdateTeamJoinCodeEndpoint(
 				await Send.UnauthorizedAsync(c);
 				return;
 		}
-		
-		await Send.NoContentAsync(cancellation: c);
+
+		await Send.NoContentAsync(c);
 	}
 }

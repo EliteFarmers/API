@@ -5,8 +5,7 @@ namespace EliteAPI.Features.Auth.Refresh;
 
 internal sealed class RefreshAuthEndpoint(
 	IAuthService authService
-	) : Endpoint<AuthRefreshDto, AuthResponseDto> 
-{
+) : Endpoint<AuthRefreshDto, AuthResponseDto> {
 	public override void Configure() {
 		Post("/auth/refresh");
 		AllowAnonymous();
@@ -18,15 +17,14 @@ internal sealed class RefreshAuthEndpoint(
 		});
 	}
 
-	public override async Task HandleAsync(AuthRefreshDto request, CancellationToken c) 
-	{
+	public override async Task HandleAsync(AuthRefreshDto request, CancellationToken c) {
 		var response = await authService.VerifyRefreshToken(request);
-		
+
 		if (response is null) {
-			await Send.UnauthorizedAsync(cancellation: c);
+			await Send.UnauthorizedAsync(c);
 			return;
 		}
-		
-		await Send.OkAsync(response, cancellation: c);
+
+		await Send.OkAsync(response, c);
 	}
 }

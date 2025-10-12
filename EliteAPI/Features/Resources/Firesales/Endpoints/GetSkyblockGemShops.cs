@@ -8,44 +8,39 @@ using SkyblockRepo.Models.Misc;
 namespace EliteAPI.Features.Resources.Firesales.Endpoints;
 
 internal sealed class SkyblockGemShopEndpoint(
-    DataContext context
+	DataContext context
 ) : EndpointWithoutRequest<SkyblockGemShopsResponse> {
-	
-    public override void Configure() {
-        Get("/resources/gems");
-        AllowAnonymous();
-        Version(0);
+	public override void Configure() {
+		Get("/resources/gems");
+		AllowAnonymous();
+		Version(0);
 
-        Summary(s => {
-            s.Summary = "Get Skyblock Gem Shops";
-            s.Description = "Get the current/upcoming Skyblock firesales, Taylor's Collection, and Seasonal Bundles.";
-        });
-		
-        Options(o => {
-            o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)).Tag("gemshops"));
-        });
-    }
+		Summary(s => {
+			s.Summary = "Get Skyblock Gem Shops";
+			s.Description = "Get the current/upcoming Skyblock firesales, Taylor's Collection, and Seasonal Bundles.";
+		});
 
-    public override async Task HandleAsync(CancellationToken c) {
-        var currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2)).Tag("gemshops")); });
+	}
 
-        var result = await context.SkyblockFiresales
-            .Where(s => s.EndsAt >= currentTime)
-            .SelectDto()
-            .ToListAsync(cancellationToken: c);
-		
-        await Send.OkAsync(new SkyblockGemShopsResponse()
-        {
-            Firesales = result,
-            TaylorCollection = SkyblockRepoClient.Data.TaylorCollection,
-            SeasonalBundles = SkyblockRepoClient.Data.SeasonalBundles
-        }, cancellation: c);
-    }
+	public override async Task HandleAsync(CancellationToken c) {
+		var currentTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+		var result = await context.SkyblockFiresales
+			.Where(s => s.EndsAt >= currentTime)
+			.SelectDto()
+			.ToListAsync(c);
+
+		await Send.OkAsync(new SkyblockGemShopsResponse {
+			Firesales = result,
+			TaylorCollection = SkyblockRepoClient.Data.TaylorCollection,
+			SeasonalBundles = SkyblockRepoClient.Data.SeasonalBundles
+		}, c);
+	}
 }
 
-internal sealed class SkyblockGemShopsResponse
-{
-    public List<SkyblockFiresaleDto> Firesales { get; set; } = [];
-    public TaylorCollection TaylorCollection { get; set; } = new();
-    public TaylorCollection SeasonalBundles { get; set; } = new();
+internal sealed class SkyblockGemShopsResponse {
+	public List<SkyblockFiresaleDto> Firesales { get; set; } = [];
+	public TaylorCollection TaylorCollection { get; set; } = new();
+	public TaylorCollection SeasonalBundles { get; set; } = new();
 }

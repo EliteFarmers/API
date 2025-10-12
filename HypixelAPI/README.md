@@ -1,6 +1,7 @@
 # Hypixel .NET API
 
-This is a package that contains an HttpClient for interacting with the [Hypixel API](https://developer.hypixel.net/). It is used by the Elite API
+This is a package that contains an HttpClient for interacting with the [Hypixel API](https://developer.hypixel.net/). It
+is used by the Elite API
 which powers https://elitebot.dev.
 
 Not affiliated with Mojang or Hypixel in any way.
@@ -21,9 +22,11 @@ builder.Services.AddHypixelApi(opt => {
     opt.UserAgent = "MyApplication (+https://example.com)";
 });
 ```
+
 **Note:** You can apply for an API key [here](https://developer.hypixel.net/). Make sure to keep it secret!
 
-Your API Key limits are picked up automatically from the first request you make. There's an automatic throttling mechanism in place to ensure you don't exceed your limits.
+Your API Key limits are picked up automatically from the first request you make. There's an automatic throttling
+mechanism in place to ensure you don't exceed your limits.
 
 3. Inject the `IHypixelApi` into your class and use it:
 
@@ -61,7 +64,8 @@ You will have to set up everything else for this yourself, but the metrics will 
 
 ### Supported Endpoints
 
-I have only implemented the endpoints and data that I need for the Elite API. If you need more, feel free to open an issue or a PR.
+I have only implemented the endpoints and data that I need for the Elite API. If you need more, feel free to open an
+issue or a PR.
 
 | Endpoint                  | Method                 | Status  | Notes                                                                              |
 |---------------------------|------------------------|---------|------------------------------------------------------------------------------------|

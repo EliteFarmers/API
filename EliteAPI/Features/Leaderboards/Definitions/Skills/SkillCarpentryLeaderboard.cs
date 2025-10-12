@@ -15,6 +15,6 @@ public class SkillCarpentryLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Carpentry;
+		return (decimal)member.Skills.Carpentry;
 	}
 }

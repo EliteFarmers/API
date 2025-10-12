@@ -15,7 +15,7 @@ public class SkillSocialLeaderboard : IMemberLeaderboardDefinition {
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal) member.Skills.Social;
+		return (decimal)member.Skills.Social;
 	}
 }
 
@@ -30,8 +30,7 @@ public class SkillSocialProfileLeaderboard : IProfileLeaderboardDefinition {
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 
-	public decimal GetScoreFromProfile(Profile profile, LeaderboardType type)
-	{
-		return (decimal) profile.SocialXp;
+	public decimal GetScoreFromProfile(Profile profile, LeaderboardType type) {
+		return (decimal)profile.SocialXp;
 	}
 }

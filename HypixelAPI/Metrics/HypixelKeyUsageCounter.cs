@@ -11,9 +11,10 @@ public class HypixelKeyUsageCounter : IHypixelKeyUsageCounter {
 
 	public HypixelKeyUsageCounter(IMeterFactory meterFactory) {
 		var meter = meterFactory.Create("hypixel.api");
-		_keyUsageCounter = meter.CreateCounter<int>("hypixel.api.key_usage", description: "The number of requests used.");
+		_keyUsageCounter =
+			meter.CreateCounter<int>("hypixel.api.key_usage", description: "The number of requests used.");
 	}
-	
+
 	public void Increment(int value = 1) {
 		_keyUsageCounter.Add(value);
 	}

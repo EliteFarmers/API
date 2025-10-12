@@ -10,15 +10,12 @@ internal sealed class DeleteGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<DeleteGuildJacobLeaderboardRequest> {
-	
 	public override void Configure() {
 		Delete("/user/guild/{DiscordId}/jacob/{LeaderboardId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Delete a Jacob leaderboard";
-		});
+		Summary(s => { s.Summary = "Delete a Jacob leaderboard"; });
 	}
 
 	public override async Task HandleAsync(DeleteGuildJacobLeaderboardRequest request, CancellationToken c) {
@@ -32,10 +29,10 @@ internal sealed class DeleteGuildJacobLeaderboardEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var feature = guild.Features.JacobLeaderboard;
 		var existing = feature.Leaderboards.FirstOrDefault(lb => lb.Id.Equals(request.LeaderboardId));
-        
+
 		if (existing is null) {
 			await Send.NotFoundAsync(c);
 			return;
@@ -46,6 +43,6 @@ internal sealed class DeleteGuildJacobLeaderboardEndpoint(
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

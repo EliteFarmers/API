@@ -11,14 +11,14 @@ namespace EliteAPI.Features.Shop.Styles.AddStyleImage;
 
 internal sealed class AddStyleImageRequest {
 	public int StyleId { get; set; }
-	
-	[FromForm]
-	public required UploadImageDto Image { get; set; }
-	
+
+	[FromForm] public required UploadImageDto Image { get; set; }
+
 	/// <summary>
 	/// Use this to set the image as the product's thumbnail
 	/// </summary>
-	[QueryParam, DefaultValue(false)]
+	[QueryParam]
+	[DefaultValue(false)]
 	public bool? Thumbnail { get; set; }
 }
 
@@ -27,34 +27,31 @@ internal sealed class AddStyleImageEndpoint(
 	IOutputCacheStore cacheStore,
 	IObjectStorageService objectStorageService
 ) : Endpoint<AddStyleImageRequest> {
-	
 	public override void Configure() {
 		Post("/product/style/{StyleId}/images");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
-		
+
 		AllowFileUploads();
 
-		Summary(s => {
-			s.Summary = "Add Image To Style";
-		});
+		Summary(s => { s.Summary = "Add Image To Style"; });
 	}
 
 	public override async Task HandleAsync(AddStyleImageRequest request, CancellationToken c) {
 		var style = await context.WeightStyles
 			.FirstOrDefaultAsync(s => s.Id == request.StyleId, c);
-		
+
 		if (style is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var image = await objectStorageService.UploadImageAsync(
-			path: $"cosmetics/weightstyles/{style.Id}/{Guid.NewGuid()}.png",
-			file: request.Image.Image, 
+			$"cosmetics/weightstyles/{style.Id}/{Guid.NewGuid()}.png",
+			request.Image.Image,
 			token: c
 		);
-		
+
 		image.Title = request.Image.Title;
 		image.Description = request.Image.Description;
 
@@ -63,15 +60,16 @@ internal sealed class AddStyleImageEndpoint(
 				await objectStorageService.DeleteAsync(style.Image.Path, c);
 				style.Images.Remove(style.Image);
 			}
-			
+
 			style.Image = image;
-		} else {
+		}
+		else {
 			style.Images.Add(image);
 		}
-		
+
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("styles", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

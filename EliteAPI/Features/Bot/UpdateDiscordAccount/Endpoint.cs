@@ -15,25 +15,22 @@ internal sealed class UpdateDiscordAccountEndpoint(
 	IAccountService accountService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<IncomingAccountDto, AuthorizedAccountDto> {
-	
 	public override void Configure() {
 		Patch("/bot/account");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());
 		AllowAnonymous(); // Auth done in endpoint filter
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Update user Discord account";
-		});
+		Summary(s => { s.Summary = "Update user Discord account"; });
 	}
 
 	public override async Task HandleAsync(IncomingAccountDto request, CancellationToken c) {
 		var exising = await accountService.GetAccount(request.Id);
-        
+
 		var account = exising ?? new EliteAccount {
 			Id = request.Id,
 			Username = request.Username,
-			DisplayName = request.DisplayName ?? request.Username,
+			DisplayName = request.DisplayName ?? request.Username
 		};
 
 		account.Avatar = request.Avatar;
@@ -41,20 +38,20 @@ internal sealed class UpdateDiscordAccountEndpoint(
 		account.Locale = request.Locale ?? account.Locale;
 		account.Data ??= new DiscordAccountData();
 		account.Data.Banner = request.Banner;
-        
+
 		account.Discriminator = request.Discriminator;
 
-		if (exising is null) {
+		if (exising is null)
 			try {
 				await context.Accounts.AddAsync(account, c);
 				await context.SaveChangesAsync(c);
-			} catch (Exception) {
+			}
+			catch (Exception) {
 				ThrowError("Failed to create account");
 			}
-		} else {
+		else
 			context.Accounts.Update(account);
-		}
-        
-		await Send.OkAsync(mapper.Map<AuthorizedAccountDto>(account), cancellation: c);
+
+		await Send.OkAsync(mapper.Map<AuthorizedAccountDto>(account), c);
 	}
 }

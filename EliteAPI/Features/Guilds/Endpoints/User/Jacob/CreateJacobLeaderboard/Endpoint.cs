@@ -10,15 +10,12 @@ internal sealed class CreateGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<CreateJacobLeaderboardRequest> {
-	
 	public override void Configure() {
 		Post("/user/guild/{DiscordId}/jacob/leaderboard");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Create a Jacob leaderboard";
-		});
+		Summary(s => { s.Summary = "Create a Jacob leaderboard"; });
 	}
 
 	public override async Task HandleAsync(CreateJacobLeaderboardRequest request, CancellationToken c) {
@@ -32,12 +29,11 @@ internal sealed class CreateGuildJacobLeaderboardEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var feature = guild.Features.JacobLeaderboard;
-        
-		if (feature.Leaderboards.Count >= feature.MaxLeaderboards) {
+
+		if (feature.Leaderboards.Count >= feature.MaxLeaderboards)
 			ThrowError("You have reached the maximum amount of leaderboards.", StatusCodes.Status400BadRequest);
-		}
 
 		var lb = request.Leaderboard;
 		var leaderboard = new GuildJacobLeaderboard {
@@ -51,18 +47,17 @@ internal sealed class CreateGuildJacobLeaderboardEndpoint(
 			BlockedRole = lb.BlockedRole,
 			UpdateChannelId = lb.UpdateChannelId,
 			UpdateRoleId = lb.UpdateRoleId,
-			PingForSmallImprovements = lb.PingForSmallImprovements ?? false,
+			PingForSmallImprovements = lb.PingForSmallImprovements ?? false
 		};
-        
-		if (feature.Leaderboards.Any(l => l.Id.Equals(leaderboard.Id))) {
+
+		if (feature.Leaderboards.Any(l => l.Id.Equals(leaderboard.Id)))
 			ThrowError("Leaderboard already exists", StatusCodes.Status400BadRequest);
-		}
-        
+
 		feature.Leaderboards.Add(leaderboard);
-		
+
 		context.Guilds.Update(guild);
 		await context.SaveChangesAsync(c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

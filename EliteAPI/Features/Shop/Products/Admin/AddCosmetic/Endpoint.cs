@@ -13,7 +13,7 @@ internal sealed class AddCosmeticToProductRequest {
 	/// Id of the produc to add the cosmetic to
 	/// </summary>
 	public required long ProductId { get; set; }
-	
+
 	/// <summary>
 	/// Id of the cosmetic to add to the product
 	/// </summary>
@@ -25,7 +25,6 @@ internal sealed class AddCosmeticToProductEndpoint(
 	IOutputCacheStore cacheStore,
 	IConnectionMultiplexer redis
 ) : Endpoint<AddCosmeticToProductRequest> {
-	
 	public override void Configure() {
 		Post("/product/{ProductId}/cosmetics/{CosmeticId}");
 		Policies(ApiUserPolicies.Admin);
@@ -33,37 +32,35 @@ internal sealed class AddCosmeticToProductEndpoint(
 
 		Description(s => s.Accepts<AddCosmeticToProductRequest>());
 
-		Summary(s => {
-			s.Summary = "Add Cosmetic to Product";
-		});
+		Summary(s => { s.Summary = "Add Cosmetic to Product"; });
 	}
 
 	public override async Task HandleAsync(AddCosmeticToProductRequest request, CancellationToken c) {
-		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == (ulong) request.ProductId, cancellationToken: c);
+		var product = await context.Products.FirstOrDefaultAsync(p => p.Id == (ulong)request.ProductId, c);
 		if (product is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
-		var style = await context.WeightStyles.FirstOrDefaultAsync(w => w.Id == request.CosmeticId, cancellationToken: c);
+
+		var style = await context.WeightStyles.FirstOrDefaultAsync(w => w.Id == request.CosmeticId, c);
 		if (style is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		if (product.ProductWeightStyles.Exists(w => w.WeightStyleId == request.CosmeticId)) {
-			await Send.NoContentAsync(cancellation: c);
+			await Send.NoContentAsync(c);
 			return;
 		}
 
 		var newLink = new ProductWeightStyle {
 			WeightStyleId = request.CosmeticId,
-			ProductId = (ulong) request.ProductId,
+			ProductId = (ulong)request.ProductId
 		};
-		
+
 		context.ProductWeightStyles.Add(newLink);
 		await context.SaveChangesAsync(c);
-		
+
 		// Clear the style list cache
 		var db = redis.GetDatabase();
 		await db.KeyDeleteAsync("bot:stylelist");
@@ -71,6 +68,6 @@ internal sealed class AddCosmeticToProductEndpoint(
 
 		await cacheStore.EvictByTagAsync("products", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

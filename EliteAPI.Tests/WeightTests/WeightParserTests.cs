@@ -9,10 +9,9 @@ using Microsoft.Extensions.Options;
 namespace EliteAPI.Tests.WeightTests;
 
 public class WeightParserTests {
-	
 	[Fact]
 	public void CropWeightTests() {
-		var collection = new CropCollection() {
+		var collection = new CropCollection {
 			ProfileMemberId = Guid.Empty,
 
 			Cactus = 6907586,
@@ -26,7 +25,7 @@ public class WeightParserTests {
 			SugarCane = 48765077,
 			Wheat = 9189432517,
 			Seeds = 8122998326,
-			
+
 			Mite = 768,
 			Cricket = 828,
 			Moth = 765,
@@ -39,7 +38,7 @@ public class WeightParserTests {
 			Fly = 5696
 		};
 
-		var collections = new Dictionary<string, long>() {
+		var collections = new Dictionary<string, long> {
 			{ CropId.Cactus, collection.Cactus },
 			{ CropId.Carrot, collection.Carrot },
 			{ CropId.CocoaBeans, collection.CocoaBeans },
@@ -52,23 +51,24 @@ public class WeightParserTests {
 			{ CropId.Wheat, collection.Wheat }
 		};
 		var uncounted = collection.CalcUncountedCrops();
-		
+
 		var weight = FarmingWeightParser.ParseCropWeight(collections, uncounted);
 		var summed = weight.Values.Sum();
 
 		collection.CountCropWeight().ShouldBe(summed, 0.001);
 	}
-	
-	
+
+
 	public WeightParserTests() {
 		var configurationBuilder = new ConfigurationBuilder();
 		configurationBuilder.RegisterEliteConfigFiles();
 		var configuration = configurationBuilder.Build();
-		
+
 		var services = new ServiceCollection();
 		services.Configure<ConfigFarmingWeightSettings>(configuration.GetSection("FarmingWeight"));
 		var serviceProvider = services.BuildServiceProvider();
-		
-		FarmingWeightConfig.Settings = serviceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
+
+		FarmingWeightConfig.Settings =
+			serviceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
 	}
 }

@@ -17,31 +17,28 @@ internal sealed class DeleteCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
 ) : Endpoint<DeleteCategoryRequest> {
-	
 	public override void Configure() {
 		Delete("/shop/category/{CategoryId}");
 		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Delete Shop Category";
-		});
+		Summary(s => { s.Summary = "Delete Shop Category"; });
 	}
 
 	public override async Task HandleAsync(DeleteCategoryRequest request, CancellationToken c) {
 		var category = await context.Categories
-			.FirstOrDefaultAsync(e => e.Id == request.CategoryId, cancellationToken: c);
-		
+			.FirstOrDefaultAsync(e => e.Id == request.CategoryId, c);
+
 		if (category is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		context.Categories.Remove(category);
-		
+
 		await context.SaveChangesAsync(c);
 		await cacheStore.EvictByTagAsync("categories", c);
 
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

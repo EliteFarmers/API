@@ -9,21 +9,18 @@ namespace EliteAPI.Features.Profiles.Endpoints.GetAllProfileDetails;
 internal sealed class GetAllProfileDetailsEndpoint(
 	IProfileService profileService
 ) : Endpoint<PlayerUuidRequest, List<ProfileDetailsDto>> {
-	
 	public override void Configure() {
 		Get("/profiles/{PlayerUuid}");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get All Profile Details";
-		});
-		
+		Summary(s => { s.Summary = "Get All Profile Details"; });
+
 		Description(d => d.AutoTagOverride("Profile"));
 	}
 
 	public override async Task HandleAsync(PlayerUuidRequest request, CancellationToken c) {
 		var member = await profileService.GetProfilesDetails(request.PlayerUuidFormatted);
-		await Send.OkAsync(member, cancellation: c);
+		await Send.OkAsync(member, c);
 	}
 }

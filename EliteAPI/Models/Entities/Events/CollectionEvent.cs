@@ -3,8 +3,7 @@
 namespace EliteAPI.Models.Entities.Events;
 
 public class CollectionEvent : Event {
-	[Column("Data", TypeName = "jsonb")]
-	public CollectionEventData Data { get; set; } = new();
+	[Column("Data", TypeName = "jsonb")] public CollectionEventData Data { get; set; } = new();
 
 	public CollectionEvent() {
 		Type = EventType.Collection;
@@ -12,8 +11,7 @@ public class CollectionEvent : Event {
 }
 
 public class CollectionEventMember : EventMember {
-	[Column("Data", TypeName = "jsonb")]
-	public CollectionEventMemberData Data { get; set; } = new();
+	[Column("Data", TypeName = "jsonb")] public CollectionEventMemberData Data { get; set; } = new();
 
 	public CollectionEventMember() {
 		Type = EventType.Collection;

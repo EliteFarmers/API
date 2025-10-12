@@ -11,17 +11,14 @@ internal sealed class DeleteContestPingsEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<DisableContestPingsRequest> {
-	
 	public override void Configure() {
 		Delete("/user/guild/{DiscordId}/contestpings");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
-		
+
 		Description(x => x.Accepts<DisableContestPingsRequest>());
-		
-		Summary(s => {
-			s.Summary = "Delete contest pings for a guild";
-		});
+
+		Summary(s => { s.Summary = "Delete contest pings for a guild"; });
 	}
 
 	public override async Task HandleAsync(DisableContestPingsRequest request, CancellationToken c) {
@@ -30,18 +27,18 @@ internal sealed class DeleteContestPingsEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-        
+
 		if (!guild.HasBot) {
 			if (guild?.Features.ContestPings?.Enabled is true) {
 				guild.Features.ContestPings.Enabled = false;
 				guild.Features.ContestPings.DisabledReason = "Guild no longer found.";
 			}
-            
+
 			ThrowError("Guild no longer has the bot", StatusCodes.Status400BadRequest);
 		}
 
 		if (!guild.Features.ContestPingsEnabled) {
-			await Send.NoContentAsync(cancellation: c);
+			await Send.NoContentAsync(c);
 			return;
 		}
 
@@ -49,11 +46,11 @@ internal sealed class DeleteContestPingsEndpoint(
 
 		pings.Enabled = false;
 		pings.DisabledReason = request.Reason;
-        
+
 		guild.Features.ContestPings = pings;
 		context.Entry(guild).Property(g => g.Features).IsModified = true;
-		
+
 		await context.SaveChangesAsync(c);
-		await Send.NoContentAsync(cancellation: c);
+		await Send.NoContentAsync(c);
 	}
 }

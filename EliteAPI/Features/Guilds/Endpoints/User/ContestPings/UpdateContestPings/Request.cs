@@ -5,11 +5,9 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Guilds.User.ContestPings.UpdateContestPings;
 
-public class UpdateContestPingsRequest : DiscordIdRequest 
-{
-	[FromBody]
-	public required UpdateContestPings Settings { get; set; }
-	
+public class UpdateContestPingsRequest : DiscordIdRequest {
+	[FromBody] public required UpdateContestPings Settings { get; set; }
+
 	public class UpdateContestPings {
 		/// <summary>
 		/// Indicates whether the contest pings feature is enabled for the guild.
@@ -46,7 +44,7 @@ public class UpdateContestPingsRequest : DiscordIdRequest
 internal sealed class UpdateContestPingsRequestValidator : Validator<UpdateContestPingsRequest> {
 	public UpdateContestPingsRequestValidator() {
 		Include(new DiscordIdRequestValidator());
-		
+
 		RuleFor(x => x.Settings.DisabledReason)
 			.MaximumLength(128)
 			.WithMessage("Reason must be 128 characters or less.")

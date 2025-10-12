@@ -12,13 +12,12 @@ using Result = Results<Ok<GardenDto>, NotFound>;
 internal sealed class GetSelectedGardenEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper)
-	: Endpoint<PlayerUuidRequest, Result> 
-{
+	: Endpoint<PlayerUuidRequest, Result> {
 	public override void Configure() {
 		Get("/garden/{PlayerUuid}/selected");
 		AllowAnonymous();
 		ResponseCache(600, ResponseCacheLocation.Any);
-		
+
 		Summary(s => {
 			s.Summary = "Get selected Garden data for a player";
 			s.Description = "Get selected Garden data for a specific player by UUID";
@@ -30,10 +29,8 @@ internal sealed class GetSelectedGardenEndpoint(
 
 	public override async Task<Result> ExecuteAsync(PlayerUuidRequest request, CancellationToken c) {
 		var garden = await profileService.GetSelectedGarden(request.PlayerUuidFormatted);
-		if (garden is null) {
-			return TypedResults.NotFound();
-		}
-		
+		if (garden is null) return TypedResults.NotFound();
+
 		var mapped = mapper.Map<GardenDto>(garden);
 		return TypedResults.Ok(mapped);
 	}

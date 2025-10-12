@@ -6,15 +6,14 @@ namespace EliteAPI.Features.Bot.Guilds.UpdateGuildMemberRoles;
 
 public class BotUpdateGuildMemberRolesRequest : DiscordIdRequest {
 	public required string UserId { get; set; }
-	
-	[FromBody]
-	public required List<string> Roles { get; set; }
+
+	[FromBody] public required List<string> Roles { get; set; }
 }
 
 internal sealed class BotUpdateGuildRoleRequestValidator : Validator<BotUpdateGuildMemberRolesRequest> {
 	public BotUpdateGuildRoleRequestValidator() {
 		Include(new DiscordIdRequestValidator());
-		
+
 		RuleFor(x => x.UserId)
 			.NotEmpty()
 			.WithMessage("UserId is required.");

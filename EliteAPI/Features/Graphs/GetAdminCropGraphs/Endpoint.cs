@@ -10,12 +10,11 @@ namespace EliteAPI.Features.Graphs.GetAdminCropGraphs;
 internal sealed class GetAdminCropGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>> 
-{
+	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>> {
 	public override void Configure() {
 		Get("/graph/admin/{PlayerUuid}/{ProfileUuid}/crops");
 		Policies(ApiUserPolicies.Support);
-		
+
 		Summary(s => {
 			s.Summary = "Get Admin Crop Collections";
 			s.ExampleRequest = new GraphRequest {
@@ -29,12 +28,10 @@ internal sealed class GetAdminCropGraphsEndpoint(
 		var profile = await context.ProfileMembers.AsNoTracking()
 			.Where(m => m.PlayerUuid == request.PlayerUuidFormatted && m.ProfileId == request.ProfileUuidFormatted)
 			.Select(p => p.Id)
-			.FirstOrDefaultAsync(cancellationToken: c);
+			.FirstOrDefaultAsync(c);
 
-		if (profile == Guid.Empty) {
-			await Send.NotFoundAsync(c);
-		}
-        
+		if (profile == Guid.Empty) await Send.NotFoundAsync(c);
+
 		var points = await timescaleService.GetCropCollections(profile, request.Start, request.End, -1);
 		await Send.OkAsync(points, c);
 	}

@@ -15,15 +15,12 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<DiscordIdRequest> {
-	
 	public override void Configure() {
 		Post("/user/guild/{DiscordId}/purchases");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
-		
-		Summary(s => {
-			s.Summary = "Refresh Guild Purchases";
-		});
+
+		Summary(s => { s.Summary = "Refresh Guild Purchases"; });
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
@@ -32,24 +29,22 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var guild = await discordService.GetGuild(request.DiscordIdUlong);
 		if (guild is null) {
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		await monetizationService.FetchGuildEntitlementsAsync(request.DiscordIdUlong);
-		if (guild.Features.Locked) {
-			ThrowError("Guild is locked", StatusCodes.Status400BadRequest);
-		}
-        
+		if (guild.Features.Locked) ThrowError("Guild is locked", StatusCodes.Status400BadRequest);
+
 		var entitlements = await monetizationService.GetEntitlementsAsync(request.DiscordIdUlong);
 		if (entitlements is { Count: 0 }) {
-			await Send.NoContentAsync(cancellation: c);
+			await Send.NoContentAsync(c);
 			return;
 		}
-        
+
 		var maxLeaderboards = guild.Features.JacobLeaderboard?.MaxLeaderboards ?? 0;
 		var maxEvents = guild.Features.EventSettings?.MaxMonthlyEvents ?? 0;
 
@@ -60,30 +55,28 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 			if (!entitlement.IsActive) continue;
 
 			var features = entitlement.Product.Features;
-			if (features is { MaxMonthlyEvents: > 0 }) {
+			if (features is { MaxMonthlyEvents: > 0 })
 				currentEvents = Math.Max(features.MaxMonthlyEvents.Value, currentEvents);
-			}
-            
-			if (features is { MaxJacobLeaderboards: > 0 }) {
+
+			if (features is { MaxJacobLeaderboards: > 0 })
 				currentLeaderboards = Math.Max(features.MaxJacobLeaderboards.Value, currentLeaderboards);
-			}
 		}
 
 		if (currentLeaderboards == maxLeaderboards && currentEvents == maxEvents) {
-			await Send.NoContentAsync(cancellation: c);
+			await Send.NoContentAsync(c);
 			return;
 		}
-        
+
 		guild.Features.JacobLeaderboard ??= new GuildJacobLeaderboardFeature();
 		guild.Features.JacobLeaderboard.MaxLeaderboards = currentLeaderboards;
 		guild.Features.EventSettings ??= new GuildEventSettings();
 		guild.Features.EventSettings.MaxMonthlyEvents = currentEvents;
-            
+
 		context.Entry(guild).Property(p => p.Features).IsModified = true;
 		context.Guilds.Update(guild);
-        
+
 		await context.SaveChangesAsync(c);
-		
-		await Send.NoContentAsync(cancellation: c);
+
+		await Send.NoContentAsync(c);
 	}
 }

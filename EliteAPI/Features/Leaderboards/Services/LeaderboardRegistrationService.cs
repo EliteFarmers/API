@@ -13,8 +13,7 @@ public interface ILeaderboardRegistrationService {
 }
 
 [RegisterService<ILeaderboardRegistrationService>(LifeTime.Singleton)]
-public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILeaderboardRegistrationService
-{
+public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILeaderboardRegistrationService {
 	public async Task RegisterLeaderboardsAsync(CancellationToken c) {
 		using var scope = provider.CreateScope();
 		var context = scope.ServiceProvider.GetRequiredService<DataContext>();
@@ -26,7 +25,8 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		}
 
 		await context.SaveChangesAsync(c);
-		logger.LogInformation("Registration of {Sum} leaderboards took {UtcNow}ms", Leaderboards.Select(l => l.Info.IntervalType.Count).Sum(), DateTime.UtcNow - start);
+		logger.LogInformation("Registration of {Sum} leaderboards took {UtcNow}ms",
+			Leaderboards.Select(l => l.Info.IntervalType.Count).Sum(), DateTime.UtcNow - start);
 		return;
 
 		async Task UpdateLeaderboard(ILeaderboardDefinition leaderboard) {
@@ -36,10 +36,12 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 						await CreateLeaderboardIfNotExists(leaderboard, intervalType, $"{leaderboard.Info.Slug}");
 						break;
 					case LeaderboardType.Monthly:
-						await CreateLeaderboardIfNotExists(leaderboard, intervalType, $"{leaderboard.Info.Slug}-monthly");
+						await CreateLeaderboardIfNotExists(leaderboard, intervalType,
+							$"{leaderboard.Info.Slug}-monthly");
 						break;
 					case LeaderboardType.Weekly:
-						await CreateLeaderboardIfNotExists(leaderboard, intervalType, $"{leaderboard.Info.Slug}-weekly");
+						await CreateLeaderboardIfNotExists(leaderboard, intervalType,
+							$"{leaderboard.Info.Slug}-weekly");
 						break;
 				}
 			}
@@ -47,11 +49,10 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 
 		async Task CreateLeaderboardIfNotExists(ILeaderboardDefinition leaderboard, LeaderboardType type, string slug) {
 			var existing = await context.Leaderboards
-				.FirstOrDefaultAsync(lb => lb.Slug.Equals(slug), cancellationToken: c);
+				.FirstOrDefaultAsync(lb => lb.Slug.Equals(slug), c);
 
-			if (!LeaderboardsById.TryAdd(slug, leaderboard)) {
+			if (!LeaderboardsById.TryAdd(slug, leaderboard))
 				throw new InvalidOperationException($"Leaderboard with slug {slug} is already registered");
-			}
 
 			if (existing is not null) {
 				existing.ShortTitle = leaderboard.Info.ShortTitle;
@@ -61,30 +62,31 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 
 				if (leaderboard.Info.MinimumScore > existing.MinimumScore) {
 					var count = 0;
-					if (type == LeaderboardType.Current) {
+					if (type == LeaderboardType.Current)
 						count = await context.LeaderboardEntries
 							.Where(s =>
 								s.LeaderboardId == existing.LeaderboardId
 								&& s.IntervalIdentifier == null
 								&& s.Score < leaderboard.Info.MinimumScore)
-							.ExecuteDeleteAsync(cancellationToken: c);
-					} else {
+							.ExecuteDeleteAsync(c);
+					else
 						count += await context.LeaderboardEntries
 							.Where(s =>
 								s.LeaderboardId == existing.LeaderboardId
 								&& s.IntervalIdentifier != null
 								&& s.InitialScore < leaderboard.Info.MinimumScore)
-							.ExecuteDeleteAsync(cancellationToken: c);
-					}
-					
-					logger.LogInformation("Deleted {Count} entries from \"{Slug}\" leaderboard that had less than the minimum score", count, slug);
+							.ExecuteDeleteAsync(c);
+
+					logger.LogInformation(
+						"Deleted {Count} entries from \"{Slug}\" leaderboard that had less than the minimum score",
+						count, slug);
 				}
-				
+
 				existing.MinimumScore = leaderboard.Info.MinimumScore;
 				return;
 			}
 
-			var newLeaderboard = new Leaderboard() {
+			var newLeaderboard = new Leaderboard {
 				Title = leaderboard.Info.Title,
 				ShortTitle = leaderboard.Info.ShortTitle,
 				Slug = slug,
@@ -96,8 +98,9 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 			await context.Leaderboards.AddAsync(newLeaderboard, c);
 		}
 	}
-	
-	public Dictionary<string, ILeaderboardDefinition> LeaderboardsById { get; } = new Dictionary<string, ILeaderboardDefinition>();
+
+	public Dictionary<string, ILeaderboardDefinition> LeaderboardsById { get; } = new();
+
 	public List<ILeaderboardDefinition> Leaderboards { get; } = [
 		new FarmingWeightLeaderboard(),
 		new GardenXpLeaderboard(),

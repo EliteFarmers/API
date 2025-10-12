@@ -16,39 +16,30 @@ internal sealed class GetLinkedAccountsEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
 ) : Endpoint<DiscordIdRequest, Result> {
-	
 	public override void Configure() {
 		Get("/player/{DiscordId}");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get Linked Accounts";
-		});
+		Summary(s => { s.Summary = "Get Linked Accounts"; });
 	}
 
 	public override async Task<Result> ExecuteAsync(DiscordIdRequest request, CancellationToken c) {
 		var account = await context.Accounts
 			.Include(a => a.MinecraftAccounts)
-			.FirstOrDefaultAsync(a => a.Id == request.DiscordIdUlong, cancellationToken: c);
-        
-		if (account is null)
-		{
-			return TypedResults.NotFound();
-		}
-        
+			.FirstOrDefaultAsync(a => a.Id == request.DiscordIdUlong, c);
+
+		if (account is null) return TypedResults.NotFound();
+
 		var minecraftAccounts = account.MinecraftAccounts;
 		var dto = new LinkedAccountsDto();
-        
-		foreach (var minecraftAccount in minecraftAccounts)
-		{
+
+		foreach (var minecraftAccount in minecraftAccounts) {
 			var data = await profileService.GetPlayerData(minecraftAccount.Id);
 			if (data is null) continue;
 
-			if (minecraftAccount.Selected) {
-				dto.SelectedUuid = data.Uuid;
-			}
-            
+			if (minecraftAccount.Selected) dto.SelectedUuid = data.Uuid;
+
 			dto.Players.Add(mapper.Map<PlayerDataDto>(data));
 		}
 

@@ -12,20 +12,15 @@ internal sealed class GetPublicGuildEventsEndpoint(
 	DataContext context,
 	IDiscordService discordService,
 	AutoMapper.IMapper mapper
-	) : Endpoint<DiscordIdRequest, List<EventDetailsDto>>
-{
+) : Endpoint<DiscordIdRequest, List<EventDetailsDto>> {
 	public override void Configure() {
 		Get("/guild/{DiscordId}/events");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => {
-			s.Summary = "Get public guild events";
-		});
-		
-		Options(o => {
-			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(5)).Tag("guild-events"));
-		});
+		Summary(s => { s.Summary = "Get public guild events"; });
+
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(5)).Tag("guild-events")); });
 	}
 
 	public override async Task HandleAsync(DiscordIdRequest request, CancellationToken c) {
@@ -34,7 +29,7 @@ internal sealed class GetPublicGuildEventsEndpoint(
 			await Send.NotFoundAsync(c);
 			return;
 		}
-		
+
 		var events = await context.Events
 			.Where(e => e.GuildId == guild.Id && e.Approved)
 			.OrderBy(e => e.StartTime)
@@ -42,7 +37,7 @@ internal sealed class GetPublicGuildEventsEndpoint(
 			.ToListAsync(c);
 
 		var mapped = mapper.Map<List<EventDetailsDto>>(events) ?? [];
-		
-		await Send.OkAsync(mapped, cancellation: c);
+
+		await Send.OkAsync(mapped, c);
 	}
 }

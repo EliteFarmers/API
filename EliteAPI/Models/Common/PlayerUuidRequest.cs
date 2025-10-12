@@ -6,9 +6,8 @@ namespace EliteAPI.Models.Common;
 
 public class PlayerUuidRequest {
 	public required string PlayerUuid { get; set; }
-	
-	[JsonIgnore]
-	public string PlayerUuidFormatted => PlayerUuid.ToLowerInvariant().Replace("-", "");
+
+	[JsonIgnore] public string PlayerUuidFormatted => PlayerUuid.ToLowerInvariant().Replace("-", "");
 }
 
 internal sealed class PlayerUuidRequestValidator : Validator<PlayerUuidRequest> {
