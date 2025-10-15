@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Events;
 
-public static class MedalEventProgressParser {
+public static class MedalEventProgressParser
+{
 	public static void UpdateMedalProgress(this MedalEventMember eventMember, MedalEvent @event, ProfileMember member) {
 		var weights = @event.Data.MedalWeights;
 

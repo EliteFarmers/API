@@ -11,7 +11,8 @@ internal sealed class SetGuildPublicEndpoint(
 	IDiscordService discordService,
 	IOutputCacheStore cacheStore,
 	DataContext context)
-	: Endpoint<SetGuildPublicRequest> {
+	: Endpoint<SetGuildPublicRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/public");
 		Policies(ApiUserPolicies.Admin);

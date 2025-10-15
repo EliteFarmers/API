@@ -5,7 +5,8 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Services;
 
-public class CacheService : ICacheService {
+public class CacheService : ICacheService
+{
 	private readonly IConnectionMultiplexer _redis;
 	private readonly ConfigCooldownSettings _coolDowns;
 

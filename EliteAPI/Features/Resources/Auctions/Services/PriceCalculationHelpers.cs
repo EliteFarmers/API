@@ -2,7 +2,8 @@ using ZLinq;
 
 namespace EliteAPI.Features.Resources.Auctions.Services;
 
-public static class PriceCalculationHelpers {
+public static class PriceCalculationHelpers
+{
 	// Minimum samples to attempt robust IQR. If fewer, a simpler min is used.
 	private const int MinSamplesForIqr = 5;
 

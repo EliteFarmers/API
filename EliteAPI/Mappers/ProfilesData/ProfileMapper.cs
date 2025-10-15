@@ -7,7 +7,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
-public class ProfileMapper : Profile {
+public class ProfileMapper : Profile
+{
 	public ProfileMapper() {
 		CreateMap<Models.Entities.Hypixel.Profile, ProfileDetailsDto>()
 			.ForMember(x => x.Deleted, opt => opt.MapFrom(x => x.IsDeleted))
@@ -15,7 +16,8 @@ public class ProfileMapper : Profile {
 	}
 }
 
-public class ProfileMemberMapper : Profile {
+public class ProfileMemberMapper : Profile
+{
 	private static readonly JsonSerializerOptions CollectionOptions = new();
 
 	public ProfileMemberMapper() {
@@ -36,7 +38,7 @@ public class ProfileMemberMapper : Profile {
 			.ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api))
 			.ForMember(x => x.Meta, opt => opt.MapFrom(x => x.GetCosmeticsDto()))
 			.ForMember(x => x.Inventories, opt => opt.MapFrom(x => x.Inventories.Select(i => i.ToDto())))
-            .ForMember(x => x.Events, opt => opt.MapFrom(x => x.EventEntries));
+			.ForMember(x => x.Events, opt => opt.MapFrom(x => x.EventEntries));
 
 		CreateMap<ProfileMember, MemberDetailsDto>()
 			.ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
@@ -48,7 +50,8 @@ public class ProfileMemberMapper : Profile {
 	}
 }
 
-public class ApiDataMapper : Profile {
+public class ApiDataMapper : Profile
+{
 	public ApiDataMapper() {
 		CreateMap<ApiAccess, ApiAccessDto>();
 
@@ -58,7 +61,8 @@ public class ApiDataMapper : Profile {
 	}
 }
 
-public class InventoriesMapper : Profile {
+public class InventoriesMapper : Profile
+{
 	public InventoriesMapper() {
 		CreateMap<Inventories, InventoriesDto>()
 			.ForMember(x => x.Talismans, opt => opt.MapFrom(x => x.TalismanBag))

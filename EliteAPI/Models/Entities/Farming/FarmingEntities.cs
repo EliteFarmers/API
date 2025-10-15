@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Models.Entities.Farming;
 
 [Table("FarmingWeights")] // Previous table name
-public class Farming {
+public class Farming
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -31,7 +32,8 @@ public class Farming {
 }
 
 [Owned]
-public class Pests {
+public class Pests
+{
 	public int Beetle { get; set; } = 0;
 	public int Cricket { get; set; } = 0;
 	public int Fly { get; set; } = 0;
@@ -45,7 +47,8 @@ public class Pests {
 	public int Mouse { get; set; } = 0;
 }
 
-public class FarmingFortune {
+public class FarmingFortune
+{
 	public int BaseCalculatedFortune { get; set; } = new();
 
 	public Dictionary<Crop, int> CropCalculatedFortune { get; set; } = new();
@@ -53,7 +56,8 @@ public class FarmingFortune {
 	public Dictionary<string, int> SpecificFortuneSources { get; set; } = new();
 }
 
-public class FarmingInventory {
+public class FarmingInventory
+{
 	public List<ItemDto> Armor { get; set; } = new();
 	public List<ItemDto> Tools { get; set; } = new();
 	public List<ItemDto> Equipment { get; set; } = new();

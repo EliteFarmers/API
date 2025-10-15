@@ -6,7 +6,8 @@ using Riok.Mapperly.Abstractions;
 namespace EliteAPI.Features.Announcements;
 
 [Mapper]
-public static partial class AnnouncementMapper {
+public static partial class AnnouncementMapper
+{
 	public static partial IQueryable<AnnouncementDto> ToDto(this IQueryable<Announcement> q);
 
 	public static partial AnnouncementDto ToDto(this Announcement announcement);
@@ -15,7 +16,8 @@ public static partial class AnnouncementMapper {
 	public static partial Announcement ToModel(this CreateAnnouncementDto dto);
 }
 
-public class CreateAnnouncementDto {
+public class CreateAnnouncementDto
+{
 	/// <summary>
 	/// Announcement title
 	/// </summary>
@@ -62,7 +64,8 @@ public class CreateAnnouncementDto {
 	public DateTimeOffset ExpiresAt { get; set; }
 }
 
-public class AnnouncementDto : CreateAnnouncementDto {
+public class AnnouncementDto : CreateAnnouncementDto
+{
 	/// <summary>
 	/// Announcement id
 	/// </summary>

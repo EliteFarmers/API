@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Leaderboards.Endpoints.GetMultiplePlayerRanks;
 
 internal sealed class GetMultiplePlayerRanksEndpoint(
 	ILbService lbService
-) : Endpoint<GetMultiplePlayerRanksRequest, Dictionary<string, LeaderboardPositionDto?>> {
+) : Endpoint<GetMultiplePlayerRanksRequest, Dictionary<string, LeaderboardPositionDto?>>
+{
 	public override void Configure() {
 		Get("/leaderboards-multiple/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();

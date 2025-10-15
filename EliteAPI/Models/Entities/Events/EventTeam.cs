@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Events;
 
-public class EventTeam {
+public class EventTeam
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -32,7 +33,8 @@ public class EventTeam {
 	}
 }
 
-public class EventTeamEntityConfiguration : IEntityTypeConfiguration<EventTeam> {
+public class EventTeamEntityConfiguration : IEntityTypeConfiguration<EventTeam>
+{
 	public void Configure(EntityTypeBuilder<EventTeam> builder) {
 		builder.HasIndex(e => new { e.EventId, e.UserId }).IsUnique();
 	}

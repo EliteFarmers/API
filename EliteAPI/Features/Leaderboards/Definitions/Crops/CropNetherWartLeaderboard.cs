@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class CropNetherWartLeaderboard : IMemberLeaderboardDefinition {
+public class CropNetherWartLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Nether Wart Collection",
 		ShortTitle = "Nether Wart",
@@ -23,7 +24,8 @@ public class CropNetherWartLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MilestoneNetherWartLeaderboard : IProfileLeaderboardDefinition {
+public class MilestoneNetherWartLeaderboard : IProfileLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Nether Wart Milestone Collection",
 		ShortTitle = "Nether Wart Milestone",

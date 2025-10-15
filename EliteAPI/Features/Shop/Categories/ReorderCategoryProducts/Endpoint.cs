@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Shop.Categories.ReorderCategoryProducts;
 internal sealed class ReorderCategoryProductsEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<ReorderCategoryProductsRequest> {
+) : Endpoint<ReorderCategoryProductsRequest>
+{
 	public override void Configure() {
 		Post("/shop/category/{CategoryId}/reorder");
 		Policies(ApiUserPolicies.Admin);

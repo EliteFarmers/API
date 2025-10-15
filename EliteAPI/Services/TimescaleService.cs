@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Services;
 
-public class TimescaleService(DataContext context) : ITimescaleService {
+public class TimescaleService(DataContext context) : ITimescaleService
+{
 	public async Task<List<CollectionDataPointDto>> GetCropCollection(Guid memberId, Crop crop, DateTimeOffset start,
 		DateTimeOffset end, int perDay = 4) {
 		var crops = await GetCropCollections(memberId, start, end, perDay);

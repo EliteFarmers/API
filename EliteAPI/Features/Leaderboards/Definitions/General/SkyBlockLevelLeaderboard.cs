@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class SkyblockLevelLeaderboard : IMemberLeaderboardDefinition {
+public class SkyblockLevelLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Skyblock Level",
 		ShortTitle = "Skyblock Level",

@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class PestMiteLeaderboard : IMemberLeaderboardDefinition {
+public class PestMiteLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Mite Kills",
 		ShortTitle = "Mite",

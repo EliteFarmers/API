@@ -4,11 +4,13 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards;
 
-public interface ILeaderboardDefinition {
+public interface ILeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; }
 }
 
-public class LeaderboardInfo {
+public class LeaderboardInfo
+{
 	public required string Title { get; set; }
 	public string? ShortTitle { get; set; }
 	public required string Slug { get; set; }
@@ -19,13 +21,15 @@ public class LeaderboardInfo {
 	public LeaderboardScoreDataType ScoreDataType { get; set; }
 }
 
-public interface IMemberLeaderboardDefinition : ILeaderboardDefinition {
+public interface IMemberLeaderboardDefinition : ILeaderboardDefinition
+{
 	decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
 		return -1;
 	}
 }
 
-public interface IProfileLeaderboardDefinition : ILeaderboardDefinition {
+public interface IProfileLeaderboardDefinition : ILeaderboardDefinition
+{
 	decimal GetScoreFromProfile(Profile profile, LeaderboardType type) {
 		return -1;
 	}
@@ -35,7 +39,8 @@ public interface IProfileLeaderboardDefinition : ILeaderboardDefinition {
 	}
 }
 
-public class LeaderboardInfoDto {
+public class LeaderboardInfoDto
+{
 	/// <summary>
 	/// Leaderboard title
 	/// </summary>
@@ -76,7 +81,8 @@ public class LeaderboardInfoDto {
 	public LeaderboardScoreDataType ScoreDataType { get; set; }
 }
 
-public static class LeaderboardDefintionExtensions {
+public static class LeaderboardDefintionExtensions
+{
 	public static bool IsProfileLeaderboard(this ILeaderboardDefinition lb) {
 		return lb is IProfileLeaderboardDefinition;
 	}

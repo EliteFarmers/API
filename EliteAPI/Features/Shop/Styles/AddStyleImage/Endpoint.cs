@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.AddStyleImage;
 
-internal sealed class AddStyleImageRequest {
+internal sealed class AddStyleImageRequest
+{
 	public int StyleId { get; set; }
 
 	[FromForm] public required UploadImageDto Image { get; set; }
@@ -26,7 +27,8 @@ internal sealed class AddStyleImageEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IObjectStorageService objectStorageService
-) : Endpoint<AddStyleImageRequest> {
+) : Endpoint<AddStyleImageRequest>
+{
 	public override void Configure() {
 		Post("/product/style/{StyleId}/images");
 		Policies(ApiUserPolicies.Admin);

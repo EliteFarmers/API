@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Events.Admin.GetGuildEvents;
 internal sealed class GetGuildEventsAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, List<EventDetailsDto>> {
+) : Endpoint<DiscordIdRequest, List<EventDetailsDto>>
+{
 	public override void Configure() {
 		Get("/guild/{DiscordId}/events/admin");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

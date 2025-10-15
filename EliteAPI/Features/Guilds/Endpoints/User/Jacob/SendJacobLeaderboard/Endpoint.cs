@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Guilds.User.Jacob.SendJacobLeaderboard;
 internal sealed class SendGuildJacobFeatureEndpoint(
 	IDiscordService discordService,
 	IGuildService guildService
-) : Endpoint<SendJacobLeaderboardRequest> {
+) : Endpoint<SendJacobLeaderboardRequest>
+{
 	public override void Configure() {
 		Post("/user/guild/{DiscordId}/jacob/{LeaderboardId}/send");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

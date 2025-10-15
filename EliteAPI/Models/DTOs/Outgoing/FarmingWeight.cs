@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class FarmingWeightDto {
+public class FarmingWeightDto
+{
 	public double TotalWeight { get; set; } = 0;
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -21,12 +22,14 @@ public class FarmingWeightDto {
 	public long LastUpdated { get; set; }
 }
 
-public class FarmingWeightAllProfilesDto {
+public class FarmingWeightAllProfilesDto
+{
 	public string? SelectedProfileId { get; set; }
 	public List<FarmingWeightWithProfileDto> Profiles { get; set; } = new();
 }
 
-public class FarmingWeightWithProfileDto {
+public class FarmingWeightWithProfileDto
+{
 	public required string ProfileId { get; set; }
 	public required string ProfileName { get; set; }
 
@@ -44,14 +47,16 @@ public class FarmingWeightWithProfileDto {
 	public long LastUpdated { get; set; }
 }
 
-public class FarmingInventoryDto {
+public class FarmingInventoryDto
+{
 	public List<ItemDto> Armor { get; set; } = new();
 	public List<ItemDto> Tools { get; set; } = new();
 	public List<ItemDto> Equipment { get; set; } = new();
 	public List<ItemDto> Accessories { get; set; } = new();
 }
 
-public class PestsDto {
+public class PestsDto
+{
 	public int Beetle { get; set; } = 0;
 	public int Cricket { get; set; } = 0;
 	public int Fly { get; set; } = 0;
@@ -67,12 +72,14 @@ public class PestsDto {
 	public int? Mouse { get; set; } = 0;
 }
 
-public class WeightsDto {
+public class WeightsDto
+{
 	public Dictionary<string, double> Crops { get; set; } = new();
 	public PestWeightsDto Pests { get; set; } = new();
 }
 
-public class PestWeightsDto {
+public class PestWeightsDto
+{
 	public Dictionary<string, int> Brackets { get; set; } = new();
 	public Dictionary<string, Dictionary<string, double>> Values { get; set; } = new();
 }

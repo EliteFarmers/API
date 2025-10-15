@@ -7,7 +7,8 @@ using Image = EliteAPI.Features.Images.Models.Image;
 
 namespace EliteAPI.Features.Images.Services;
 
-public interface IImageService {
+public interface IImageService
+{
 	Task<Image> ProcessAndUploadImageAsync(
 		IFormFile file,
 		string basePath,
@@ -27,7 +28,8 @@ public interface IImageService {
 public class ImageService(
 	IObjectStorageService objectStorageService,
 	ILogger<IImageService> logger
-) : IImageService {
+) : IImageService
+{
 	public async Task<Image> ProcessAndUploadImageAsync(
 		IFormFile file,
 		string basePath,

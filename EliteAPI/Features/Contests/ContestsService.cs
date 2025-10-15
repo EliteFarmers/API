@@ -12,7 +12,8 @@ using IMapper = AutoMapper.IMapper;
 
 namespace EliteAPI.Features.Contests;
 
-public interface IContestsService {
+public interface IContestsService
+{
 	Task<List<ContestParticipationWithTimestampDto>> FetchRecords(Crop crop, long startTime, long endTime);
 	Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp, int limit = -1);
 	Task<JacobContestWithParticipationsDto?> GetContestFromKey(string contestKey);
@@ -26,7 +27,8 @@ public class ContestsService(
 	ILogger<ContestsService> logger,
 	IMapper mapper,
 	IConnectionMultiplexer redis)
-	: IContestsService {
+	: IContestsService
+{
 	public async Task<List<JacobContestWithParticipationsDto>> GetContestsAt(long timestamp, int limit = -1) {
 		var skyblockDate = new SkyblockDate(timestamp);
 		if (skyblockDate.Year < 1) return [];

@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Configuration.Settings;
 
-public class ConfigLeaderboardSettings {
+public class ConfigLeaderboardSettings
+{
 	public int CompleteRefreshInterval { get; set; }
 
 	// ReSharper disable once CollectionNeverUpdated.Global
@@ -39,7 +40,8 @@ public class ConfigLeaderboardSettings {
 }
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class Leaderboard {
+public class Leaderboard
+{
 	public required string Id { get; set; }
 	public required string Title { get; set; }
 	public int Limit { get; set; } = 1000;

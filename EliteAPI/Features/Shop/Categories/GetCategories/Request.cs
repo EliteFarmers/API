@@ -2,7 +2,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Shop.Categories.GetCategories;
 
-internal sealed class GetCategoriesRequest {
+internal sealed class GetCategoriesRequest
+{
 	/// <summary>
 	/// Include products in response
 	/// </summary>

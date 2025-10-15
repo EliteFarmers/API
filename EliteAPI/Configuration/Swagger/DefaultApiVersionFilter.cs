@@ -8,7 +8,8 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace EliteAPI.Configuration.Swagger;
 
-public partial class DefaultApiVersionFilter(IOptions<ApiExplorerOptions> options) : IDocumentFilter {
+public partial class DefaultApiVersionFilter(IOptions<ApiExplorerOptions> options) : IDocumentFilter
+{
 	private ApiVersion DefaultApiVersion => options.Value.DefaultApiVersion;
 	private string ApiVersionFormat => options.Value.SubstitutionFormat;
 

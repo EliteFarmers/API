@@ -2,7 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class AuctionHouseResponse {
+public class AuctionHouseResponse
+{
 	public bool Success { get; set; }
 	public int Page { get; set; }
 	public int TotalPages { get; set; }
@@ -11,7 +12,8 @@ public class AuctionHouseResponse {
 	public List<AuctionResponse> Auctions { get; set; } = [];
 }
 
-public class AuctionResponse {
+public class AuctionResponse
+{
 	[JsonPropertyName("uuid")] public required string Uuid { get; set; }
 
 	[JsonPropertyName("auctioneer")] public required string Auctioneer { get; set; }
@@ -58,7 +60,8 @@ public class AuctionResponse {
 	[JsonPropertyName("item_uuid")] public string? ItemUuid { get; set; }
 }
 
-public class AuctionBidResponse {
+public class AuctionBidResponse
+{
 	[JsonPropertyName("auction_id")] public required string AuctionId { get; set; }
 
 	[JsonPropertyName("bidder")] public required string Bidder { get; set; }

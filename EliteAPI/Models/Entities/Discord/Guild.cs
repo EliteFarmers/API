@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Discord;
 
-public class Guild {
+public class Guild
+{
 	[Key] public ulong Id { get; set; }
 	[MaxLength(128)] public required string Name { get; set; }
 
@@ -38,14 +39,16 @@ public class Guild {
 	public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }
 
-public class GuildEntityConfiguration : IEntityTypeConfiguration<Guild> {
+public class GuildEntityConfiguration : IEntityTypeConfiguration<Guild>
+{
 	public void Configure(EntityTypeBuilder<Guild> builder) {
 		builder.Navigation(guild => guild.Icon).AutoInclude();
 		builder.Navigation(guild => guild.Banner).AutoInclude();
 	}
 }
 
-public class GuildFeatures {
+public class GuildFeatures
+{
 	public bool Locked { get; set; }
 	public bool JacobLeaderboardEnabled { get; set; }
 	public GuildJacobLeaderboardFeature? JacobLeaderboard { get; set; }
@@ -60,18 +63,21 @@ public class GuildFeatures {
 	public ContestPingsFeature? ContestPings { get; set; }
 }
 
-public class GuildEventSettings {
+public class GuildEventSettings
+{
 	public int MaxMonthlyEvents { get; set; } = 1;
 	public bool PublicEventsEnabled { get; set; }
 	public List<EventCreatedDto> CreatedEvents { get; set; } = new();
 }
 
-public class EventCreatedDto {
+public class EventCreatedDto
+{
 	public required string Id { get; set; }
 	public DateTimeOffset CreatedAt { get; set; }
 }
 
-public class GuildJacobLeaderboardFeature {
+public class GuildJacobLeaderboardFeature
+{
 	public int MaxLeaderboards { get; set; } = 1;
 
 	public List<DiscordRole> BlockedRoles { get; set; } = new();
@@ -84,7 +90,8 @@ public class GuildJacobLeaderboardFeature {
 	public List<GuildJacobLeaderboard> Leaderboards { get; set; } = new();
 }
 
-public class ContestPingsFeature {
+public class ContestPingsFeature
+{
 	public bool Enabled { get; set; }
 
 	public string? ChannelId { get; set; }
@@ -95,7 +102,8 @@ public class ContestPingsFeature {
 	public string? DisabledReason { get; set; }
 }
 
-public class GuildJacobLeaderboard {
+public class GuildJacobLeaderboard
+{
 	public required string Id { get; set; }
 	public string? ChannelId { get; set; }
 
@@ -115,7 +123,8 @@ public class GuildJacobLeaderboard {
 	public CropRecords Crops { get; set; } = new();
 }
 
-public class UpdateGuildJacobLeaderboardDto {
+public class UpdateGuildJacobLeaderboardDto
+{
 	public string? ChannelId { get; set; }
 
 	public long? StartCutoff { get; set; }
@@ -131,7 +140,8 @@ public class UpdateGuildJacobLeaderboardDto {
 	public bool? PingForSmallImprovements { get; set; }
 }
 
-public class CropSettings<T> {
+public class CropSettings<T>
+{
 	public T? Cactus { get; set; }
 	public T? Carrot { get; set; }
 	public T? Potato { get; set; }
@@ -144,7 +154,8 @@ public class CropSettings<T> {
 	public T? NetherWart { get; set; }
 }
 
-public class CropRecords {
+public class CropRecords
+{
 	public List<GuildJacobLeaderboardEntry> Cactus { get; set; } = new();
 	public List<GuildJacobLeaderboardEntry> Carrot { get; set; } = new();
 	public List<GuildJacobLeaderboardEntry> Potato { get; set; } = new();
@@ -157,7 +168,8 @@ public class CropRecords {
 	public List<GuildJacobLeaderboardEntry> NetherWart { get; set; } = new();
 }
 
-public class GuildJacobLeaderboardEntry {
+public class GuildJacobLeaderboardEntry
+{
 	public required string Uuid { get; set; }
 	public required string Ign { get; set; }
 	public required string DiscordId { get; set; }
@@ -165,36 +177,42 @@ public class GuildJacobLeaderboardEntry {
 	public required ContestParticipationDto Record { get; set; }
 }
 
-public class ExcludedTimespan {
+public class ExcludedTimespan
+{
 	public long Start { get; set; }
 	public long End { get; set; }
 	public string? Reason { get; set; }
 }
 
-public class VerifiedRoleFeature {
+public class VerifiedRoleFeature
+{
 	public bool Enabled { get; set; }
 	public List<AutoRoles> AutoRoles { get; set; } = new();
 }
 
-public class AutoRoles {
+public class AutoRoles
+{
 	public string? RoleId { get; set; }
 	public int RequiredWeight { get; set; }
 }
 
-public class UserIdentification {
+public class UserIdentification
+{
 	public string? DiscordId { get; set; }
 	public string? Uuid { get; set; }
 	public string? Ign { get; set; }
 }
 
-public class DiscordRole {
+public class DiscordRole
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public int Position { get; set; }
 	public ulong Permissions { get; set; }
 }
 
-public class BlockedUser {
+public class BlockedUser
+{
 	public string? DiscordId { get; set; }
 	public string? Uuid { get; set; }
 	public string? Username { get; set; }

@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Leaderboards.Models;
 
-public class LeaderboardSnapshot {
+public class LeaderboardSnapshot
+{
 	public int LeaderboardSnapshotId { get; set; }
 	public int LeaderboardId { get; set; }
 	public Leaderboard Leaderboard { get; set; } = null!;
@@ -12,7 +13,8 @@ public class LeaderboardSnapshot {
 	public string? IntervalIdentifier { get; set; }
 }
 
-public class LeaderboardSnapshotConfiguration : IEntityTypeConfiguration<LeaderboardSnapshot> {
+public class LeaderboardSnapshotConfiguration : IEntityTypeConfiguration<LeaderboardSnapshot>
+{
 	public void Configure(EntityTypeBuilder<LeaderboardSnapshot> builder) {
 		builder.HasKey(ld => ld.LeaderboardSnapshotId);
 

@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Resources.Firesales.Services;
 public class SkyblockFiresalesIngestionService(
 	IHypixelApi hypixelApi,
 	DataContext context,
-	ILogger<SkyblockFiresalesIngestionService> logger) {
+	ILogger<SkyblockFiresalesIngestionService> logger)
+{
 	public async Task IngestItemsDataAsync() {
 		var apiResponse = await hypixelApi.FetchFiresalesAsync();
 

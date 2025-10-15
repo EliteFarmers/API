@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Bot.Guilds.UpdateGuild;
 
 internal sealed class UpdateGuildEndpoint(
 	IGuildService guildService
-) : Endpoint<BotUpdateGuildRequest, DiscordIdRequest> {
+) : Endpoint<BotUpdateGuildRequest, DiscordIdRequest>
+{
 	public override void Configure() {
 		Patch("/bot/guild/{DiscordId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

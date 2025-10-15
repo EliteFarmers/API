@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Account.SearchAccounts;
 
 internal sealed class SearchAccountsEndpoint(
 	DataContext context
-) : Endpoint<SearchRequest, List<string>> {
+) : Endpoint<SearchRequest, List<string>>
+{
 	public override void Configure() {
 		Get("/account/search");
 		AllowAnonymous();

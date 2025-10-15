@@ -14,7 +14,8 @@ internal sealed class RefreshProductsEndpoint(
 	IConnectionMultiplexer redis,
 	IOutputCacheStore cacheStore,
 	ISchedulerFactory schedulerFactory
-) : EndpointWithoutRequest<List<ProductDto>> {
+) : EndpointWithoutRequest<List<ProductDto>>
+{
 	public override void Configure() {
 		Post("/products/refresh");
 		Policies(ApiUserPolicies.Admin);

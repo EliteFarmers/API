@@ -453,6 +453,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Hash");
+
                     b.HasIndex("Path");
 
                     b.ToTable("Images");
@@ -878,6 +880,112 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ShopOrderItems");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("HypixelInventoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Dictionary<string, string>>("Metadata")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HypixelInventoryId")
+                        .IsUnique();
+
+                    b.HasIndex("ProfileMemberId");
+
+                    b.ToTable("HypixelInventory");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelItem", b =>
+                {
+                    b.Property<long>("HypixelItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("HypixelItemId"));
+
+                    b.Property<Dictionary<string, string>>("Attributes")
+                        .HasColumnType("jsonb");
+
+                    b.Property<short>("Count")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("Damage")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("DonatedMuseum")
+                        .HasColumnType("text");
+
+                    b.Property<Dictionary<string, int>>("Enchantments")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Dictionary<string, string>>("Gems")
+                        .HasColumnType("jsonb");
+
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ImageId")
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<long>("InventoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Lore")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Modifier")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RarityUpgrades")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SkyblockId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slot")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Timestamp")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("Uuid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("HypixelItemId");
+
+                    b.HasIndex("ImageId");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("SkyblockId");
+
+                    b.ToTable("HypixelItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionBinPrice", b =>
@@ -2893,6 +3001,31 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("ShopOrder");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", null)
+                        .WithMany("Inventories")
+                        .HasForeignKey("ProfileMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelItem", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Images.Models.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EliteAPI.Features.Profiles.Models.HypixelInventory", null)
+                        .WithMany("Items")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionItem", b =>
                 {
                     b.HasOne("EliteAPI.Features.Resources.Items.Models.SkyblockItem", null)
@@ -3729,6 +3862,11 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("OrderItems");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Resources.Firesales.Models.SkyblockFiresale", b =>
                 {
                     b.Navigation("Items");
@@ -3781,6 +3919,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.Navigation("Farming")
                         .IsRequired();
+
+                    b.Navigation("Inventories");
 
                     b.Navigation("JacobData")
                         .IsRequired();

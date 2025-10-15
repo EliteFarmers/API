@@ -5,7 +5,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.GetSession;
 
-internal sealed class GetSessionEndpoint() : EndpointWithoutRequest<AuthSessionDto> {
+internal sealed class GetSessionEndpoint() : EndpointWithoutRequest<AuthSessionDto>
+{
 	public override void Configure() {
 		Get("/auth/me");
 		Version(0);

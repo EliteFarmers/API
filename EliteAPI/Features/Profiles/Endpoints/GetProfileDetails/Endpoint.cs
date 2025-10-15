@@ -11,7 +11,8 @@ using Result = Results<Ok<ProfileDetailsDto>, NotFound>;
 internal sealed class GetProfileDetailsEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
-) : Endpoint<ProfileUuidRequest, Result> {
+) : Endpoint<ProfileUuidRequest, Result>
+{
 	public override void Configure() {
 		Get("/profile/{ProfileUuid}");
 		AllowAnonymous();

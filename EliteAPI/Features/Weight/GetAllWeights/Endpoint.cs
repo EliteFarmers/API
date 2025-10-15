@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 namespace EliteAPI.Features.Weight.GetAllWeights;
 
 internal sealed class GetAllWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> weightSettings)
-	: EndpointWithoutRequest<WeightsDto> {
+	: EndpointWithoutRequest<WeightsDto>
+{
 	private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
 
 	public override void Configure() {

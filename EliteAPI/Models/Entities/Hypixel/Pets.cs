@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.Entities.Hypixel;
 
-public class Pet {
+public class Pet
+{
 	public string? Uuid { get; set; }
 	public string? Type { get; set; }
 	public double Exp { get; set; } = 0;

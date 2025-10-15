@@ -5,7 +5,8 @@ using FastEndpoints.Swagger;
 
 namespace EliteAPI.Features.Contests.GetContestFromKey;
 
-public class GetContestFromKeyRequest {
+public class GetContestFromKeyRequest
+{
 	/// <summary>
 	/// A contest key in the format from the Hypixel API
 	/// </summary>
@@ -14,7 +15,8 @@ public class GetContestFromKeyRequest {
 
 internal sealed class GetContestFromKeyEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetContestFromKeyRequest, JacobContestWithParticipationsDto> {
+	: Endpoint<GetContestFromKeyRequest, JacobContestWithParticipationsDto>
+{
 	public override void Configure() {
 		Get("/contest/{ContestKey}");
 		AllowAnonymous();

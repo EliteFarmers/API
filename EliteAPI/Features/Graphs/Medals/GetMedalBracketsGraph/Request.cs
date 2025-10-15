@@ -4,7 +4,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Graphs.Medals.GetMedalBracketsGraph;
 
-internal sealed class GetMedalBracketsGraphRequest : SkyBlockYearRequest {
+internal sealed class GetMedalBracketsGraphRequest : SkyBlockYearRequest
+{
 	/// <summary>
 	/// Amount of previous SkyBlock years to include in the average
 	/// </summary>
@@ -20,7 +21,8 @@ internal sealed class GetMedalBracketsGraphRequest : SkyBlockYearRequest {
 	public int? Months { get; set; } = 2;
 }
 
-internal sealed class GetMedalBracketsGraphRequestValidator : Validator<GetMedalBracketsGraphRequest> {
+internal sealed class GetMedalBracketsGraphRequestValidator : Validator<GetMedalBracketsGraphRequest>
+{
 	public GetMedalBracketsGraphRequestValidator() {
 		Include(new SkyBlockYearRequestValidator());
 	}

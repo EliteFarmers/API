@@ -12,7 +12,8 @@ namespace EliteAPI.Features.Weight.GetWeightProfiles;
 
 using Result = Results<Ok<FarmingWeightAllProfilesDto>, NotFound>;
 
-internal sealed class GetWeightForProfilesRequest : PlayerUuidRequest {
+internal sealed class GetWeightForProfilesRequest : PlayerUuidRequest
+{
 	[QueryParam] [DefaultValue(false)] public bool? Collections { get; set; } = false;
 }
 
@@ -20,7 +21,8 @@ internal sealed class GetWeightForProfilesEndpoint(
 	DataContext context,
 	IMemberService memberService,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetWeightForProfilesRequest, Result> {
+) : Endpoint<GetWeightForProfilesRequest, Result>
+{
 	public override void Configure() {
 		Get("/weight/{PlayerUuid}");
 		AllowAnonymous();

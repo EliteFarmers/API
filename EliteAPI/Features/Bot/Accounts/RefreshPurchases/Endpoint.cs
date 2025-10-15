@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Bot.Accounts.RefreshPurchases;
 
 internal sealed class RefreshUserPurchasesEndpoint(
 	IMonetizationService monetizationService
-) : Endpoint<DiscordIdRequest> {
+) : Endpoint<DiscordIdRequest>
+{
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/purchases");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

@@ -14,7 +14,8 @@ internal sealed class UpdateDiscordAccountEndpoint(
 	DataContext context,
 	IAccountService accountService,
 	AutoMapper.IMapper mapper
-) : Endpoint<IncomingAccountDto, AuthorizedAccountDto> {
+) : Endpoint<IncomingAccountDto, AuthorizedAccountDto>
+{
 	public override void Configure() {
 		Patch("/bot/account");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

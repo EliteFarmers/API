@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Resources.Firesales.Endpoints;
 
 internal sealed class SkyblockGemShopEndpoint(
 	DataContext context
-) : EndpointWithoutRequest<SkyblockGemShopsResponse> {
+) : EndpointWithoutRequest<SkyblockGemShopsResponse>
+{
 	public override void Configure() {
 		Get("/resources/gems");
 		AllowAnonymous();
@@ -39,7 +40,8 @@ internal sealed class SkyblockGemShopEndpoint(
 	}
 }
 
-internal sealed class SkyblockGemShopsResponse {
+internal sealed class SkyblockGemShopsResponse
+{
 	public List<SkyblockFiresaleDto> Firesales { get; set; } = [];
 	public TaylorCollection TaylorCollection { get; set; } = new();
 	public TaylorCollection SeasonalBundles { get; set; } = new();

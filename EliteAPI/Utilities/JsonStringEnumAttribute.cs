@@ -9,7 +9,8 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// When applied to an enum, serializes its values as camelCase strings.
 /// </summary>
-public class JsonStringEnumAttribute : JsonConverterAttribute {
+public class JsonStringEnumAttribute : JsonConverterAttribute
+{
 	public override JsonConverter CreateConverter(Type typeToConvert) {
 		return new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower);
 	}
@@ -19,7 +20,8 @@ public class JsonStringEnumAttribute : JsonConverterAttribute {
 /// This processor finds enums with the [JsonStringEnum] attribute
 /// and updates the swagger schema to represent them as camelCase strings.
 /// </summary>
-public class EnumAttributeSchemaProcessor : ISchemaProcessor {
+public class EnumAttributeSchemaProcessor : ISchemaProcessor
+{
 	public void Process(SchemaProcessorContext context) {
 		var type = context.ContextualType.Type;
 

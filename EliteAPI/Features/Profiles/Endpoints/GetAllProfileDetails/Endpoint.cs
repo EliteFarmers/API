@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Profiles.Endpoints.GetAllProfileDetails;
 
 internal sealed class GetAllProfileDetailsEndpoint(
 	IProfileService profileService
-) : Endpoint<PlayerUuidRequest, List<ProfileDetailsDto>> {
+) : Endpoint<PlayerUuidRequest, List<ProfileDetailsDto>>
+{
 	public override void Configure() {
 		Get("/profiles/{PlayerUuid}");
 		AllowAnonymous();

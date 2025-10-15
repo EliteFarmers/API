@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Admin.Endpoints;
 
 internal sealed class DeleteUpcomingContestsEndpoint(
 	IConnectionMultiplexer redis)
-	: EndpointWithoutRequest {
+	: EndpointWithoutRequest
+{
 	public override void Configure() {
 		Delete("/admin/upcomingcontests");
 		Policies(ApiUserPolicies.Moderator);

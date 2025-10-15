@@ -90,11 +90,10 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 
 builder.Services.AddFastEndpoints(o => { o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All; });
 
-builder.Services.AddSkyblockRepo(opt =>
-{
-    opt.UseNeuRepo = true;
-    opt.Matcher.Register(new EliteItemRepoMatcher());
-    opt.Matcher.Register(new RenderContextRepoMatcher());
+builder.Services.AddSkyblockRepo(opt => {
+	opt.UseNeuRepo = true;
+	opt.Matcher.Register(new EliteItemRepoMatcher());
+	opt.Matcher.Register(new RenderContextRepoMatcher());
 });
 
 var app = builder.Build();
@@ -184,14 +183,14 @@ using (var scope = app.Services.CreateScope()) {
 	FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
 	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
 
-    var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    logging.LogInformation("Starting EliteAPI...");
-    
-    var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
-    await repo.InitializeAsync();
-    
-    var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-    try{
+	var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+	logging.LogInformation("Starting EliteAPI...");
+
+	var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
+	await repo.InitializeAsync();
+
+	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+	try {
 		await db.Database.MigrateAsync();
 	}
 	catch (Exception e) {

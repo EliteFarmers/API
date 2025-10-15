@@ -4,7 +4,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
-public class SkillMapper : Profile {
+public class SkillMapper : Profile
+{
 	public SkillMapper() {
 		CreateMap<Skills, SkillsDto>();
 	}

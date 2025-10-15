@@ -7,7 +7,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.Farming;
 
-public class GardenMapper : Profile {
+public class GardenMapper : Profile
+{
 	public GardenMapper() {
 		CreateMap<ComposterData, ComposterDto>()
 			.ForMember(c => c.LastSave, o => o.MapFrom(c => Math.Floor(c.LastSave / 1000f)));

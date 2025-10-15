@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Account.GetAccountFace;
 
 internal sealed class GetAccountFaceEndpoint(
 	IMojangService mojangService
-) : Endpoint<PlayerRequest> {
+) : Endpoint<PlayerRequest>
+{
 	public override void Configure() {
 		Get("/account/{Player}/face", "/account/{Player}/face.png");
 		AllowAnonymous();

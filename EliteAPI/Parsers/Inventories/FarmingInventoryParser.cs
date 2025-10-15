@@ -5,7 +5,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Inventories;
 
-public static class FarmingInventoryParser {
+public static class FarmingInventoryParser
+{
 	public static async Task<FarmingInventory> ExtractFarmingItems(this ProfileMemberResponse memberData,
 		ProfileMember member) {
 		var farming = new FarmingInventory();
@@ -59,5 +60,7 @@ public static class FarmingInventoryParser {
 
 			if (accessoryIds.ContainsKey(item.SkyblockId)) farming.Accessories.Add(item);
 		}
+		
+		return Task.CompletedTask;
 	}
 }

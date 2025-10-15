@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Models.DTOs.Auth;
 
-public class DiscordLoginDto {
+public class DiscordLoginDto
+{
 	/// <summary>
 	/// Discord login code from OAuth2
 	/// </summary>
@@ -16,7 +17,8 @@ public class DiscordLoginDto {
 	public required string RedirectUri { get; set; }
 }
 
-public class AuthResponseDto {
+public class AuthResponseDto
+{
 	/// <summary>
 	/// Access token for the user
 	/// </summary>
@@ -37,7 +39,8 @@ public class AuthResponseDto {
 	public required string RefreshToken { get; set; }
 }
 
-public class AuthRefreshDto {
+public class AuthRefreshDto
+{
 	/// <summary>
 	/// User ID
 	/// </summary>
@@ -51,7 +54,8 @@ public class AuthRefreshDto {
 	public required string RefreshToken { get; set; }
 }
 
-public class AuthSessionDto {
+public class AuthSessionDto
+{
 	/// <summary>
 	/// Discord user ID
 	/// </summary>

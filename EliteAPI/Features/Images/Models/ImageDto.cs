@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace EliteAPI.Features.Images.Models;
 
-public class ImageAttachmentDto {
+public class ImageAttachmentDto
+{
 	/// <summary>
 	/// Image title
 	/// </summary>
@@ -45,7 +46,8 @@ public class ImageAttachmentDto {
 	public string Url { get; set; } = null!;
 }
 
-public class ImageSourceDto {
+public class ImageSourceDto
+{
 	/// <summary>
 	/// The fully-qualified public URL for this image variant.
 	/// </summary>

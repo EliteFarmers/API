@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class ProfileMemberResponse {
+public class ProfileMemberResponse
+{
 	[JsonPropertyName("player_data")] public RawMemberPlayerData? PlayerData { get; set; }
 
 	[JsonPropertyName("pets_data")] public MemberPetsResponse? PetsData { get; set; }
@@ -31,7 +32,8 @@ public class ProfileMemberResponse {
 	public GardenPlayerDataResponse? Garden { get; set; }
 }
 
-public class GardenPlayerDataResponse {
+public class GardenPlayerDataResponse
+{
 	public int Copper { get; set; }
 
 	[JsonPropertyName("larva_consumed")] public int LarvaConsumed { get; set; }

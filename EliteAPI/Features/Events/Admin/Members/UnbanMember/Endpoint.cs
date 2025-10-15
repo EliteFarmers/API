@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.UnbanMember;
 
-internal sealed class UnbanMemberRequest : PlayerUuidRequest {
+internal sealed class UnbanMemberRequest : PlayerUuidRequest
+{
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 }
 
 internal sealed class UnbanMemberAdminEndpoint(
 	DataContext context
-) : Endpoint<UnbanMemberRequest> {
+) : Endpoint<UnbanMemberRequest>
+{
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/bans/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -52,7 +54,8 @@ internal sealed class UnbanMemberAdminEndpoint(
 	}
 }
 
-internal sealed class UnbanMemberRequestValidator : Validator<UnbanMemberRequest> {
+internal sealed class UnbanMemberRequestValidator : Validator<UnbanMemberRequest>
+{
 	public UnbanMemberRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 	}

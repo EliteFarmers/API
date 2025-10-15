@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Resources.Auctions.Models;
 
-public class AuctionBinPrice {
+public class AuctionBinPrice
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public long Id { get; set; }
@@ -23,7 +24,8 @@ public class AuctionBinPrice {
 	public DateTimeOffset IngestedAt { get; set; }
 }
 
-public class AuctionBinPriceConfiguration : IEntityTypeConfiguration<AuctionBinPrice> {
+public class AuctionBinPriceConfiguration : IEntityTypeConfiguration<AuctionBinPrice>
+{
 	public void Configure(EntityTypeBuilder<AuctionBinPrice> builder) {
 		builder.HasIndex(e => new { e.SkyblockId, e.VariantKey, ListedAtUnixMillis = e.ListedAt });
 		builder.HasIndex(e => e.AuctionUuid);

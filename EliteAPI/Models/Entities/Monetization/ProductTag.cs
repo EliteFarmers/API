@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
-public class ProductTag {
+public class ProductTag
+{
 	[ForeignKey(nameof(Product))] public ulong ProductId { get; set; }
 	public Product Product { get; set; } = null!;
 
@@ -14,7 +15,8 @@ public class ProductTag {
 	public int Order { get; set; }
 }
 
-public class ProductTagEntityConfiguration : IEntityTypeConfiguration<ProductTag> {
+public class ProductTagEntityConfiguration : IEntityTypeConfiguration<ProductTag>
+{
 	public void Configure(EntityTypeBuilder<ProductTag> builder) {
 		builder.HasKey(pi => new { pi.ProductId, pi.TagId });
 		builder.HasIndex(pi => pi.Order);

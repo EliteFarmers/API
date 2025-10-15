@@ -9,7 +9,8 @@ internal sealed class GetAuthAccountEndpoint(
 	DataContext context,
 	UserManager userManager,
 	AutoMapper.IMapper mapper
-) : EndpointWithoutRequest<AuthorizedAccountDto> {
+) : EndpointWithoutRequest<AuthorizedAccountDto>
+{
 	public override void Configure() {
 		Get("/account");
 		Version(0);

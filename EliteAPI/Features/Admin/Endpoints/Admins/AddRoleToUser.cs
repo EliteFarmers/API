@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Admins;
 internal sealed class AddRoleToUserEndpoint(
 	DataContext context,
 	UserManager userManager)
-	: Endpoint<UserRoleRequest> {
+	: Endpoint<UserRoleRequest>
+{
 	public override void Configure() {
 		Post("/admin/user/{DiscordId}/roles/{Role}");
 		Policies(ApiUserPolicies.Admin);

@@ -6,7 +6,8 @@ using EliteAPI.Models.Entities.Monetization;
 namespace EliteAPI.Features.Monetization.Models;
 
 // https://discord.com/developers/docs/monetization/entitlements#entitlement-object-entitlement-types
-public enum EntitlementType {
+public enum EntitlementType
+{
 	Purchase = 1,
 	PremiumSubscription = 2,
 	DeveloperGift = 3,
@@ -17,13 +18,15 @@ public enum EntitlementType {
 	ApplicationSubscription = 8
 }
 
-public enum EntitlementTarget {
+public enum EntitlementTarget
+{
 	None = 0,
 	Guild = 1,
 	User = 2
 }
 
-public class Entitlement {
+public class Entitlement
+{
 	[Key] public ulong Id { get; set; }
 	public EntitlementType Type { get; set; }
 	public EntitlementTarget Target { get; set; } = EntitlementTarget.None;

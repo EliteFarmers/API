@@ -12,7 +12,8 @@ internal sealed class CreateBadgeEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService,
 	IOutputCacheStore cacheStore
-) : Endpoint<CreateBadgeRequest> {
+) : Endpoint<CreateBadgeRequest>
+{
 	public override void Configure() {
 		Post("/badges");
 		Policies(ApiUserPolicies.Admin);

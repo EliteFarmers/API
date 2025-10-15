@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Contests.GetRecordsInYear;
 
 internal sealed class GetRecordsInYearEndpoint(
 	IContestsService contestsService)
-	: Endpoint<SkyBlockYearRequest, YearlyCropRecordsDto> {
+	: Endpoint<SkyBlockYearRequest, YearlyCropRecordsDto>
+{
 	public override void Configure() {
 		Get("/contests/records/{Year:int}");
 		AllowAnonymous();

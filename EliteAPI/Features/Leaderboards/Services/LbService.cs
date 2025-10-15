@@ -13,7 +13,8 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Features.Leaderboards.Services;
 
-public interface ILbService {
+public interface ILbService
+{
 	Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId);
 
 	Task<List<LeaderboardEntryDto>> GetLeaderboardSlice(string leaderboardId, int offset = 0, int limit = 20,
@@ -57,7 +58,8 @@ public class LbService(
 	IConnectionMultiplexer redis,
 	IMemberService memberService,
 	DataContext context)
-	: ILbService {
+	: ILbService
+{
 	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return (null, null);
 
@@ -819,7 +821,8 @@ public class LbService(
 	}
 }
 
-public class PlayerLeaderboardEntryWithRankDto {
+public class PlayerLeaderboardEntryWithRankDto
+{
 	public required string Title { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -844,19 +847,22 @@ public class PlayerLeaderboardEntryWithRankDto {
 	public LeaderboardScoreDataType Type { get; set; }
 }
 
-public enum RemovedFilter {
+public enum RemovedFilter
+{
 	NotRemoved = 0,
 	Removed = 1,
 	All = 2
 }
 
-public class ProfileLeaderboardMember {
+public class ProfileLeaderboardMember
+{
 	public required string Ign { get; init; }
 	public required string Uuid { get; init; }
 	public int Xp { get; init; }
 }
 
-public class LeaderboardEntry {
+public class LeaderboardEntry
+{
 	public required string MemberId { get; init; }
 	public string? Ign { get; init; }
 	public string? Profile { get; init; }
@@ -865,6 +871,7 @@ public class LeaderboardEntry {
 	public List<ProfileLeaderboardMember>? Members { get; init; }
 }
 
-public class LeaderboardEntryWithRank : LeaderboardEntry {
+public class LeaderboardEntryWithRank : LeaderboardEntry
+{
 	public int Rank { get; init; }
 }

@@ -8,7 +8,8 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Features.Shop.Products.Admin.AddCosmetic;
 
-internal sealed class AddCosmeticToProductRequest {
+internal sealed class AddCosmeticToProductRequest
+{
 	/// <summary>
 	/// Id of the produc to add the cosmetic to
 	/// </summary>
@@ -24,7 +25,8 @@ internal sealed class AddCosmeticToProductEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IConnectionMultiplexer redis
-) : Endpoint<AddCosmeticToProductRequest> {
+) : Endpoint<AddCosmeticToProductRequest>
+{
 	public override void Configure() {
 		Post("/product/{ProductId}/cosmetics/{CosmeticId}");
 		Policies(ApiUserPolicies.Admin);

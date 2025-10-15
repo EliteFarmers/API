@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Account.LinkAccount;
 
 internal sealed class LinkOwnAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<PlayerRequest, ErrorOr<Success>> {
+) : Endpoint<PlayerRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/account/{Player}");
 		Version(0);

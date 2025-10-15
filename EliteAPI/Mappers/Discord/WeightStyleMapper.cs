@@ -5,7 +5,8 @@ using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Mappers.Discord;
 
-public class WeightStyleMapper : Profile {
+public class WeightStyleMapper : Profile
+{
 	public WeightStyleMapper() {
 		CreateMap<WeightStyle, WeightStyleLinkedDto>();
 

@@ -14,7 +14,8 @@ namespace EliteAPI.Features.Contests.UploadCurrentContests;
 internal sealed class UploadCurrentContestsEndpoint(
 	DataContext context,
 	IConnectionMultiplexer cache)
-	: Endpoint<Dictionary<long, List<string>>> {
+	: Endpoint<Dictionary<long, List<string>>>
+{
 	private const int RequiredIdenticalContestSubmissions = 5;
 
 	public override void Configure() {

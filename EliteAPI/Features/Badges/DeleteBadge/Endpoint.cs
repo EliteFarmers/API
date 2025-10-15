@@ -11,7 +11,8 @@ internal sealed class DeleteBadgeEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService,
 	IOutputCacheStore cacheStore
-) : Endpoint<BadgeRequest> {
+) : Endpoint<BadgeRequest>
+{
 	public override void Configure() {
 		Delete("/badge/{BadgeId}");
 		Policies(ApiUserPolicies.Admin);

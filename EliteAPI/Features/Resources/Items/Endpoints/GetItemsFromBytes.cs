@@ -4,11 +4,13 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Resources.Items.Endpoints;
 
-internal sealed class GetItemsFromBytesRequest {
+internal sealed class GetItemsFromBytesRequest
+{
 	public required string Bytes { get; set; }
 }
 
-internal sealed class GetItemsFromBytesEndpoint : Endpoint<GetItemsFromBytesRequest, GetItemsFromBytesResponse> {
+internal sealed class GetItemsFromBytesEndpoint : Endpoint<GetItemsFromBytesRequest, GetItemsFromBytesResponse>
+{
 	public override void Configure() {
 		Post("/resources/item-parse");
 		AllowAnonymous();
@@ -26,6 +28,7 @@ internal sealed class GetItemsFromBytesEndpoint : Endpoint<GetItemsFromBytesRequ
 	}
 }
 
-internal sealed class GetItemsFromBytesResponse {
+internal sealed class GetItemsFromBytesResponse
+{
 	public List<ItemDto?> Items { get; set; } = [];
 }

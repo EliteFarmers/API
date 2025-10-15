@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Resources.Items.Models;
 
-public class SkyblockItem {
-	public SkyblockItem() {
-	}
+public class SkyblockItem
+{
+	public SkyblockItem() { }
 
 	[SetsRequiredMembers]
 	public SkyblockItem(string itemId) {
@@ -30,7 +30,8 @@ public class SkyblockItem {
 	public ItemResponse? Data { get; set; }
 }
 
-public class SkyblockItemConfiguration : IEntityTypeConfiguration<SkyblockItem> {
+public class SkyblockItemConfiguration : IEntityTypeConfiguration<SkyblockItem>
+{
 	public void Configure(EntityTypeBuilder<SkyblockItem> builder) {
 		builder.HasKey(x => x.ItemId);
 

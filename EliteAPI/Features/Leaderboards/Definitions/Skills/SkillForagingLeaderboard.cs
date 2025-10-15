@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class SkillForagingLeaderboard : IMemberLeaderboardDefinition {
+public class SkillForagingLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Foraging Experience",
 		ShortTitle = "Foraging XP",

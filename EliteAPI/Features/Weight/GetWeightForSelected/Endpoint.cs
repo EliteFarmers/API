@@ -11,14 +11,16 @@ namespace EliteAPI.Features.Weight.GetWeightForSelected;
 
 using Result = Results<Ok<FarmingWeightDto>, NotFound>;
 
-internal sealed class GetWeightSelectedProfileRequest : PlayerUuidRequest {
+internal sealed class GetWeightSelectedProfileRequest : PlayerUuidRequest
+{
 	[QueryParam] [DefaultValue(false)] public bool? Collections { get; set; } = false;
 }
 
 internal sealed class GetWeightForSelectedEndpoint(
 	IMemberService memberService,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetWeightSelectedProfileRequest, Result> {
+) : Endpoint<GetWeightSelectedProfileRequest, Result>
+{
 	public override void Configure() {
 		Get("/weight/{PlayerUuid}/selected");
 		AllowAnonymous();

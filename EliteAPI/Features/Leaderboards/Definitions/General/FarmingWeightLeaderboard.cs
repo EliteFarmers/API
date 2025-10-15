@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class FarmingWeightLeaderboard : IMemberLeaderboardDefinition {
+public class FarmingWeightLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Farming Weight",
 		ShortTitle = "Farming Weight",

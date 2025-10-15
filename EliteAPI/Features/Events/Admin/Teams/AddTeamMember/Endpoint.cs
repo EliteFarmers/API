@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.AddTeamMember;
 
-internal sealed class AddTeamMemberRequest : PlayerRequest {
+internal sealed class AddTeamMemberRequest : PlayerRequest
+{
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
@@ -18,7 +19,8 @@ internal sealed class AddTeamMemberAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<AddTeamMemberRequest> {
+) : Endpoint<AddTeamMemberRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}/members/{Player}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -54,7 +56,8 @@ internal sealed class AddTeamMemberAdminEndpoint(
 	}
 }
 
-internal sealed class AddTeamMemberRequestValidator : Validator<AddTeamMemberRequest> {
+internal sealed class AddTeamMemberRequestValidator : Validator<AddTeamMemberRequest>
+{
 	public AddTeamMemberRequestValidator() {
 		Include(new PlayerRequestValidator());
 	}

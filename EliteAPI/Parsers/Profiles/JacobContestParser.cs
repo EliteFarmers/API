@@ -5,7 +5,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 
-public static class JacobContestParser {
+public static class JacobContestParser
+{
 	public static ContestMedal ExtractMedal(this RawJacobContest contest) {
 		// Respect given medal if it exists
 		if (contest.Medal is not null)

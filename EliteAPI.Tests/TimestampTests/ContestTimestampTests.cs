@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Tests.TimestampTests;
 
-public class ContestTimestampTests {
+public class ContestTimestampTests
+{
 	[Theory]
 	[InlineData("285:11_28:PUMPKIN", 1687904100)]
 	public void ContestKeyTimestampTest(string contestKey, long expectedTimestamp) {

@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class SeedsLeaderboard : IMemberLeaderboardDefinition {
+public class SeedsLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Seeds Collection",
 		ShortTitle = "Seeds",
@@ -25,7 +26,8 @@ public class SeedsLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RawChickenLeaderboard : IMemberLeaderboardDefinition {
+public class RawChickenLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Raw Chicken Collection",
 		ShortTitle = "Raw Chicken",
@@ -46,7 +48,8 @@ public class RawChickenLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RawRabbitLeaderboard : IMemberLeaderboardDefinition {
+public class RawRabbitLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Raw Rabbit Collection",
 		ShortTitle = "Raw Rabbit",
@@ -67,7 +70,8 @@ public class RawRabbitLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MuttonLeaderboard : IMemberLeaderboardDefinition {
+public class MuttonLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Mutton Collection",
 		ShortTitle = "Mutton",
@@ -88,7 +92,8 @@ public class MuttonLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class LeatherLeaderboard : IMemberLeaderboardDefinition {
+public class LeatherLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Leather Collection",
 		ShortTitle = "Leather",
@@ -109,7 +114,8 @@ public class LeatherLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class FeatherLeaderboard : IMemberLeaderboardDefinition {
+public class FeatherLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Feather Collection",
 		ShortTitle = "Feather",
@@ -130,7 +136,8 @@ public class FeatherLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RawPorkchopLeaderboard : IMemberLeaderboardDefinition {
+public class RawPorkchopLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Raw Porkchop Collection",
 		ShortTitle = "Raw Porkchop",

@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Bot.Accounts.UnlinkAccount;
 
 internal sealed class UnlinkAccountBotEndpoint(
 	IAccountService accountService
-) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
+) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Delete("/bot/account/{DiscordId}/{Player}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

@@ -4,14 +4,16 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Events.Public.GetEventTeams;
 
-internal sealed class GetEventTeamsRequest {
+internal sealed class GetEventTeamsRequest
+{
 	public ulong EventId { get; set; }
 }
 
 internal sealed class GetEventTeamsEndpoint(
 	IEventTeamService teamService,
 	AutoMapper.IMapper mapper)
-	: Endpoint<GetEventTeamsRequest, List<EventTeamWithMembersDto>> {
+	: Endpoint<GetEventTeamsRequest, List<EventTeamWithMembersDto>>
+{
 	public override void Configure() {
 		Get("/event/{EventId}/teams");
 		AllowAnonymous();

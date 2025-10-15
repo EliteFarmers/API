@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Guilds.User.RequestRefresh;
 internal sealed class RequestGuildRefreshEndpoint(
 	IOptions<ConfigCooldownSettings> cooldownSettings,
 	IDiscordService discordService)
-	: Endpoint<DiscordIdRequest> {
+	: Endpoint<DiscordIdRequest>
+{
 	private readonly ConfigCooldownSettings _cooldowns = cooldownSettings.Value;
 
 	public override void Configure() {

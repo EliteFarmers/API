@@ -4,16 +4,16 @@ using Riok.Mapperly.Abstractions;
 namespace EliteAPI.Features.Images.Models;
 
 [Mapper]
-public static partial class ImageMapper {
+public static partial class ImageMapper
+{
 	private static string _baseImageUrl = string.Empty;
 
 	public static void Initialize(IConfiguration configuration) {
 		_baseImageUrl = configuration["S3:PublicUrl"]
 		                ?? throw new InvalidOperationException("S3:PublicUrl not configured.");
 	}
-	
-	public static string? ToPrimaryUrl(this Image? image)
-	{
+
+	public static string? ToPrimaryUrl(this Image? image) {
 		return image is null ? null : $"{_baseImageUrl}/{image.Path}";
 	}
 

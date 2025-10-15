@@ -6,14 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.DeleteStyle;
 
-internal sealed class DeleteStyleRequest {
+internal sealed class DeleteStyleRequest
+{
 	public int StyleId { get; set; }
 }
 
 internal sealed class DeleteStyleEndpoint(
 	DataContext context,
 	IOutputCacheStore outputCacheStore
-) : Endpoint<DeleteStyleRequest> {
+) : Endpoint<DeleteStyleRequest>
+{
 	public override void Configure() {
 		Delete("/product/style/{StyleId}");
 		Policies(ApiUserPolicies.Admin);

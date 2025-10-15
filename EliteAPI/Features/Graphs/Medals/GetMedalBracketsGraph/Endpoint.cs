@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Graphs.Medals.GetMedalBracketsGraph;
 
 internal sealed class GetMedalBracketsGraphEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetMedalBracketsGraphRequest, List<ContestBracketsDetailsDto>> {
+	: Endpoint<GetMedalBracketsGraphRequest, List<ContestBracketsDetailsDto>>
+{
 	public override void Configure() {
 		Get("/graph/medals/{Year:int}");
 		AllowAnonymous();

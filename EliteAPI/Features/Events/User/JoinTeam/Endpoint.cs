@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.User.JoinTeam;
 
-internal sealed class JoinTeamRequest {
+internal sealed class JoinTeamRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 
@@ -20,7 +21,8 @@ internal sealed class JoinTeamRequest {
 internal sealed class JoinTeamEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<JoinTeamRequest> {
+	: Endpoint<JoinTeamRequest>
+{
 	public override void Configure() {
 		Post("/event/{EventId}/team/{TeamId}/join");
 		Version(0);

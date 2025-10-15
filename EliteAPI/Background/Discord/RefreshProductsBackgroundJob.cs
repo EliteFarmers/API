@@ -18,7 +18,8 @@ public class RefreshProductsBackgroundJob(
 	IHttpClientFactory httpClientFactory,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IMessageService messageService
-) : IJob {
+) : IJob
+{
 	public static readonly JobKey Key = new(nameof(RefreshProductsBackgroundJob));
 	private const string ClientName = "EliteAPI";
 
@@ -115,7 +116,8 @@ public class RefreshProductsBackgroundJob(
 		return [];
 	}
 
-	public class DiscordProduct {
+	public class DiscordProduct
+	{
 		public required string Id { get; set; }
 		public ProductType Type { get; set; }
 		public required string Name { get; set; }

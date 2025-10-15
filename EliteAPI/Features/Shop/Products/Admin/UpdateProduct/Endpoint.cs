@@ -11,7 +11,8 @@ internal sealed class UpdateProductEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IMonetizationService monetizationService
-) : Endpoint<UpdateProductRequest> {
+) : Endpoint<UpdateProductRequest>
+{
 	public override void Configure() {
 		Patch("/product/{DiscordId}");
 		Policies(ApiUserPolicies.Admin);

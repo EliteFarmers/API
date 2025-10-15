@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class JacobMedalsBronzeLeaderboard : IMemberLeaderboardDefinition {
+public class JacobMedalsBronzeLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Bronze Medals Earned",
 		ShortTitle = "Bronze Medals",

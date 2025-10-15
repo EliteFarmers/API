@@ -4,13 +4,15 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Announcements;
 
-internal sealed class DismissAnnouncementDto {
+internal sealed class DismissAnnouncementDto
+{
 	public Guid AnnouncementId { get; set; } = Guid.Empty;
 }
 
 internal sealed class DismissAnnouncementEndpoint(
 	IAnnouncementService announcementService
-) : Endpoint<DismissAnnouncementDto, ErrorOr<Success>> {
+) : Endpoint<DismissAnnouncementDto, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/announcements/{AnnouncementId}/dismiss");
 		Version(0);

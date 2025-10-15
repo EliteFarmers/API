@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Bot.GetJacobFeature;
 
 internal sealed class GetJacobFeatureEndpoint(
 	DataContext context
-) : Endpoint<DiscordIdRequest, GuildJacobLeaderboardFeature> {
+) : Endpoint<DiscordIdRequest, GuildJacobLeaderboardFeature>
+{
 	public override void Configure() {
 		Get("/bot/{DiscordId}/jacob");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

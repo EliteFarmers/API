@@ -2,7 +2,8 @@ using EliteAPI.Features.Leaderboards.Models;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class GardenXpLeaderboard : IProfileLeaderboardDefinition {
+public class GardenXpLeaderboard : IProfileLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Garden XP",
 		ShortTitle = "Garden XP",

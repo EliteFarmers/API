@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Auth.Models;
 
-public class ApiUser : IdentityUser {
+public class ApiUser : IdentityUser
+{
 	[MaxLength(256)] public string? DiscordAccessToken { get; set; }
 	public DateTimeOffset DiscordAccessTokenExpires { get; set; }
 
@@ -21,7 +22,8 @@ public class ApiUser : IdentityUser {
 	public EliteAccount Account { get; set; } = null!;
 }
 
-public static class ClaimNames {
+public static class ClaimNames
+{
 	public const string Role = "role";
 	public const string Name = JwtRegisteredClaimNames.Name;
 	public const string NameId = JwtRegisteredClaimNames.NameId;
@@ -33,7 +35,8 @@ public static class ClaimNames {
 	public const string Uuid = "Uuid";
 }
 
-public static class ApiUserPolicies {
+public static class ApiUserPolicies
+{
 	public const string Admin = "Admin";
 	public const string Moderator = "Moderator";
 	public const string Support = "Support";

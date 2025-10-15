@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Events.Admin.CreateEvent;
 
-internal sealed class CreateEventRequest : DiscordIdRequest {
+internal sealed class CreateEventRequest : DiscordIdRequest
+{
 	[FastEndpoints.FromBody] public required CreateEventDto Event { get; set; }
 }
 
@@ -19,7 +20,8 @@ internal sealed class CreateEventAdminEndpoint(
 	IDiscordService discordService,
 	IEventService eventService,
 	AutoMapper.IMapper mapper
-) : Endpoint<CreateEventRequest, EventDetailsDto> {
+) : Endpoint<CreateEventRequest, EventDetailsDto>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/weight");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -48,7 +50,8 @@ internal sealed class CreateEventAdminEndpoint(
 	}
 }
 
-internal sealed class CreateEventRequestValidator : Validator<CreateEventRequest> {
+internal sealed class CreateEventRequestValidator : Validator<CreateEventRequest>
+{
 	public CreateEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

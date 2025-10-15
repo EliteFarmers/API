@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Events;
 internal sealed class GetPendingEventsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper)
-	: EndpointWithoutRequest<List<EventDetailsDto>> {
+	: EndpointWithoutRequest<List<EventDetailsDto>>
+{
 	public override void Configure() {
 		Get("/admin/events/pending");
 		Policies(ApiUserPolicies.Moderator);

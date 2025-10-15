@@ -5,7 +5,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
-public class ProfileBankingMapper : Profile {
+public class ProfileBankingMapper : Profile
+{
 	public ProfileBankingMapper() {
 		CreateMap<ProfileBankingResponse, ProfileBanking>()
 			.ForMember(x => x.Transactions, x => x.MapFrom(y => y.Transactions));
@@ -15,7 +16,8 @@ public class ProfileBankingMapper : Profile {
 	}
 }
 
-public class ProfileBankingTransactionMapper : Profile {
+public class ProfileBankingTransactionMapper : Profile
+{
 	public ProfileBankingTransactionMapper() {
 		CreateMap<RawTransaction, ProfileBankingTransaction>();
 

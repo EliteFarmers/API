@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Auth.Models;
 
-public class RefreshToken {
+public class RefreshToken
+{
 	[Key] public int Id { get; set; }
 
 	[Required] public required string UserId { get; set; } = null!;
@@ -24,7 +25,8 @@ public class RefreshToken {
 	[ForeignKey(nameof(UserId))] public virtual ApiUser User { get; set; } = null!;
 }
 
-public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken> {
+public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+{
 	public void Configure(EntityTypeBuilder<RefreshToken> builder) {
 		builder.HasKey(e => e.Id);
 		builder.Property(e => e.Id).UseIdentityAlwaysColumn();

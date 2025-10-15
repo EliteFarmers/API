@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class ItemDto {
+public class ItemDto
+{
 	/// <summary>
 	/// Old Minecraft id of the item
 	/// </summary>
@@ -16,11 +17,11 @@ public class ItemDto {
 
 	/// <summary>
 	/// Minecraft damage value of the item
-    /// </summary>
-    public short Damage { get; set; }
-    
-    /// <summary>
-    /// Skyblock ID of the item
+	/// </summary>
+	public short Damage { get; set; }
+
+	/// <summary>
+	/// Skyblock ID of the item
 	/// </summary>
 	public string? SkyblockId { get; set; }
 
@@ -28,65 +29,66 @@ public class ItemDto {
 	/// Item UUID to uniquely identify a specific instance of this item
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Uuid { get; set; }
-    
-    /// <summary>
-    /// Item name, first line of the lore
-    /// </summary>
-    public string? Name { get; set; }
-    
-    /// <summary>
-    /// List of item lore in order
-    /// </summary>
-    public List<string>? Lore { get; set; }
-    
-    /// <summary>
-    /// Applied enchantments with their levels
-    /// </summary>
-    public Dictionary<string, int>? Enchantments { get; set; }
-    
-    /// <summary>
-    /// ExtraAttributes not included elsewhere
-    /// </summary>
-    public Dictionary<string, string>? Attributes { get; set; }
-    
-    /// <summary>
-    /// ExtraAtrributes.Attributes for attribute shards
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, string>? ItemAttributes { get; set; }
-    
-    /// <summary>
-    /// Applied gems with gem rarity, null for an unlocked gem slot without a gem
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Dictionary<string, string?>? Gems { get; set; }
-    
-    /// <summary>
-    /// Pet info if item is a pet
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public ItemPetInfoDto? PetInfo { get; set; }
-    
-    /// <summary>
-    /// Image url for the item
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string? ImageUrl { get; set; }
-    
-    /// <summary>
-    /// Texture id for the item, used to look up the image in our image service
-    /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public string? TextureId { get; set; }
-    
-    /// <summary>
-    /// Slot identifier where the item was located, if applicable
-    /// </summary>
-    public string? Slot { get; set; } = string.Empty;
+	public string? Uuid { get; set; }
+
+	/// <summary>
+	/// Item name, first line of the lore
+	/// </summary>
+	public string? Name { get; set; }
+
+	/// <summary>
+	/// List of item lore in order
+	/// </summary>
+	public List<string>? Lore { get; set; }
+
+	/// <summary>
+	/// Applied enchantments with their levels
+	/// </summary>
+	public Dictionary<string, int>? Enchantments { get; set; }
+
+	/// <summary>
+	/// ExtraAttributes not included elsewhere
+	/// </summary>
+	public Dictionary<string, string>? Attributes { get; set; }
+
+	/// <summary>
+	/// ExtraAtrributes.Attributes for attribute shards
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, string>? ItemAttributes { get; set; }
+
+	/// <summary>
+	/// Applied gems with gem rarity, null for an unlocked gem slot without a gem
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, string?>? Gems { get; set; }
+
+	/// <summary>
+	/// Pet info if item is a pet
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public ItemPetInfoDto? PetInfo { get; set; }
+
+	/// <summary>
+	/// Image url for the item
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? ImageUrl { get; set; }
+
+	/// <summary>
+	/// Texture id for the item, used to look up the image in our image service
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? TextureId { get; set; }
+
+	/// <summary>
+	/// Slot identifier where the item was located, if applicable
+	/// </summary>
+	public string? Slot { get; set; } = string.Empty;
 }
 
-public class ItemPetInfoDto {
+public class ItemPetInfoDto
+{
 	[JsonPropertyName("type")] public required string Type { get; set; }
 	[JsonPropertyName("active")] public bool Active { get; set; }
 	[JsonPropertyName("exp")] public decimal Exp { get; set; }

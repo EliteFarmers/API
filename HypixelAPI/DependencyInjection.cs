@@ -7,7 +7,8 @@ using Refit;
 
 namespace EliteFarmers.HypixelAPI;
 
-public static class DependencyInjection {
+public static class DependencyInjection
+{
 	/// <summary>
 	/// Adds the Hypixel API client to the service collection with the specified options. You must provide an API key in the options.
 	/// </summary>

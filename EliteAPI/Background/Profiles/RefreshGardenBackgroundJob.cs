@@ -18,7 +18,8 @@ public class RefreshGardenBackgroundJob(
 	IHypixelService hypixelService,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	DataContext context)
-	: IJob {
+	: IJob
+{
 	public static readonly JobKey Key = new(nameof(RefreshGardenBackgroundJob));
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 

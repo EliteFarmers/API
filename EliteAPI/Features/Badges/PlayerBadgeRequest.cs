@@ -4,14 +4,16 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Badges;
 
-public class PlayerBadgeRequest : PlayerRequest {
+public class PlayerBadgeRequest : PlayerRequest
+{
 	/// <summary>
 	/// ID of the badge
 	/// </summary>
 	public int BadgeId { get; set; }
 }
 
-internal sealed class PlayerBadgeRequestValidator : Validator<PlayerBadgeRequest> {
+internal sealed class PlayerBadgeRequestValidator : Validator<PlayerBadgeRequest>
+{
 	public PlayerBadgeRequestValidator() {
 		Include(new PlayerRequestValidator());
 

@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Parsers.Profiles;
 
-public static class CollectionTierParser {
+public static class CollectionTierParser
+{
 	public static void ParseCollectionTiers(this ProfileMember member, string[]? collectionStrings) {
 		member.CollectionTiers = ParseCollectionTiers(collectionStrings);
 	}

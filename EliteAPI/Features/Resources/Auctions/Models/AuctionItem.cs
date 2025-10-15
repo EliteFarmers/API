@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Resources.Auctions.Models;
 
-public class AuctionItem {
+public class AuctionItem
+{
 	[Key] [Column(Order = 0)] public required string SkyblockId { get; set; }
 
 	[Key] [Column(Order = 1)] public required string VariantKey { get; set; }
@@ -25,7 +26,8 @@ public class AuctionItem {
 	public DateTimeOffset CalculatedAt { get; set; }
 }
 
-public class AuctionItemVariation {
+public class AuctionItemVariation
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Rarity { get; set; }
 
@@ -126,7 +128,8 @@ public class AuctionItemVariation {
 		return variation;
 	}
 
-	public class PetLevelGroup {
+	public class PetLevelGroup
+	{
 		public required string Key { get; set; }
 
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -137,7 +140,8 @@ public class AuctionItemVariation {
 	}
 }
 
-public class AuctionItemVariantSummaryConfiguration : IEntityTypeConfiguration<AuctionItem> {
+public class AuctionItemVariantSummaryConfiguration : IEntityTypeConfiguration<AuctionItem>
+{
 	public void Configure(EntityTypeBuilder<AuctionItem> builder) {
 		builder.HasKey(e => new { e.SkyblockId, e.VariantKey });
 		builder.HasIndex(e => e.CalculatedAt);

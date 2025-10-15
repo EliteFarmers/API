@@ -22,7 +22,8 @@ public partial class MojangService(
 	IOptions<ConfigCooldownSettings> coolDowns,
 	ICacheService cacheService,
 	ILogger<MojangService> logger)
-	: IMojangService {
+	: IMojangService
+{
 	private const string ClientName = "EliteAPI";
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
@@ -263,25 +264,30 @@ public partial class MojangService(
 	private static partial Regex UuidRegex();
 }
 
-public class MojangProfilesResponse {
+public class MojangProfilesResponse
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 }
 
-public class MinecraftTextures {
+public class MinecraftTextures
+{
 	[JsonPropertyName("textures")] public MinecraftTexturesProperty? Textures { get; set; }
 }
 
-public class MinecraftTexturesProperty {
+public class MinecraftTexturesProperty
+{
 	[JsonPropertyName("SKIN")] public MinecraftTextureUrl? Skin { get; set; }
 	// public MinecraftTextureUrl? Cape { get; set; } // Not being used
 }
 
-public class MinecraftTextureUrl {
+public class MinecraftTextureUrl
+{
 	[JsonPropertyName("url")] public string? Url { get; set; }
 }
 
-public class MinecraftAccountResponse {
+public class MinecraftAccountResponse
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public List<MinecraftAccountProperty>? Properties { get; set; }

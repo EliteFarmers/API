@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace EliteAPI.Models.Entities.Events;
 
 [JsonStringEnum]
-public enum EventType {
+public enum EventType
+{
 	None = 0,
 	FarmingWeight = 1,
 	Collection = 2,
@@ -18,7 +19,8 @@ public enum EventType {
 	Pests = 5
 }
 
-public class Event {
+public class Event
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public ulong Id { get; set; }
@@ -55,7 +57,8 @@ public class Event {
 	public Guild Guild { get; set; } = null!;
 }
 
-public class EventEntityConfiguration : IEntityTypeConfiguration<Event> {
+public class EventEntityConfiguration : IEntityTypeConfiguration<Event>
+{
 	public void Configure(EntityTypeBuilder<Event> builder) {
 		builder.Navigation(e => e.Banner).AutoInclude();
 
@@ -68,7 +71,8 @@ public class EventEntityConfiguration : IEntityTypeConfiguration<Event> {
 	}
 }
 
-public static class EventTeamMode {
+public static class EventTeamMode
+{
 	public const string Solo = "solo";
 	public const string Teams = "teams";
 	public const string CustomTeams = "custom";

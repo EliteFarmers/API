@@ -6,7 +6,8 @@ using FastEndpoints;
 namespace EliteAPI.Features.Events.Public.GetTeamWordList;
 
 internal sealed class GetTeamWordListEndpoint(IEventTeamService teamService)
-	: EndpointWithoutRequest<EventTeamsWordListDto> {
+	: EndpointWithoutRequest<EventTeamsWordListDto>
+{
 	public override void Configure() {
 		Get("/event/teams/words");
 		AllowAnonymous();

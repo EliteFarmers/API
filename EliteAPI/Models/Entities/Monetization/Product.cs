@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
-public enum ProductType {
+public enum ProductType
+{
 	/// <summary>
 	/// One-time purchase.
 	/// </summary>
@@ -21,7 +22,8 @@ public enum ProductType {
 	Custom = -1
 }
 
-public class Product {
+public class Product
+{
 	[Key] public ulong Id { get; set; }
 
 	public bool Available { get; set; }
@@ -66,7 +68,8 @@ public class Product {
 	public DateTimeOffset? ReleasedAt { get; set; }
 }
 
-public class ProductEntityConfiguration : IEntityTypeConfiguration<Product> {
+public class ProductEntityConfiguration : IEntityTypeConfiguration<Product>
+{
 	public void Configure(EntityTypeBuilder<Product> builder) {
 		builder.Navigation(p => p.ProductWeightStyles).AutoInclude();
 		builder.Navigation(p => p.Thumbnail).AutoInclude();
@@ -84,7 +87,8 @@ public class ProductEntityConfiguration : IEntityTypeConfiguration<Product> {
 	}
 }
 
-public class UnlockedProductFeatures {
+public class UnlockedProductFeatures
+{
 	/// <summary>
 	/// ID of unlocked badge.
 	/// </summary>

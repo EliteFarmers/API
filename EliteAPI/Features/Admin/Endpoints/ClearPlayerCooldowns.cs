@@ -12,7 +12,8 @@ internal sealed class ClearPlayerCooldownsEndpoint(
 	DataContext context,
 	IConnectionMultiplexer redis,
 	IMojangService mojangService)
-	: Endpoint<PlayerRequest> {
+	: Endpoint<PlayerRequest>
+{
 	public override void Configure() {
 		Post("/admin/cooldowns/player/{Player}");
 		Policies(ApiUserPolicies.Moderator);

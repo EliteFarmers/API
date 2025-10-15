@@ -4,7 +4,8 @@ namespace EliteAPI.Features.Announcements;
 
 internal sealed class GetAnnouncementEndpoint(
 	IAnnouncementService announcementService
-) : EndpointWithoutRequest<List<AnnouncementDto>> {
+) : EndpointWithoutRequest<List<AnnouncementDto>>
+{
 	public override void Configure() {
 		Get("/announcements");
 		AllowAnonymous();

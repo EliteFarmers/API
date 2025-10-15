@@ -11,7 +11,8 @@ public class MessageService(
 	IConnectionMultiplexer redis,
 	IOptions<MessagingSettings> messagingSettings,
 	ILogger<MessageService> logger
-) : IMessageService {
+) : IMessageService
+{
 	private const string RedisChannelName = "eliteapi_messages";
 	private readonly MessagingSettings _messagingSettings = messagingSettings.Value;
 

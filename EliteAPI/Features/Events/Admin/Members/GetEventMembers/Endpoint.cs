@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetEventMembers;
 
-internal sealed class GetEventMembersRequest : DiscordIdRequest {
+internal sealed class GetEventMembersRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 }
 
 internal sealed class GetGuildEventMembersAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetEventMembersRequest, List<AdminEventMemberDto>> {
+) : Endpoint<GetEventMembersRequest, List<AdminEventMemberDto>>
+{
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/members");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -50,7 +52,8 @@ internal sealed class GetGuildEventMembersAdminEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<GetEventMembersRequest> {
+internal sealed class CreateWeightEventRequestValidator : Validator<GetEventMembersRequest>
+{
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

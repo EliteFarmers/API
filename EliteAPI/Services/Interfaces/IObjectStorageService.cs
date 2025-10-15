@@ -2,7 +2,8 @@ using EliteAPI.Features.Images.Models;
 
 namespace EliteAPI.Services.Interfaces;
 
-public interface IObjectStorageService {
+public interface IObjectStorageService
+{
 	Task<string?> UploadAsync(string key, Stream stream, CancellationToken token = default);
 
 	Task<Image> UploadImageAsync(string path, IFormFile file, Dictionary<string, string>? metadata = null,

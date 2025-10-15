@@ -8,7 +8,8 @@ namespace EliteFarmers.HypixelAPI.Handlers;
 public class HypixelRateLimitHandler(
 	IHypixelRequestLimiter limiter,
 	IHypixelKeyUsageCounter keyUsageCounter
-) : DelegatingHandler {
+) : DelegatingHandler
+{
 	private const string RateLimitRemaining = "ratelimit-remaining";
 	private const string RateLimitLimit = "ratelimit-limit";
 	private const string ApiKey = "API-Key";

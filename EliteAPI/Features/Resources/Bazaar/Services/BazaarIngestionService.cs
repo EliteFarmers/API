@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Resources.Bazaar;
 public class BazaarIngestionService(
 	IHypixelApi hypixelApi,
 	DataContext context,
-	ILogger<BazaarIngestionService> logger) {
+	ILogger<BazaarIngestionService> logger)
+{
 	private const int VwapSkipOrders = 2; // Orders to skip from the "top" of the relevant summary
 	private const int VwapTakeOrders = 8; // Number of subsequent orders to use for VWAP
 

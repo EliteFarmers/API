@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Account.SetPrimaryAccount;
 
 internal sealed class SetPrimaryAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<PlayerRequest, ErrorOr<Success>> {
+) : Endpoint<PlayerRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/account/primary/{Player}");
 		Version(0);

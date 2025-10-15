@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Leaderboards.Models;
 
-public class Leaderboard {
+public class Leaderboard
+{
 	public int LeaderboardId { get; set; }
 	public required string Slug { get; set; }
 	public LeaderboardType IntervalType { get; set; } = LeaderboardType.Current;
@@ -28,7 +29,8 @@ public class Leaderboard {
 	public DateOnly? EndDate { get; set; }
 }
 
-public enum LeaderboardType {
+public enum LeaderboardType
+{
 	/// <summary>
 	/// Default leaderboard type, shows current scores
 	/// </summary>
@@ -45,18 +47,21 @@ public enum LeaderboardType {
 	Monthly
 }
 
-public enum LeaderboardEntryType {
+public enum LeaderboardEntryType
+{
 	Member,
 	Profile
 }
 
-public enum LeaderboardScoreDataType {
+public enum LeaderboardScoreDataType
+{
 	Double,
 	Long,
 	Decimal
 }
 
-public class LeaderboardConfiguration : IEntityTypeConfiguration<Leaderboard> {
+public class LeaderboardConfiguration : IEntityTypeConfiguration<Leaderboard>
+{
 	public void Configure(EntityTypeBuilder<Leaderboard> builder) {
 		builder.HasKey(ld => ld.LeaderboardId);
 		builder.Property(ld => ld.Title).IsRequired().HasMaxLength(200);

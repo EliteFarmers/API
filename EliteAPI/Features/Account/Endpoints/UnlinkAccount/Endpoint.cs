@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Account.UnlinkAccount;
 
 internal sealed class UnlinkOwnAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<PlayerRequest, ErrorOr<Success>> {
+) : Endpoint<PlayerRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Delete("/account/{Player}");
 		Version(0);

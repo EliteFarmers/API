@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.DeleteTeam;
 
-internal sealed class DeleteTeamRequest : DiscordIdRequest {
+internal sealed class DeleteTeamRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 }
@@ -19,7 +20,8 @@ internal sealed class DeleteTeamAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<DeleteTeamRequest> {
+) : Endpoint<DeleteTeamRequest>
+{
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -59,7 +61,8 @@ internal sealed class DeleteTeamAdminEndpoint(
 	}
 }
 
-internal sealed class DeleteTeamRequestValidator : Validator<DeleteTeamRequest> {
+internal sealed class DeleteTeamRequestValidator : Validator<DeleteTeamRequest>
+{
 	public DeleteTeamRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

@@ -21,7 +21,8 @@ public class AuctionsIngestionService(
 	ILogger<AuctionsIngestionService> logger,
 	IConnectionMultiplexer redis,
 	VariantKeyGenerator variantKeyGenerator,
-	IOptions<AuctionHouseSettings> auctionHouseSettings) {
+	IOptions<AuctionHouseSettings> auctionHouseSettings)
+{
 	private readonly AuctionHouseSettings _config = auctionHouseSettings.Value;
 	private readonly Dictionary<int, long> _pagesLastUpdated = new();
 
@@ -38,28 +39,29 @@ public class AuctionsIngestionService(
 				break;
 			}
 
-            var response = await hypixelApi.FetchAuctionHouseAsync(page, cancellationToken);
-            if (response.Content == null || !response.IsSuccessful)
-            {
-                logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful", page);
-                if (page == 0 && response is { IsSuccessful: false }) break;
-                continue;
-            }
-            var apiResponse = response.Content;
-            
-            var lastUpdated = apiResponse.LastUpdated;
-            if (_pagesLastUpdated.TryGetValue(page, out var lastUpdate) && lastUpdate >= lastUpdated)
-            {
-                logger.LogDebug("Skipping page {Page} as it has not been updated since last ingestion", page);
-                continue;
-            }
-            _pagesLastUpdated[page] = lastUpdated;
-            
-            totalPages = Math.Min(apiResponse.TotalPages, maxPages);
-            
-            var auctionItems = apiResponse.Auctions
-                .Select(a => new { a.Uuid, Item = NbtParser.NbtToItem(a.ItemBytes) })
-                .ToDictionary(a => a.Uuid, a => a.Item);
+			var response = await hypixelApi.FetchAuctionHouseAsync(page, cancellationToken);
+			if (response.Content == null || !response.IsSuccessful) {
+				logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful",
+					page);
+				if (page == 0 && response is { IsSuccessful: false }) break;
+				continue;
+			}
+
+			var apiResponse = response.Content;
+
+			var lastUpdated = apiResponse.LastUpdated;
+			if (_pagesLastUpdated.TryGetValue(page, out var lastUpdate) && lastUpdate >= lastUpdated) {
+				logger.LogDebug("Skipping page {Page} as it has not been updated since last ingestion", page);
+				continue;
+			}
+
+			_pagesLastUpdated[page] = lastUpdated;
+
+			totalPages = Math.Min(apiResponse.TotalPages, maxPages);
+
+			var auctionItems = apiResponse.Auctions
+				.Select(a => new { a.Uuid, Item = NbtParser.NbtToItem(a.ItemBytes) })
+				.ToDictionary(a => a.Uuid, a => a.Item);
 
 			foreach (var auction in apiResponse.Auctions) {
 				if (!auction.Bin || !allSeenAuctionUuidsThisRun.Add(auction.Uuid) ||

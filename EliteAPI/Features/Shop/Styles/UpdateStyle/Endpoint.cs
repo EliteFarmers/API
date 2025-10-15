@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.UpdateStyle;
 
-internal sealed class UpdateStyleRequest {
+internal sealed class UpdateStyleRequest
+{
 	public int StyleId { get; set; }
 	[FromBody] public WeightStyleWithDataDto Data { get; set; } = null!;
 }
@@ -18,7 +19,8 @@ internal sealed class UpdateStyleEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper,
 	IOutputCacheStore outputCacheStore
-) : Endpoint<UpdateStyleRequest> {
+) : Endpoint<UpdateStyleRequest>
+{
 	public override void Configure() {
 		Post("/product/style/{StyleId}");
 		Policies(ApiUserPolicies.Admin);
@@ -57,7 +59,8 @@ internal sealed class UpdateStyleEndpoint(
 	}
 }
 
-internal sealed class RequestValidator : Validator<UpdateStyleRequest> {
+internal sealed class RequestValidator : Validator<UpdateStyleRequest>
+{
 	public RequestValidator() {
 		RuleFor(r => r.Data)
 			.NotEmpty();

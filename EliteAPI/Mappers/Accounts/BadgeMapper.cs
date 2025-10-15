@@ -4,7 +4,8 @@ using EliteAPI.Models.DTOs.Incoming;
 
 namespace EliteAPI.Mappers.Accounts;
 
-public class BadgeMapper : Profile {
+public class BadgeMapper : Profile
+{
 	public BadgeMapper() {
 		CreateMap<Badge, BadgeDto>()
 			.ForMember(b => b.Id, opt => opt.MapFrom(b => b.Id))

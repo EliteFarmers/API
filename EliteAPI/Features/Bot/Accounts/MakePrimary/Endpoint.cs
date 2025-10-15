@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Bot.Accounts.MakePrimary;
 
 internal sealed class MakePrimaryAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
+) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/{Player}/primary");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

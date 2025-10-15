@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
-public class PlayerData {
+public class PlayerData
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -42,7 +43,8 @@ public class PlayerData {
 }
 
 [Owned]
-public class SocialMediaLinks {
+public class SocialMediaLinks
+{
 	public string? Discord { get; set; }
 	public string? Hypixel { get; set; }
 	public string? Youtube { get; set; }

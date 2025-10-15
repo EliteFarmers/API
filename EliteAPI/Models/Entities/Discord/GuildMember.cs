@@ -4,7 +4,8 @@ using EliteAPI.Features.Auth.Models;
 
 namespace EliteAPI.Models.Entities.Discord;
 
-public class GuildMember {
+public class GuildMember
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }

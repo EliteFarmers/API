@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
 internal sealed class GetAdminsEndpoint(
 	DataContext context)
-	: EndpointWithoutRequest<List<AccountWithPermsDto>> {
+	: EndpointWithoutRequest<List<AccountWithPermsDto>>
+{
 	public override void Configure() {
 		Get("/admins");
 		Policies(ApiUserPolicies.Moderator);

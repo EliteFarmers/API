@@ -8,7 +8,8 @@ namespace EliteAPI.Authentication;
 /// <summary>
 /// Operation filter for SwaggerGen to mark endpoints as requiring authentication
 /// </summary>
-public class SwaggerAuthFilter : IOperationFilter {
+public class SwaggerAuthFilter : IOperationFilter
+{
 	public void Apply(OpenApiOperation operation, OperationFilterContext context) {
 		var metadata = context.ApiDescription.ActionDescriptor.EndpointMetadata;
 

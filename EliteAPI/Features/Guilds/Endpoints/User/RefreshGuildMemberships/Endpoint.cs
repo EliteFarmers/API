@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Guilds.User.RefreshGuildMemberships;
 internal sealed class RefreshGuildMembershipsEndpoint(
 	IDiscordService discordService,
 	UserManager userManager
-) : EndpointWithoutRequest {
+) : EndpointWithoutRequest
+{
 	public override void Configure() {
 		Post("/user/refresh-guilds");
 		Version(0);

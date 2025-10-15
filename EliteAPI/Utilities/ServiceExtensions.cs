@@ -24,7 +24,8 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Utilities;
 
-public static class ServiceExtensions {
+public static class ServiceExtensions
+{
 	public static IServiceCollection AddEliteServices(this IServiceCollection services) {
 		// Add AutoMapper
 		services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -37,8 +38,8 @@ public static class ServiceExtensions {
 
 		services.AddHostedService<BackgroundQueueWorker>();
 		services.AddHostedService<MinecraftRendererInitializer>();
-        
-        services.AddHttpClient(HypixelService.HttpClientName, 
+
+		services.AddHttpClient(HypixelService.HttpClientName,
 			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });
 
 		services.AddDbContext<DataContext>();
@@ -215,7 +216,8 @@ public static class ServiceExtensions {
 	}
 }
 
-public static class CachePolicy {
+public static class CachePolicy
+{
 	public const string NoCache = "NoCache";
 	public const string Hours = "Hours";
 }

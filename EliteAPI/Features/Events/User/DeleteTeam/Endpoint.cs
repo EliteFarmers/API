@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.User.DeleteTeam;
 
-internal sealed class DeleteTeamRequest {
+internal sealed class DeleteTeamRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 }
@@ -14,7 +15,8 @@ internal sealed class DeleteTeamRequest {
 internal sealed class DeleteTeamEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<DeleteTeamRequest> {
+	: Endpoint<DeleteTeamRequest>
+{
 	public override void Configure() {
 		Delete("/event/{EventId}/team/{TeamId}");
 		Version(0);

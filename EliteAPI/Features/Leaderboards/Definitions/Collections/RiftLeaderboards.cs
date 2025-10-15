@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class AgaricusCapLeaderboard : IMemberLeaderboardDefinition {
+public class AgaricusCapLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Agaricus Cap Collection",
 		ShortTitle = "Agaricus Cap",
@@ -25,7 +26,8 @@ public class AgaricusCapLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class CaducousStemLeaderboard : IMemberLeaderboardDefinition {
+public class CaducousStemLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Caducous Stem Collection",
 		ShortTitle = "Caducous Stem",
@@ -46,7 +48,8 @@ public class CaducousStemLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class HalfEatenCarrotLeaderboard : IMemberLeaderboardDefinition {
+public class HalfEatenCarrotLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Half-Eaten Carrot Collection",
 		ShortTitle = "Half-Eaten Carrot",
@@ -67,7 +70,8 @@ public class HalfEatenCarrotLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class HemovibeLeaderboard : IMemberLeaderboardDefinition {
+public class HemovibeLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Hemovibe Collection",
 		ShortTitle = "Hemovibe",
@@ -88,7 +92,8 @@ public class HemovibeLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class LivingMetalHeartLeaderboard : IMemberLeaderboardDefinition {
+public class LivingMetalHeartLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Living Metal Heart Collection",
 		ShortTitle = "Living Metal Heart",
@@ -109,7 +114,8 @@ public class LivingMetalHeartLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class WiltedBerberisLeaderboard : IMemberLeaderboardDefinition {
+public class WiltedBerberisLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Wilted Berberis Collection",
 		ShortTitle = "Wilted Berberis",
@@ -130,7 +136,8 @@ public class WiltedBerberisLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class TimiteLeaderboard : IMemberLeaderboardDefinition {
+public class TimiteLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Timite Collection",
 		ShortTitle = "Timite",

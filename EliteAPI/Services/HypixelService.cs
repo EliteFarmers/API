@@ -10,7 +10,8 @@ namespace EliteAPI.Services;
 public class HypixelService(
 	IHypixelApi hypixelApi,
 	ILogger<HypixelService> logger)
-	: IHypixelService {
+	: IHypixelService
+{
 	public static readonly string HttpClientName = "EliteDev";
 
 	private readonly string _hypixelApiKey = Environment.GetEnvironmentVariable("HYPIXEL_API_KEY")

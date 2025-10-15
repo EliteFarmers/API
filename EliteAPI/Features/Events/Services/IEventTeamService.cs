@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Events.Services;
 
-public interface IEventTeamService {
+public interface IEventTeamService
+{
 	Task<ActionResult> CreateUserTeamAsync(ulong eventId, CreateEventTeamDto team, string userId);
 	Task<ActionResult> CreateAdminTeamAsync(ulong eventId, CreateEventTeamDto team, string userId);
 	Task<ActionResult> UpdateTeamAsync(int id, UpdateEventTeamDto team, string userId, bool admin = false);

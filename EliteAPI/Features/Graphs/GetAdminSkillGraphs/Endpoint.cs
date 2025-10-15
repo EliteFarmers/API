@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Graphs.GetAdminSkillGraphs;
 internal sealed class GetAdminSkillGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<SkillsDataPointDto>> {
+	: Endpoint<GraphRequest, List<SkillsDataPointDto>>
+{
 	public override void Configure() {
 		Get("/graph/admin/{PlayerUuid}/{ProfileUuid}/skills");
 		Policies(ApiUserPolicies.Support);

@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.Public.GetGuilds;
 internal sealed class GetPublicGuildsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : EndpointWithoutRequest<List<GuildDetailsDto>> {
+) : EndpointWithoutRequest<List<GuildDetailsDto>>
+{
 	public override void Configure() {
 		Get("/guilds");
 		AllowAnonymous();

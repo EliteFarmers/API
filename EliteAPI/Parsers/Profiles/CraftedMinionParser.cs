@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Parsers.Profiles;
 
-public static class CraftedMinionParser {
+public static class CraftedMinionParser
+{
 	public static void CombineMinions(this Profile profile, string[]? minionStrings) {
 		profile.CraftedMinions = CombineMinions(profile.CraftedMinions, minionStrings);
 	}

@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Bot.Guilds.UpdateGuildRole;
 
 internal sealed class UpdateGuildRoleEndpoint(
 	IGuildService guildService
-) : Endpoint<BotUpdateGuildRoleRequest> {
+) : Endpoint<BotUpdateGuildRoleRequest>
+{
 	public override void Configure() {
 		Post("/bot/guild/{DiscordId}/roles");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

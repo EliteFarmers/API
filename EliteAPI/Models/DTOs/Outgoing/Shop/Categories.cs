@@ -3,7 +3,8 @@ using EliteAPI.Features.Account.DTOs;
 
 namespace EliteAPI.Models.DTOs.Outgoing.Shop;
 
-public class ShopCategoryDto {
+public class ShopCategoryDto
+{
 	public int Id { get; set; }
 	public required string Title { get; set; }
 	public required string Slug { get; set; }
@@ -13,7 +14,8 @@ public class ShopCategoryDto {
 	public List<ProductDto> Products { get; set; } = [];
 }
 
-public class CreateCategoryDto {
+public class CreateCategoryDto
+{
 	[MaxLength(256)] public required string Title { get; set; }
 
 	[MaxLength(32)] public required string Slug { get; set; }
@@ -21,7 +23,8 @@ public class CreateCategoryDto {
 	[MaxLength(512)] public string? Description { get; set; }
 }
 
-public class EditCategoryDto {
+public class EditCategoryDto
+{
 	[MaxLength(256)] public string? Title { get; set; }
 
 	[MaxLength(32)] public string? Slug { get; set; }

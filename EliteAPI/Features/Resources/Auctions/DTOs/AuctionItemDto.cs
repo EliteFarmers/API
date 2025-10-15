@@ -3,7 +3,8 @@ using Riok.Mapperly.Abstractions;
 
 namespace EliteAPI.Features.Resources.Auctions.DTOs;
 
-public class AuctionItemDto {
+public class AuctionItemDto
+{
 	public required string SkyblockId { get; set; }
 	public required string VariantKey { get; set; }
 
@@ -44,7 +45,8 @@ public class AuctionItemDto {
 }
 
 [Mapper]
-public static partial class AuctionItemMapper {
+public static partial class AuctionItemMapper
+{
 	[MapperIgnoreSource(nameof(AuctionItem.CalculatedAt))]
 	[MapperIgnoreSource(nameof(AuctionItem.LowestObservedAt))]
 	public static partial AuctionItemDto ToDto(this AuctionItem auctionItem);

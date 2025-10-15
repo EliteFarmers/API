@@ -6,7 +6,8 @@ public class BackgroundQueueWorker(
 	IBackgroundTaskQueue queue,
 	IServiceProvider provider,
 	ILogger<BackgroundQueueWorker> logger
-) : BackgroundService {
+) : BackgroundService
+{
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
 		await Task.Yield();
 

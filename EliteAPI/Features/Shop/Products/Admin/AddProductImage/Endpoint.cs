@@ -13,7 +13,8 @@ internal sealed class AddProductImageEndpoint(
 	IOutputCacheStore cacheStore,
 	IConnectionMultiplexer redis,
 	IObjectStorageService objectStorageService
-) : Endpoint<AddProductImageRequest> {
+) : Endpoint<AddProductImageRequest>
+{
 	public override void Configure() {
 		Post("/product/{DiscordId}/images");
 		Policies(ApiUserPolicies.Admin);

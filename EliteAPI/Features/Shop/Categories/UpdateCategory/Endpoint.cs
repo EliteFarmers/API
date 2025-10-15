@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.UpdateCategory;
 
-internal sealed class UpdateCategoryRequest {
+internal sealed class UpdateCategoryRequest
+{
 	/// <summary>
 	/// Id of the category to update
 	/// </summary>
@@ -19,7 +20,8 @@ internal sealed class UpdateCategoryRequest {
 internal sealed class UpdateCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<UpdateCategoryRequest> {
+) : Endpoint<UpdateCategoryRequest>
+{
 	public override void Configure() {
 		Patch("/shop/category/{CategoryId}");
 		Policies(ApiUserPolicies.Admin);

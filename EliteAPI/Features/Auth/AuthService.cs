@@ -26,7 +26,8 @@ public partial class AuthService(
 	ISchedulerFactory schedulerFactory,
 	ILogger<AuthService> logger,
 	DataContext context)
-	: IAuthService {
+	: IAuthService
+{
 	private const string LoginProvider = "EliteAPI";
 	private const string RefreshToken = "RefreshToken";
 

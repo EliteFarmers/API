@@ -6,14 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Public.GetEventMembers;
 
-internal sealed class GetEventMembersRequest {
+internal sealed class GetEventMembersRequest
+{
 	public ulong EventId { get; set; }
 }
 
 internal sealed class GetEventMembersEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper)
-	: Endpoint<GetEventMembersRequest, List<EventMemberDetailsDto>> {
+	: Endpoint<GetEventMembersRequest, List<EventMemberDetailsDto>>
+{
 	public override void Configure() {
 		Get("/event/{EventId}/members");
 		AllowAnonymous();

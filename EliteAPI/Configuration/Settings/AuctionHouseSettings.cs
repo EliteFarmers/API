@@ -1,6 +1,7 @@
 namespace EliteAPI.Configuration.Settings;
 
-public class AuctionHouseSettings {
+public class AuctionHouseSettings
+{
 	public int AuctionsRefreshInterval { get; set; }
 	public int FullAuctionsRefreshInterval { get; set; }
 	public double RecentWindowHours { get; set; } = 2;
@@ -17,13 +18,15 @@ public class AuctionHouseSettings {
 	public Dictionary<string, Dictionary<string, PetLevelGroupConfig>> PetLevelGroupOverrides { get; set; } = [];
 }
 
-public class VariantConfigEntry {
+public class VariantConfigEntry
+{
 	public string? SkyblockId { get; set; }
 	public string? SkyblockIdPrefix { get; set; }
 	public required string Strategy { get; set; }
 }
 
-public class PetLevelGroupConfig {
+public class PetLevelGroupConfig
+{
 	public int MinLevel { get; set; }
 	public int MaxLevel { get; set; }
 	public required string GroupKey { get; set; }

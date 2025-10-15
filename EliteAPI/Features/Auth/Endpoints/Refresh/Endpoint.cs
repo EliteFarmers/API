@@ -5,7 +5,8 @@ namespace EliteAPI.Features.Auth.Refresh;
 
 internal sealed class RefreshAuthEndpoint(
 	IAuthService authService
-) : Endpoint<AuthRefreshDto, AuthResponseDto> {
+) : Endpoint<AuthRefreshDto, AuthResponseDto>
+{
 	public override void Configure() {
 		Post("/auth/refresh");
 		AllowAnonymous();

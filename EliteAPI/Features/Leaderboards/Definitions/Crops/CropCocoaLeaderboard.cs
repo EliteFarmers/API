@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class CropCocoaLeaderboard : IMemberLeaderboardDefinition {
+public class CropCocoaLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Cocoa Bean Collection",
 		ShortTitle = "Cocoa Bean",
@@ -23,7 +24,8 @@ public class CropCocoaLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MilestoneCocoaLeaderboard : IProfileLeaderboardDefinition {
+public class MilestoneCocoaLeaderboard : IProfileLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Cocoa Bean Milestone Collection",
 		ShortTitle = "Cocoa Bean Milestone",

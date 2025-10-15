@@ -6,7 +6,8 @@ using FluentValidation.Results;
 
 namespace EliteAPI.Utilities;
 
-public sealed class ResponseSender : IGlobalPostProcessor {
+public sealed class ResponseSender : IGlobalPostProcessor
+{
 	public Task PostProcessAsync(IPostProcessorContext ctx, CancellationToken ct) {
 		if (ctx.HttpContext.ResponseStarted() || ctx.Response is not IErrorOr errorOr)
 			return Task.CompletedTask;

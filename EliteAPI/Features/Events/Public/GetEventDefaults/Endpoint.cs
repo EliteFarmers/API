@@ -6,7 +6,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Events.Public.GetEventDefaults;
 
-internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDefaultsDto> {
+internal sealed class GetEventDefaultsEndpoint : EndpointWithoutRequest<EventDefaultsDto>
+{
 	public override void Configure() {
 		Get("/event/defaults");
 		AllowAnonymous();

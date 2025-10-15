@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class SkillRunecraftingLeaderboard : IMemberLeaderboardDefinition {
+public class SkillRunecraftingLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Runecrafting Experience",
 		ShortTitle = "Runecrafting XP",

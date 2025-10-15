@@ -10,7 +10,8 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace EliteAPI.Features.Account.DTOs;
 
 [SwaggerSchema(Required = ["Id", "DisplayName", "Username", "Settings", "MinecraftAccounts"])]
-public class AuthorizedAccountDto {
+public class AuthorizedAccountDto
+{
 	/// <summary>
 	/// Discord user ID
 	/// </summary>
@@ -64,7 +65,8 @@ public class AuthorizedAccountDto {
 }
 
 [SwaggerSchema(Required = ["Id", "Name", "Properties", "PrimaryAccount"])]
-public class MinecraftAccountDetailsDto {
+public class MinecraftAccountDetailsDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public bool PrimaryAccount { get; set; } = true;
@@ -73,7 +75,8 @@ public class MinecraftAccountDetailsDto {
 }
 
 [SwaggerSchema(Required = ["Id", "Name", "FormattedName", "Properties", "Profiles", "PrimaryAccount", "EventEntries"])]
-public class MinecraftAccountDto {
+public class MinecraftAccountDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public required string FormattedName { get; set; }
@@ -90,12 +93,14 @@ public class MinecraftAccountDto {
 }
 
 [SwaggerSchema(Required = new[] { "Name", "Value" })]
-public class MinecraftAccountPropertyDto {
+public class MinecraftAccountPropertyDto
+{
 	public required string Name { get; set; }
 	public required string Value { get; set; }
 }
 
-public class MinecraftSkinDto {
+public class MinecraftSkinDto
+{
 	/// <summary>
 	/// Minecraft skin texture ID
 	/// </summary>
@@ -113,7 +118,8 @@ public class MinecraftSkinDto {
 	public string? Hat { get; set; }
 }
 
-public class UserSettingsDto {
+public class UserSettingsDto
+{
 	/// <summary>
 	/// Custom name prefix
 	/// </summary>
@@ -160,7 +166,8 @@ public class UserSettingsDto {
 	public FortuneSettingsDto? Fortune { get; set; }
 }
 
-public class UpdateUserSettingsDto {
+public class UpdateUserSettingsDto
+{
 	/// <summary>
 	/// Custom name prefix
 	/// </summary>
@@ -194,7 +201,8 @@ public class UpdateUserSettingsDto {
 	public int? NameStyleId { get; set; }
 }
 
-public class ConfiguredProductFeaturesDto {
+public class ConfiguredProductFeaturesDto
+{
 	/// <summary>
 	/// Name of weight style to use.
 	/// </summary>
@@ -234,7 +242,8 @@ public class ConfiguredProductFeaturesDto {
 	public string? EmojiUrl { get; set; }
 }
 
-public class UnlockedProductFeaturesDto {
+public class UnlockedProductFeaturesDto
+{
 	/// <summary>
 	/// ID of unlocked badge.
 	/// </summary>
@@ -290,12 +299,14 @@ public class UnlockedProductFeaturesDto {
 	public int? MaxJacobLeaderboards { get; set; }
 }
 
-public class LinkedAccountsDto {
+public class LinkedAccountsDto
+{
 	public string? SelectedUuid { get; set; }
 	public List<PlayerDataDto> Players { get; set; } = new();
 }
 
-public class AccountWithPermsDto {
+public class AccountWithPermsDto
+{
 	public required string Id { get; set; }
 	public required string DisplayName { get; set; }
 	public required string Username { get; set; }
@@ -305,7 +316,8 @@ public class AccountWithPermsDto {
 	public string? Avatar { get; set; }
 }
 
-public class EntitlementDto {
+public class EntitlementDto
+{
 	/// <summary>
 	/// Entitlement ID
 	/// </summary>
@@ -353,7 +365,8 @@ public class EntitlementDto {
 	public DateTimeOffset? EndDate { get; set; }
 }
 
-public class ProductDto {
+public class ProductDto
+{
 	/// <summary>
 	/// Product ID
 	/// </summary>
@@ -422,7 +435,8 @@ public class ProductDto {
 	public bool IsUserSubscription { get; set; }
 }
 
-public class EditProductDto {
+public class EditProductDto
+{
 	/// <summary>
 	/// Description of the product
 	/// </summary>

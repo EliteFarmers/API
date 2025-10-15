@@ -22,7 +22,8 @@ using Npgsql;
 namespace EliteAPI.Data;
 
 public class DataContext(DbContextOptions<DataContext> options, IConfiguration config)
-	: IdentityDbContext<ApiUser>(options) {
+	: IdentityDbContext<ApiUser>(options)
+{
 	private static NpgsqlDataSource? Source { get; set; }
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
@@ -87,8 +88,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<Skills> Skills { get; set; } = null!;
 	public DbSet<Farming> Farming { get; set; } = null!;
 	public DbSet<ChocolateFactory> ChocolateFactories { get; set; } = null!;
-    public DbSet<HypixelInventory> HypixelInventory { get; set; } = null!;
-    public DbSet<HypixelItem> HypixelItems { get; set; } = null!;
+	public DbSet<HypixelInventory> HypixelInventory { get; set; } = null!;
+	public DbSet<HypixelItem> HypixelItems { get; set; } = null!;
 
 	// Discord
 	public DbSet<Guild> Guilds { get; set; } = null!;

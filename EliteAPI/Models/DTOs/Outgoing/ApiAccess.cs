@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class ApiAccessDto {
+public class ApiAccessDto
+{
 	public bool Inventories { get; set; } = false;
 	public bool Collections { get; set; } = false;
 	public bool Skills { get; set; } = false;
@@ -11,7 +12,8 @@ public class ApiAccessDto {
 	// public bool Museum { get; set; } = false; // Don't have a way to get this yet
 }
 
-public class UnparsedApiDataDto {
+public class UnparsedApiDataDto
+{
 	public int Copper { get; set; } = 0;
 	public Dictionary<string, int> Consumed { get; set; } = new();
 	public Dictionary<string, int> LevelCaps { get; set; } = new();

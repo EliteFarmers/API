@@ -7,7 +7,8 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Features.Shop.Products.Admin.RemoveCosmetic;
 
-internal sealed class RemoveCosmeticToProductRequest {
+internal sealed class RemoveCosmeticToProductRequest
+{
 	/// <summary>
 	/// Id of the produc to add the cosmetic to
 	/// </summary>
@@ -23,7 +24,8 @@ internal sealed class RemoveCosmeticToProductEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IConnectionMultiplexer redis
-) : Endpoint<RemoveCosmeticToProductRequest> {
+) : Endpoint<RemoveCosmeticToProductRequest>
+{
 	public override void Configure() {
 		Delete("/product/{ProductId}/cosmetics/{CosmeticId}");
 		Policies(ApiUserPolicies.Admin);

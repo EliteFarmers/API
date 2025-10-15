@@ -13,7 +13,8 @@ using IMapper = AutoMapper.IMapper;
 
 namespace EliteAPI.Features.Profiles.Services;
 
-public interface IMemberService {
+public interface IMemberService
+{
 	Task UpdatePlayerIfNeeded(string playerUuid, float cooldownMultiplier = 1);
 	Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1);
 	Task<Guid?> GetProfileMemberId(string playerUuid, string profileId);
@@ -33,7 +34,8 @@ public class MemberService(
 	IMojangService mojangService,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IConnectionMultiplexer redis)
-	: IMemberService {
+	: IMemberService
+{
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
 	public async Task<Guid?> GetProfileMemberId(string playerUuid, string profileId) {
@@ -78,8 +80,8 @@ public class MemberService(
 			.ThenInclude(j => j.Contests)
 			.ThenInclude(c => c.JacobContest)
 			.Include(p => p.Inventories)
-            .ThenInclude(i => i.Items)
-            .AsNoTracking()
+			.ThenInclude(i => i.Items)
+			.AsNoTracking()
 			.AsSplitQuery();
 	}
 
@@ -224,7 +226,8 @@ public class MemberService(
 	}
 }
 
-public class LastUpdatedDto {
+public class LastUpdatedDto
+{
 	public long Profiles { get; set; }
 	public long PlayerData { get; set; }
 	public required string PlayerUuid { get; set; }

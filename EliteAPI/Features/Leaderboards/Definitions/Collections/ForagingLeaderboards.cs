@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class AcaciaLeaderboard : IMemberLeaderboardDefinition {
+public class AcaciaLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Acacia Wood Collection",
 		ShortTitle = "Acacia",
@@ -25,7 +26,8 @@ public class AcaciaLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class BirchLeaderboard : IMemberLeaderboardDefinition {
+public class BirchLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Birch Wood Collection",
 		ShortTitle = "Birch",
@@ -46,7 +48,8 @@ public class BirchLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class DarkOakLeaderboard : IMemberLeaderboardDefinition {
+public class DarkOakLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Dark Oak Wood Collection",
 		ShortTitle = "Dark Oak",
@@ -67,7 +70,8 @@ public class DarkOakLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class JungleLeaderboard : IMemberLeaderboardDefinition {
+public class JungleLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Jungle Wood Collection",
 		ShortTitle = "Jungle",
@@ -88,7 +92,8 @@ public class JungleLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class OakLeaderboard : IMemberLeaderboardDefinition {
+public class OakLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Oak Wood Collection",
 		ShortTitle = "Oak",
@@ -109,7 +114,8 @@ public class OakLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SpruceLeaderboard : IMemberLeaderboardDefinition {
+public class SpruceLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Spruce Wood Collection",
 		ShortTitle = "Spruce",
@@ -130,7 +136,8 @@ public class SpruceLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SeaLumiesLeaderboard : IMemberLeaderboardDefinition {
+public class SeaLumiesLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Sea Lumies Collection",
 		ShortTitle = "Sea Lumies",
@@ -151,7 +158,8 @@ public class SeaLumiesLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class VinesapLeaderboard : IMemberLeaderboardDefinition {
+public class VinesapLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Vinesap Collection",
 		ShortTitle = "Vinesap",
@@ -172,7 +180,8 @@ public class VinesapLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class LushlilacLeaderboard : IMemberLeaderboardDefinition {
+public class LushlilacLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Lushlilac Collection",
 		ShortTitle = "Lushlilac",
@@ -193,7 +202,8 @@ public class LushlilacLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MangroveLeaderboard : IMemberLeaderboardDefinition {
+public class MangroveLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Mangrove Wood Collection",
 		ShortTitle = "Mangrove",
@@ -214,7 +224,8 @@ public class MangroveLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class FigLeaderboard : IMemberLeaderboardDefinition {
+public class FigLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Fig Wood Collection",
 		ShortTitle = "Fig",
@@ -235,7 +246,8 @@ public class FigLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class TenderWoodLeaderboard : IMemberLeaderboardDefinition {
+public class TenderWoodLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Tender Wood Collection",
 		ShortTitle = "Tender Wood",

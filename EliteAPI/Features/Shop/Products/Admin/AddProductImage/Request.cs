@@ -5,7 +5,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Shop.Products.Admin.AddProductImage;
 
-internal sealed class AddProductImageRequest : DiscordIdRequest {
+internal sealed class AddProductImageRequest : DiscordIdRequest
+{
 	[FromForm] public required UploadImageDto Image { get; set; }
 
 	/// <summary>
@@ -16,7 +17,8 @@ internal sealed class AddProductImageRequest : DiscordIdRequest {
 	public bool? Thumbnail { get; set; }
 }
 
-internal sealed class AddProductImageRequestValidator : Validator<AddProductImageRequest> {
+internal sealed class AddProductImageRequestValidator : Validator<AddProductImageRequest>
+{
 	public AddProductImageRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

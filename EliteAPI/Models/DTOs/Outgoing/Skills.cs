@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class SkillsDto {
+public class SkillsDto
+{
 	public double Farming { get; set; } = 0;
 	public double Mining { get; set; } = 0;
 	public double Combat { get; set; } = 0;

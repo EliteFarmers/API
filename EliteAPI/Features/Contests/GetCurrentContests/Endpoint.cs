@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Contests.GetCurrentContests;
 
 internal sealed class GetCurrentContestsEndpoint(
 	IContestsService contestsService)
-	: EndpointWithoutRequest<YearlyContestsDto> {
+	: EndpointWithoutRequest<YearlyContestsDto>
+{
 	public override void Configure() {
 		Get("/contests/at/now");
 		AllowAnonymous();

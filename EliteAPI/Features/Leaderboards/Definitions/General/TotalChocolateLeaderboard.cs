@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class TotalChocolateLeaderboard : IMemberLeaderboardDefinition {
+public class TotalChocolateLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "All-Time Chocolate",
 		ShortTitle = "Chocolate",

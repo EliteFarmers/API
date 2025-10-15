@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Guilds.Services;
 
-public interface IGuildService {
+public interface IGuildService
+{
 	Task<ActionResult> SendLeaderboardPanel(ulong guildId, string channelId, string authorId, string lbId);
 	Task UpdateGuildData(ulong guildId, IncomingGuildDto guild);
 	Task UpdateGuildChannelData(ulong guildId, IncomingGuildChannelDto channel, bool skipSave = false);

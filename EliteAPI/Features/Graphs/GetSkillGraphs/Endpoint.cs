@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Graphs.GetSkillGraphs;
 internal sealed class GetSkillGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<SkillsDataPointDto>> {
+	: Endpoint<GraphRequest, List<SkillsDataPointDto>>
+{
 	public override void Configure() {
 		Get("/graph/{PlayerUuid}/{ProfileUuid}/skills");
 		AllowAnonymous();

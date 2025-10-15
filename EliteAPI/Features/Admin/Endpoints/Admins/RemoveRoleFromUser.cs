@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Admins;
 internal sealed class RemoveRoleFromUserEndpoint(
 	DataContext context,
 	UserManager userManager)
-	: Endpoint<UserRoleRequest> {
+	: Endpoint<UserRoleRequest>
+{
 	public override void Configure() {
 		Delete("/admin/user/{DiscordId}/roles/{Role}");
 		Policies(ApiUserPolicies.Admin);

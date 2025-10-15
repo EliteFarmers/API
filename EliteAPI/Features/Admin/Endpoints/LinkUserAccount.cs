@@ -5,14 +5,16 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Admin.Endpoints;
 
-internal sealed class AdminLinkAccountRequest {
+internal sealed class AdminLinkAccountRequest
+{
 	public required string DiscordId { get; set; }
 	public required string Player { get; set; }
 }
 
 internal sealed class LinkUserAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<AdminLinkAccountRequest, ErrorOr<Success>> {
+) : Endpoint<AdminLinkAccountRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/admin/link-account");
 		Policies(ApiUserPolicies.Admin);

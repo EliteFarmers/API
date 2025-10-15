@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Events;
 
-public static class PestEventProgressParser {
+public static class PestEventProgressParser
+{
 	public static void UpdateScore(this PestEventMember eventMember, PestEvent @event, ProfileMember? member = null) {
 		if (member is not null) {
 			// Initialize the start conditions if they haven't been initialized yet

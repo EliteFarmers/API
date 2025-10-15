@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Weight.GetWeights;
 
 [Obsolete("Use /weights/all instead")]
 internal sealed class GetWeightsEndpoint(IOptions<ConfigFarmingWeightSettings> weightSettings)
-	: EndpointWithoutRequest<Dictionary<string, double>> {
+	: EndpointWithoutRequest<Dictionary<string, double>>
+{
 	private readonly ConfigFarmingWeightSettings _weightSettings = weightSettings.Value;
 
 	public override void Configure() {

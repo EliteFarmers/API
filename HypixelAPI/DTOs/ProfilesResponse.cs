@@ -4,16 +4,19 @@ using EliteFarmers.HypixelAPI.Converters;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class ProfilesResponse {
+public class ProfilesResponse
+{
 	public bool Success { get; set; }
 	public ProfileResponse[]? Profiles { get; set; }
 }
 
-public class RawMemberEvents {
+public class RawMemberEvents
+{
 	public EasterEventDataResponse? Easter { get; set; }
 }
 
-public class EasterEventDataResponse {
+public class EasterEventDataResponse
+{
 	public long Chocolate { get; set; }
 	[JsonPropertyName("total_chocolate")] public long TotalChocolate { get; set; }
 
@@ -40,14 +43,16 @@ public class EasterEventDataResponse {
 	public int RefinedDarkCacaoTrufflesConsumed { get; set; }
 }
 
-public class RawMemberEasterEventShop {
+public class RawMemberEasterEventShop
+{
 	[JsonPropertyName("chocolate_spent")] public long ChocolateSpent { get; set; }
 
 	[JsonPropertyName("cocoa_fortune_upgrades")]
 	public int CocoaFortuneUpgrades { get; set; }
 }
 
-public class RawMemberPlayerData {
+public class RawMemberPlayerData
+{
 	public Dictionary<string, int> Perks { get; set; } = new();
 
 	[JsonPropertyName("crafted_generators")]
@@ -61,12 +66,14 @@ public class RawMemberPlayerData {
 	public MemberExperienceResponse? Experience { get; set; } = new();
 }
 
-public class MemberPetsResponse {
+public class MemberPetsResponse
+{
 	public PetResponse[]? Pets { get; set; }
 	[JsonPropertyName("pet_care")] public PetCareResponse? PetCare { get; set; }
 }
 
-public class PetResponse {
+public class PetResponse
+{
 	public string? Uuid { get; set; }
 	public string? Type { get; set; }
 	public double Exp { get; set; } = 0;
@@ -77,16 +84,19 @@ public class PetResponse {
 	public string? Skin { get; set; }
 }
 
-public class PetCareResponse {
+public class PetCareResponse
+{
 	[JsonPropertyName("pet_types_sacrificed")]
 	public List<string> PetTypesSacrificed { get; set; } = [];
 }
 
-public class MemberCurrenciesResponse {
+public class MemberCurrenciesResponse
+{
 	[JsonPropertyName("coin_purse")] public double? CoinPurse { get; set; }
 }
 
-public class MemberExperienceResponse {
+public class MemberExperienceResponse
+{
 	[JsonPropertyName("SKILL_RUNECRAFTING")]
 	public double? SkillRunecrafting { get; set; }
 
@@ -102,13 +112,15 @@ public class MemberExperienceResponse {
 	[JsonPropertyName("SKILL_CARPENTRY")] public double? SkillCarpentry { get; set; }
 }
 
-public class MemberProfileDataResponse {
+public class MemberProfileDataResponse
+{
 	[JsonPropertyName("coop_invitation")] public RawCoopInvitation? CoopInvitation { get; set; }
 
 	[JsonPropertyName("deletion_notice")] public JsonObject? DeletionNotice { get; set; }
 }
 
-public class MemberInventoriesResponse {
+public class MemberInventoriesResponse
+{
 	[JsonPropertyName("wardrobe_equipped_slot")]
 	public int? WardrobeEquippedSlot { get; set; }
 
@@ -138,33 +150,32 @@ public class MemberInventoriesResponse {
 	public RawInventoryData? EnderChestContents { get; set; }
 }
 
-public class RawMemberBagContents {
-    [JsonPropertyName("fishing_bag")]
-    public RawInventoryData? FishingBag { get; set; }
-    
-    [JsonPropertyName("talisman_bag")]
-    public RawInventoryData? TalismanBag { get; set; }
-    
-    [JsonPropertyName("potion_bag")]
-    public RawInventoryData? PotionBag { get; set; }
-    
-    [JsonPropertyName("quiver")]
-    public RawInventoryData? Quiver { get; set; }
-    
-    [JsonPropertyName("sacks_bag")]
-    public RawInventoryData? SacksBag { get; set; }
+public class RawMemberBagContents
+{
+	[JsonPropertyName("fishing_bag")] public RawInventoryData? FishingBag { get; set; }
+
+	[JsonPropertyName("talisman_bag")] public RawInventoryData? TalismanBag { get; set; }
+
+	[JsonPropertyName("potion_bag")] public RawInventoryData? PotionBag { get; set; }
+
+	[JsonPropertyName("quiver")] public RawInventoryData? Quiver { get; set; }
+
+	[JsonPropertyName("sacks_bag")] public RawInventoryData? SacksBag { get; set; }
 }
 
-public class RawInventoryData {
+public class RawInventoryData
+{
 	public int Type { get; set; }
 	public string Data { get; set; } = string.Empty;
 }
 
-public class RawLeveling {
+public class RawLeveling
+{
 	public int? Experience { get; set; }
 }
 
-public class RawJacobData {
+public class RawJacobData
+{
 	public RawJacobPerks? Perks { get; set; }
 	public bool Talked { get; set; }
 	public Dictionary<string, RawJacobContest> Contests { get; set; } = new();
@@ -176,13 +187,15 @@ public class RawJacobData {
 	[JsonPropertyName("personal_bests")] public Dictionary<string, long> PersonalBests { get; set; } = new();
 }
 
-public class RawMedalsInventory {
+public class RawMedalsInventory
+{
 	public int Bronze { get; set; }
 	public int Silver { get; set; }
 	public int Gold { get; set; }
 }
 
-public class RawJacobPerks {
+public class RawJacobPerks
+{
 	[JsonPropertyName("farming_level_cap")]
 	public int? FarmingLevelCap { get; set; }
 
@@ -191,7 +204,8 @@ public class RawJacobPerks {
 	[JsonPropertyName("personal_bests")] public bool PersonalBests { get; set; } = false;
 }
 
-public class RawJacobUniqueBrackets {
+public class RawJacobUniqueBrackets
+{
 	public List<string> Bronze { get; set; } = [];
 	public List<string> Silver { get; set; } = [];
 	public List<string> Gold { get; set; } = [];
@@ -199,7 +213,8 @@ public class RawJacobUniqueBrackets {
 	public List<string> Diamond { get; set; } = [];
 }
 
-public class RawJacobContest {
+public class RawJacobContest
+{
 	public int Collected { get; set; }
 
 	[JsonPropertyName("claimed_rewards")] public bool? ClaimedRewards { get; set; }
@@ -212,7 +227,8 @@ public class RawJacobContest {
 	[JsonPropertyName("claimed_medal")] public string? Medal { get; set; }
 }
 
-public class RawCoopInvitation {
+public class RawCoopInvitation
+{
 	public long Timestamp { get; set; }
 	public bool Confirmed { get; set; }
 
@@ -222,7 +238,8 @@ public class RawCoopInvitation {
 	public long ConfirmedTimestamp { get; set; }
 }
 
-public class RawPetData {
+public class RawPetData
+{
 	public string? Uuid { get; set; }
 	public required string Type { get; set; }
 	public double Exp { get; set; }
@@ -233,7 +250,8 @@ public class RawPetData {
 	public string? Skin { get; set; }
 }
 
-public class ProfileCommunityUpgrades {
+public class ProfileCommunityUpgrades
+{
 	[JsonPropertyName("currently_upgrading")]
 	public RawCurrentlyUpgrading? CurrentlyUpgrading { get; set; }
 
@@ -241,7 +259,8 @@ public class ProfileCommunityUpgrades {
 	public RawUpgradeStates[] UpgradeStates { get; set; } = Array.Empty<RawUpgradeStates>();
 }
 
-public class RawCurrentlyUpgrading {
+public class RawCurrentlyUpgrading
+{
 	public required string Upgrade { get; set; }
 
 	[JsonPropertyName("new_tier")] public int NewTier { get; set; }
@@ -251,7 +270,8 @@ public class RawCurrentlyUpgrading {
 	[JsonPropertyName("who_started")] public required string WhoStarted { get; set; }
 }
 
-public class RawUpgradeStates {
+public class RawUpgradeStates
+{
 	public required string Upgrade { get; set; }
 	public int Tier { get; set; }
 
@@ -266,12 +286,14 @@ public class RawUpgradeStates {
 	[JsonPropertyName("fasttracked")] public bool FastTracked { get; set; }
 }
 
-public class ProfileBankingResponse {
+public class ProfileBankingResponse
+{
 	public double Balance { get; set; }
 	public RawTransaction[] Transactions { get; set; } = [];
 }
 
-public class RawTransaction {
+public class RawTransaction
+{
 	public float Amount { get; set; }
 	public long Timestamp { get; set; }
 	public required string Action { get; set; }
@@ -279,7 +301,8 @@ public class RawTransaction {
 	[JsonPropertyName("initiator_name")] public required string Initiator { get; set; }
 }
 
-public class TempStatBuffResponse {
+public class TempStatBuffResponse
+{
 	public int Stat { get; set; }
 	public string? Key { get; set; }
 	public int Amount { get; set; }

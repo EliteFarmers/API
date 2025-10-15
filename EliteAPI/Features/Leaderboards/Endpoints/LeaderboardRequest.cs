@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints;
 
-public class LeaderboardRequest {
+public class LeaderboardRequest
+{
 	/// <summary>
 	/// Id of leaderboard
 	/// </summary>
@@ -40,7 +41,8 @@ public class LeaderboardRequest {
 	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
 }
 
-internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest> {
+internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest>
+{
 	public LeaderboardRequestValidator() {
 		var newLbService = Resolve<ILeaderboardRegistrationService>();
 

@@ -14,7 +14,8 @@ internal sealed class GetAccountEndpoint(
 	IMojangService mojangService,
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
-) : Endpoint<PlayerRequest, MinecraftAccountDto> {
+) : Endpoint<PlayerRequest, MinecraftAccountDto>
+{
 	public override void Configure() {
 		Get("/account/{Player}");
 		AllowAnonymous();

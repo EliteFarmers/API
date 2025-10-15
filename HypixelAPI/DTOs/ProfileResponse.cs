@@ -2,7 +2,8 @@
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class ProfileResponse {
+public class ProfileResponse
+{
 	public bool Selected { get; set; } = false;
 
 	[JsonPropertyName("cute_name")] public required string CuteName { get; set; }

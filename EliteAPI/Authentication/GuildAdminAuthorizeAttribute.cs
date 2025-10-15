@@ -2,13 +2,15 @@
 
 namespace EliteAPI.Authentication;
 
-public enum GuildPermission {
+public enum GuildPermission
+{
 	Admin,
 	Manager,
 	Role
 }
 
-public class GuildAdminAuthorizeAttribute : AuthorizeAttribute {
+public class GuildAdminAuthorizeAttribute : AuthorizeAttribute
+{
 	public static readonly string PolicyPrefix = "GuildAdmin";
 	public GuildPermission Permission { get; }
 
@@ -18,7 +20,8 @@ public class GuildAdminAuthorizeAttribute : AuthorizeAttribute {
 	}
 }
 
-public static class GuildAdminPolicies {
+public static class GuildAdminPolicies
+{
 	public static AuthorizationOptions AddGuildAdminPolicies(this AuthorizationOptions builder) {
 		foreach (var permission in Enum.GetValues<GuildPermission>()) {
 			builder.AddPolicy($"{GuildAdminAuthorizeAttribute.PolicyPrefix}{Enum.GetName(permission)}", policy => {
