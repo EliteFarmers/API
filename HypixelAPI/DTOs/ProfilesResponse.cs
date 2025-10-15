@@ -59,6 +59,21 @@ public class RawMemberPlayerData {
 	[JsonPropertyName("temp_stat_buffs")] public List<TempStatBuffResponse> TempStatBuffs { get; set; } = new();
 
 	public MemberExperienceResponse? Experience { get; set; } = new();
+	
+	[JsonPropertyName("visited_zones")] public List<string> VisitedZones { get; set; } = [];
+	
+	[JsonPropertyName("last_death")] public long LastDeath { get; set; }
+	[JsonPropertyName("death_count")] public int DeathCount { get; set; }
+	
+	[JsonPropertyName("fishing_treasure_caught")] public int FishingTreasureCaught { get; set; }
+
+	[JsonPropertyName("disabled_potion_effects")]
+	public List<string> DisabledPotionEffects { get; set; } = [];
+	
+	[JsonPropertyName("achievement_spawned_island_types")]
+	public List<string> AchievementSpawnedIslandTypes { get; set; } = [];
+	
+	[JsonPropertyName("visited_modes")] public List<string> VisitedModes { get; set; } = [];
 }
 
 public class MemberPetsResponse {
@@ -84,6 +99,38 @@ public class PetCareResponse {
 
 public class MemberCurrenciesResponse {
 	[JsonPropertyName("coin_purse")] public double? CoinPurse { get; set; }
+	[JsonPropertyName("motes_purse")] public double? MotesPurse { get; set; }
+	public MemberCurrencyEssence? Essence { get; set; } = new();
+}
+
+public class MemberCurrencyEssence {
+	[JsonPropertyName("WITHER")]
+	public MemberCurrencyEssenceType? Wither { get; set; }
+	
+	[JsonPropertyName("DRAGON")]
+	public MemberCurrencyEssenceType? Dragon { get; set; }
+	
+	[JsonPropertyName("DIAMOND")]
+	public MemberCurrencyEssenceType? Diamond { get; set; }
+	
+	[JsonPropertyName("SPIDER")]
+	public MemberCurrencyEssenceType? Spider { get; set; }
+	
+	[JsonPropertyName("UNDEAD")]
+	public MemberCurrencyEssenceType? Undead { get; set; }
+	
+	[JsonPropertyName("ICE")]
+	public MemberCurrencyEssenceType? Ice { get; set; }
+	
+	[JsonPropertyName("GOLD")]
+	public MemberCurrencyEssenceType? Gold { get; set; }
+	
+	[JsonPropertyName("CRIMSON")]
+	public MemberCurrencyEssenceType? Crimson { get; set; }
+}
+
+public class MemberCurrencyEssenceType {
+	public int Current { get; set; }
 }
 
 public class MemberExperienceResponse {
@@ -153,6 +200,20 @@ public class RawInventoryData {
 
 public class RawLeveling {
 	public int? Experience { get; set; }
+	public Dictionary<string, int> Completions { get; set; } = new();
+	[JsonPropertyName("completed_tasks")] public List<string> CompletedTasks { get; set; } = [];
+	[JsonPropertyName("highest_pet_score")]
+	public int HighestPetScore { get; set; }
+	[JsonPropertyName("selected_symbol")]
+	public string? SelectedSymbol { get; set; }
+	[JsonPropertyName("emblem_unlocks")]
+	public List<string> EmblemUnlocks { get; set; } = [];
+	[JsonPropertyName("claimed_talisman")]
+	public bool ClaimedTalisman { get; set; }
+	[JsonPropertyName("mining_fiesta_ores_mined")]
+	public int MiningFiestaOresMined { get; set; }
+	[JsonPropertyName("fishing_festival_sharks_killed")]
+	public int FishingFestivalSharksKilled { get; set; }
 }
 
 public class RawJacobData {
