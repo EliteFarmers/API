@@ -1,6 +1,5 @@
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Images.Services;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.Services;

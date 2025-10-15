@@ -20,7 +20,7 @@ internal sealed class GetRolesEndpoint(
 		var result = await context.Roles.AsNoTracking()
 			.Select(r => r.Name)
 			.Where(r => r != null)
-			.ToListAsync(c);
+			.ToListAsync(c) as List<string>;
 
 		await Send.OkAsync(result, c);
 	}

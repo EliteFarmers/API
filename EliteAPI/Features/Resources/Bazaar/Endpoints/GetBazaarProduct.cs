@@ -55,6 +55,6 @@ internal sealed class GetBazaarProductEndpoint(
 }
 
 internal sealed class GetBazaarProductResponse {
-	public string ProductId { get; set; }
+	public required string ProductId { get; set; }
 	public BazaarProductSummaryDto Product { get; set; } = new();
 }

@@ -34,8 +34,8 @@ internal sealed class GetAdminsEndpoint(
 			into g
 			select new AccountWithPermsDto {
 				Id = g.Key.Id,
-				DisplayName = g.Max(x => x.account.DisplayName),
-				Username = g.Key.UserName ?? g.Max(x => x.account.Username),
+				DisplayName = g.Max(x => x.account.DisplayName)!,
+				Username = g.Key.UserName ?? g.Max(x => x.account.Username)!,
 				Avatar = g.Max(x => x.account.Avatar),
 				Discriminator = g.Max(x => x.account.Discriminator),
 				Roles = g.Where(x => x.role != null).Select(x => x.role.Name).ToList()
