@@ -890,6 +890,9 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.PrimitiveCollection<short[]>("EmptySlots")
+                        .HasColumnType("smallint[]");
+
                     b.Property<Guid>("HypixelInventoryId")
                         .HasColumnType("uuid");
 

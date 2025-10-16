@@ -523,7 +523,7 @@ public class ProfileProcessorService(
 
 			foreach (var (backpack, icon) in incomingData.Inventories.BackpackIcons) {
 				var newItems = NbtParser.NbtToItems(icon.Data);
-				if (newItems is null || newItems.Count == 0) continue;
+				if (newItems.Count == 0) continue;
 				var iconItem = newItems.FirstOrDefault(i => i?.SkyblockId is not null);
 				if (iconItem is null) continue;
 

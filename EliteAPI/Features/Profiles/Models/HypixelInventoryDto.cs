@@ -10,7 +10,10 @@ public class HypixelInventoryDto
 
 	[MaxLength(64)] public required string Name { get; set; }
 
-	public List<ItemDto> Items { get; set; } = [];
+	/// <summary>
+	/// Dictionary of slot to item mapping, null if the slot is empty
+	/// </summary>
+	public Dictionary<string, ItemDto?> Items { get; set; } = [];
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public Dictionary<string, string>? Metadata { get; set; }

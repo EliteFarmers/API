@@ -19,7 +19,8 @@ public class HypixelInventory
 	[MapperIgnore] public Guid ProfileMemberId { get; set; }
 
 	public List<HypixelItem> Items { get; set; } = [];
-
+	
+	public short[]? EmptySlots { get; set; }
 	[Column(TypeName = "jsonb")] public Dictionary<string, string>? Metadata { get; set; }
 }
 

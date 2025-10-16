@@ -44,21 +44,60 @@ public static class NbtParser
 	}
 
 	public static HypixelInventory? ParseInventory(string inventoryName, string? data) {
-		var items = NbtToItems(data);
-		if (items is null) {
-			return null;
+		var list = InventoryDataToNbtList(data);
+		if (list is null || list.Count == 0) return null;
+		
+		var items = new List<ItemDto>(list.Count);
+		var empty = new List<short>();
+
+		short i = -1;
+		foreach (var item in list) {
+			i++;
+			if (item is not NbtCompound compound) {
+				empty.Add(i);
+				continue;
+			}
+			
+			var parsedItem = ToItem(compound);
+			if (parsedItem?.SkyblockId is null) {
+				empty.Add(i);
+				continue;
+			}
+			
+			parsedItem.Slot = i.ToString();
+			items.Add(parsedItem);
 		}
 
 		return new HypixelInventory {
 			Name = inventoryName,
-			Items = items.Where(i => i is not null).Select(i => i!.ToHypixelItem()).ToList()
+			Items = items.Select(item => item.ToHypixelItem()).ToList(),
+			EmptySlots = empty.Count == 0 ? null : empty.ToArray()
 		};
 	}
 
 	/// <summary>
 	/// Parse NBT data into a list of ItemDto objects with texture IDs.
 	/// </summary>
-	public static List<ItemDto?>? NbtToItems(string? data) {
+	public static List<ItemDto?> NbtToItems(string? data) {
+		var list = InventoryDataToNbtList(data);
+		if (list is null || list.Count == 0) return [];
+		
+		var items = new List<ItemDto?>(list.Count);
+
+		var i = -1;
+		foreach (var item in list) {
+			i++;
+			if (item is not NbtCompound compound) continue;
+			var parsedItem = ToItem(compound);
+			if (parsedItem?.SkyblockId is null) continue;
+			parsedItem.Slot = i.ToString();
+			items.Add(parsedItem);
+		}
+
+		return items;
+	}
+
+	private static NbtList? InventoryDataToNbtList(string? data) {
 		if (string.IsNullOrEmpty(data)) return null;
 
 		var nbt = DecodeNbt(data);
@@ -74,27 +113,7 @@ public static class NbtParser
 			}
 		}
 
-		if (list is null) return null;
-
-		// return list
-		// 	.Where(tag => tag is NbtCompound)
-		// 	.Select(tag => ToItem((NbtCompound)tag))
-		// 	.Where(item => item?.SkyblockId is not null)
-		// 	.ToList();
-
-		var items = new List<ItemDto?>(list.Count);
-
-		var i = -1;
-		foreach (var item in list) {
-			i++;
-			if (item is not NbtCompound compound) continue;
-			var parsedItem = ToItem(compound);
-			if (parsedItem?.SkyblockId is null) continue;
-			parsedItem.Slot = i.ToString();
-			items.Add(parsedItem);
-		}
-
-		return items;
+		return list ?? null;
 	}
 
 	/// <summary>

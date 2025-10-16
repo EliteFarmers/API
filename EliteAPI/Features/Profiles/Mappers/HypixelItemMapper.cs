@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -9,9 +10,26 @@ namespace EliteAPI.Features.Profiles.Mappers;
 [UseStaticMapper(typeof(ImageMapper))]
 public static partial class HypixelItemMapper
 {
-	[MapperIgnoreSource(nameof(HypixelInventory.Id))]
-	[MapProperty(nameof(HypixelInventory.HypixelInventoryId), nameof(HypixelInventoryDto.Id))]
-	public static partial HypixelInventoryDto ToDto(this HypixelInventory item);
+	public static HypixelInventoryDto ToDto(this HypixelInventory inventory) {
+		var items = new Dictionary<string, ItemDto?>();
+		if (inventory.EmptySlots is not null) {
+			foreach (var i in inventory.EmptySlots) {
+				items.TryAdd(i.ToString(), null);
+			}
+		}
+		
+		foreach (var i in inventory.Items) {
+			var dto = i.ToDto();
+			if (dto.Slot is null) continue;
+			items.TryAdd(dto.Slot, dto);
+		}
+		
+		return new HypixelInventoryDto() {
+			Id = inventory.HypixelInventoryId,
+			Name = inventory.Name,
+			Items = items,
+		};
+	}
 
 	public static HypixelItem ToHypixelItem(this ItemDto dto) {
 		var item = new HypixelItem {
@@ -90,7 +108,29 @@ public static partial class HypixelItemMapper
 		if (item.DonatedMuseum is not null) {
 			dto.Attributes["donated_museum"] = item.DonatedMuseum;
 		}
+		
+		// Remove edition numbers from attributes and lore (replace with obfuscated edition number in lore)
+		if (dto.Attributes?.TryGetValue("edition", out var edition) is true) {
+            if (dto.Lore is not null) {
+				for (var i = 0; i < dto.Lore.Count; i++) {
+					dto.Lore[i] = HypixelItemExtensions.EditionRegex().Replace(dto.Lore[i], $"Edition #§khidden§r");
+				}
+			}
+			dto.Attributes.Remove("edition");
+		}
+		
+		// Remove any color attribute to hide exotic colors
+		dto.Attributes?.Remove("color");
+		
+		// Some people care about weird origin tags
+		dto.Attributes?.Remove("originTag");
 
 		return dto;
 	}
+}
+
+public static partial class HypixelItemExtensions
+{
+	[GeneratedRegex(@$"Edition #?\d+", RegexOptions.IgnoreCase)]
+	public static partial Regex EditionRegex();
 }
