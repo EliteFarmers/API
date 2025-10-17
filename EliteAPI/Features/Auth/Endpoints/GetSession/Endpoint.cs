@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using EliteAPI.Features.Auth.Models;
-using EliteAPI.Models.DTOs.Auth;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.GetSession;

@@ -1,4 +1,4 @@
-using EliteAPI.Models.DTOs.Auth;
+using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.Refresh;

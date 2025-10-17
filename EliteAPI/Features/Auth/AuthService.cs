@@ -8,7 +8,8 @@ using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Auth.Models;
-using EliteAPI.Models.DTOs.Auth;
+using EliteAPI.Features.Confirmations.Models;
+using EliteAPI.Features.Confirmations.Services;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using FastEndpoints.Security;
@@ -25,6 +26,7 @@ public partial class AuthService(
 	IConfiguration configuration,
 	ISchedulerFactory schedulerFactory,
 	ILogger<AuthService> logger,
+	IConfirmationService confirmationService,
 	DataContext context)
 	: IAuthService
 {
@@ -87,11 +89,21 @@ public partial class AuthService(
 			logger.LogWarning("Failed to generate or store refresh token for user {UserId}", user.Id);
 			return null;
 		}
+		
+		var pendingConfirmation = await confirmationService.GetPendingConfirmationAsync(user);
 
 		return new AuthResponseDto {
 			AccessToken = token,
 			ExpiresIn = expiry.ToUnixTimeSeconds().ToString(),
-			RefreshToken = refreshToken
+			RefreshToken = refreshToken,
+			PendingConfirmation = pendingConfirmation is null ? null : new ConfirmationDto
+			{
+				Id = pendingConfirmation.Id,
+				Title = pendingConfirmation.Title,
+				Content = pendingConfirmation.Content,
+				IsActive = pendingConfirmation.IsActive,
+				CreatedAt = pendingConfirmation.CreatedAt
+			}
 		};
 	}
 

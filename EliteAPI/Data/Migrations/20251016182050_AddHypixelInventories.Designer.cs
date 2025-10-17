@@ -22,8 +22,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251016030134_AddInventoryModels")]
-    partial class AddInventoryModels
+    [Migration("20251016182050_AddHypixelInventories")]
+    partial class AddHypixelInventories
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -419,6 +419,49 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("UserId", "Token");
 
                     b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Confirmations");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.UserConfirmation", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ConfirmationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ConfirmationId");
+
+                    b.HasIndex("ConfirmationId");
+
+                    b.ToTable("UserConfirmations");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Images.Models.Image", b =>
@@ -2798,6 +2841,25 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.UserConfirmation", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Confirmations.Models.Confirmation", "Confirmation")
+                        .WithMany("UserConfirmations")
+                        .HasForeignKey("ConfirmationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Auth.Models.ApiUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Confirmation");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.Leaderboard", b =>
                 {
                     b.HasOne("EliteAPI.Features.Images.Models.Image", "Icon")
@@ -3861,6 +3923,11 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Features.Auth.Models.ApiUser", b =>
                 {
                     b.Navigation("GuildMemberships");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
+                {
+                    b.Navigation("UserConfirmations");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Monetization.Models.ShopOrder", b =>

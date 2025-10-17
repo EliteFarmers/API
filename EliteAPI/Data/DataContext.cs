@@ -1,6 +1,7 @@
 ﻿using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Confirmations.Models;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
@@ -155,4 +156,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	// Annoucements 
 	public DbSet<Announcement> Announcements { get; set; } = null!;
 	public DbSet<DismissedAnnouncement> DismissedAnnouncements { get; set; } = null!;
+	
+	// Confirmations
+	public DbSet<Confirmation> Confirmations { get; set; } = null!;
+	public DbSet<UserConfirmation> UserConfirmations { get; set; } = null!;
 }

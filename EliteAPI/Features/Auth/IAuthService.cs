@@ -1,5 +1,4 @@
 ﻿using EliteAPI.Features.Auth.Models;
-using EliteAPI.Models.DTOs.Auth;
 
 namespace EliteAPI.Features.Auth;
 
