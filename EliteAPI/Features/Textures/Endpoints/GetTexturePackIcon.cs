@@ -15,8 +15,8 @@ internal sealed class GetTexturePackIconEndpoint(
 ) : Endpoint<GetTexturePackIcon>
 {
 	public override void Configure() {
-		Routes("/texturepacks/{PackId}/icon");
-		Verbs(Http.HEAD, Http.GET);
+		Head("/texturepacks/{PackId}/icon");
+		Get("/texturepacks/{PackId}/icon");
 		AllowAnonymous();
 		Version(0);
 
