@@ -18,7 +18,8 @@ internal sealed class GetInventoryItemTextureEndpoint(
 ) : Endpoint<GetInventoryItemTextureRequest>
 {
 	public override void Configure() {
-		Get("/textures/{InventoryUuid}/{SlotId}");
+		Routes("/textures/{InventoryUuid}/{SlotId}");
+		Verbs(Http.HEAD, Http.GET);
 		AllowAnonymous();
 		Version(0);
 
