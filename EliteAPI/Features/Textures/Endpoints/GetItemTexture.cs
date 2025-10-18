@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Textures.Services;
 using FastEndpoints;
 
@@ -15,10 +16,13 @@ internal sealed class GetItemTextureEndpoint(
 {
 	public override void Configure() {
 		Get("/textures/{ItemId}");
-		AllowAnonymous();
+		Policies(ApiUserPolicies.Admin);
 		Version(0);
 
-		Summary(s => { s.Summary = "Get Minecraft Item Texture"; });
+		Summary(s => {
+			s.Summary = "Get Minecraft Item Texture";
+			s.Description = "Not available to the public yet.";
+		});
 	}
 
 	public override async Task HandleAsync(GetItemTextureRequest request, CancellationToken c) {

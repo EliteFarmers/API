@@ -80,7 +80,6 @@ public class MemberService(
 			.ThenInclude(j => j.Contests)
 			.ThenInclude(c => c.JacobContest)
 			.Include(p => p.Inventories)
-			.ThenInclude(i => i.Items)
 			.AsNoTracking()
 			.AsSplitQuery();
 	}

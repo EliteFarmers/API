@@ -1,5 +1,4 @@
-﻿using System.Buffers.Text;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Profiles.Models;
@@ -7,7 +6,6 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Utilities;
 using MinecraftRenderer;
 using MinecraftRenderer.Nbt;
-using MinecraftRenderer.Hypixel;
 
 namespace EliteAPI.Parsers.Inventories;
 
@@ -47,7 +45,7 @@ public static class NbtParser
 	public static HypixelInventory? ParseInventory(string inventoryName, string? data) {
 		var list = InventoryDataToNbtList(data);
 		if (list is null || list.Count == 0) return null;
-		
+
 		var items = new List<ItemDto>(list.Count);
 		var empty = new List<short>();
 
@@ -58,13 +56,13 @@ public static class NbtParser
 				empty.Add(i);
 				continue;
 			}
-			
+
 			var parsedItem = ToItem(compound);
 			if (parsedItem?.SkyblockId is null) {
 				empty.Add(i);
 				continue;
 			}
-			
+
 			parsedItem.Slot = i.ToString();
 			items.Add(parsedItem);
 		}
@@ -83,7 +81,7 @@ public static class NbtParser
 	public static List<ItemDto?> NbtToItems(string? data) {
 		var list = InventoryDataToNbtList(data);
 		if (list is null || list.Count == 0) return [];
-		
+
 		var items = new List<ItemDto?>(list.Count);
 
 		var i = -1;

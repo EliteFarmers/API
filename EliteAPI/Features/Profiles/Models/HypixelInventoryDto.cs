@@ -18,3 +18,13 @@ public class HypixelInventoryDto
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public Dictionary<string, string>? Metadata { get; set; }
 }
+
+public class HypixelInventoryOverviewDto
+{
+	public required Guid Id { get; set; }
+
+	[MaxLength(64)] public required string Name { get; set; }
+	
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, string>? Metadata { get; set; }
+}

@@ -66,7 +66,7 @@ public class ProfileMemberDto
 	public SkillsDto Skills { get; set; } = new();
 	public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
 	public List<ProfileEventMemberDto> Events { get; set; } = [];
-	public List<HypixelInventoryDto> Inventories { get; set; } = [];
+	public List<HypixelInventoryOverviewDto> Inventories { get; set; } = [];
 
 	public bool IsSelected { get; set; }
 	public bool WasRemoved { get; set; }

@@ -28,6 +28,15 @@ public static partial class HypixelItemMapper
 			Id = inventory.HypixelInventoryId,
 			Name = inventory.Name,
 			Items = items,
+			Metadata = inventory.Metadata
+		};
+	}
+	
+	public static HypixelInventoryOverviewDto ToOverviewDto(this HypixelInventory inventory) {
+		return new HypixelInventoryOverviewDto() {
+			Id = inventory.HypixelInventoryId,
+			Name = inventory.Name,
+			Metadata = inventory.Metadata
 		};
 	}
 

@@ -19,9 +19,28 @@ public class ItemTextureResolver(
 	ILogger<ItemTextureResolver> logger,
 	IImageService imageService,
 	DataContext context,
-	HybridCache cache, 
+	HybridCache cache,
 	ISkyblockRepoClient repoClient)
 {
+	public async Task<byte[]?> GetPackIcon(string packId) {
+		try {
+			var renderer = await provider.GetRendererAsync();
+			var image = renderer.GetTexturePackIcon(packId);
+			
+			if (image is null) {
+				return null;
+			}
+
+			using var ms = new MemoryStream();
+			await image.SaveAsPngAsync(ms);
+			return ms.ToArray();
+		}
+		catch (Exception ex) {
+			logger.LogError(ex, "Failed to get pack icon for {PackId}", packId);
+			throw;
+		}
+	}
+	
 	public async Task<byte[]> RenderItemAsync(string itemId, int size = 128) {
 		try {
 			var renderer = await provider.GetRendererAsync();
@@ -81,10 +100,10 @@ public class ItemTextureResolver(
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = provider.Options with { Size = size };
 		var preResourceId = renderer.ComputeResourceIdFromNbt(root, renderOptions);
-		
+
 		var existingRenderedItem = await context.Images
 			.FirstOrDefaultAsync(i => i.Hash == preResourceId.ResourceId);
-		
+
 		if (existingRenderedItem is not null) {
 			item.Image = existingRenderedItem;
 			item.ImageId = existingRenderedItem.Id;
@@ -92,14 +111,14 @@ public class ItemTextureResolver(
 
 			return existingRenderedItem.ToPrimaryUrl()!;
 		}
-		
+
 		var result = await cache.GetOrCreateAsync(preResourceId.ResourceId, async c => {
 			using var renderResult = renderer.RenderAnimatedItemFromNbtWithResourceId(root, renderOptions);
 			var resourceId = renderResult.ResourceId.ResourceId;
-			
+
 			var existingCheckRendered = await context.Images
 				.FirstOrDefaultAsync(i => i.Hash == resourceId, cancellationToken: c);
-		
+
 			if (existingCheckRendered is not null) {
 				item.Image = existingCheckRendered;
 				item.ImageId = existingCheckRendered.Id;
@@ -109,17 +128,18 @@ public class ItemTextureResolver(
 			}
 
 			using var image = renderResult.CloneAsAnimatedImage();
-			var savedImage = await imageService.ProcessAndUploadImageAsync(image, $"renders/items/{resourceId}", "item", token: c);
+			var savedImage = await imageService.ProcessAndUploadImageAsync(image,
+				$"renders/{renderResult.ResourceId.SourcePackId}/items/{resourceId}", "item", token: c);
 			savedImage.Hash = resourceId;
 			await context.Images.AddAsync(savedImage, c);
 			await context.SaveChangesAsync(c);
-		
+
 			return (savedImage.Id, savedImage.ToPrimaryUrl()!);
 		});
-		
+
 		item.ImageId = result.Id;
 		await context.SaveChangesAsync();
-		
+
 		return result.Item2;
 	}
 }

@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Features.Images.Models;
-using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Riok.Mapperly.Abstractions;
 
 namespace EliteAPI.Features.Profiles.Models;
 
