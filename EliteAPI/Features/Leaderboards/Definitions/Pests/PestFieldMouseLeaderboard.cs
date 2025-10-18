@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class PestFieldMouseLeaderboard : IMemberLeaderboardDefinition {
+public class PestFieldMouseLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Field Mouse Kills",
 		ShortTitle = "Field Mouse",

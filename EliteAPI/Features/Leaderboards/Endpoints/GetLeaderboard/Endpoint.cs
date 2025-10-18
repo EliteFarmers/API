@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Leaderboards.Endpoints.GetLeaderboard;
 internal sealed class GetLeaderboardEndpoint(
 	ILbService lbService,
 	ILeaderboardRegistrationService leaderboardRegistrationService
-) : Endpoint<LeaderboardSliceRequest, LeaderboardDto> {
+) : Endpoint<LeaderboardSliceRequest, LeaderboardDto>
+{
 	public override void Configure() {
 		Get("/leaderboard/{Leaderboard}");
 		AllowAnonymous();

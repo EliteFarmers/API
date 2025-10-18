@@ -14,7 +14,8 @@ internal sealed class GetUserGuildEndpoint(
 	IDiscordService discordService,
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, AuthorizedGuildDto> {
+) : Endpoint<DiscordIdRequest, AuthorizedGuildDto>
+{
 	public override void Configure() {
 		Get("/user/guild/{DiscordId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

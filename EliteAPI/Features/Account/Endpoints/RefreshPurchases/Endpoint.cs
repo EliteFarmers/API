@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Account.RefreshPurchases;
 
 internal sealed class RefreshPurchasesEndpoint(
 	IMonetizationService monetizationService
-) : EndpointWithoutRequest {
+) : EndpointWithoutRequest
+{
 	public override void Configure() {
 		Post("/account/purchases");
 		Version(0);

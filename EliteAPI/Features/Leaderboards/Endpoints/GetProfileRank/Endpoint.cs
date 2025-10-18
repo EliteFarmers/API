@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Leaderboards.Endpoints.GetProfileRank;
 
 internal sealed class GetProfileRankEndpoint(
 	ILbService lbService
-) : Endpoint<GetProfileRankRequest, LeaderboardPositionDto> {
+) : Endpoint<GetProfileRankRequest, LeaderboardPositionDto>
+{
 	public override void Configure() {
 		Get("/leaderboard/rank/{Leaderboard}/{ProfileUuid}", "/leaderboard/{Leaderboard}/{ProfileUuid}");
 		AllowAnonymous();

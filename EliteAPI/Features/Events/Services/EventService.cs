@@ -18,7 +18,8 @@ public class EventService(
 	DataContext context,
 	IMojangService mojangService,
 	IMapper mapper)
-	: IEventService {
+	: IEventService
+{
 	public async Task<List<EventDetailsDto>> GetUpcomingEvents(int dayOffset = 0) {
 		var events = await context.Events
 			.Where(e => e.EndTime > DateTimeOffset.UtcNow.AddDays(dayOffset) && e.Approved)

@@ -5,7 +5,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Inventories;
 
-public static class FarmingInventoryParser {
+public static class FarmingInventoryParser
+{
 	public static async Task<FarmingInventory> ExtractFarmingItems(this ProfileMemberResponse memberData,
 		ProfileMember member) {
 		var farming = new FarmingInventory();
@@ -39,9 +40,9 @@ public static class FarmingInventoryParser {
 		return farming;
 	}
 
-	private static async Task PopulateFrom(this FarmingInventory farming, string? inventory) {
-		var data = await NbtParser.NbtToItems(inventory);
-		if (data is null || data.Count == 0) return;
+	private static Task PopulateFrom(this FarmingInventory farming, string? inventory) {
+		var data = NbtParser.NbtToItems(inventory);
+		if (data is null || data.Count == 0) return Task.CompletedTask;
 
 		var toolIds = FarmingItemsConfig.Settings.FarmingToolIds;
 		var equipmentIds = FarmingItemsConfig.Settings.FarmingEquipmentIds;
@@ -59,5 +60,7 @@ public static class FarmingInventoryParser {
 
 			if (accessoryIds.ContainsKey(item.SkyblockId)) farming.Accessories.Add(item);
 		}
+		
+		return Task.CompletedTask;
 	}
 }

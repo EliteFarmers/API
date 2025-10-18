@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Configuration.Settings;
 
-public class ConfigCooldownSettings {
+public class ConfigCooldownSettings
+{
 	public int HypixelPlayerDataCooldown { get; set; }
 	public int HypixelPlayerDataLinkingCooldown { get; set; }
 	public int SkyblockProfileCooldown { get; set; }

@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Bot.UpdateJacobFeature;
 internal sealed class UpdateJacobFeatureEndpoint(
 	DataContext context,
 	IDiscordService discordService
-) : Endpoint<UpdateJacobFeatureRequest, GuildJacobLeaderboardFeature> {
+) : Endpoint<UpdateJacobFeatureRequest, GuildJacobLeaderboardFeature>
+{
 	public override void Configure() {
 		Put("/bot/{DiscordId}/jacob");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

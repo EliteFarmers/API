@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Tests.TimestampTests;
 
-public class SkyblockTimeConversionTests {
+public class SkyblockTimeConversionTests
+{
 	[Theory]
 	[InlineData(1560275700, 0)]
 	public void UnixSecondsToSkyblockTimeTest(long unixSeconds, long expectedSkyblockTime) {

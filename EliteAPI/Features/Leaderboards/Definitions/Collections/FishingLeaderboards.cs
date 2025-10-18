@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class ClayLeaderboard : IMemberLeaderboardDefinition {
+public class ClayLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Clay Collection",
 		ShortTitle = "Clay",
@@ -25,7 +26,8 @@ public class ClayLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class ClownfishLeaderboard : IMemberLeaderboardDefinition {
+public class ClownfishLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Clownfish Collection",
 		ShortTitle = "Clownfish",
@@ -46,7 +48,8 @@ public class ClownfishLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class InkSacLeaderboard : IMemberLeaderboardDefinition {
+public class InkSacLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Ink Sac Collection",
 		ShortTitle = "Ink Sac",
@@ -67,7 +70,8 @@ public class InkSacLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class LilyPadLeaderboard : IMemberLeaderboardDefinition {
+public class LilyPadLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Lily Pad Collection",
 		ShortTitle = "Lily Pad",
@@ -88,7 +92,8 @@ public class LilyPadLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MagmafishLeaderboard : IMemberLeaderboardDefinition {
+public class MagmafishLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Magmafish Collection",
 		ShortTitle = "Magmafish",
@@ -109,7 +114,8 @@ public class MagmafishLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class PrismarineCrystalsLeaderboard : IMemberLeaderboardDefinition {
+public class PrismarineCrystalsLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Prismarine Crystals Collection",
 		ShortTitle = "Prismarine Crystals",
@@ -130,7 +136,8 @@ public class PrismarineCrystalsLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class PrismarineShardLeaderboard : IMemberLeaderboardDefinition {
+public class PrismarineShardLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Prismarine Shard Collection",
 		ShortTitle = "Prismarine Shard",
@@ -151,7 +158,8 @@ public class PrismarineShardLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class PufferfishLeaderboard : IMemberLeaderboardDefinition {
+public class PufferfishLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Pufferfish Collection",
 		ShortTitle = "Pufferfish",
@@ -172,7 +180,8 @@ public class PufferfishLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RawFishLeaderboard : IMemberLeaderboardDefinition {
+public class RawFishLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Raw Fish Collection",
 		ShortTitle = "Raw Fish",
@@ -193,7 +202,8 @@ public class RawFishLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RawSalmonLeaderboard : IMemberLeaderboardDefinition {
+public class RawSalmonLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Raw Salmon Collection",
 		ShortTitle = "Raw Salmon",
@@ -214,7 +224,8 @@ public class RawSalmonLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SpongeLeaderboard : IMemberLeaderboardDefinition {
+public class SpongeLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Sponge Collection",
 		ShortTitle = "Sponge",

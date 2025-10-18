@@ -6,7 +6,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.Farming;
 
-public class FarmingWeightMapper : Profile {
+public class FarmingWeightMapper : Profile
+{
 	public FarmingWeightMapper() {
 		CreateMap<Models.Entities.Farming.Farming, FarmingWeightDto>()
 			.ForMember(x => x.TotalWeight, opt => opt.MapFrom(x => x.TotalWeight))
@@ -33,7 +34,8 @@ public class FarmingWeightMapper : Profile {
 	}
 }
 
-public class FarmingInventoryMapper : Profile {
+public class FarmingInventoryMapper : Profile
+{
 	public FarmingInventoryMapper() {
 		CreateMap<FarmingInventory, FarmingInventoryDto>();
 	}

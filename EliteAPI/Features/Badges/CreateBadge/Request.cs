@@ -4,10 +4,12 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Badges.CreateBadge;
 
-public class CreateBadgeRequest {
+public class CreateBadgeRequest
+{
 	[FromForm] public required CreateBadge Badge { get; set; }
 
-	public class CreateBadge {
+	public class CreateBadge
+	{
 		public required string Name { get; set; }
 		public required string Description { get; set; }
 		public required string Requirements { get; set; }
@@ -16,7 +18,8 @@ public class CreateBadgeRequest {
 	}
 }
 
-internal sealed class UpdateBadgeRequestValidator : Validator<CreateBadgeRequest> {
+internal sealed class UpdateBadgeRequestValidator : Validator<CreateBadgeRequest>
+{
 	public UpdateBadgeRequestValidator() {
 		RuleFor(x => x.Badge)
 			.NotNull()

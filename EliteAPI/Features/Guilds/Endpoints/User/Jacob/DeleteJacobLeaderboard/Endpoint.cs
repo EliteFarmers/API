@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.User.Jacob.DeleteJacobLeaderboard;
 internal sealed class DeleteGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<DeleteGuildJacobLeaderboardRequest> {
+) : Endpoint<DeleteGuildJacobLeaderboardRequest>
+{
 	public override void Configure() {
 		Delete("/user/guild/{DiscordId}/jacob/{LeaderboardId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

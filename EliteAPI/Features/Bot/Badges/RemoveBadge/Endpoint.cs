@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Bot.Badges.RemoveBadge;
 
 internal sealed class RemoveBadgeEndpoint(
 	IBadgeService badgeService
-) : Endpoint<BotRemoveBadgeRequest> {
+) : Endpoint<BotRemoveBadgeRequest>
+{
 	public override void Configure() {
 		Delete("/bot/badges/{Player}/{BadgeId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

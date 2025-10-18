@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class InventoriesDto {
+public class InventoriesDto
+{
 	public string? Inventory { get; set; }
 	public string? EnderChest { get; set; }
 	public string? Armor { get; set; }
@@ -11,7 +12,8 @@ public class InventoriesDto {
 	public List<string>? Backpacks { get; set; }
 }
 
-public class DecodedInventoriesDto {
+public class DecodedInventoriesDto
+{
 	public List<ItemDto?>? Inventory { get; set; }
 	public List<ItemDto?>? EnderChest { get; set; }
 	public List<ItemDto?>? Armor { get; set; }

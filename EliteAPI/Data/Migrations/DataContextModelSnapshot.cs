@@ -418,6 +418,49 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Confirmations");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.UserConfirmation", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ConfirmationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ConfirmationId");
+
+                    b.HasIndex("ConfirmationId");
+
+                    b.ToTable("UserConfirmations");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Images.Models.Image", b =>
                 {
                     b.Property<string>("Id")
@@ -452,6 +495,8 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Hash");
 
                     b.HasIndex("Path");
 
@@ -878,6 +923,119 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ShopOrderItems");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.PrimitiveCollection<short[]>("EmptySlots")
+                        .HasColumnType("smallint[]");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("HypixelInventoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Dictionary<string, string>>("Metadata")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HypixelInventoryId")
+                        .IsUnique();
+
+                    b.HasIndex("ProfileMemberId");
+
+                    b.ToTable("HypixelInventory");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelItem", b =>
+                {
+                    b.Property<long>("HypixelItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("HypixelItemId"));
+
+                    b.Property<Dictionary<string, string>>("Attributes")
+                        .HasColumnType("jsonb");
+
+                    b.Property<short>("Count")
+                        .HasColumnType("smallint");
+
+                    b.Property<short>("Damage")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("DonatedMuseum")
+                        .HasColumnType("text");
+
+                    b.Property<Dictionary<string, int>>("Enchantments")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Dictionary<string, string>>("Gems")
+                        .HasColumnType("jsonb");
+
+                    b.Property<short>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ImageId")
+                        .HasColumnType("character varying(48)");
+
+                    b.Property<long>("InventoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("LastUpdated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Lore")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Modifier")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RarityUpgrades")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SkyblockId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slot")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Timestamp")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("Uuid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("HypixelItemId");
+
+                    b.HasIndex("ImageId");
+
+                    b.HasIndex("InventoryId");
+
+                    b.HasIndex("SkyblockId");
+
+                    b.ToTable("HypixelItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionBinPrice", b =>
@@ -2684,6 +2842,25 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.UserConfirmation", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Confirmations.Models.Confirmation", "Confirmation")
+                        .WithMany("UserConfirmations")
+                        .HasForeignKey("ConfirmationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Auth.Models.ApiUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Confirmation");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.Leaderboard", b =>
                 {
                     b.HasOne("EliteAPI.Features.Images.Models.Image", "Icon")
@@ -2891,6 +3068,31 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("ShopOrder");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", null)
+                        .WithMany("Inventories")
+                        .HasForeignKey("ProfileMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelItem", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Images.Models.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EliteAPI.Features.Profiles.Models.HypixelInventory", null)
+                        .WithMany("Items")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionItem", b =>
@@ -3724,9 +3926,19 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("GuildMemberships");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
+                {
+                    b.Navigation("UserConfirmations");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Monetization.Models.ShopOrder", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Firesales.Models.SkyblockFiresale", b =>
@@ -3781,6 +3993,8 @@ namespace EliteAPI.Data.Migrations
 
                     b.Navigation("Farming")
                         .IsRequired();
+
+                    b.Navigation("Inventories");
 
                     b.Navigation("JacobData")
                         .IsRequired();

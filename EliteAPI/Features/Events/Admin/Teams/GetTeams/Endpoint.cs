@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetTeams;
 
-internal sealed class GetTeamsRequest : DiscordIdRequest {
+internal sealed class GetTeamsRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 }
 
@@ -17,7 +18,8 @@ internal sealed class GetTeamsAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper,
 	IEventTeamService teamService
-) : Endpoint<GetTeamsRequest, List<EventTeamWithMembersDto>> {
+) : Endpoint<GetTeamsRequest, List<EventTeamWithMembersDto>>
+{
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/teams");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -53,7 +55,8 @@ internal sealed class GetTeamsAdminEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<GetTeamsRequest> {
+internal sealed class CreateWeightEventRequestValidator : Validator<GetTeamsRequest>
+{
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

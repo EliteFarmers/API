@@ -29,7 +29,8 @@ public class MonetizationService(
 	IBadgeService badgeService,
 	IMessageService messageService,
 	IOptions<ConfigCooldownSettings> coolDowns)
-	: IMonetizationService {
+	: IMonetizationService
+{
 	private const string ClientName = "EliteAPI";
 	private const string DiscordBaseUrl = "https://discord.com/api/v10";
 
@@ -498,7 +499,8 @@ public class MonetizationService(
 }
 
 // https://discord.com/developers/docs/monetization/entitlements#entitlement-object-entitlement-types
-public class DiscordEntitlement {
+public class DiscordEntitlement
+{
 	public ulong Id { get; set; }
 	public EntitlementType Type { get; set; }
 

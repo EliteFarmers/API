@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class ItemDto {
+public class ItemDto
+{
 	/// <summary>
 	/// Old Minecraft id of the item
 	/// </summary>
@@ -15,6 +16,11 @@ public class ItemDto {
 	public byte Count { get; set; }
 
 	/// <summary>
+	/// Minecraft damage value of the item
+	/// </summary>
+	public short Damage { get; set; }
+
+	/// <summary>
 	/// Skyblock ID of the item
 	/// </summary>
 	public string? SkyblockId { get; set; }
@@ -22,6 +28,7 @@ public class ItemDto {
 	/// <summary>
 	/// Item UUID to uniquely identify a specific instance of this item
 	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Uuid { get; set; }
 
 	/// <summary>
@@ -61,9 +68,27 @@ public class ItemDto {
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public ItemPetInfoDto? PetInfo { get; set; }
+
+	/// <summary>
+	/// Image url for the item
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? ImageUrl { get; set; }
+
+	/// <summary>
+	/// Texture id for the item, used to look up the image in our image service
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? TextureId { get; set; }
+
+	/// <summary>
+	/// Slot identifier where the item was located, if applicable
+	/// </summary>
+	public string? Slot { get; set; } = string.Empty;
 }
 
-public class ItemPetInfoDto {
+public class ItemPetInfoDto
+{
 	[JsonPropertyName("type")] public required string Type { get; set; }
 	[JsonPropertyName("active")] public bool Active { get; set; }
 	[JsonPropertyName("exp")] public decimal Exp { get; set; }

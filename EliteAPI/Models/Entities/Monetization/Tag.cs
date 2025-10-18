@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
-public class Tag {
+public class Tag
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -24,7 +25,8 @@ public class Tag {
 	public List<Product> Products { get; set; } = [];
 }
 
-public class TagConfiguration : IEntityTypeConfiguration<Tag> {
+public class TagConfiguration : IEntityTypeConfiguration<Tag>
+{
 	public void Configure(EntityTypeBuilder<Tag> builder) {
 		builder
 			.HasMany(e => e.Products)

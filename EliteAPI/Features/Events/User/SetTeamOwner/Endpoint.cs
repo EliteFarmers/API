@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.User.SetTeamOwner;
 
-internal sealed class ChangeTeamOwnerRequest {
+internal sealed class ChangeTeamOwnerRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 	public required string Player { get; set; }
@@ -18,7 +19,8 @@ internal sealed class SetTeamOwnerEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<ChangeTeamOwnerRequest> {
+) : Endpoint<ChangeTeamOwnerRequest>
+{
 	public override void Configure() {
 		Put("/event/{EventId}/team/{TeamId}/owner");
 		Version(0);

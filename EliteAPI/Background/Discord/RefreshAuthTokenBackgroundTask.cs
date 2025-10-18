@@ -13,7 +13,8 @@ public class RefreshAuthTokenBackgroundTask(
 	IDiscordService discordService,
 	ILogger<RefreshAuthTokenBackgroundTask> logger,
 	IMessageService messageService)
-	: IJob {
+	: IJob
+{
 	public static readonly JobKey Key = new(nameof(RefreshAuthTokenBackgroundTask));
 
 	public async Task Execute(IJobExecutionContext executionContext) {

@@ -4,11 +4,13 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Bot.DisableContestPings;
 
-public class DisableContestPingsRequest : DiscordIdRequest {
+public class DisableContestPingsRequest : DiscordIdRequest
+{
 	[QueryParam] public string? Reason { get; set; }
 }
 
-internal sealed class DisableContestPingsRequestValidator : Validator<DisableContestPingsRequest> {
+internal sealed class DisableContestPingsRequestValidator : Validator<DisableContestPingsRequest>
+{
 	public DisableContestPingsRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 

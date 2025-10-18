@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class WeightStyleDto {
+public class WeightStyleDto
+{
 	public int Id { get; set; }
 
 	[MaxLength(64)] public string? StyleFormatter { get; set; } = "data";
@@ -18,19 +19,22 @@ public class WeightStyleDto {
 	public List<ParentProductDto> Products { get; set; } = [];
 }
 
-public class WeightStyleWithDataDto : WeightStyleDto {
+public class WeightStyleWithDataDto : WeightStyleDto
+{
 	public WeightStyleDataDto? Data { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public LeaderboardStyleDataDto? Leaderboard { get; set; }
 }
 
-public class WeightStyleLinkedDto {
+public class WeightStyleLinkedDto
+{
 	public int Id { get; set; }
 	[MaxLength(64)] public string? Name { get; set; }
 }
 
-public class UploadImageDto {
+public class UploadImageDto
+{
 	[FromForm(Name = "Title")]
 	[MaxLength(64)]
 	public string? Title { get; set; }
@@ -44,20 +48,23 @@ public class UploadImageDto {
 	public IFormFile Image { get; set; } = null!;
 }
 
-public class ParentProductDto {
+public class ParentProductDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public string? Slug { get; set; }
 }
 
-public class WeightStyleDataDto {
+public class WeightStyleDataDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public WeightStyleDecalDto? Decal { get; set; }
 
 	public WeightStyleElementsDto Elements { get; set; } = new();
 }
 
-public class LeaderboardStyleDataDto {
+public class LeaderboardStyleDataDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public LeaderboardStyleLayerDto? Background { get; set; }
 
@@ -86,7 +93,8 @@ public class LeaderboardStyleDataDto {
 	public LeaderboardStyleTextDto? Subtitle { get; set; }
 }
 
-public class LeaderboardStyleLayerDto {
+public class LeaderboardStyleLayerDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? ImageUrl { get; set; }
 
@@ -109,7 +117,8 @@ public class LeaderboardStyleLayerDto {
 	public string? Align { get; set; }
 }
 
-public class LeaderboardStyleTextDto {
+public class LeaderboardStyleTextDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Color { get; set; }
 
@@ -123,7 +132,8 @@ public class LeaderboardStyleTextDto {
 	public int? FontWeight { get; set; }
 }
 
-public class WeightStyleDecalDto {
+public class WeightStyleDecalDto
+{
 	public WeightStylePositionDto Start { get; set; } = new();
 
 	public WeightStylePositionDto End { get; set; } = new();
@@ -138,7 +148,8 @@ public class WeightStyleDecalDto {
 	public Dictionary<string, string>? Crops { get; set; }
 }
 
-public class WeightStyleElementsDto {
+public class WeightStyleElementsDto
+{
 	public WeightStyleBackgroundDto Background { get; set; } = new();
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -166,7 +177,8 @@ public class WeightStyleElementsDto {
 	public WeightStyleElementDto? RankWithBadge { get; set; }
 }
 
-public class WeightStyleBackgroundDto {
+public class WeightStyleBackgroundDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public WeightStylePositionDto? Size { get; set; }
 
@@ -189,7 +201,8 @@ public class WeightStyleBackgroundDto {
 	public double? Opacity { get; set; }
 }
 
-public class WeightStyleBackgroundRectDto {
+public class WeightStyleBackgroundRectDto
+{
 	public WeightStylePositionDto Start { get; set; } = new();
 
 	public WeightStylePositionDto End { get; set; } = new();
@@ -204,7 +217,8 @@ public class WeightStyleBackgroundRectDto {
 	public double? Opacity { get; set; }
 }
 
-public class WeightStyleGradientDto {
+public class WeightStyleGradientDto
+{
 	public WeightStyleDirectionDto Direction { get; set; } = new();
 	public WeightStyleDirectionDto Bounds { get; set; } = new();
 
@@ -215,17 +229,20 @@ public class WeightStyleGradientDto {
 	public double? Opacity { get; set; }
 }
 
-public class WeightStyleDirectionDto {
+public class WeightStyleDirectionDto
+{
 	public WeightStylePositionDto Start { get; set; } = new();
 	public WeightStylePositionDto End { get; set; } = new();
 }
 
-public class WeightStyleGradientStopDto {
+public class WeightStyleGradientStopDto
+{
 	public double Position { get; set; }
 	public required string Fill { get; set; }
 }
 
-public class WeightStyleElementDto {
+public class WeightStyleElementDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Font { get; set; }
 
@@ -250,12 +267,14 @@ public class WeightStyleElementDto {
 	public WeightStyleTextBackgroundDto? Background { get; set; }
 }
 
-public class WeightStylePositionDto {
+public class WeightStylePositionDto
+{
 	public double X { get; set; }
 	public double Y { get; set; }
 }
 
-public class WeightStyleElementOutlineDto {
+public class WeightStyleElementOutlineDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Width { get; set; }
 
@@ -266,7 +285,8 @@ public class WeightStyleElementOutlineDto {
 	public string? Fill { get; set; }
 }
 
-public class WeightStyleTextBackgroundDto {
+public class WeightStyleTextBackgroundDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Fill { get; set; }
 

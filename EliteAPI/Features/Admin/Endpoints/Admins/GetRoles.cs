@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
 internal sealed class GetRolesEndpoint(
 	DataContext context)
-	: EndpointWithoutRequest<List<string>> {
+	: EndpointWithoutRequest<List<string>>
+{
 	public override void Configure() {
 		Get("/admin/roles");
 		Policies(ApiUserPolicies.Moderator);

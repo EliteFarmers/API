@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRank;
 
 internal sealed class GetPlayerRankEndpoint(
 	ILbService lbService
-) : Endpoint<GetPlayerRankRequest, LeaderboardPositionDto> {
+) : Endpoint<GetPlayerRankRequest, LeaderboardPositionDto>
+{
 	public override void Configure() {
 		Get("/leaderboard/rank/{Leaderboard}/{PlayerUuid}/{ProfileUuid}",
 			"/leaderboard/{Leaderboard}/{PlayerUuid}/{ProfileUuid}");

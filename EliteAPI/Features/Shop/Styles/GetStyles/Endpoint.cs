@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Shop.Styles.GetStyles;
 internal sealed class GetStylesEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : EndpointWithoutRequest<List<WeightStyleWithDataDto>> {
+) : EndpointWithoutRequest<List<WeightStyleWithDataDto>>
+{
 	public override void Configure() {
 		Get("/product/styles");
 		AllowAnonymous();

@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Bot.Guilds.RefreshGuild;
 
 internal sealed class RefreshGuildEndpoint(
 	IDiscordService discordService
-) : Endpoint<DiscordIdRequest> {
+) : Endpoint<DiscordIdRequest>
+{
 	public override void Configure() {
 		Post("/bot/guild/{DiscordId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

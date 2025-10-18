@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.KickTeamMember;
 
-internal sealed class KickTeamMemberRequest : PlayerRequest {
+internal sealed class KickTeamMemberRequest : PlayerRequest
+{
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
@@ -18,7 +19,8 @@ internal sealed class KickTeamMemberAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<KickTeamMemberRequest> {
+) : Endpoint<KickTeamMemberRequest>
+{
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}/members/{Player}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -55,7 +57,8 @@ internal sealed class KickTeamMemberAdminEndpoint(
 	}
 }
 
-internal sealed class KickTeamMemberRequestValidator : Validator<KickTeamMemberRequest> {
+internal sealed class KickTeamMemberRequestValidator : Validator<KickTeamMemberRequest>
+{
 	public KickTeamMemberRequestValidator() {
 		Include(new PlayerRequestValidator());
 	}

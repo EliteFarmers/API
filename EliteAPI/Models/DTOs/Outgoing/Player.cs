@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class PlayerDataDto {
+public class PlayerDataDto
+{
 	public required string Uuid { get; set; }
 
 	[JsonPropertyName("displayname")] public string? DisplayName { get; set; }
@@ -31,7 +32,8 @@ public class PlayerDataDto {
 	public SocialMediaLinksDto? SocialMedia { get; set; }
 }
 
-public class SocialMediaLinksDto {
+public class SocialMediaLinksDto
+{
 	public string? Discord { get; set; }
 	public string? Hypixel { get; set; }
 	public string? Youtube { get; set; }

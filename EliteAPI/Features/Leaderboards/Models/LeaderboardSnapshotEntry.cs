@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Leaderboards.Models;
 
-public class LeaderboardSnapshotEntry {
+public class LeaderboardSnapshotEntry
+{
 	public int LeaderboardSnapshotEntryId { get; set; }
 	public int LeaderboardSnapshotId { get; set; }
 	public LeaderboardSnapshot LeaderboardSnapshot { get; set; } = null!;
@@ -29,7 +30,8 @@ public class LeaderboardSnapshotEntry {
 	public DateTimeOffset EntryTimestamp { get; set; } = DateTimeOffset.UtcNow;
 }
 
-public class LeaderboardSnapshotEntryConfiguration : IEntityTypeConfiguration<LeaderboardSnapshotEntry> {
+public class LeaderboardSnapshotEntryConfiguration : IEntityTypeConfiguration<LeaderboardSnapshotEntry>
+{
 	public void Configure(EntityTypeBuilder<LeaderboardSnapshotEntry> builder) {
 		builder.ToTable("LeaderboardSnapshotEntries");
 		builder.HasKey(lse => lse.LeaderboardSnapshotEntryId);

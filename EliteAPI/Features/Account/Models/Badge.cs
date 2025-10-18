@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Account.Models;
 
-public class Badge {
+public class Badge
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -21,13 +22,15 @@ public class Badge {
 	public bool TieToAccount { get; set; }
 }
 
-public class BadgeEntityConfiguration : IEntityTypeConfiguration<Badge> {
+public class BadgeEntityConfiguration : IEntityTypeConfiguration<Badge>
+{
 	public void Configure(EntityTypeBuilder<Badge> builder) {
 		builder.Navigation(b => b.Image).AutoInclude();
 	}
 }
 
-public class UserBadge {
+public class UserBadge
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }

@@ -6,7 +6,8 @@ using Newtonsoft.Json;
 
 namespace EliteAPI.Features.Graphs;
 
-public class GraphRequest : PlayerProfileUuidRequest {
+public class GraphRequest : PlayerProfileUuidRequest
+{
 	/// <summary>
 	/// Unix timestamp in seconds for the start of the data to return
 	/// </summary>
@@ -39,7 +40,8 @@ public class GraphRequest : PlayerProfileUuidRequest {
 		: DateTimeOffset.FromUnixTimeSeconds(From ?? 0) + TimeSpan.FromDays(Days ?? 7);
 }
 
-internal sealed class GraphRequestValidator : Validator<GraphRequest> {
+internal sealed class GraphRequestValidator : Validator<GraphRequest>
+{
 	public GraphRequestValidator() {
 		Include(new PlayerProfileUuidRequestValidator());
 

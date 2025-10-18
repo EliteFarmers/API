@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Guilds.User.GetGuilds;
 
 internal sealed class GetUserGuildsEndpoint(
 	IDiscordService discordService
-) : EndpointWithoutRequest<List<GuildMemberDto>> {
+) : EndpointWithoutRequest<List<GuildMemberDto>>
+{
 	public override void Configure() {
 		Get("/user/guilds");
 		Version(0);

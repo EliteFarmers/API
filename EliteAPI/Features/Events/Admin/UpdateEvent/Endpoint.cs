@@ -9,14 +9,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.UpdateEvent;
 
-internal sealed class UpdateEventRequest : DiscordIdRequest {
+internal sealed class UpdateEventRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 	[FromBody] public required EditEventDto Event { get; set; }
 }
 
 internal sealed class UpdateEventAdminEndpoint(
 	DataContext context
-) : Endpoint<UpdateEventRequest, EventDetailsDto> {
+) : Endpoint<UpdateEventRequest, EventDetailsDto>
+{
 	public override void Configure() {
 		Patch("/guild/{DiscordId}/events/{EventId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -90,7 +92,8 @@ internal sealed class UpdateEventAdminEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<UpdateEventRequest> {
+internal sealed class CreateWeightEventRequestValidator : Validator<UpdateEventRequest>
+{
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

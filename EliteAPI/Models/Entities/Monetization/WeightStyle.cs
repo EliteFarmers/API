@@ -7,13 +7,15 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
-public enum CosmeticType {
+public enum CosmeticType
+{
 	WeightStyle = 0
 }
 
 [Table("Cosmetics")]
 [Index(nameof(Type))]
-public class WeightStyle {
+public class WeightStyle
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -51,7 +53,8 @@ public class WeightStyle {
 	}
 }
 
-public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle> {
+public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
+{
 	public void Configure(EntityTypeBuilder<WeightStyle> builder) {
 		builder.Navigation(p => p.Image).AutoInclude();
 		builder.Navigation(p => p.Images).AutoInclude();
@@ -66,7 +69,8 @@ public class CosmeticEntityConfiguration : IEntityTypeConfiguration<WeightStyle>
 	}
 }
 
-public class LeaderboardStyleData {
+public class LeaderboardStyleData
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public LeaderboardStyleLayer? Background { get; set; }
 
@@ -95,7 +99,8 @@ public class LeaderboardStyleData {
 	public LeaderboardStyleText? Subtitle { get; set; }
 }
 
-public class LeaderboardStyleLayer {
+public class LeaderboardStyleLayer
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? ImageUrl { get; set; }
 
@@ -118,7 +123,8 @@ public class LeaderboardStyleLayer {
 	public string? Align { get; set; }
 }
 
-public class LeaderboardStyleText {
+public class LeaderboardStyleText
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Color { get; set; }
 
@@ -132,21 +138,25 @@ public class LeaderboardStyleText {
 	public int? FontWeight { get; set; }
 }
 
-public class NameStyleData {
+public class NameStyleData
+{
 	public List<NameStyleEmojiOption> Emojis { get; set; } = [];
 }
 
-public class NameStyleEmojiOption {
+public class NameStyleEmojiOption
+{
 	public string? Name { get; set; }
 	public string? Url { get; set; }
 }
 
-public class WeightStyleData {
+public class WeightStyleData
+{
 	public WeightStyleDecal? Decal { get; set; }
 	public WeightStyleElements Elements { get; set; } = new();
 }
 
-public class WeightStyleDecal {
+public class WeightStyleDecal
+{
 	public WeightStylePosition Start { get; set; } = new();
 	public WeightStylePosition End { get; set; } = new();
 	public string? Fill { get; set; }
@@ -154,7 +164,8 @@ public class WeightStyleDecal {
 	public Dictionary<string, string>? Crops { get; set; }
 }
 
-public class WeightStyleElements {
+public class WeightStyleElements
+{
 	public WeightStyleBackground Background { get; set; } = new();
 	public List<WeightStyleGradient>? Gradients { get; set; }
 	public WeightStyleElement? Name { get; set; }
@@ -166,7 +177,8 @@ public class WeightStyleElements {
 	public WeightStyleElement? RankWithBadge { get; set; }
 }
 
-public class WeightStyleBackground {
+public class WeightStyleBackground
+{
 	public WeightStylePosition? Size { get; set; }
 	public string? Fill { get; set; }
 	public List<WeightStyleBackgroundRect>? Rects { get; set; }
@@ -175,7 +187,8 @@ public class WeightStyleBackground {
 	public double? Opacity { get; set; }
 }
 
-public class WeightStyleBackgroundRect {
+public class WeightStyleBackgroundRect
+{
 	public WeightStylePosition Start { get; set; } = new();
 	public WeightStylePosition End { get; set; } = new();
 	public string? Fill { get; set; }
@@ -183,24 +196,28 @@ public class WeightStyleBackgroundRect {
 	public double? Opacity { get; set; }
 }
 
-public class WeightStyleGradient {
+public class WeightStyleGradient
+{
 	public WeightStyleDirection Direction { get; set; } = new();
 	public WeightStyleDirection Bounds { get; set; } = new();
 	public List<WeightStyleGradientStop>? Stops { get; set; }
 	public double? Opacity { get; set; }
 }
 
-public class WeightStyleDirection {
+public class WeightStyleDirection
+{
 	public WeightStylePosition Start { get; set; } = new();
 	public WeightStylePosition End { get; set; } = new();
 }
 
-public class WeightStyleGradientStop {
+public class WeightStyleGradientStop
+{
 	public double Position { get; set; }
 	public required string Fill { get; set; }
 }
 
-public class WeightStyleElement {
+public class WeightStyleElement
+{
 	public string? Font { get; set; }
 	public string? Fill { get; set; }
 	public int? FontSize { get; set; }
@@ -211,18 +228,21 @@ public class WeightStyleElement {
 	public WeightStyleTextBackground? Background { get; set; }
 }
 
-public class WeightStylePosition {
+public class WeightStylePosition
+{
 	public double X { get; set; }
 	public double Y { get; set; }
 }
 
-public class WeightStyleElementOutline {
+public class WeightStyleElementOutline
+{
 	public int? Width { get; set; }
 	public double? Opacity { get; set; }
 	public string? Fill { get; set; }
 }
 
-public class WeightStyleTextBackground {
+public class WeightStyleTextBackground
+{
 	public string? Fill { get; set; }
 	public double? Opacity { get; set; }
 	public int? Padding { get; set; }

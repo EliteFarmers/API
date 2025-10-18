@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Shop.Products.GetProduct;
 internal sealed class GetProductEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, ProductDto> {
+) : Endpoint<DiscordIdRequest, ProductDto>
+{
 	public override void Configure() {
 		Get("/product/{DiscordId}");
 		AllowAnonymous();

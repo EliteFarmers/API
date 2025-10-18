@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
-public class ChocolateFactory {
+public class ChocolateFactory
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -28,7 +29,8 @@ public class ChocolateFactory {
 }
 
 [Owned]
-public class ChocolateFactoryRabbits {
+public class ChocolateFactoryRabbits
+{
 	public int Common { get; set; }
 	public int Uncommon { get; set; }
 	public int Rare { get; set; }

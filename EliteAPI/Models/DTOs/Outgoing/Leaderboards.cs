@@ -3,7 +3,8 @@ using EliteAPI.Features.Leaderboards.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class LeaderboardDto {
+public class LeaderboardDto
+{
 	public required string Id { get; set; }
 	public required string Title { get; set; }
 	public string? ShortTitle { get; set; }
@@ -35,7 +36,8 @@ public class LeaderboardDto {
 	public List<LeaderboardEntryDto> Entries { get; set; } = new();
 }
 
-public class LeaderboardEntryDto {
+public class LeaderboardEntryDto
+{
 	/// <summary>
 	/// Player's IGN if player leaderboard
 	/// </summary>
@@ -93,11 +95,13 @@ public class LeaderboardEntryDto {
 	public MemberCosmeticsDto? Meta { get; set; }
 }
 
-public class LeaderboardEntryWithRankDto : LeaderboardEntryDto {
+public class LeaderboardEntryWithRankDto : LeaderboardEntryDto
+{
 	public int Rank { get; set; } = -1;
 }
 
-public class ProfileLeaderboardMemberDto {
+public class ProfileLeaderboardMemberDto
+{
 	public required string Ign { get; init; }
 	public required string Uuid { get; init; }
 
@@ -110,7 +114,8 @@ public class ProfileLeaderboardMemberDto {
 	public bool Removed { get; set; }
 }
 
-public class LeaderboardPositionsDto {
+public class LeaderboardPositionsDto
+{
 	public Dictionary<string, int> Misc { get; set; } = new();
 	public Dictionary<string, int> Skills { get; set; } = new();
 	public Dictionary<string, int> Collections { get; set; } = new();
@@ -118,7 +123,8 @@ public class LeaderboardPositionsDto {
 	public Dictionary<string, int> Profile { get; set; } = new();
 }
 
-public class LeaderboardPositionDto {
+public class LeaderboardPositionDto
+{
 	/// <summary>
 	/// Current rank of the player (-1 if not on leaderboard)
 	/// </summary>

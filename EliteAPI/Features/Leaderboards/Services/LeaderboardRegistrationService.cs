@@ -6,14 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Leaderboards.Services;
 
-public interface ILeaderboardRegistrationService {
+public interface ILeaderboardRegistrationService
+{
 	public List<ILeaderboardDefinition> Leaderboards { get; }
 	public Dictionary<string, ILeaderboardDefinition> LeaderboardsById { get; }
 	Task RegisterLeaderboardsAsync(CancellationToken c);
 }
 
 [RegisterService<ILeaderboardRegistrationService>(LifeTime.Singleton)]
-public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILeaderboardRegistrationService {
+public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILeaderboardRegistrationService
+{
 	public async Task RegisterLeaderboardsAsync(CancellationToken c) {
 		using var scope = provider.CreateScope();
 		var context = scope.ServiceProvider.GetRequiredService<DataContext>();

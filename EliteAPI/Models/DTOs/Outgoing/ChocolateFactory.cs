@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class ChocolateFactoryDto {
+public class ChocolateFactoryDto
+{
 	public long Chocolate { get; set; }
 	public long TotalChocolate { get; set; }
 	public long ChocolateSincePrestige { get; set; }
@@ -17,7 +18,8 @@ public class ChocolateFactoryDto {
 	public int CocoaFortuneUpgrades { get; set; }
 }
 
-public class ChocolateFactoryRabbitsDto {
+public class ChocolateFactoryRabbitsDto
+{
 	public int Common { get; set; }
 	public int Uncommon { get; set; }
 	public int Rare { get; set; }

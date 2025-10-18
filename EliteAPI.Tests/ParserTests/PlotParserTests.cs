@@ -3,7 +3,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Tests.ParserTests;
 
-public class PlotParserTests {
+public class PlotParserTests
+{
 	[Fact]
 	public void CombinePlotsTest() {
 		List<string> plots = [

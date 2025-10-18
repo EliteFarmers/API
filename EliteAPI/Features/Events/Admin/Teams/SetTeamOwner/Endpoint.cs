@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.SetTeamOwner;
 
-internal sealed class SetTeamOwnerRequest {
+internal sealed class SetTeamOwnerRequest
+{
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
@@ -20,7 +21,8 @@ internal sealed class SetTeamOwnerAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<SetTeamOwnerRequest> {
+) : Endpoint<SetTeamOwnerRequest>
+{
 	public override void Configure() {
 		Put("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}/owner");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

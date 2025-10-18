@@ -14,7 +14,8 @@ internal sealed class UpdateGuildPurchasesEndpoint(
 	IMonetizationService monetizationService,
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<DiscordIdRequest> {
+) : Endpoint<DiscordIdRequest>
+{
 	public override void Configure() {
 		Post("/user/guild/{DiscordId}/purchases");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

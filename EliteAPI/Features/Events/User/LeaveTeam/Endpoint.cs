@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.User.LeaveTeam;
 
-internal sealed class LeaveTeamRequest {
+internal sealed class LeaveTeamRequest
+{
 	[BindFrom("eventId")] public ulong EventId { get; set; }
 	[BindFrom("teamId")] public int TeamId { get; set; }
 }
@@ -14,7 +15,8 @@ internal sealed class LeaveTeamRequest {
 internal sealed class LeaveTeamEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<LeaveTeamRequest> {
+	: Endpoint<LeaveTeamRequest>
+{
 	public override void Configure() {
 		Post("/event/{EventId}/team/{TeamId}/leave");
 		Version(0);

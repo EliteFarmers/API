@@ -7,14 +7,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.DeleteEvent;
 
-internal sealed class DeleteEventRequest : DiscordIdRequest {
+internal sealed class DeleteEventRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 }
 
 internal sealed class DeleteEventAdminEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService
-) : Endpoint<DeleteEventRequest> {
+) : Endpoint<DeleteEventRequest>
+{
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute(GuildPermission.Admin)));
@@ -52,7 +54,8 @@ internal sealed class DeleteEventAdminEndpoint(
 	}
 }
 
-internal sealed class DeleteEventRequestValidator : Validator<DeleteEventRequest> {
+internal sealed class DeleteEventRequestValidator : Validator<DeleteEventRequest>
+{
 	public DeleteEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

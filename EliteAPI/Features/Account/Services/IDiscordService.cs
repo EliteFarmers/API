@@ -7,7 +7,8 @@ using EliteAPI.Models.Entities.Discord;
 
 namespace EliteAPI.Features.Account.Services;
 
-public interface IDiscordService {
+public interface IDiscordService
+{
 	Task<DiscordUpdateResponse?> GetDiscordUser(string? accessToken, string? refreshToken);
 	Task<EliteAccount?> GetDiscordUser(string accessToken);
 	Task RefreshDiscordUserIfNeeded(ApiUser user);

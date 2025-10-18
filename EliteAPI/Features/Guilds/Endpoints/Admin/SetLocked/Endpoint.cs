@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.Admin.SetLocked;
 internal sealed class SetGuildLockedEndpoint(
 	IDiscordService discordService,
 	DataContext context)
-	: Endpoint<SetGuildLockedRequest> {
+	: Endpoint<SetGuildLockedRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/lock");
 		Policies(ApiUserPolicies.Admin);

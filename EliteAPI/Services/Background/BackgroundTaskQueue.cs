@@ -3,12 +3,12 @@ using EliteAPI.Services.Interfaces;
 
 namespace EliteAPI.Services.Background;
 
-public class BackgroundTaskQueue : IBackgroundTaskQueue {
+public class BackgroundTaskQueue : IBackgroundTaskQueue
+{
 	private const int DefaultQueueCapacity = 100;
 	private readonly Channel<Func<IServiceScope, CancellationToken, ValueTask>> _queue;
 
-	public BackgroundTaskQueue() : this(DefaultQueueCapacity) {
-	}
+	public BackgroundTaskQueue() : this(DefaultQueueCapacity) { }
 
 	public BackgroundTaskQueue(int capacity) {
 		var options = new BoundedChannelOptions(capacity) {

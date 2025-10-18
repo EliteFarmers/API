@@ -5,7 +5,8 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.RateLimiting;
 
-public class ApiRateLimiterPolicy : IRateLimiterPolicy<string> {
+public class ApiRateLimiterPolicy : IRateLimiterPolicy<string>
+{
 	private readonly ConfigApiRateLimitSettings _options;
 	public Func<OnRejectedContext, CancellationToken, ValueTask>? OnRejected { get; }
 

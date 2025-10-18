@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.User.CreateTeam;
 
-internal sealed class CreateTeamRequest {
+internal sealed class CreateTeamRequest
+{
 	[BindFrom("eventId")] public ulong EventId { get; set; }
 	[FastEndpoints.FromBody] public required CreateEventTeamDto Team { get; set; }
 }
@@ -15,7 +16,8 @@ internal sealed class CreateTeamRequest {
 internal sealed class CreateTeamEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<CreateTeamRequest> {
+	: Endpoint<CreateTeamRequest>
+{
 	public override void Configure() {
 		Post("/event/{EventId}/teams");
 		Version(0);

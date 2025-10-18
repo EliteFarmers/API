@@ -5,7 +5,8 @@ using EliteAPI.Configuration.Settings;
 
 namespace EliteAPI.Utilities;
 
-public static class RateLimitingExtensions {
+public static class RateLimitingExtensions
+{
 	public static IServiceCollection AddEliteRateLimiting(this IServiceCollection services) {
 		var globalRateLimitSettings = ConfigGlobalRateLimitSettings.Settings;
 

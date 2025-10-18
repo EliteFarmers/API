@@ -3,11 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
-public class Profile {
+public class Profile
+{
 	[Key] public required string ProfileId { get; set; }
 
 	public required string ProfileName { get; set; }
@@ -25,7 +27,8 @@ public class Profile {
 	public long LastUpdated { get; set; }
 }
 
-public class ProfileMember {
+public class ProfileMember
+{
 	[Key] public required Guid Id { get; set; }
 
 	public ApiAccess Api { get; set; } = new();
@@ -37,9 +40,11 @@ public class ProfileMember {
 	public Skills Skills { get; set; } = new();
 	public Farming.Farming Farming { get; set; } = new();
 	public ChocolateFactory ChocolateFactory { get; set; } = new();
-	public ProfileMemberMetadata? Metadata { get; set; }
-	// public Inventories Inventories { get; set; } = new(); // Likely to be added in the future
 
+	public ProfileMemberMetadata? Metadata { get; set; }
+
+	// public Inventories Inventories { get; set; } = new(); // Likely to be added in the future
+	public List<HypixelInventory> Inventories { get; set; } = [];
 	public bool IsSelected { get; set; } = false;
 	public bool WasRemoved { get; set; } = false;
 	public long LastUpdated { get; set; } = 0;
@@ -63,7 +68,8 @@ public class ProfileMember {
 }
 
 [Owned]
-public class ApiAccess {
+public class ApiAccess
+{
 	public bool Inventories { get; set; } = false;
 	public bool Collections { get; set; } = false;
 	public bool Skills { get; set; } = false;

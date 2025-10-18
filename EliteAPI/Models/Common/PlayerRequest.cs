@@ -3,7 +3,8 @@ using FluentValidation;
 
 namespace EliteAPI.Models.Common;
 
-public class PlayerRequest {
+public class PlayerRequest
+{
 	/// <summary>
 	/// Player uuid or ign
 	/// </summary>
@@ -12,7 +13,8 @@ public class PlayerRequest {
 	public required string Player { get; set; }
 }
 
-internal sealed class PlayerRequestValidator : Validator<PlayerRequest> {
+internal sealed class PlayerRequestValidator : Validator<PlayerRequest>
+{
 	public PlayerRequestValidator() {
 		RuleFor(x => x.Player)
 			.NotEmpty()

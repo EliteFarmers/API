@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.RemoveProduct;
 
-internal sealed class RemoveProductFromCategoryRequest {
+internal sealed class RemoveProductFromCategoryRequest
+{
 	/// <summary>
 	/// Id of the category to add the product to
 	/// </summary>
@@ -21,7 +22,8 @@ internal sealed class RemoveProductFromCategoryRequest {
 internal sealed class RemoveProductToCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<RemoveProductFromCategoryRequest> {
+) : Endpoint<RemoveProductFromCategoryRequest>
+{
 	public override void Configure() {
 		Delete("/shop/category/{CategoryId}/product/{ProductId}");
 		Policies(ApiUserPolicies.Admin);

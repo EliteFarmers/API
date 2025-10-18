@@ -18,7 +18,8 @@ public class ProfileService(
 	IMapper mapper,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IMemberService memberService)
-	: IProfileService {
+	: IProfileService
+{
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
 	public async Task<Profile?> GetProfile(string profileId) {

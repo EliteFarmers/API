@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Monetization.Endpoints.GrantTestEntitlement;
 
 internal sealed class GrantTestEntitlementEndpoint(
 	IMonetizationService monetizationService)
-	: Endpoint<UserEntitlementRequest> {
+	: Endpoint<UserEntitlementRequest>
+{
 	public override void Configure() {
 		Post("/account/{DiscordId}/entitlement/{ProductId}");
 		Policies(ApiUserPolicies.Admin);

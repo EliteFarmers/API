@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.ForceAddMember;
 
-internal sealed class ForceAddMemberRequest : PlayerUuidRequest {
+internal sealed class ForceAddMemberRequest : PlayerUuidRequest
+{
 	public ulong DiscordId { get; set; }
 	public ulong EventId { get; set; }
 
@@ -18,7 +19,8 @@ internal sealed class ForceAddMemberRequest : PlayerUuidRequest {
 internal sealed class ForceAddMemberAdminEndpoint(
 	DataContext context,
 	IEventService eventService
-) : Endpoint<ForceAddMemberRequest> {
+) : Endpoint<ForceAddMemberRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/members/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -72,7 +74,8 @@ internal sealed class ForceAddMemberAdminEndpoint(
 	}
 }
 
-internal sealed class ForceAddMemberRequestValidator : Validator<ForceAddMemberRequest> {
+internal sealed class ForceAddMemberRequestValidator : Validator<ForceAddMemberRequest>
+{
 	public ForceAddMemberRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 	}

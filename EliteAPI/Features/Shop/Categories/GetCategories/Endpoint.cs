@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Shop.Categories.GetCategories;
 internal sealed class GetCategoriesEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetCategoriesRequest, List<ShopCategoryDto>> {
+) : Endpoint<GetCategoriesRequest, List<ShopCategoryDto>>
+{
 	public override void Configure() {
 		Get("/shop/categories");
 		Options(o => o.WithMetadata(new OptionalAuthorizeAttribute()));

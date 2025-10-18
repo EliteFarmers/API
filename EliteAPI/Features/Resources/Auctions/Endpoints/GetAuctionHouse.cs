@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Resources.Auctions.Endpoints;
 internal sealed class GetAuctionHouseProductsEndpoint(
 	DataContext context,
 	IOptions<AuctionHouseSettings> auctionHouseSettings
-) : EndpointWithoutRequest<AuctionHouseDto> {
+) : EndpointWithoutRequest<AuctionHouseDto>
+{
 	private readonly AuctionHouseSettings _config = auctionHouseSettings.Value;
 
 	public override void Configure() {
@@ -45,6 +46,7 @@ internal sealed class GetAuctionHouseProductsEndpoint(
 	}
 }
 
-internal sealed class AuctionHouseDto {
+internal sealed class AuctionHouseDto
+{
 	public Dictionary<string, List<AuctionItemDto>> Items { get; set; } = [];
 }

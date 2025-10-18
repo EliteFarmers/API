@@ -4,13 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Bazaar.Endpoints;
 
-internal sealed class GetBazaarProductRequest {
+internal sealed class GetBazaarProductRequest
+{
 	public required string ItemId { get; set; }
 }
 
 internal sealed class GetBazaarProductEndpoint(
 	DataContext context
-) : Endpoint<GetBazaarProductRequest, GetBazaarProductResponse> {
+) : Endpoint<GetBazaarProductRequest, GetBazaarProductResponse>
+{
 	public override void Configure() {
 		Get("/resources/bazaar/{ItemId}");
 		AllowAnonymous();
@@ -54,7 +56,8 @@ internal sealed class GetBazaarProductEndpoint(
 	}
 }
 
-internal sealed class GetBazaarProductResponse {
+internal sealed class GetBazaarProductResponse
+{
 	public required string ProductId { get; set; }
 	public BazaarProductSummaryDto Product { get; set; } = new();
 }

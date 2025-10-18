@@ -4,7 +4,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 
-public static class SkillParser {
+public static class SkillParser
+{
 	public static void ParseSkills(this ProfileMember member, ProfileMemberResponse memberData) {
 		var skills = member.Skills;
 		var incoming = memberData.PlayerData?.Experience;

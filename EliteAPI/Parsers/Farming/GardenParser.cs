@@ -3,7 +3,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class GardenParser {
+public static class GardenParser
+{
 	public static Dictionary<string, VisitorData> CombineVisitors(this GardenResponseData data) {
 		var visitors = data.Visitors;
 

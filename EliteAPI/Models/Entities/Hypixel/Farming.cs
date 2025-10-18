@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
-public class JacobData {
+public class JacobData
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -25,14 +26,16 @@ public class JacobData {
 }
 
 [Owned]
-public class MedalInventory {
+public class MedalInventory
+{
 	public int Bronze { get; set; } = 0;
 	public int Silver { get; set; } = 0;
 	public int Gold { get; set; } = 0;
 }
 
 [Owned]
-public class EarnedMedalInventory {
+public class EarnedMedalInventory
+{
 	public int Bronze { get; set; } = 0;
 	public int Silver { get; set; } = 0;
 	public int Gold { get; set; } = 0;
@@ -41,19 +44,22 @@ public class EarnedMedalInventory {
 }
 
 [Owned]
-public class JacobPerks {
+public class JacobPerks
+{
 	public int DoubleDrops { get; set; } = 0;
 	public int LevelCap { get; set; } = 0;
 	public bool PersonalBests { get; set; } = false;
 }
 
-public class JacobStats {
+public class JacobStats
+{
 	public Dictionary<Crop, ContestMedal> Brackets { get; set; } = new();
 	public Dictionary<Crop, long> PersonalBests { get; set; } = new();
 	public Dictionary<Crop, JacobCropStats> Crops { get; set; } = new();
 }
 
-public class JacobCropStats {
+public class JacobCropStats
+{
 	public int Participations { get; set; }
 	public int FirstPlaceScores { get; set; }
 	public long? PersonalBestTimestamp { get; set; }
@@ -61,7 +67,8 @@ public class JacobCropStats {
 }
 
 [Index(nameof(Timestamp))]
-public class JacobContest {
+public class JacobContest
+{
 	[Key] public long Id { get; set; }
 
 	public Crop Crop { get; set; }
@@ -76,7 +83,8 @@ public class JacobContest {
 	public int Diamond { get; set; }
 }
 
-public class ContestParticipation {
+public class ContestParticipation
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -92,7 +100,8 @@ public class ContestParticipation {
 	public JacobContest JacobContest { get; set; } = null!;
 }
 
-public enum Crop {
+public enum Crop
+{
 	Cactus = 0,
 	Carrot = 1,
 	CocoaBeans = 2,
@@ -106,7 +115,8 @@ public enum Crop {
 	Seeds = 10 // Only used in some scenarios 
 }
 
-public enum Pest {
+public enum Pest
+{
 	Mite = 0,
 	Cricket = 1,
 	Moth = 2,
@@ -120,7 +130,8 @@ public enum Pest {
 	Mouse = 10
 }
 
-public enum ContestMedal {
+public enum ContestMedal
+{
 	None,
 	Bronze,
 	Silver,

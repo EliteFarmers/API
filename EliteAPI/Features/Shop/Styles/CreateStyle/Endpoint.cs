@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Shop.Styles.CreateStyle;
 
-internal sealed class CreateStyleRequest {
+internal sealed class CreateStyleRequest
+{
 	[MaxLength(64)] public string? StyleFormatter { get; set; } = "data";
 	[MaxLength(64)] public string? Name { get; set; }
 	[MaxLength(64)] public string? Collection { get; set; }
@@ -20,7 +21,8 @@ internal sealed class CreateStyleEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper,
 	IOutputCacheStore outputCacheStore
-) : Endpoint<CreateStyleRequest> {
+) : Endpoint<CreateStyleRequest>
+{
 	public override void Configure() {
 		Post("/product/style");
 		Policies(ApiUserPolicies.Admin);
@@ -49,7 +51,8 @@ internal sealed class CreateStyleEndpoint(
 	}
 }
 
-internal sealed class RequestValidator : Validator<CreateStyleRequest> {
+internal sealed class RequestValidator : Validator<CreateStyleRequest>
+{
 	public RequestValidator() {
 		RuleFor(r => r.Data)
 			.NotEmpty();

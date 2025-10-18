@@ -7,7 +7,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class PestParser {
+public static class PestParser
+{
 	public static void ParsePestCropCollectionNumbers(this Models.Entities.Farming.Farming farming) {
 		var pests = farming.Pests;
 		var uncountedCrops = farming.UncountedCrops;
@@ -125,7 +126,8 @@ public static class PestParser {
 		return (Crop)pest;
 	}
 
-	private class BestiaryKillsMapping {
+	private class BestiaryKillsMapping
+	{
 		[JsonPropertyName("pest_mite_1")] public int Mite { get; set; } = 0;
 		[JsonPropertyName("pest_cricket_1")] public int Cricket { get; set; } = 0;
 		[JsonPropertyName("pest_moth_1")] public int Moth { get; set; } = 0;

@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Tests.WeightTests;
 
-public class WeightParserTests {
+public class WeightParserTests
+{
 	[Fact]
 	public void CropWeightTests() {
 		var collection = new CropCollection {

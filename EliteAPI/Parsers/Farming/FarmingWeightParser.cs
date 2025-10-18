@@ -8,7 +8,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class FarmingWeightParser {
+public static class FarmingWeightParser
+{
 	public static async Task ParseFarmingWeight(this ProfileMember member, Dictionary<string, int> craftedMinions,
 		ProfileMemberResponse memberData) {
 		member.Farming.ProfileMemberId = member.Id;

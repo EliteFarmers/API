@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Contests.GetContestsInYear;
 
 internal sealed class GetContestsInYearEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetContestsInYearRequest, YearlyContestsDto> {
+	: Endpoint<GetContestsInYearRequest, YearlyContestsDto>
+{
 	public override void Configure() {
 		Get("/contests/at/{Year:int}");
 		AllowAnonymous();

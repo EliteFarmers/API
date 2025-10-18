@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Resources.Bazaar.Endpoints;
 
 internal sealed class GetBazaarProductsEndpoint(
 	DataContext context
-) : EndpointWithoutRequest<GetBazaarProductsResponse> {
+) : EndpointWithoutRequest<GetBazaarProductsResponse>
+{
 	public override void Configure() {
 		Get("/resources/bazaar");
 		AllowAnonymous();
@@ -44,11 +45,13 @@ internal sealed class GetBazaarProductsEndpoint(
 	}
 }
 
-internal sealed class GetBazaarProductsResponse {
+internal sealed class GetBazaarProductsResponse
+{
 	public Dictionary<string, BazaarProductSummaryDto> Products { get; set; } = new();
 }
 
-internal sealed class BazaarProductSummaryDto {
+internal sealed class BazaarProductSummaryDto
+{
 	/// <summary>
 	/// Name of the item if it exists.
 	/// </summary>

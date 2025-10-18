@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Admin.Endpoints.Events;
 
-public class SetEventApprovalRequest : EventIdRequest {
+public class SetEventApprovalRequest : EventIdRequest
+{
 	[QueryParam] [DefaultValue(false)] public bool? Approve { get; set; } = false;
 }
 
 internal sealed class SetEventApprovalEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore)
-	: Endpoint<SetEventApprovalRequest> {
+	: Endpoint<SetEventApprovalRequest>
+{
 	public override void Configure() {
 		Post("/admin/events/{EventId}/approve");
 		Policies(ApiUserPolicies.Admin);
@@ -45,7 +47,8 @@ internal sealed class SetEventApprovalEndpoint(
 	}
 }
 
-internal sealed class SetEventApprovalRequestValidator : Validator<SetEventApprovalRequest> {
+internal sealed class SetEventApprovalRequestValidator : Validator<SetEventApprovalRequest>
+{
 	public SetEventApprovalRequestValidator() {
 		Include(new EventIdRequestValidator());
 	}

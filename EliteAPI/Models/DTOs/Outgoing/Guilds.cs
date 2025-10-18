@@ -4,7 +4,8 @@ using EliteAPI.Models.Entities.Discord;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class PrivateGuildDto {
+public class PrivateGuildDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public bool Public { get; set; }
@@ -31,7 +32,8 @@ public class PrivateGuildDto {
 	public List<GuildRoleDto> Roles { get; set; } = new();
 }
 
-public class PublicGuildDto {
+public class PublicGuildDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 
@@ -46,20 +48,23 @@ public class PublicGuildDto {
 	public PublicGuildFeaturesDto Features { get; set; } = new();
 }
 
-public class GuildChannelDto {
+public class GuildChannelDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public int Type { get; set; }
 	public int Position { get; set; }
 }
 
-public class GuildRoleDto {
+public class GuildRoleDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public int Position { get; set; }
 }
 
-public class PublicGuildFeaturesDto {
+public class PublicGuildFeaturesDto
+{
 	public bool JacobLeaderboardEnabled { get; set; }
 	public PublicJacobLeaderboardFeatureDto? JacobLeaderboard { get; set; }
 
@@ -70,7 +75,8 @@ public class PublicGuildFeaturesDto {
 	public ContestPingsFeatureDto? ContestPings { get; set; }
 }
 
-public class PublicJacobLeaderboardFeatureDto {
+public class PublicJacobLeaderboardFeatureDto
+{
 	public int MaxLeaderboards { get; set; } = 1;
 
 	public List<DiscordRole> BlockedRoles { get; set; } = new();
@@ -81,7 +87,8 @@ public class PublicJacobLeaderboardFeatureDto {
 	public List<PublicJacobLeaderboardDto> Leaderboards { get; set; } = new();
 }
 
-public class PublicJacobLeaderboardDto {
+public class PublicJacobLeaderboardDto
+{
 	public required string Id { get; set; }
 	public string? ChannelId { get; set; }
 
@@ -101,7 +108,8 @@ public class PublicJacobLeaderboardDto {
 	public CropRecords Crops { get; set; } = new();
 }
 
-public class ContestPingsFeatureDto {
+public class ContestPingsFeatureDto
+{
 	public bool Enabled { get; set; }
 
 	public string? GuildId { get; set; }
@@ -113,7 +121,8 @@ public class ContestPingsFeatureDto {
 	public string? DisabledReason { get; set; }
 }
 
-public class GuildDetailsDto {
+public class GuildDetailsDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 
@@ -124,7 +133,8 @@ public class GuildDetailsDto {
 	public int MemberCount { get; set; }
 }
 
-public class GuildMemberDto {
+public class GuildMemberDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 
@@ -137,7 +147,8 @@ public class GuildMemberDto {
 	public bool? Admin { get; set; }
 }
 
-public class AuthorizedGuildDto {
+public class AuthorizedGuildDto
+{
 	public required string Id { get; set; }
 	public required string Permissions { get; init; }
 

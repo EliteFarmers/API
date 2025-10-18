@@ -6,7 +6,8 @@ using EliteAPI.Utilities;
 
 namespace EliteAPI.Features.Graphs.Medals.GetCurrentMedalBrackets;
 
-internal sealed class GetCurrentMedalBracketsRequest {
+internal sealed class GetCurrentMedalBracketsRequest
+{
 	/// <summary>
 	/// Amount of previous SkyBlock months to include in the average
 	/// </summary>
@@ -17,7 +18,8 @@ internal sealed class GetCurrentMedalBracketsRequest {
 
 internal sealed class GetCurrentMedalBracketsEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetCurrentMedalBracketsRequest, ContestBracketsDetailsDto> {
+	: Endpoint<GetCurrentMedalBracketsRequest, ContestBracketsDetailsDto>
+{
 	public override void Configure() {
 		Get("/graph/medals/now");
 		AllowAnonymous();

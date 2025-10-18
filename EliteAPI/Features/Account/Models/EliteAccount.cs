@@ -8,7 +8,8 @@ using EliteAPI.Models.Entities.Hypixel;
 namespace EliteAPI.Features.Account.Models;
 
 [Table("Accounts")]
-public class EliteAccount {
+public class EliteAccount
+{
 	[Key] public required ulong Id { get; set; }
 
 	public required string DisplayName { get; set; }
@@ -38,7 +39,8 @@ public class EliteAccount {
 }
 
 [Flags]
-public enum PermissionFlags : ushort {
+public enum PermissionFlags : ushort
+{
 	None = 0,
 	Helper = 16,
 	ViewGraphs = 17,
@@ -46,7 +48,8 @@ public enum PermissionFlags : ushort {
 	Admin = 64
 }
 
-public class DiscordAccountData {
+public class DiscordAccountData
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Banner { get; set; }
 	// [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -55,26 +58,30 @@ public class DiscordAccountData {
 	// public string? AccentColor { get; set; }
 }
 
-public class Purchase {
+public class Purchase
+{
 	public PurchaseType PurchaseType { get; set; }
 	public DateTime Timestamp { get; set; }
 	public decimal Price { get; set; } = 0;
 }
 
-public class Redemption {
+public class Redemption
+{
 	public required string ItemId { get; set; }
 	public required string Cost { get; set; }
 	public DateTime Timestamp { get; set; }
 }
 
-public enum PurchaseType {
+public enum PurchaseType
+{
 	Donation = 0,
 	Bronze = 1,
 	Silver = 2,
 	Gold = 3
 }
 
-public class EliteInventory {
+public class EliteInventory
+{
 	public MedalInventory TotalEarnedMedals { get; set; } = new();
 	public MedalInventory SpentMedals { get; set; } = new();
 
@@ -87,7 +94,8 @@ public class EliteInventory {
 	public List<string> UnlockedCosmetics { get; set; } = new();
 }
 
-public class EliteSettings {
+public class EliteSettings
+{
 	public string DefaultPlayerUuid { get; set; } = string.Empty;
 	public bool HideDiscordTag { get; set; } = false;
 }

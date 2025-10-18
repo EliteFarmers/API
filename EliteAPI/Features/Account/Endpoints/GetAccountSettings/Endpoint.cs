@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Account.GetAccountSettings;
 internal sealed class GetAccountSettingsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, UserSettingsDto> {
+) : Endpoint<DiscordIdRequest, UserSettingsDto>
+{
 	public override void Configure() {
 		Get("/account/{DiscordId}/settings");
 		AllowAnonymous();

@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Bot.Guilds.UpdateGuildChannel;
 
 internal sealed class UpdateGuildChannelEndpoint(
 	IGuildService guildService
-) : Endpoint<BotUpdateGuildChannelRequest> {
+) : Endpoint<BotUpdateGuildChannelRequest>
+{
 	public override void Configure() {
 		Post("/bot/guild/{DiscordId}/channels");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

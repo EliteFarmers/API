@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Account.UpdateFortuneSettings;
 
 internal sealed class UpdateFortuneSettingsEndpoint(
 	IAccountService accountService
-) : Endpoint<UpdateFortuneSettings, ErrorOr<Success>> {
+) : Endpoint<UpdateFortuneSettings, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/account/{PlayerUuid}/{ProfileUuid}/fortune");
 		Version(0);
@@ -26,11 +27,13 @@ internal sealed class UpdateFortuneSettingsEndpoint(
 	}
 }
 
-internal sealed class UpdateFortuneSettings : PlayerProfileUuidRequest {
+internal sealed class UpdateFortuneSettings : PlayerProfileUuidRequest
+{
 	[FromBody] public required MemberFortuneSettingsDto Settings { get; set; }
 }
 
-internal sealed class UpdateFortuneSettingsValidator : Validator<UpdateFortuneSettings> {
+internal sealed class UpdateFortuneSettingsValidator : Validator<UpdateFortuneSettings>
+{
 	public UpdateFortuneSettingsValidator() {
 		Include(new PlayerProfileUuidRequestValidator());
 	}

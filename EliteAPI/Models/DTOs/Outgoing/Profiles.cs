@@ -1,9 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Features.Profiles.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class ProfileDetailsDto {
+public class ProfileDetailsDto
+{
 	public required string ProfileId { get; set; }
 	public required string ProfileName { get; set; }
 	public string GameMode { get; set; } = "classic";
@@ -16,7 +18,8 @@ public class ProfileDetailsDto {
 	public List<MemberDetailsDto> Members { get; set; } = new();
 }
 
-public class ProfileNamesDto {
+public class ProfileNamesDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 
@@ -24,7 +27,8 @@ public class ProfileNamesDto {
 	public bool Selected { get; set; }
 }
 
-public class MemberDetailsDto {
+public class MemberDetailsDto
+{
 	public required string Uuid { get; set; }
 	public required string Username { get; set; }
 	public string? ProfileName { get; set; }
@@ -35,7 +39,8 @@ public class MemberDetailsDto {
 	public MemberCosmeticsDto? Meta { get; set; }
 }
 
-public class ProfileMemberDto {
+public class ProfileMemberDto
+{
 	public required string ProfileId { get; set; }
 	public required string PlayerUuid { get; set; }
 	public required string ProfileName { get; set; }
@@ -55,13 +60,13 @@ public class ProfileMemberDto {
 	public Dictionary<string, int> CraftedMinions { get; set; } = new();
 	public List<PetDto> Pets { get; set; } = [];
 	public UnparsedApiDataDto Unparsed { get; set; } = new();
-
 	public required JacobDataDto Jacob { get; set; }
 	public required FarmingWeightDto FarmingWeight { get; set; }
 	public GardenDto? Garden { get; set; }
 	public SkillsDto Skills { get; set; } = new();
 	public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
 	public List<ProfileEventMemberDto> Events { get; set; } = [];
+	public List<HypixelInventoryOverviewDto> Inventories { get; set; } = [];
 
 	public bool IsSelected { get; set; }
 	public bool WasRemoved { get; set; }

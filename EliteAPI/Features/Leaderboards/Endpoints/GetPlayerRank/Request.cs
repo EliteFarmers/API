@@ -6,7 +6,8 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRank;
 
-public class GetPlayerRankRequest : PlayerProfileUuidRequest {
+public class GetPlayerRankRequest : PlayerProfileUuidRequest
+{
 	/// <summary>
 	/// Id of leaderboard
 	/// </summary>
@@ -67,7 +68,8 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest {
 	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
 }
 
-internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest> {
+internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest>
+{
 	public GetPlayerRankRequestValidator() {
 		Include(new PlayerProfileUuidRequestValidator());
 

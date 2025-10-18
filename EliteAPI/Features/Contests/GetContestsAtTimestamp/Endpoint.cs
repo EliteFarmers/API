@@ -4,7 +4,8 @@ using EliteAPI.Utilities;
 
 namespace EliteAPI.Features.Contests.GetContestsAtTimestamp;
 
-public class GetContestsAtTimestampRequest {
+public class GetContestsAtTimestampRequest
+{
 	public long Timestamp { get; set; }
 
 	/// <summary>
@@ -16,7 +17,8 @@ public class GetContestsAtTimestampRequest {
 
 internal sealed class GetContestsAtTimestampEndpoint(
 	IContestsService contestsService)
-	: Endpoint<GetContestsAtTimestampRequest, List<JacobContestWithParticipationsDto>> {
+	: Endpoint<GetContestsAtTimestampRequest, List<JacobContestWithParticipationsDto>>
+{
 	public override void Configure() {
 		Get("/contests/{Timestamp:long}");
 		AllowAnonymous();

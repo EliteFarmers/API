@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Bot.GetGuild;
 internal sealed class GetBotGuildEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, PrivateGuildDto> {
+) : Endpoint<DiscordIdRequest, PrivateGuildDto>
+{
 	public override void Configure() {
 		Get("/bot/{DiscordId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

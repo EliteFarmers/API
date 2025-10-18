@@ -7,7 +7,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.Farming;
 
-public class JacobDataMapper : Profile {
+public class JacobDataMapper : Profile
+{
 	public JacobDataMapper() {
 		CreateMap<JacobData, JacobDataDto>()
 			.ForMember(j => j.Contests, opt => opt.MapFrom(x => x.Contests.OrderBy(c => c.JacobContestId)))
@@ -24,7 +25,8 @@ public class JacobDataMapper : Profile {
 	}
 }
 
-public class JacobContestsMapper : Profile {
+public class JacobContestsMapper : Profile
+{
 	public JacobContestsMapper() {
 		CreateMap<JacobContest, JacobContestDto>()
 			.ForMember(j => j.Crop, opt => opt.MapFrom(x => FormatUtils.GetFormattedCropName(x.Crop)))
@@ -40,7 +42,8 @@ public class JacobContestsMapper : Profile {
 	}
 }
 
-public class JacobContestParticipationsMapper : Profile {
+public class JacobContestParticipationsMapper : Profile
+{
 	public JacobContestParticipationsMapper() {
 		CreateMap<ContestParticipation, ContestParticipationDto>()
 			.ForMember(j => j.Medal, opt => opt.MapFrom(x => FormatUtils.GetMedalName(x.MedalEarned)))
@@ -59,20 +62,23 @@ public class JacobContestParticipationsMapper : Profile {
 	}
 }
 
-public class JacobPerksMapper : Profile {
+public class JacobPerksMapper : Profile
+{
 	public JacobPerksMapper() {
 		CreateMap<JacobPerks, JacobPerksDto>();
 	}
 }
 
-public class MedalInventoryMapper : Profile {
+public class MedalInventoryMapper : Profile
+{
 	public MedalInventoryMapper() {
 		CreateMap<MedalInventory, MedalInventoryDto>();
 		CreateMap<EarnedMedalInventory, EarnedMedalInventoryDto>();
 	}
 }
 
-public class FarmingPestsMapper : Profile {
+public class FarmingPestsMapper : Profile
+{
 	public FarmingPestsMapper() {
 		CreateMap<Pests, PestsDto>();
 	}

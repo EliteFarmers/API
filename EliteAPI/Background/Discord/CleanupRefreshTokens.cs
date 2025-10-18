@@ -9,7 +9,8 @@ namespace EliteAPI.Background.Discord;
 public class CleanupRefreshTokens(
 	IMessageService messageService,
 	DataContext context)
-	: IJob {
+	: IJob
+{
 	public static readonly JobKey Key = new(nameof(CleanupRefreshTokens));
 
 	public async Task Execute(IJobExecutionContext executionContext) {

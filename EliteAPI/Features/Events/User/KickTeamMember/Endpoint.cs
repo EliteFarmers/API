@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Events.User.KickTeamMember;
 internal sealed class KickTeamMemberEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<KickTeamMemberRequest> {
+	: Endpoint<KickTeamMemberRequest>
+{
 	public override void Configure() {
 		Delete("/event/{EventId}/team/{TeamId}/member/{Player}");
 		Version(0);

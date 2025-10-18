@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Guilds.User.SetAdminRole;
 internal sealed class SetAdminRoleEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<SetAdminRoleRequest> {
+) : Endpoint<SetAdminRoleRequest>
+{
 	public override void Configure() {
 		Put("/user/guild/{DiscordId}/adminrole");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute(GuildPermission.Admin)));

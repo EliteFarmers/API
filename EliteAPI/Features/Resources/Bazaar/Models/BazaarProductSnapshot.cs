@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Resources.Bazaar;
 
-public class BazaarProductSnapshot {
+public class BazaarProductSnapshot
+{
 	[Key] public long Id { get; set; }
 
 	[Required] [MaxLength(128)] public string ProductId { get; set; } = string.Empty;
@@ -42,7 +43,8 @@ public class BazaarProductSnapshot {
 	// public long BuyVolumeWeekly { get; set; }
 }
 
-public class BazaarProductSnapshotConfiguration : IEntityTypeConfiguration<BazaarProductSnapshot> {
+public class BazaarProductSnapshotConfiguration : IEntityTypeConfiguration<BazaarProductSnapshot>
+{
 	public void Configure(EntityTypeBuilder<BazaarProductSnapshot> builder) {
 		builder.HasIndex(p => new { p.ProductId, p.RecordedAt }).IsUnique();
 		builder.HasIndex(p => p.RecordedAt);

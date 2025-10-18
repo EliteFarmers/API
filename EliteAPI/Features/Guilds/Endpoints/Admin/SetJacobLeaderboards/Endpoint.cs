@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Guilds.Admin.SetJacobLeaderboards;
 internal sealed class SetJacobFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context)
-	: Endpoint<SetJacobFeatureRequest> {
+	: Endpoint<SetJacobFeatureRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/jacob");
 		Policies(ApiUserPolicies.Admin);

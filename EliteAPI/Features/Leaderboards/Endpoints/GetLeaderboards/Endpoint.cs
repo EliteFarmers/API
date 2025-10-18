@@ -4,13 +4,15 @@ using FastEndpoints.Swagger;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetLeaderboards;
 
-internal sealed class LeaderboardsResponse {
+internal sealed class LeaderboardsResponse
+{
 	public required Dictionary<string, LeaderboardInfoDto> Leaderboards { get; set; }
 }
 
 internal sealed class GetLeaderboardsEndpoint(
 	ILeaderboardRegistrationService lbRegistrationService)
-	: EndpointWithoutRequest<LeaderboardsResponse> {
+	: EndpointWithoutRequest<LeaderboardsResponse>
+{
 	public override void Configure() {
 		Get("/leaderboards");
 		AllowAnonymous();

@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.User.Jacob.UpdateJacob;
 internal sealed class UpdateGuildJacobFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<UpdateJacobFeatureRequest> {
+) : Endpoint<UpdateJacobFeatureRequest>
+{
 	public override void Configure() {
 		Patch("/user/guild/{DiscordId}/jacob");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

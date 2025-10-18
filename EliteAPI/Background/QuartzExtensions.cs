@@ -5,7 +5,8 @@ using Quartz;
 
 namespace EliteAPI.Background;
 
-public static class QuartzExtensions {
+public static class QuartzExtensions
+{
 	public static void AddEliteBackgroundJobs(this IServiceCollection services) {
 		services.AddQuartz();
 

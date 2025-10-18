@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Monetization.Endpoints.GetEntitlements;
 internal sealed class GetEntitlementsEndpoint(
 	IMonetizationService monetizationService,
 	AutoMapper.IMapper mapper)
-	: Endpoint<GetEntitlementsRequest, List<EntitlementDto>> {
+	: Endpoint<GetEntitlementsRequest, List<EntitlementDto>>
+{
 	public override void Configure() {
 		Get("/account/{DiscordId}/entitlements");
 		Policies(ApiUserPolicies.Admin);

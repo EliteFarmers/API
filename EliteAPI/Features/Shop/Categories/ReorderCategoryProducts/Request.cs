@@ -3,7 +3,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Shop.Categories.ReorderCategoryProducts;
 
-internal sealed class ReorderCategoryProductsRequest : ReorderStringRequest {
+internal sealed class ReorderCategoryProductsRequest : ReorderStringRequest
+{
 	/// <summary>
 	/// Category id
 	/// </summary>
@@ -11,7 +12,8 @@ internal sealed class ReorderCategoryProductsRequest : ReorderStringRequest {
 	public required int CategoryId { get; set; }
 }
 
-internal sealed class ReorderCategoryProductsRequestValidator : Validator<ReorderCategoryProductsRequest> {
+internal sealed class ReorderCategoryProductsRequestValidator : Validator<ReorderCategoryProductsRequest>
+{
 	public ReorderCategoryProductsRequestValidator() {
 		Include(new ReorderStringRequestValidator());
 	}

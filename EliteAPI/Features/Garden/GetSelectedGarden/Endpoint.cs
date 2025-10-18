@@ -12,7 +12,8 @@ using Result = Results<Ok<GardenDto>, NotFound>;
 internal sealed class GetSelectedGardenEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper)
-	: Endpoint<PlayerUuidRequest, Result> {
+	: Endpoint<PlayerUuidRequest, Result>
+{
 	public override void Configure() {
 		Get("/garden/{PlayerUuid}/selected");
 		AllowAnonymous();

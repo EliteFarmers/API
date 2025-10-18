@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Features.Account.Models;
 
 [Index(nameof(Name), Name = "idx_minecraft_accounts_name")]
-public class MinecraftAccount {
+public class MinecraftAccount
+{
 	[Key] public required string Id { get; set; }
 	public required string Name { get; set; }
 
@@ -44,18 +45,21 @@ public class MinecraftAccount {
 	public long PlayerDataLastUpdated { get; set; }
 }
 
-public class MinecraftAccountProperty {
+public class MinecraftAccountProperty
+{
 	public required string Name { get; set; }
 	public required string Value { get; set; }
 }
 
-public enum AccountFlag : ushort {
+public enum AccountFlag : ushort
+{
 	None = 0,
 	AutoFlag = 1,
 	Banned = 2
 }
 
-public class FlagReason {
+public class FlagReason
+{
 	public AccountFlag Flag { get; set; }
 	public string Reason { get; set; } = string.Empty;
 	public string Proof { get; set; } = string.Empty;

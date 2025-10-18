@@ -1,25 +1,40 @@
-﻿using System.IO.Compression;
+﻿using System.Globalization;
 using System.Text.Json;
+using EliteAPI.Features.Profiles.Mappers;
+using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Utilities;
-using McProtoNet.NBT;
-using ZLinq;
+using MinecraftRenderer;
+using MinecraftRenderer.Nbt;
 
 namespace EliteAPI.Parsers.Inventories;
 
-public static class NbtParser {
-	public static async Task<NbtTag?> DecodeNbt(string? data) {
-		if (data is null || string.IsNullOrEmpty(data)) return null;
+/// <summary>
+/// Refactored NBT parser using MinecraftRenderer's NBT library.
+/// </summary>
+public static class NbtParser
+{
+	private static MinecraftBlockRenderer? _cachedRenderer;
+
+	/// <summary>
+	/// Set the renderer instance to use for computing resource IDs.
+	/// Call this once at startup with your configured renderer.
+	/// </summary>
+	public static void SetRenderer(MinecraftBlockRenderer renderer) {
+		_cachedRenderer = renderer;
+	}
+
+	/// <summary>
+	/// Decode base64-encoded, gzipped NBT data.
+	/// </summary>
+	public static NbtDocument? DecodeNbt(string? data) {
+		if (string.IsNullOrEmpty(data)) return null;
 
 		try {
-			var decodedInventory = Convert.FromBase64String(data);
+			var decodedBytes = Convert.FromBase64String(data);
 
-			await using var compressedStream = new MemoryStream(decodedInventory);
-			await using var decompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-
-			var reader = new NbtReader(decompressedStream, true);
-
-			return reader.ReadAsTag();
+			// Use MinecraftRenderer's NbtParser which handles GZip automatically
+			return MinecraftRenderer.Nbt.NbtParser.ParseBinary(decodedBytes);
 		}
 		catch (Exception e) {
 			Console.WriteLine(e);
@@ -27,171 +42,311 @@ public static class NbtParser {
 		}
 	}
 
-	public static async Task<List<ItemDto?>?> NbtToItems(string? data) {
-		if (data is null || data.IsNullOrEmpty()) return null;
+	public static HypixelInventory? ParseInventory(string inventoryName, string? data) {
+		var list = InventoryDataToNbtList(data);
+		if (list is null || list.Count == 0) return null;
 
-		var nbt = await DecodeNbt(data);
-		if (nbt is null) return null;
+		var items = new List<ItemDto>(list.Count);
+		var empty = new List<short>();
 
-		if (nbt.TagType != NbtTagType.Compound) return null;
+		short i = -1;
+		foreach (var item in list) {
+			i++;
+			if (item is not NbtCompound compound) {
+				empty.Add(i);
+				continue;
+			}
 
-		var root = nbt as NbtCompound;
-		var inv = root?.FirstOrDefault();
+			var parsedItem = ToItem(compound);
+			if (parsedItem?.SkyblockId is null) {
+				empty.Add(i);
+				continue;
+			}
 
-		if (inv is not NbtList list) return null;
+			parsedItem.Slot = i.ToString();
+			items.Add(parsedItem);
+		}
 
-		return list.AsValueEnumerable().Select(i => i.ToItem()).Where(i => i?.SkyblockId is not null).ToList();
+		return new HypixelInventory {
+			Name = inventoryName,
+			Hash = HashUtility.ComputeSha256Hash(data ?? string.Empty),
+			Items = items.Select(item => item.ToHypixelItem()).ToList(),
+			EmptySlots = empty.Count == 0 ? null : empty.ToArray()
+		};
 	}
 
-	public static async Task<ItemDto?> NbtToItem(string? itemData) {
-		if (itemData is null || itemData.IsNullOrEmpty()) return null;
+	/// <summary>
+	/// Parse NBT data into a list of ItemDto objects with texture IDs.
+	/// </summary>
+	public static List<ItemDto?> NbtToItems(string? data) {
+		var list = InventoryDataToNbtList(data);
+		if (list is null || list.Count == 0) return [];
 
-		var nbt = await DecodeNbt(itemData);
-		if (nbt is null) return null;
+		var items = new List<ItemDto?>(list.Count);
 
-		if (nbt.TagType != NbtTagType.Compound) return null;
+		var i = -1;
+		foreach (var item in list) {
+			i++;
+			if (item is not NbtCompound compound) continue;
+			var parsedItem = ToItem(compound);
+			if (parsedItem?.SkyblockId is null) continue;
+			parsedItem.Slot = i.ToString();
+			items.Add(parsedItem);
+		}
 
-		var root = nbt as NbtCompound;
-		var item = root?.FirstOrDefault();
-
-		if (item is not NbtList list) return null;
-
-		return list.FirstOrDefault()?.ToItem();
+		return items;
 	}
 
-	public static ItemDto? ToItem(this NbtTag nbtTag) {
-		if (nbtTag is not NbtCompound tag) return null;
+	private static NbtList? InventoryDataToNbtList(string? data) {
+		if (string.IsNullOrEmpty(data)) return null;
 
-		var extraAttributes = tag["tag"]?["ExtraAttributes"];
-		var skyblockId = extraAttributes?["id"]?.StringValue;
-		var petInfo = extraAttributes?["petInfo"]?.StringValue;
+		var nbt = DecodeNbt(data);
+		if (nbt?.RootCompound is null) return null;
 
-		var unlockedGems = ((NbtList?)extraAttributes?["gems"]?["unlocked_slots"])?
-			.AsValueEnumerable()
-			.Select(e => e.StringValue)
+		// Try to find the inventory list in the root compound
+		// Common keys: "i", "items", "inventory", "data"
+		NbtList? list = null;
+		foreach (var key in new[] { "i", "items", "inventory", "data" }) {
+			if (nbt.RootCompound.TryGetValue(key, out var tag) && tag is NbtList foundList) {
+				list = foundList;
+				break;
+			}
+		}
+
+		return list ?? null;
+	}
+
+	/// <summary>
+	/// Parse NBT data into a single ItemDto object with texture ID.
+	/// </summary>
+	public static ItemDto? NbtToItem(string? itemData) {
+		if (string.IsNullOrEmpty(itemData)) return null;
+
+		var nbt = DecodeNbt(itemData);
+		if (nbt?.RootCompound is null) return null;
+
+		// Try to find first item in the list
+		NbtList? list = null;
+		foreach (var key in new[] { "i", "items", "inventory", "data" }) {
+			if (!nbt.RootCompound.TryGetValue(key, out var tag) || tag is not NbtList foundList) continue;
+			list = foundList;
+			break;
+		}
+
+		if (list is null || list.Count == 0) return null;
+		return list[0] is not NbtCompound compound ? null : ToItem(compound);
+	}
+
+	/// <summary>
+	/// Convert an NBT compound tag to an ItemDto, including resource ID generation.
+	/// </summary>
+	public static ItemDto? ToItem(NbtCompound tag) {
+		// Extract basic item info
+		var itemId = tag.GetShort("id") ?? 0;
+		var damage = tag.GetShort("Damage") ?? 0;
+		var count = tag.GetByte("Count") ?? 0;
+
+		// Get tag compound
+		var tagCompound = tag.GetCompound("tag");
+		if (tagCompound is null) return null;
+
+		// Get ExtraAttributes (Hypixel data)
+		var extraAttributes = tagCompound.GetCompound("ExtraAttributes");
+		var skyblockId = extraAttributes?.GetString("id");
+		var petInfo = extraAttributes?.GetString("petInfo");
+
+		// Extract gems
+		var gemsCompound = extraAttributes?.GetCompound("gems");
+		var unlockedGems = gemsCompound?.GetList("unlocked_slots")?
+			.Where(g => g is NbtString)
+			.Select(g => ((NbtString)g).Value)
 			.ToList();
 
-		var gems = ((NbtCompound?)extraAttributes?["gems"])?
-			.AsValueEnumerable()
-			.Where(e => !e.Name.IsNullOrEmpty() && (e is { TagType: NbtTagType.String, HasValue: true } ||
-			                                        (e.TagType == NbtTagType.Compound &&
-			                                         e["quality"]?.HasValue is true)))
-			.Select(e => e.TagType != NbtTagType.Compound
-				? new KeyValuePair<string, string?>(e.Name!, e.GetValue()?.ToString() ?? string.Empty)
-				: new KeyValuePair<string, string?>(e.Name!, e["quality"]?.GetValue()?.ToString() ?? string.Empty))
-			.ToDictionary(x => x.Key, x => x.Value);
+		var gems = new Dictionary<string, string?>();
+		if (gemsCompound != null) {
+			foreach (var kvp in gemsCompound) {
+				if (string.IsNullOrEmpty(kvp.Key) || kvp.Key == "unlocked_slots") continue;
 
-		if (unlockedGems is not null && unlockedGems.Count > 0 && gems is not null)
+				if (kvp.Value is NbtString gemString) {
+					gems[kvp.Key] = gemString.Value;
+				}
+				else if (kvp.Value is NbtCompound gemCompound) {
+					var quality = gemCompound.GetString("quality");
+					if (!string.IsNullOrEmpty(quality)) {
+						gems[kvp.Key] = quality;
+					}
+				}
+			}
+		}
+
+		// Add unlocked but empty gem slots
+		if (unlockedGems != null) {
 			foreach (var gem in unlockedGems) {
 				gems.TryAdd(gem, null);
 			}
+		}
 
+		// Extract display info
+		var display = tagCompound.GetCompound("display");
+		var displayName = display?.GetString("Name");
+		var loreList = display?.GetList("Lore")?
+			.Where(l => l is NbtString)
+			.Select(l => ((NbtString)l).Value)
+			.ToList();
+
+		// Extract enchantments
+		var enchantments = extraAttributes?.GetCompound("enchantments")?
+			.Where(kvp => !string.IsNullOrEmpty(kvp.Key))
+			.Select(kvp => new KeyValuePair<string, int>(
+				kvp.Key,
+				kvp.Value switch {
+					NbtInt intTag => intTag.Value,
+					NbtShort shortTag => shortTag.Value,
+					NbtByte byteTag => byteTag.Value,
+					_ => 0
+				}))
+			.Where(kvp => kvp.Value > 0)
+			.ToDictionary(x => x.Key, x => x.Value);
+
+		// Extract general attributes (from ExtraAttributes root)
+		var attributes = extraAttributes?
+			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) &&
+			              kvp.Key != "id" &&
+			              kvp.Key != "uuid" &&
+			              // kvp.Key != "petInfo" &&
+			              kvp.Key != "enchantments" &&
+			              kvp.Key != "gems" &&
+			              kvp.Key != "attributes" &&
+			              IsSimpleType(kvp.Value))
+			.Select(kvp => new KeyValuePair<string, string>(
+				kvp.Key,
+				GetValueAsString(kvp.Value) ?? string.Empty))
+			.ToDictionary(x => x.Key, x => x.Value);
+
+		// Extract item attributes (Kuudra armor, etc.)
+		var itemAttributes = extraAttributes?.GetCompound("attributes")?
+			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) && IsSimpleType(kvp.Value))
+			.Select(kvp => new KeyValuePair<string, string>(
+				kvp.Key,
+				GetValueAsString(kvp.Value) ?? string.Empty))
+			.ToDictionary(x => x.Key, x => x.Value);
+
+		// Create ItemDto
 		var item = new ItemDto {
-			Id = tag["id"]?.IntValue ?? 0,
-			Count = tag["Count"]?.ByteValue ?? 0,
+			Id = itemId,
+			Count = count,
+			Damage = damage,
 			SkyblockId = skyblockId,
-			Uuid = extraAttributes?["uuid"]?.StringValue,
-			Name = tag["tag"]?["display"]?["Name"]?.StringValue,
-			Lore = ((NbtList?)tag["tag"]?["display"]?["Lore"])?
-				.AsValueEnumerable()
-				.Select(l => l.StringValue)
-				.ToList(),
-			Enchantments = ((NbtCompound?)extraAttributes?["enchantments"])?
-				.AsValueEnumerable()
-				.Where(e => !e.Name.IsNullOrEmpty() && e.HasValue)
-				.Select(e => new KeyValuePair<string, int>(e.Name!, e.IntValue))
-				.ToDictionary(x => x.Key, x => x.Value),
-			Attributes = ((NbtCompound?)extraAttributes)?
-				.AsValueEnumerable()
-				.Where(e => e.IsSimpleType() && e.Name != "id" && e.Name != "uuid" && e.Name != "petInfo")
-				.Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
-				.ToDictionary(x => x.Key, x => x.Value),
-			ItemAttributes = ((NbtCompound?)extraAttributes?["attributes"])?
-				.AsValueEnumerable()
-				.Where(e => e.IsSimpleType())
-				.Select(e => new KeyValuePair<string, string>(e.Name!, e.GetValue()?.ToString() ?? string.Empty))
-				.ToDictionary(x => x.Key, x => x.Value),
-			Gems = gems
+			Uuid = extraAttributes?.GetString("uuid"),
+			Name = displayName,
+			Lore = loreList,
+			Enchantments = enchantments,
+			Attributes = attributes,
+			ItemAttributes = itemAttributes,
+			Gems = gems.Count > 0 ? gems : null,
 		};
 
-		if (petInfo is not null)
+		// Parse pet info if present
+		if (!string.IsNullOrEmpty(petInfo)) {
 			try {
 				var info = JsonSerializer.Deserialize<ItemPetInfoDto>(petInfo);
-				if (info is null) return item;
-
-				info.Level = info.GetLevel();
-				item.PetInfo = info;
+				if (info is not null) {
+					info.Level = info.GetLevel();
+					item.PetInfo = info;
+				}
 			}
 			catch {
-				// ignored
+				// Ignored
 			}
+		}
 
 		return item;
 	}
 
-	public static Dictionary<string, object?> ToDictionary(this NbtTag tag) {
-		var dict = new Dictionary<string, object?>();
+	/// <summary>
+	/// Convert MinecraftRenderer NBT tag to a dictionary representation.
+	/// </summary>
+	public static Dictionary<string, object?> ToDictionary(NbtTag tag) {
+		var dict = new Dictionary<string, object?> {
+			{ "type", tag.Type }
+		};
 
-		if (!tag.Name.IsNullOrEmpty()) dict.Add("name", tag.Name);
-
-		dict.Add("type", tag.TagType);
-
-		switch (tag.TagType) {
-			case NbtTagType.List:
-				if (tag is not NbtList list) return dict;
-
+		switch (tag) {
+			case NbtList list:
 				if (list.Count == 0) {
 					dict.Add("value", new List<object>());
-					break;
+				}
+				else {
+					// Check if all items are the same type
+					var firstType = list[0].Type;
+					var allSameType = list.All(t => t.Type == firstType);
+
+					dict.Add("value",
+						allSameType && firstType != NbtTagType.Compound
+							? list.Select(GetValueAsObject).ToList()
+							: list.Select(ToDictionary).ToList());
 				}
 
-				// Check if every item in the list is the same type
-				var type = list[0].TagType;
-				dict.Add("value",
-					type == NbtTagType.Compound || list.Any(t => t.TagType != type)
-						? list.Select(t => t.ToDictionary())
-						: list.Select(t => t.GetValue()));
-
 				break;
-			case NbtTagType.Compound:
-				if (tag is not NbtCompound compound) return dict;
-				dict.Add("value", compound.Select(c => c.ToDictionary()));
 
+			case NbtCompound compound:
+				dict.Add("value", compound.Select(kvp => {
+					var itemDict = ToDictionary(kvp.Value);
+					itemDict["name"] = kvp.Key;
+					return itemDict;
+				}).ToList());
 				break;
+
 			default:
-				dict.Add("value", tag.GetValue());
+				dict.Add("value", GetValueAsObject(tag));
 				break;
 		}
 
 		return dict;
 	}
 
-	public static object? GetValue(this NbtTag tag) {
-		try {
-			return tag.TagType switch {
-				NbtTagType.Boolean => tag.BoolValue,
-				NbtTagType.Short => tag.ShortValue,
-				NbtTagType.Int => tag.IntValue,
-				NbtTagType.Long => tag.LongValue,
-				NbtTagType.Float => tag.FloatValue,
-				NbtTagType.Double => tag.DoubleValue,
-				NbtTagType.ByteArray => tag.ByteArrayValue,
-				NbtTagType.String => tag.StringValue,
-				NbtTagType.List => ((NbtList)tag).Select(t => t.GetValue()),
-				NbtTagType.Compound => ((NbtCompound)tag).Select(t => t.ToDictionary()),
-				NbtTagType.IntArray => tag.IntArrayValue,
-				NbtTagType.LongArray => tag.LongArrayValue,
-				_ => null
-			};
-		}
-		catch (Exception) {
-			return null;
-		}
+	/// <summary>
+	/// Get the value of an NBT tag as an object.
+	/// </summary>
+	private static object? GetValueAsObject(NbtTag tag) {
+		return tag switch {
+			NbtByte b => b.Value,
+			NbtShort s => s.Value,
+			NbtInt i => i.Value,
+			NbtLong l => l.Value,
+			NbtFloat f => f.Value,
+			NbtDouble d => d.Value,
+			NbtString str => str.Value,
+			NbtByteArray ba => ba.Values,
+			NbtIntArray ia => ia.Values,
+			NbtLongArray la => la.Values,
+			NbtList list => list.Select(GetValueAsObject).ToList(),
+			NbtCompound compound => compound.Select(kvp => kvp)
+				.ToDictionary(kvp => kvp.Key, kvp => GetValueAsObject(kvp.Value)),
+			_ => null
+		};
 	}
 
-	public static bool IsSimpleType(this NbtTag tag) {
-		return !tag.Name.IsNullOrEmpty() && tag.HasValue
-		                                 && tag.TagType != NbtTagType.Compound
-		                                 && tag.TagType != NbtTagType.List;
+	/// <summary>
+	/// Get the value of an NBT tag as a string.
+	/// </summary>
+	private static string? GetValueAsString(NbtTag tag) {
+		return tag switch {
+			NbtByte b => b.Value.ToString(),
+			NbtShort s => s.Value.ToString(),
+			NbtInt i => i.Value.ToString(),
+			NbtLong l => l.Value.ToString(),
+			NbtFloat f => f.Value.ToString(CultureInfo.InvariantCulture),
+			NbtDouble d => d.Value.ToString(CultureInfo.InvariantCulture),
+			NbtString str => str.Value,
+			_ => null
+		};
+	}
+
+	/// <summary>
+	/// Check if an NBT tag is a simple value type (not compound or list).
+	/// </summary>
+	private static bool IsSimpleType(NbtTag tag) {
+		return tag.Type != NbtTagType.Compound && tag.Type != NbtTagType.List;
 	}
 }

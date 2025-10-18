@@ -7,13 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Items.Endpoints;
 
-internal sealed class GetSpecifiedSkyblockItemsRequest {
+internal sealed class GetSpecifiedSkyblockItemsRequest
+{
 	public List<string> Items { get; set; } = [];
 }
 
 internal sealed class GetSpecifiedSkyblockItemsEndpoint(
 	DataContext context
-) : Endpoint<GetSpecifiedSkyblockItemsRequest, GetSpecifiedSkyblockItemsResponse> {
+) : Endpoint<GetSpecifiedSkyblockItemsRequest, GetSpecifiedSkyblockItemsResponse>
+{
 	public override void Configure() {
 		Post("/resources/items");
 		AllowAnonymous();
@@ -59,11 +61,13 @@ internal sealed class GetSpecifiedSkyblockItemsEndpoint(
 	}
 }
 
-internal sealed class GetSpecifiedSkyblockItemsResponse {
+internal sealed class GetSpecifiedSkyblockItemsResponse
+{
 	public Dictionary<string, SkyblockItemResponse> Items { get; set; } = new();
 }
 
-internal sealed class GetSpecifiedSkyblockItemsRequestValidator : Validator<GetSpecifiedSkyblockItemsRequest> {
+internal sealed class GetSpecifiedSkyblockItemsRequestValidator : Validator<GetSpecifiedSkyblockItemsRequest>
+{
 	public GetSpecifiedSkyblockItemsRequestValidator() {
 		RuleFor(x => x.Items)
 			.Must(list => list.Count is > 0 and <= 100)

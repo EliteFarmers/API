@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Leaderboards.Models;
 
-public class ProfileMemberMetadata {
+public class ProfileMemberMetadata
+{
 	public Guid ProfileMemberId { get; set; }
 	public ProfileMember ProfileMember { get; set; } = null!;
 
@@ -29,7 +30,8 @@ public class ProfileMemberMetadata {
 	public ProfileMemberMetadataCosmetics? Cosmetics { get; set; }
 }
 
-public class ProfileMemberMetadataConfiguration : IEntityTypeConfiguration<ProfileMemberMetadata> {
+public class ProfileMemberMetadataConfiguration : IEntityTypeConfiguration<ProfileMemberMetadata>
+{
 	public void Configure(EntityTypeBuilder<ProfileMemberMetadata> builder) {
 		builder.HasKey(m => m.ProfileMemberId);
 
@@ -45,7 +47,8 @@ public class ProfileMemberMetadataConfiguration : IEntityTypeConfiguration<Profi
 	}
 }
 
-public class ProfileMemberMetadataCosmetics {
+public class ProfileMemberMetadataCosmetics
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	[MaxLength(16)]
 	public string? Prefix { get; set; }
@@ -58,7 +61,8 @@ public class ProfileMemberMetadataCosmetics {
 	public MemberLeaderboardCosmeticsDto? Leaderboard { get; set; }
 }
 
-public class MemberCosmeticsDto {
+public class MemberCosmeticsDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	[MaxLength(16)]
 	public string? Prefix { get; set; }
@@ -71,7 +75,8 @@ public class MemberCosmeticsDto {
 	public MemberLeaderboardCosmeticsDto? Leaderboard { get; set; }
 }
 
-public class MemberLeaderboardCosmeticsDto {
+public class MemberLeaderboardCosmeticsDto
+{
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? StyleId { get; set; }
 

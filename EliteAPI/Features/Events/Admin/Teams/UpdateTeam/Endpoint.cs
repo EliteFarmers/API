@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.Admin.UpdateTeam;
 
-internal sealed class AdminUpdateTeamRequest : DiscordIdRequest {
+internal sealed class AdminUpdateTeamRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 	[FastEndpoints.FromBody] public required UpdateEventTeamDto Team { get; set; }
@@ -18,7 +19,8 @@ internal sealed class AdminUpdateTeamRequest : DiscordIdRequest {
 internal sealed class UpdateTeamAdminEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<AdminUpdateTeamRequest> {
+	: Endpoint<AdminUpdateTeamRequest>
+{
 	public override void Configure() {
 		Patch("/guild/{DiscordId}/events/{EventId}/teams/{TeamId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -45,7 +47,8 @@ internal sealed class UpdateTeamAdminEndpoint(
 	}
 }
 
-internal sealed class UpdateTeamRequestValidator : Validator<AdminUpdateTeamRequest> {
+internal sealed class UpdateTeamRequestValidator : Validator<AdminUpdateTeamRequest>
+{
 	public UpdateTeamRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Badges.AddBadgeToUser;
 
 internal sealed class AddBadgeToUserBadgeEndpoint(
 	IBadgeService badgeService
-) : Endpoint<PlayerBadgeRequest> {
+) : Endpoint<PlayerBadgeRequest>
+{
 	public override void Configure() {
 		Post("/badge/user/{Player}/{BadgeId}");
 		Policies(ApiUserPolicies.Moderator);

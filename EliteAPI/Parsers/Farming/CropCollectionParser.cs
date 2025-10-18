@@ -6,7 +6,8 @@ using EliteAPI.Utilities;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class CropCollectionParser {
+public static class CropCollectionParser
+{
 	public static Dictionary<Crop, long> ExtractCropCollections(this ProfileMember member, bool includeSeeds = false) {
 		return member.Collections.ExtractCropCollections(includeSeeds);
 	}

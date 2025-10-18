@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class BlazeRodLeaderboard : IMemberLeaderboardDefinition {
+public class BlazeRodLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Blaze Rod Collection",
 		ShortTitle = "Blaze Rod",
@@ -25,7 +26,8 @@ public class BlazeRodLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class BoneLeaderboard : IMemberLeaderboardDefinition {
+public class BoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Bone Collection",
 		ShortTitle = "Bone",
@@ -46,7 +48,8 @@ public class BoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class ChiliPepperLeaderboard : IMemberLeaderboardDefinition {
+public class ChiliPepperLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Chili Pepper Collection",
 		ShortTitle = "Chili Pepper",
@@ -67,7 +70,8 @@ public class ChiliPepperLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class EnderPearlLeaderboard : IMemberLeaderboardDefinition {
+public class EnderPearlLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Ender Pearl Collection",
 		ShortTitle = "Ender Pearl",
@@ -88,7 +92,8 @@ public class EnderPearlLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GhastTearLeaderboard : IMemberLeaderboardDefinition {
+public class GhastTearLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Ghast Tear Collection",
 		ShortTitle = "Ghast Tear",
@@ -109,7 +114,8 @@ public class GhastTearLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GunpowderLeaderboard : IMemberLeaderboardDefinition {
+public class GunpowderLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Gunpowder Collection",
 		ShortTitle = "Gunpowder",
@@ -130,7 +136,8 @@ public class GunpowderLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MagmaCreamLeaderboard : IMemberLeaderboardDefinition {
+public class MagmaCreamLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Magma Cream Collection",
 		ShortTitle = "Magma Cream",
@@ -151,7 +158,8 @@ public class MagmaCreamLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RottenFleshLeaderboard : IMemberLeaderboardDefinition {
+public class RottenFleshLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Rotten Flesh Collection",
 		ShortTitle = "Rotten Flesh",
@@ -172,7 +180,8 @@ public class RottenFleshLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SlimeballLeaderboard : IMemberLeaderboardDefinition {
+public class SlimeballLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Slimeball Collection",
 		ShortTitle = "Slimeball",
@@ -193,7 +202,8 @@ public class SlimeballLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SpiderEyeLeaderboard : IMemberLeaderboardDefinition {
+public class SpiderEyeLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Spider Eye Collection",
 		ShortTitle = "Spider Eye",
@@ -214,7 +224,8 @@ public class SpiderEyeLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class StringLeaderboard : IMemberLeaderboardDefinition {
+public class StringLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "String Collection",
 		ShortTitle = "String",

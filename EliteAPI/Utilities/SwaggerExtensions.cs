@@ -5,7 +5,8 @@ using Scalar.AspNetCore;
 
 namespace EliteAPI.Utilities;
 
-public static class SwaggerExtensions {
+public static class SwaggerExtensions
+{
 	public static IServiceCollection AddEliteSwaggerDocumentation(this IServiceCollection services) {
 		services
 			.SwaggerDocument(o => {

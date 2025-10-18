@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Resources.Items.Endpoints;
 
 internal sealed class GetSkyblockItemsEndpoint(
 	DataContext context
-) : EndpointWithoutRequest<GetSkyblockItemsResponse> {
+) : EndpointWithoutRequest<GetSkyblockItemsResponse>
+{
 	public override void Configure() {
 		Get("/resources/items");
 		AllowAnonymous();
@@ -31,6 +32,7 @@ internal sealed class GetSkyblockItemsEndpoint(
 	}
 }
 
-internal sealed class GetSkyblockItemsResponse {
+internal sealed class GetSkyblockItemsResponse
+{
 	public Dictionary<string, ItemResponse?> Items { get; set; } = new();
 }

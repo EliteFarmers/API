@@ -3,7 +3,8 @@ using EliteAPI.Utilities;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class CropParser {
+public static class CropParser
+{
 	public static string SimpleName(this Crop crop) {
 		return crop switch {
 			Crop.Cactus => "cactus",
@@ -51,7 +52,8 @@ public static class CropParser {
 	}
 }
 
-public static class CropId {
+public static class CropId
+{
 	public const string Cactus = "CACTUS";
 	public const string Carrot = "CARROT_ITEM";
 	public const string CocoaBeans = "INK_SACK:3";

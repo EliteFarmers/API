@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class EventDetailsDto {
+public class EventDetailsDto
+{
 	/// <summary>
 	/// Event id as a string
 	/// </summary>
@@ -110,7 +111,8 @@ public class EventDetailsDto {
 	public object? Data { get; set; }
 }
 
-public class EventTeamDto {
+public class EventTeamDto
+{
 	public int Id { get; set; }
 	public string? EventId { get; set; }
 	public string? Name { get; set; }
@@ -120,7 +122,8 @@ public class EventTeamDto {
 	public string? OwnerUuid { get; set; }
 }
 
-public class EventTeamWithMembersDto : EventTeamDto {
+public class EventTeamWithMembersDto : EventTeamDto
+{
 	public List<EventMemberDto> Members { get; set; } = [];
 
 	/// <summary>
@@ -130,13 +133,15 @@ public class EventTeamWithMembersDto : EventTeamDto {
 	public string? JoinCode { get; set; }
 }
 
-public class EventDefaultsDto {
+public class EventDefaultsDto
+{
 	public Dictionary<Crop, double> CropWeights { get; set; } = new();
 	public Dictionary<ContestMedal, int> MedalValues { get; set; } = new();
 	public Dictionary<Pest, int> PestWeights { get; set; } = new();
 }
 
-public class CreateEventTeamDto {
+public class CreateEventTeamDto
+{
 	/// <summary>
 	/// An array of strings for the team name, example: [ "Bountiful", "Farmers" ]
 	/// </summary>
@@ -147,7 +152,8 @@ public class CreateEventTeamDto {
 	[MaxLength(7)] public string? Color { get; set; }
 }
 
-public class UpdateEventTeamDto {
+public class UpdateEventTeamDto
+{
 	/// <summary>
 	/// An array of strings for the team name, example: [ "Bountiful", "Farmers" ]
 	/// </summary>
@@ -163,7 +169,8 @@ public class UpdateEventTeamDto {
 	public bool? ChangeCode { get; set; } = false;
 }
 
-public class EventMemberDto {
+public class EventMemberDto
+{
 	public string? PlayerUuid { get; set; }
 	public string? PlayerName { get; set; }
 	public string? ProfileId { get; set; }
@@ -189,7 +196,8 @@ public class EventMemberDto {
 	public MemberCosmeticsDto? Meta { get; set; }
 }
 
-public class ProfileEventMemberDto {
+public class ProfileEventMemberDto
+{
 	public required string EventId { get; set; }
 	public required string EventName { get; set; }
 
@@ -206,7 +214,8 @@ public class ProfileEventMemberDto {
 	public string? Score { get; set; }
 }
 
-public class EventMemberDetailsDto {
+public class EventMemberDetailsDto
+{
 	public string? PlayerUuid { get; set; }
 	public string? ProfileId { get; set; }
 	public string? PlayerName { get; set; }
@@ -232,7 +241,8 @@ public class EventMemberDetailsDto {
 	public MemberCosmeticsDto? Meta { get; set; }
 }
 
-public class AdminEventMemberDto : EventMemberDetailsDto {
+public class AdminEventMemberDto : EventMemberDetailsDto
+{
 	public int Id { get; set; }
 	public string? AccountId { get; set; }
 
@@ -241,7 +251,8 @@ public class AdminEventMemberDto : EventMemberDetailsDto {
 	public string? Notes { get; set; }
 }
 
-public class EditEventDto {
+public class EditEventDto
+{
 	public string? Name { get; set; }
 	public string? Type { get; set; }
 
@@ -267,13 +278,15 @@ public class EditEventDto {
 	public CollectionEventData? CollectionData { get; set; }
 }
 
-public class EditEventBannerDto {
+public class EditEventBannerDto
+{
 	[FromForm(Name = "Image")]
 	[AllowedFileExtensions]
 	public IFormFile? Image { get; set; }
 }
 
-public class CreateEventDto {
+public class CreateEventDto
+{
 	/// <summary>
 	/// The name of the event
 	/// </summary>
@@ -355,7 +368,8 @@ public class CreateEventDto {
 	public int MaxTeamMembers { get; set; } = 0;
 }
 
-public class CreateEventMemberDto {
+public class CreateEventMemberDto
+{
 	public ulong EventId { get; set; }
 	public EventType Type { get; set; }
 

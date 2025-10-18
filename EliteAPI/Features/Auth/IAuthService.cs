@@ -1,9 +1,9 @@
 ﻿using EliteAPI.Features.Auth.Models;
-using EliteAPI.Models.DTOs.Auth;
 
 namespace EliteAPI.Features.Auth;
 
-public interface IAuthService {
+public interface IAuthService
+{
 	Task<AuthResponseDto?> LoginAsync(DiscordLoginDto dto);
 	Task<(string token, DateTimeOffset expiry)> GenerateJwtToken(ApiUser user);
 	Task<AuthResponseDto?> VerifyRefreshToken(AuthRefreshDto dto);

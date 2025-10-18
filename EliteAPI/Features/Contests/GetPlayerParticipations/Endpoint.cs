@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Contests.GetPlayerParticipations;
 internal sealed class GetPlayerParticipationsEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context)
-	: Endpoint<PlayerUuidRequest, List<ContestParticipationDto>> {
+	: Endpoint<PlayerUuidRequest, List<ContestParticipationDto>>
+{
 	public override void Configure() {
 		Get("/contests/{PlayerUuid}");
 		AllowAnonymous();

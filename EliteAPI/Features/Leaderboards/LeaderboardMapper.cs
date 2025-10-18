@@ -8,7 +8,8 @@ using LeaderboardEntry = EliteAPI.Features.Leaderboards.Services.LeaderboardEntr
 namespace EliteAPI.Features.Leaderboards;
 
 [Mapper]
-public static partial class LeaderboardMapper {
+public static partial class LeaderboardMapper
+{
 	[MapperIgnoreSource(nameof(LeaderboardEntry.MemberId))]
 	[MapperIgnoreTarget(nameof(LeaderboardEntryDto.MembersSerializationHelper))]
 	[MapperIgnoreTarget(nameof(LeaderboardEntryDto.Removed))]

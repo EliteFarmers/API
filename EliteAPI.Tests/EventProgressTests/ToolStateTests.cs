@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Tests.EventProgressTests;
 
-public class ToolStateTests {
+public class ToolStateTests
+{
 	private readonly List<ItemDto> _tools = [
 		new() {
 			SkyblockId = "THEORETICAL_HOE_WARTS_3",

@@ -5,14 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Events.User.UpdateTeamCode;
 
-internal sealed class UpdateTeamJoinCodeRequest {
+internal sealed class UpdateTeamJoinCodeRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 }
 
 internal sealed class UpdateTeamJoinCodeEndpoint(
 	IEventTeamService teamService)
-	: Endpoint<UpdateTeamJoinCodeRequest> {
+	: Endpoint<UpdateTeamJoinCodeRequest>
+{
 	public override void Configure() {
 		Post("/event/{EventId}/team/{TeamId}/code");
 		Version(0);

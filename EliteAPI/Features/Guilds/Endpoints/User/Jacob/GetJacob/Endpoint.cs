@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Guilds.User.Jacob.GetJacob;
 internal sealed class GetGuildJacobEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<DiscordIdRequest, GuildJacobLeaderboardFeature> {
+) : Endpoint<DiscordIdRequest, GuildJacobLeaderboardFeature>
+{
 	public override void Configure() {
 		Get("/user/guild/{DiscordId}/jacob");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

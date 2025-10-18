@@ -4,11 +4,13 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Account.UpdateBadges;
 
-public class UpdateBadgesRequest : PlayerUuidRequest {
+public class UpdateBadgesRequest : PlayerUuidRequest
+{
 	[FromBody] public List<EditUserBadgeDto> Badges { get; set; } = [];
 }
 
-internal sealed class UpdateBadgesRequestValidator : Validator<UpdateBadgesRequest> {
+internal sealed class UpdateBadgesRequestValidator : Validator<UpdateBadgesRequest>
+{
 	public UpdateBadgesRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 	}

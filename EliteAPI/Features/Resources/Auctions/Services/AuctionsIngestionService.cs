@@ -21,7 +21,8 @@ public class AuctionsIngestionService(
 	ILogger<AuctionsIngestionService> logger,
 	IConnectionMultiplexer redis,
 	VariantKeyGenerator variantKeyGenerator,
-	IOptions<AuctionHouseSettings> auctionHouseSettings) {
+	IOptions<AuctionHouseSettings> auctionHouseSettings)
+{
 	private readonly AuctionHouseSettings _config = auctionHouseSettings.Value;
 	private readonly Dictionary<int, long> _pagesLastUpdated = new();
 
@@ -38,7 +39,7 @@ public class AuctionsIngestionService(
 				break;
 			}
 
-			var response = await hypixelApi.FetchAuctionHouseAsync(page);
+			var response = await hypixelApi.FetchAuctionHouseAsync(page, cancellationToken);
 			if (response.Content == null || !response.IsSuccessful) {
 				logger.LogError(response.Error, "Failed to fetch auctions for page {Page} or API call was unsuccessful",
 					page);
@@ -58,9 +59,9 @@ public class AuctionsIngestionService(
 
 			totalPages = Math.Min(apiResponse.TotalPages, maxPages);
 
-			var auctionItems = await apiResponse.Auctions.ToAsyncEnumerable()
-				.SelectAwait(async a => new { a.Uuid, Item = await NbtParser.NbtToItem(a.ItemBytes) })
-				.ToDictionaryAsync(a => a.Uuid, a => a.Item, cancellationToken);
+			var auctionItems = apiResponse.Auctions
+				.Select(a => new { a.Uuid, Item = NbtParser.NbtToItem(a.ItemBytes) })
+				.ToDictionary(a => a.Uuid, a => a.Item);
 
 			foreach (var auction in apiResponse.Auctions) {
 				if (!auction.Bin || !allSeenAuctionUuidsThisRun.Add(auction.Uuid) ||

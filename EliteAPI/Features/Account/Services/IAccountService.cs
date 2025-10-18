@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Account.Services;
 
-public interface IAccountService {
+public interface IAccountService
+{
 	/// <summary>
 	/// Gets an account by the linked Discord account Id
 	/// </summary>

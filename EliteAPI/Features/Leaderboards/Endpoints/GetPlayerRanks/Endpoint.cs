@@ -6,7 +6,8 @@ using FastEndpoints;
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerRanks;
 
 [Obsolete]
-internal sealed class GetPlayerRanksEndpoint() : Endpoint<PlayerProfileUuidRequest, LeaderboardPositionsDto> {
+internal sealed class GetPlayerRanksEndpoint() : Endpoint<PlayerProfileUuidRequest, LeaderboardPositionsDto>
+{
 	public override void Configure() {
 		Get("/leaderboard/ranks/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();

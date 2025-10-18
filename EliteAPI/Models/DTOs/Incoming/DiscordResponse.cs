@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Models.DTOs.Incoming;
 
-public class DiscordUserResponse {
+public class DiscordUserResponse
+{
 	public ulong Id { get; set; }
 	public required string Username { get; set; }
 
@@ -16,7 +17,8 @@ public class DiscordUserResponse {
 	public string? Banner { get; set; }
 }
 
-public class RefreshTokenResponse {
+public class RefreshTokenResponse
+{
 	[JsonPropertyName("access_token")] public string? AccessToken { get; set; }
 	[JsonPropertyName("expires_in")] public int ExpiresIn { get; set; }
 	[JsonPropertyName("refresh_token")] public string? RefreshToken { get; set; }
@@ -24,7 +26,8 @@ public class RefreshTokenResponse {
 	public string? Error { get; set; }
 }
 
-public class DiscordGuild {
+public class DiscordGuild
+{
 	public ulong Id { get; set; }
 	public required string Name { get; set; }
 
@@ -39,7 +42,8 @@ public class DiscordGuild {
 	public int MemberCount { get; set; }
 }
 
-public class FullDiscordGuild {
+public class FullDiscordGuild
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public string? Icon { get; set; }
@@ -75,7 +79,8 @@ public class FullDiscordGuild {
 	public int MemberCount { get; set; }
 }
 
-public class DiscordRoleData {
+public class DiscordRoleData
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public string? Permissions { get; set; }
@@ -83,11 +88,13 @@ public class DiscordRoleData {
 	public int Color { get; set; }
 }
 
-public class DiscordGuildMember {
+public class DiscordGuildMember
+{
 	public List<string> Roles { get; set; } = [];
 }
 
-public class DiscordChannel {
+public class DiscordChannel
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 
@@ -99,7 +106,8 @@ public class DiscordChannel {
 	[JsonPropertyName("parent_id")] public string? ParentId { get; set; }
 }
 
-public enum ChannelType {
+public enum ChannelType
+{
 	GuildText = 0,
 	DirectMessage = 1,
 	GuildVoice = 2,

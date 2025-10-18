@@ -4,7 +4,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 
-public static class ChocolateFactoryParser {
+public static class ChocolateFactoryParser
+{
 	public static void ParseChocolateFactory(this ProfileMember member, EasterEventDataResponse incoming,
 		ChocolateFactorySettings settings) {
 		member.ChocolateFactory ??= new ChocolateFactory();

@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Graphs.GetCropGraphs;
 internal sealed class GetCropGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>> {
+	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>>
+{
 	public override void Configure() {
 		Get("/graph/{PlayerUuid}/{ProfileUuid}/crops");
 		AllowAnonymous();

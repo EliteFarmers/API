@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Bot.GetContestPings;
 
 internal sealed class GetContestPingsEndpoint(
 	DataContext context
-) : EndpointWithoutRequest<List<ContestPingsFeatureDto>> {
+) : EndpointWithoutRequest<List<ContestPingsFeatureDto>>
+{
 	public override void Configure() {
 		Get("/bot/contestpings");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

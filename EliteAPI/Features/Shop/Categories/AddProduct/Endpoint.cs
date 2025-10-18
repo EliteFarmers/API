@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.AddProduct;
 
-internal sealed class AddProductToCategoryRequest {
+internal sealed class AddProductToCategoryRequest
+{
 	/// <summary>
 	/// Id of the category to add the product to
 	/// </summary>
@@ -22,7 +23,8 @@ internal sealed class AddProductToCategoryRequest {
 internal sealed class AddProductToCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<AddProductToCategoryRequest> {
+) : Endpoint<AddProductToCategoryRequest>
+{
 	public override void Configure() {
 		Post("/shop/category/{CategoryId}/product/{ProductId}");
 		Policies(ApiUserPolicies.Admin);

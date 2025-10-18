@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Incoming;
 
-public class IncomingAccountDto {
+public class IncomingAccountDto
+{
 	public required ulong Id { get; set; }
 	public required string Username { get; set; }
 	public string? DisplayName { get; set; }

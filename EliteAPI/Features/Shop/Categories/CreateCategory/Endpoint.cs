@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Shop.Categories.CreateCategory;
 internal sealed class CreateCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<CreateCategoryDto> {
+) : Endpoint<CreateCategoryDto>
+{
 	public override void Configure() {
 		Post("/shop/category");
 		Policies(ApiUserPolicies.Admin);

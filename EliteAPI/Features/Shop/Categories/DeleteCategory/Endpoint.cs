@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.DeleteCategory;
 
-internal sealed class DeleteCategoryRequest {
+internal sealed class DeleteCategoryRequest
+{
 	/// <summary>
 	/// Id of the category to delete
 	/// </summary>
@@ -16,7 +17,8 @@ internal sealed class DeleteCategoryRequest {
 internal sealed class DeleteCategoryEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<DeleteCategoryRequest> {
+) : Endpoint<DeleteCategoryRequest>
+{
 	public override void Configure() {
 		Delete("/shop/category/{CategoryId}");
 		Policies(ApiUserPolicies.Admin);

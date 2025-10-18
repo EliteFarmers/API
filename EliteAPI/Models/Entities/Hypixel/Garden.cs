@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Models.Entities.Hypixel;
 
 [Flags]
-public enum UnlockedPlots : uint {
+public enum UnlockedPlots : uint
+{
 	None = 0,
 
 	Beginner1 = 0b_0000_0000_0000_0000_0000_0001,
@@ -46,7 +47,8 @@ public enum UnlockedPlots : uint {
 	All = Beginner | Intermediate | Advanced | Expert
 }
 
-public class Garden {
+public class Garden
+{
 	[Key]
 	[ForeignKey("Profile")]
 	[MaxLength(36)]
@@ -72,7 +74,8 @@ public class Garden {
 }
 
 [Owned]
-public class MilestoneCrops {
+public class MilestoneCrops
+{
 	public long Wheat { get; set; }
 	public long Carrot { get; set; }
 	public long Potato { get; set; }
@@ -86,7 +89,8 @@ public class MilestoneCrops {
 }
 
 [Owned]
-public class CropUpgrades {
+public class CropUpgrades
+{
 	public short Wheat { get; set; }
 	public short Carrot { get; set; }
 	public short Potato { get; set; }
@@ -99,7 +103,8 @@ public class CropUpgrades {
 	public short NetherWart { get; set; }
 }
 
-public class VisitorData {
+public class VisitorData
+{
 	public int Visits { get; set; }
 	public int Accepted { get; set; }
 }

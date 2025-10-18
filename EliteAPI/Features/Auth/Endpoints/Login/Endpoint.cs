@@ -1,11 +1,12 @@
-using EliteAPI.Models.DTOs.Auth;
+using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.Login;
 
 internal sealed class LoginEndpoint(
 	IAuthService authService
-) : Endpoint<DiscordLoginDto, AuthResponseDto> {
+) : Endpoint<DiscordLoginDto, AuthResponseDto>
+{
 	public override void Configure() {
 		Post("/auth/login");
 		AllowAnonymous();

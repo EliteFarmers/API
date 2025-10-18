@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Guilds.User.ContestPings.DeleteContestPings;
 internal sealed class DeleteContestPingsEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<DisableContestPingsRequest> {
+) : Endpoint<DisableContestPingsRequest>
+{
 	public override void Configure() {
 		Delete("/user/guild/{DiscordId}/contestpings");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

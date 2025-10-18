@@ -4,7 +4,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Profiles;
 
-public static class JacobDataParser {
+public static class JacobDataParser
+{
 	public static void ParseJacob(this ProfileMember member, RawJacobData? incomingJacob) {
 		member.JacobData = ParseJacobData(member.JacobData, incomingJacob);
 		member.JacobData.ProfileMember = member;

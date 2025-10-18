@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Resources.Bazaar;
 
-public class BazaarProductSummary {
+public class BazaarProductSummary
+{
 	[Key] [Required] [MaxLength(100)] public required string ItemId { get; set; }
 	public SkyblockItem SkyblockItem { get; set; } = null!;
 
@@ -21,7 +22,8 @@ public class BazaarProductSummary {
 	public double AvgSellOrderPrice { get; set; }
 }
 
-public class BazaarProductSummaryConfiguration : IEntityTypeConfiguration<BazaarProductSummary> {
+public class BazaarProductSummaryConfiguration : IEntityTypeConfiguration<BazaarProductSummary>
+{
 	public void Configure(EntityTypeBuilder<BazaarProductSummary> builder) {
 		builder.HasKey(p => p.ItemId);
 		builder.HasIndex(p => p.CalculationTimestamp);

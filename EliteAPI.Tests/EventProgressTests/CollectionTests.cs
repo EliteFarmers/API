@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Tests.EventProgressTests;
 
-public class CollectionTests {
+public class CollectionTests
+{
 	public CollectionTests() {
 		// Populate the crop item ids
 		FarmingWeightConfig.Settings.CropItemIds = [

@@ -3,7 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace EliteAPI.Mappers.Converters;
 
-public class RabbitDictionaryConverter : JsonConverter<Dictionary<string, int>> {
+public class RabbitDictionaryConverter : JsonConverter<Dictionary<string, int>>
+{
 	public override Dictionary<string, int> Read(ref Utf8JsonReader reader, Type typeToConvert,
 		JsonSerializerOptions options) {
 		var dictionary = new Dictionary<string, int>();

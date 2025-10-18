@@ -3,7 +3,8 @@ using EliteAPI.Utilities;
 
 namespace EliteAPI.Features.Announcements.Models;
 
-public class Announcement {
+public class Announcement
+{
 	[Key] public Guid Id { get; set; } = Guid.NewGuid();
 
 	[MaxLength(256)] public required string Title { get; set; }
@@ -21,7 +22,8 @@ public class Announcement {
 }
 
 [JsonStringEnum]
-public enum AnnouncementType {
+public enum AnnouncementType
+{
 	Other = 0,
 	Update = 1,
 	Article = 2,
