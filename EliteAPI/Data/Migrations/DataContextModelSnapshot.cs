@@ -936,6 +936,10 @@ namespace EliteAPI.Data.Migrations
                     b.PrimitiveCollection<short[]>("EmptySlots")
                         .HasColumnType("smallint[]");
 
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("HypixelInventoryId")
                         .HasColumnType("uuid");
 

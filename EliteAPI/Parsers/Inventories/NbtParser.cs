@@ -4,6 +4,7 @@ using System.Text.Json;
 using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Utilities;
 using MinecraftRenderer;
 using MinecraftRenderer.Nbt;
 using MinecraftRenderer.Hypixel;
@@ -70,6 +71,7 @@ public static class NbtParser
 
 		return new HypixelInventory {
 			Name = inventoryName,
+			Hash = HashUtility.ComputeSha256Hash(data ?? string.Empty),
 			Items = items.Select(item => item.ToHypixelItem()).ToList(),
 			EmptySlots = empty.Count == 0 ? null : empty.ToArray()
 		};

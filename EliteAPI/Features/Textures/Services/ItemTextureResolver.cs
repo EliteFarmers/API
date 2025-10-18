@@ -1,6 +1,11 @@
+using EliteAPI.Data;
+using EliteAPI.Features.Images.Models;
+using EliteAPI.Features.Images.Services;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Parsers.Inventories;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using MinecraftRenderer.Hypixel;
 using MinecraftRenderer.Nbt;
 using SixLabors.ImageSharp;
@@ -8,10 +13,13 @@ using SkyblockRepo;
 
 namespace EliteAPI.Features.Textures.Services;
 
-[RegisterService<ItemTextureResolver>(LifeTime.Singleton)]
+[RegisterService<ItemTextureResolver>(LifeTime.Scoped)]
 public class ItemTextureResolver(
 	MinecraftRendererProvider provider,
 	ILogger<ItemTextureResolver> logger,
+	IImageService imageService,
+	DataContext context,
+	HybridCache cache, 
 	ISkyblockRepoClient repoClient)
 {
 	public async Task<byte[]> RenderItemAsync(string itemId, int size = 128) {
@@ -29,7 +37,7 @@ public class ItemTextureResolver(
 		}
 	}
 
-	public async Task<byte[]> RenderItemAsync(HypixelItem item, int size = 128) {
+	public async Task<string> RenderItemAndGetPathAsync(HypixelItem item, int size = 128) {
 		var extraAttributes =
 			item.Attributes?.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value))) ?? [];
 		var itemId = LegacyItemMappings.MapNumericIdOrDefault(item.Id, item.Damage);
@@ -71,10 +79,47 @@ public class ItemTextureResolver(
 		}
 
 		var renderer = await provider.GetRendererAsync();
-		using var image = renderer.RenderItemFromNbt(root, provider.Options with { Size = size });
+		var renderOptions = provider.Options with { Size = size };
+		var preResourceId = renderer.ComputeResourceIdFromNbt(root, renderOptions);
+		
+		var existingRenderedItem = await context.Images
+			.FirstOrDefaultAsync(i => i.Hash == preResourceId.ResourceId);
+		
+		if (existingRenderedItem is not null) {
+			item.Image = existingRenderedItem;
+			item.ImageId = existingRenderedItem.Id;
+			await context.SaveChangesAsync();
 
-		using var ms = new MemoryStream();
-		await image.SaveAsWebpAsync(ms);
-		return ms.ToArray();
+			return existingRenderedItem.ToPrimaryUrl()!;
+		}
+		
+		var result = await cache.GetOrCreateAsync(preResourceId.ResourceId, async c => {
+			using var renderResult = renderer.RenderAnimatedItemFromNbtWithResourceId(root, renderOptions);
+			var resourceId = renderResult.ResourceId.ResourceId;
+			
+			var existingCheckRendered = await context.Images
+				.FirstOrDefaultAsync(i => i.Hash == resourceId, cancellationToken: c);
+		
+			if (existingCheckRendered is not null) {
+				item.Image = existingCheckRendered;
+				item.ImageId = existingCheckRendered.Id;
+				await context.SaveChangesAsync(c);
+
+				return (existingCheckRendered.Id, resourceId);
+			}
+
+			using var image = renderResult.CloneAsAnimatedImage();
+			var savedImage = await imageService.ProcessAndUploadImageAsync(image, $"renders/items/{resourceId}", "item", token: c);
+			savedImage.Hash = resourceId;
+			await context.Images.AddAsync(savedImage, c);
+			await context.SaveChangesAsync(c);
+		
+			return (savedImage.Id, savedImage.ToPrimaryUrl()!);
+		});
+		
+		item.ImageId = result.Id;
+		await context.SaveChangesAsync();
+		
+		return result.Item2;
 	}
 }

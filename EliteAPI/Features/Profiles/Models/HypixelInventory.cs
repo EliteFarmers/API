@@ -21,6 +21,8 @@ public class HypixelInventory
 	public List<HypixelItem> Items { get; set; } = [];
 	
 	public short[]? EmptySlots { get; set; }
+	
+	public required string Hash { get; set; }
 	[Column(TypeName = "jsonb")] public Dictionary<string, string>? Metadata { get; set; }
 }
 

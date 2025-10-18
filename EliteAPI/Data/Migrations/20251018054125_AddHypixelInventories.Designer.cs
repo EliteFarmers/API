@@ -22,7 +22,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251016182050_AddHypixelInventories")]
+    [Migration("20251018054125_AddHypixelInventories")]
     partial class AddHypixelInventories
     {
         /// <inheritdoc />
@@ -938,6 +938,10 @@ namespace EliteAPI.Data.Migrations
 
                     b.PrimitiveCollection<short[]>("EmptySlots")
                         .HasColumnType("smallint[]");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("HypixelInventoryId")
                         .HasColumnType("uuid");

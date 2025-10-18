@@ -56,5 +56,7 @@ public class HypixelItemConfiguration : IEntityTypeConfiguration<HypixelItem>
 			.WithMany()
 			.HasForeignKey(item => item.ImageId)
 			.OnDelete(DeleteBehavior.SetNull);
+
+		builder.Navigation(item => item.Image).AutoInclude();
 	}
 }

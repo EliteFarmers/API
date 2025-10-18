@@ -514,8 +514,12 @@ public class ProfileProcessorService(
 		ParseInventory("quiver", incomingData.Inventories?.BagContents?.Quiver?.Data, member);
 
 		if (incomingData.Inventories?.BackpackIcons is not null) {
+			var hash = HashUtility.ComputeSha256Hash(string.Join(",",
+				incomingData.Inventories.BackpackIcons.Select(i => i.Value.Data)));
+			
 			var existing = member.Inventories.FirstOrDefault(i => i.Name == "icons_backpack");
 			if (existing is not null) {
+				if (existing.Hash == hash) return; // No changes
 				context.HypixelInventory.Remove(existing);
 			}
 
@@ -535,6 +539,7 @@ public class ProfileProcessorService(
 			if (items.Count > 0) {
 				var iconInventory = new HypixelInventory {
 					Name = "icons_backpack",
+					Hash = hash,
 					Items = items.Select(i => i.ToHypixelItem()).ToList()
 				};
 
@@ -551,15 +556,18 @@ public class ProfileProcessorService(
 
 	private void ParseInventory(string name, string? data, ProfileMember member,
 		Dictionary<string, string>? meta = null) {
-		var inventory = NbtParser.ParseInventory(name, data);
-		if (inventory is null) return;
-
+		var hash = HashUtility.ComputeSha256Hash(data ?? string.Empty);
+		
 		// Remove existing inventory if we have new data
 		var existing = member.Inventories.FirstOrDefault(i => i.Name == name);
 		if (existing is not null) {
+			if (existing.Hash == hash) return; // No changes
 			context.HypixelInventory.Remove(existing);
 		}
-
+		
+		var inventory = NbtParser.ParseInventory(name, data);
+		if (inventory is null) return;
+		
 		if (meta is not null) {
 			inventory.Metadata = meta;
 		}

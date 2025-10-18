@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration.Json;
 using NuGet.Packaging;
 using StackExchange.Redis;
@@ -119,6 +120,15 @@ public static class ServiceExtensions
 			ConnectRetry = 5
 		};
 		var multiplexer = ConnectionMultiplexer.Connect(config);
+		
+		services.AddHybridCache(options =>
+		{
+			options.DefaultEntryOptions = new HybridCacheEntryOptions()
+			{
+				Expiration = TimeSpan.FromMinutes(1),
+				LocalCacheExpiration = TimeSpan.FromSeconds(20)
+			};
+		});
 
 		services
 			.AddSingleton<IConnectionMultiplexer>(multiplexer)

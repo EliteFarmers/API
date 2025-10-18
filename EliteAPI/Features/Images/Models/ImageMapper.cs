@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using EliteAPI.Features.Images.Services;
 using Riok.Mapperly.Abstractions;
 

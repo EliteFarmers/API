@@ -49,8 +49,8 @@ internal sealed class GetInventoryItemTextureEndpoint(
 			return;
 		}
 
-		var finalBytes = await itemTextureResolver.RenderItemAsync(itemData);
+		var path = await itemTextureResolver.RenderItemAndGetPathAsync(itemData);
 
-		await Send.BytesAsync(finalBytes, contentType: MediaTypeNames.Image.Png, cancellation: c);
+		await Send.RedirectAsync(path, false, true);
 	}
 }

@@ -39,6 +39,7 @@ namespace EliteAPI.Data.Migrations
                     Name = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     ProfileMemberId = table.Column<Guid>(type: "uuid", nullable: false),
                     EmptySlots = table.Column<short[]>(type: "smallint[]", nullable: true),
+                    Hash = table.Column<string>(type: "text", nullable: false),
                     Metadata = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
