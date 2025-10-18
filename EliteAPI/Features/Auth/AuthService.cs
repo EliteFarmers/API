@@ -174,12 +174,22 @@ public partial class AuthService(
 
 		// Update stored discord tokens
 		await discordService.RefreshDiscordUserIfNeeded(user);
+		
+		var pendingConfirmation = await confirmationService.GetPendingConfirmationAsync(user);
 
 		var (token, expiry) = await GenerateJwtToken(user);
 		return new AuthResponseDto {
 			AccessToken = token,
 			ExpiresIn = expiry.ToUnixTimeSeconds().ToString(),
-			RefreshToken = newRefreshTokenValue
+			RefreshToken = newRefreshTokenValue,
+			PendingConfirmation = pendingConfirmation is null ? null : new ConfirmationDto
+			{
+				Id = pendingConfirmation.Id,
+				Title = pendingConfirmation.Title,
+				Content = pendingConfirmation.Content,
+				IsActive = pendingConfirmation.IsActive,
+				CreatedAt = pendingConfirmation.CreatedAt
+			}
 		};
 	}
 

@@ -41,7 +41,7 @@ public class AcceptConfirmationEndpoint(DataContext context, UserManager userMan
 		// Check if the user has already accepted this confirmation
 		var alreadyAccepted = await context.UserConfirmations.AnyAsync(uc => uc.UserId == user.Id && uc.ConfirmationId == req.Id, ct);
 		if (alreadyAccepted) {
-			await Send.OkAsync(ct);
+			await Send.NoContentAsync(ct);
 			return;
 		}
 		
@@ -64,10 +64,10 @@ public class AcceptConfirmationEndpoint(DataContext context, UserManager userMan
 			await context.SaveChangesAsync(ct);
 		} catch (DbUpdateException) {
 			// Catch unique constraint violation (user already accepted)
-			await Send.OkAsync(ct);
+			await Send.NoContentAsync(ct);
 			return;
 		}
 		
-		await Send.OkAsync(ct);
+		await Send.NoContentAsync(ct);
 	}
 }
