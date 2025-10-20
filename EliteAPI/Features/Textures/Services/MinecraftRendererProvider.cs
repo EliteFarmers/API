@@ -60,9 +60,15 @@ public class MinecraftRendererProvider
 					if (context.Profile is not null || context.CustomDataId is null) return null;
 
 					var match = repoClient.MatchItem(context);
-					if (match is null) return null;
+					if (match is not null) {
+						return match.VariantData?.Data?.Skin?.Value ?? match.Item.Data?.Skin?.Value;
+					}
 
-					return match.VariantData?.Data?.Skin?.Value ?? match.Item.Data?.Skin?.Value;
+					if (SkyblockRepoClient.Data.NeuItems.TryGetValue(context.CustomDataId, out var item)) {
+						return SkyblockRepoRegexUtils.ExtractSkullTexture(item.NbtTag)?.Value;
+					}
+					
+					return null;
 				},
 				PackIds = ["hypixelplus"]
 			};

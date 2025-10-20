@@ -6,6 +6,7 @@ using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Utilities;
 using MinecraftRenderer;
 using MinecraftRenderer.Nbt;
+using SkyblockRepo;
 
 namespace EliteAPI.Parsers.Inventories;
 
@@ -154,6 +155,18 @@ public static class NbtParser
 		var extraAttributes = tagCompound.GetCompound("ExtraAttributes");
 		var skyblockId = extraAttributes?.GetString("id");
 		var petInfo = extraAttributes?.GetString("petInfo");
+		
+		// Skull texture
+		var skullOwner = tagCompound.GetCompound("SkullOwner");
+		string? skullValue = null;
+		if (skullOwner is not null) {
+			var properties = skullOwner.GetCompound("Properties");
+			var texturesList = properties?.GetList("textures");
+			var firstTexture = texturesList is { Count: > 0 } && texturesList[0] is NbtCompound texComp
+				? texComp
+				: null;
+			skullValue = firstTexture?.GetString("Value") ?? null;
+		}
 
 		// Extract gems
 		var gemsCompound = extraAttributes?.GetCompound("gems");
@@ -245,6 +258,16 @@ public static class NbtParser
 			ItemAttributes = itemAttributes,
 			Gems = gems.Count > 0 ? gems : null,
 		};
+		
+		// Check if we need to save this skull texture
+		if (skullValue is not null && skyblockId is not null) {
+			SkyblockRepoClient.Data.Items.TryGetValue(skyblockId, out var repoData);
+			var skin = repoData?.Data?.Skin?.Value;
+			if (skin is null || skin != skullValue) {
+				item.Attributes ??= new Dictionary<string, string>();
+				item.Attributes.TryAdd("skin_texture", skullValue);
+			}
+		}
 
 		// Parse pet info if present
 		if (!string.IsNullOrEmpty(petInfo)) {

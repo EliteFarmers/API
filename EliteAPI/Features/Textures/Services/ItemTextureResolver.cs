@@ -2,6 +2,7 @@ using EliteAPI.Data;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Images.Services;
 using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Features.Textures.Models;
 using EliteAPI.Parsers.Inventories;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -87,6 +88,10 @@ public class ItemTextureResolver(
 			["count"] = new NbtByte((sbyte)item.Count),
 			["components"] = new NbtCompound(components),
 		});
+		
+		if (item.Attributes?.TryGetValue("skin_texture", out var skinData) is true) {
+			root = root.WithProfileComponent(skinData);
+		}
 
 		if (item.Attributes?.TryGetValue("petInfo", out var petInfo) is true) {
 			var info = PetParser.ParsePetInfoOrDefault(petInfo);
@@ -153,9 +158,13 @@ public class ItemTextureResolver(
 			using var image = renderResult.CloneAsAnimatedImage();
 			var savedImage = await imageService.ProcessAndUploadImageAsync(image,
 				$"item-renders/{resourceId}", "item", token: c);
-			savedImage.Hash = resourceId;
 			
-			await context.Images.AddAsync(savedImage, c);
+			var itemTexture = new HypixelItemTexture() {
+				RenderHash = resourceId,
+				Url = savedImage.Path
+			};
+			
+			await context.HypixelItemTextures.AddAsync(itemTexture, c);
 			await context.SaveChangesAsync(c);
 
 			return savedImage.ToPrimaryUrl()!;
