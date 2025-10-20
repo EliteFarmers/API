@@ -512,6 +512,12 @@ public class ProfileProcessorService(
 		ParseInventory("fishing_bag", incomingData.Inventories?.BagContents?.FishingBag?.Data, member);
 		ParseInventory("sacks_bag", incomingData.Inventories?.BagContents?.SacksBag?.Data, member);
 		ParseInventory("quiver", incomingData.Inventories?.BagContents?.Quiver?.Data, member);
+		
+		if (incomingData.Inventories?.BackpackContents is not null) {
+			foreach (var (backpack, contents) in incomingData.Inventories.BackpackContents) {
+				ParseInventory($"backpack_{backpack}", contents.Data, member);
+			}
+		}
 
 		if (incomingData.Inventories?.BackpackIcons is not null) {
 			var hash = HashUtility.ComputeSha256Hash(string.Join(",",
@@ -540,16 +546,11 @@ public class ProfileProcessorService(
 				var iconInventory = new HypixelInventory {
 					Name = "icons_backpack",
 					Hash = hash,
-					Items = items.Select(i => i.ToHypixelItem()).ToList()
+					Items = items.Select(i => i.ToHypixelItem()).ToList(),
+					ProfileMemberId = member.Id
 				};
 
 				member.Inventories.Add(iconInventory);
-			}
-		}
-
-		if (incomingData.Inventories?.BackpackContents is not null) {
-			foreach (var (backpack, contents) in incomingData.Inventories.BackpackContents) {
-				ParseInventory($"backpack_{backpack}", contents.Data, member);
 			}
 		}
 	}
@@ -572,6 +573,7 @@ public class ProfileProcessorService(
 			inventory.Metadata = meta;
 		}
 
+		inventory.ProfileMemberId = member.Id;
 		member.Inventories.Add(inventory);
 	}
 

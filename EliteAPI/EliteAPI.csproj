@@ -35,11 +35,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.10.0" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.10.0"/>
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.7"/>
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.9.0"/>
-        <PackageReference Include="MinecraftRenderer" Version="0.2.4" />
-        <PackageReference Include="Npgsql" Version="9.0.4" />
+        <PackageReference Include="MinecraftRenderer" Version="0.2.5"/>
+        <PackageReference Include="Npgsql" Version="9.0.4"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1"/>
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
@@ -64,7 +64,7 @@
         <Folder Include="Data\Grafana\Dashboards\"/>
         <Folder Include="Features\Events\Admin\Members\"/>
         <Folder Include="Features\Guilds\Endpoints\"/>
-        <Folder Include="Models\DTOs\Auth\" />
+        <Folder Include="Models\DTOs\Auth\"/>
         <Folder Include="Models\Entities\Accounts\"/>
     </ItemGroup>
 
