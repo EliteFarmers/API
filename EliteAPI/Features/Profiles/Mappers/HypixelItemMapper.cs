@@ -139,6 +139,6 @@ public static partial class HypixelItemMapper
 
 public static partial class HypixelItemExtensions
 {
-	[GeneratedRegex(@$"Edition #?\d+", RegexOptions.IgnoreCase)]
+	[GeneratedRegex(@$"Edition #?[\d,.]+", RegexOptions.IgnoreCase)]
 	public static partial Regex EditionRegex();
 }
