@@ -97,7 +97,6 @@ public static partial class HypixelItemMapper
 			Lore = item.Lore?.Split('\n').ToList(),
 			Enchantments = item.Enchantments,
 			Gems = item.Gems,
-			ImageUrl = item.Image?.ToPrimaryUrl(),
 			Slot = item.Slot,
 			Attributes = item.Attributes ?? new Dictionary<string, string>()
 		};

@@ -6,6 +6,7 @@ using EliteAPI.Parsers.Inventories;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using MinecraftRenderer;
 using MinecraftRenderer.Hypixel;
 using MinecraftRenderer.Nbt;
 using SixLabors.ImageSharp;
@@ -26,7 +27,7 @@ public class ItemTextureResolver(
 		try {
 			var renderer = await provider.GetRendererAsync();
 			var image = renderer.GetTexturePackIcon(packId);
-			
+
 			if (image is null) {
 				return null;
 			}
@@ -40,7 +41,7 @@ public class ItemTextureResolver(
 			throw;
 		}
 	}
-	
+
 	public async Task<byte[]> RenderItemAsync(string itemId, int size = 128) {
 		try {
 			var renderer = await provider.GetRendererAsync();
@@ -56,7 +57,7 @@ public class ItemTextureResolver(
 		}
 	}
 
-	public async Task<string> RenderItemAndGetPathAsync(HypixelItem item, int size = 128) {
+	public NbtCompound GetItemNbt(HypixelItem item) {
 		var extraAttributes =
 			item.Attributes?.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value))) ?? [];
 		var itemId = LegacyItemMappings.MapNumericIdOrDefault(item.Id, item.Damage);
@@ -97,49 +98,90 @@ public class ItemTextureResolver(
 			}
 		}
 
+		return root;
+	}
+	
+	public async Task<string> GetItemResourceId(HypixelItem item, List<string>? packIds = null, int size = 64) {
+		return (await GetItemResource(item, packIds, size)).ResourceId;
+	}
+	
+	public async Task<MinecraftBlockRenderer.ResourceIdResult> GetItemResource(HypixelItem item, List<string>? packIds = null, int size = 64) {
+		var root = GetItemNbt(item);
 		var renderer = await provider.GetRendererAsync();
-		var renderOptions = provider.Options with { Size = size };
+		var renderOptions = GetRenderOptions(renderer, packIds, size);
+		return renderer.ComputeResourceIdFromNbt(root, renderOptions);
+	}
+
+	public async Task<string> RenderItemAndGetPathAsync(HypixelItem item, List<string>? packIds = null, int size = 64) {
+		var root = GetItemNbt(item);
+
+		var renderer = await provider.GetRendererAsync();
+		var renderOptions = GetRenderOptions(renderer, packIds, size);
 		var preResourceId = renderer.ComputeResourceIdFromNbt(root, renderOptions);
 
-		var existingRenderedItem = await context.Images
-			.FirstOrDefaultAsync(i => i.Hash == preResourceId.ResourceId);
+		var existingRenderedItem = await context.HypixelItemTextures
+			.FirstOrDefaultAsync(i => i.RenderHash == preResourceId.ResourceId);
 
 		if (existingRenderedItem is not null) {
-			item.Image = existingRenderedItem;
-			item.ImageId = existingRenderedItem.Id;
-			await context.SaveChangesAsync();
+			if (existingRenderedItem.LastUsed < DateTimeOffset.UtcNow.AddDays(-30)) {
+				await imageService.DeleteImageAtPathAsync(existingRenderedItem.Url);
+				context.HypixelItemTextures.Remove(existingRenderedItem);
+				await context.SaveChangesAsync();
+			} else {
+				existingRenderedItem.LastUsed = DateTimeOffset.UtcNow;
+				await context.SaveChangesAsync();
 
-			return existingRenderedItem.ToPrimaryUrl()!;
+				return existingRenderedItem.Url;
+			}
 		}
 
 		var result = await cache.GetOrCreateAsync(preResourceId.ResourceId, async c => {
 			using var renderResult = renderer.RenderAnimatedItemFromNbtWithResourceId(root, renderOptions);
 			var resourceId = renderResult.ResourceId.ResourceId;
 
-			var existingCheckRendered = await context.Images
-				.FirstOrDefaultAsync(i => i.Hash == resourceId, cancellationToken: c);
-
+			var existingCheckRendered =
+				await context.HypixelItemTextures.FirstOrDefaultAsync(i => i.RenderHash == resourceId,
+					cancellationToken: c);
+			
 			if (existingCheckRendered is not null) {
-				item.Image = existingCheckRendered;
-				item.ImageId = existingCheckRendered.Id;
+				existingCheckRendered.LastUsed = DateTimeOffset.UtcNow;
 				await context.SaveChangesAsync(c);
 
-				return (existingCheckRendered.Id, resourceId);
+				return resourceId;
 			}
 
 			using var image = renderResult.CloneAsAnimatedImage();
 			var savedImage = await imageService.ProcessAndUploadImageAsync(image,
-				$"renders/{renderResult.ResourceId.SourcePackId}/items/{resourceId}", "item", token: c);
+				$"item-renders/{resourceId}", "item", token: c);
 			savedImage.Hash = resourceId;
+			
 			await context.Images.AddAsync(savedImage, c);
 			await context.SaveChangesAsync(c);
 
-			return (savedImage.Id, savedImage.ToPrimaryUrl()!);
+			return savedImage.ToPrimaryUrl()!;
 		});
+		
+		return result;
+	}
+	
+	private MinecraftBlockRenderer.BlockRenderOptions GetRenderOptions(MinecraftBlockRenderer renderer, List<string>? packIds, int size) {
+		if (packIds is null)
+		{
+			return provider.Options with { Size = size };
+		}
+		
+		packIds = packIds.Where(p => p != "vanilla").ToList();
+		
+		if (packIds.Count == 0) {
+			return provider.Options with { Size = size, PackIds = [] };
+		}
 
-		item.ImageId = result.Id;
-		await context.SaveChangesAsync();
+		var validPacks = renderer.PackRegistry?.GetRegisteredPacks().Select(p => p.Id).ToList();
+		if (validPacks is null || validPacks.Count == 0 || !packIds.All(p => validPacks.Contains(p)))
+		{
+			return provider.Options with { Size = size };
+		}
 
-		return result.Item2;
+		return provider.Options with { Size = size, PackIds = packIds };
 	}
 }

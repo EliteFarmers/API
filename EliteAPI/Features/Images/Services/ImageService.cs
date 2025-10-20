@@ -32,6 +32,8 @@ public interface IImageService
 
 	Task<Image> CreateImageFromRemoteAsync(string remoteUrl, string basePath, string presetName);
 	Task UpdateImageFromRemoteAsync(Image existingImage, string remoteUrl, string basePath, string presetName);
+	
+	Task DeleteImageAtPathAsync(string path);
 }
 
 [RegisterService<IImageService>(LifeTime.Scoped)]
@@ -162,6 +164,10 @@ public class ImageService(
 
 		existingImage.Path = newImage.Path;
 		existingImage.Metadata = newImage.Metadata;
+	}
+
+	public Task DeleteImageAtPathAsync(string path) {
+		return objectStorageService.DeleteAsync(path);
 	}
 
 	private void ReduceFrameRate(SixLabors.ImageSharp.Image image, int maxFps) {

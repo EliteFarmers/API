@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
+using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Profiles.Services;
+using EliteAPI.Features.Textures.Services;
 using EliteAPI.Models.Common;
 using FastEndpoints;
 using FluentValidation;
@@ -24,7 +26,8 @@ public class GetProfileInventoryRequest : PlayerUuidRequest
 
 internal sealed class GetProfileInventoryEndpoint(
 	IMemberService memberService,
-	DataContext context
+	DataContext context,
+	ItemTextureResolver itemTextureResolver
 ) : Endpoint<GetProfileInventoryRequest, HypixelInventoryDto>
 {
 	public override void Configure() {
@@ -51,7 +54,28 @@ internal sealed class GetProfileInventoryEndpoint(
 			return;
 		}
 		
-		await Send.OkAsync(inventory.ToDto(), c);
+		var inventoryDto = inventory.ToDto();
+		
+		var resourceIds = inventory.Items.ToAsyncEnumerable()
+			.SelectAwait(async item => await itemTextureResolver.GetItemResourceId(item))
+			.ToListAsync(c);
+		
+		var renderedItems = await context.HypixelItemTextures
+			.Where(i => resourceIds.Result.Contains(i.RenderHash))
+			.ToListAsync(c);
+		
+		foreach (var item in inventory.Items) {
+			var resourceId = await itemTextureResolver.GetItemResourceId(item);
+			var renderedItem = renderedItems.FirstOrDefault(i => i.RenderHash == resourceId);
+			if (renderedItem is null || item.Slot is null) continue;
+			
+			inventoryDto.Items.TryGetValue(item.Slot, out var itemDto);
+			if (itemDto is not null) {
+				itemDto.ImageUrl = renderedItem.ToUrl();
+			}
+		}
+		
+		await Send.OkAsync(inventoryDto, c);
 	}
 }
 

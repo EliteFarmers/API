@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using EliteAPI.Features.Images.Services;
+using EliteAPI.Features.Textures.Models;
 using Riok.Mapperly.Abstractions;
 
 namespace EliteAPI.Features.Images.Models;
@@ -16,6 +17,10 @@ public static partial class ImageMapper
 
 	public static string? ToPrimaryUrl(this Image? image) {
 		return image is null ? null : $"{_baseImageUrl}/{image.Path}";
+	}
+	
+	public static string ToUrl(this HypixelItemTexture itemTexture) {
+		return $"{_baseImageUrl}/{itemTexture.Url}";
 	}
 
 	public static ImageAttachmentDto? ToDto(this Image? image) {

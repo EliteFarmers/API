@@ -7,7 +7,7 @@ namespace EliteAPI.Features.Textures.Endpoints;
 
 internal sealed class GetTexturePackIcon
 {
-	public string PackId { get; set; }
+	public required string PackId { get; set; }
 }
 
 internal sealed class GetTexturePackIconEndpoint(
@@ -15,7 +15,6 @@ internal sealed class GetTexturePackIconEndpoint(
 ) : Endpoint<GetTexturePackIcon>
 {
 	public override void Configure() {
-		Head("/texturepacks/{PackId}/icon");
 		Get("/texturepacks/{PackId}/icon");
 		AllowAnonymous();
 		Version(0);

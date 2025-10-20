@@ -10,6 +10,7 @@ using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Firesales.Models;
 using EliteAPI.Features.Resources.Items.Models;
+using EliteAPI.Features.Textures.Models;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
@@ -91,6 +92,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<ChocolateFactory> ChocolateFactories { get; set; } = null!;
 	public DbSet<HypixelInventory> HypixelInventory { get; set; } = null!;
 	public DbSet<HypixelItem> HypixelItems { get; set; } = null!;
+	public DbSet<HypixelItemTexture> HypixelItemTextures { get; set; } = null!;
 
 	// Discord
 	public DbSet<Guild> Guilds { get; set; } = null!;

@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
 using EliteAPI.Features.Textures.Services;
@@ -7,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Textures.Endpoints;
 
-internal sealed class GetInventoryItemTextureRequest
+internal sealed class GetInventoryItemMetaRequest
 {
 	public Guid InventoryUuid { get; set; }
 	public required string SlotId { get; set; }
@@ -21,22 +20,30 @@ internal sealed class GetInventoryItemTextureRequest
 		: Packs.Split(',').Select(p => p.Trim()).ToList();
 }
 
-internal sealed class GetInventoryItemTextureEndpoint(
+internal sealed class InventoryItemMetaResponse
+{
+	/// <summary>
+	/// Texture Pack ID where the item texture is located
+	/// </summary>
+	public string? PackId { get; set; }
+}
+
+internal sealed class GetInventoryItemMetaEndpoint(
 	ItemTextureResolver itemTextureResolver,
 	DataContext context
-) : Endpoint<GetInventoryItemTextureRequest>
+) : Endpoint<GetInventoryItemMetaRequest, InventoryItemMetaResponse>
 {
 	public override void Configure() {
-		Get("/textures/{InventoryUuid}/{SlotId}");
+		Get("/textures/{InventoryUuid}/{SlotId}/meta");
 		AllowAnonymous();
 		Version(0);
 
-		Summary(s => { s.Summary = "Get Inventory Item Texture"; });
+		Summary(s => { s.Summary = "Get Inventory Item Texture Metadata"; });
 
 		Options(o => { o.DisableRateLimiting(); });
 	}
 
-	public override async Task HandleAsync(GetInventoryItemTextureRequest request, CancellationToken c) {
+	public override async Task HandleAsync(GetInventoryItemMetaRequest request, CancellationToken c) {
 		// Check if slotId has a file extension and remove it
 		if (request.SlotId.Contains('.')) {
 			request.SlotId = request.SlotId.Split('.')[0];
@@ -58,8 +65,11 @@ internal sealed class GetInventoryItemTextureEndpoint(
 			return;
 		}
 
-		var path = await itemTextureResolver.RenderItemAndGetPathAsync(itemData, request.PackList);
+		var resource = await itemTextureResolver.GetItemResource(itemData, request.PackList);
 
-		await Send.RedirectAsync(path, false, true);
+		await Send.OkAsync(new InventoryItemMetaResponse
+		{
+			PackId = resource.SourcePackId
+		}, cancellation: c);
 	}
 }

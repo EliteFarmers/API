@@ -31,10 +31,7 @@ public class HypixelItem
 	[Column(TypeName = "jsonb")] public Dictionary<string, int>? Enchantments { get; set; }
 	[Column(TypeName = "jsonb")] public Dictionary<string, string>? Attributes { get; set; }
 	[Column(TypeName = "jsonb")] public Dictionary<string, string?>? Gems { get; set; }
-
-	public string? ImageId { get; set; }
-	public Image? Image { get; set; }
-
+	
 	public string? Slot { get; set; }
 
 	public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
@@ -49,12 +46,5 @@ public class HypixelItemConfiguration : IEntityTypeConfiguration<HypixelItem>
 		builder.HasKey(item => item.HypixelItemId);
 
 		builder.HasIndex(item => item.SkyblockId);
-
-		builder.HasOne<Image>(item => item.Image)
-			.WithMany()
-			.HasForeignKey(item => item.ImageId)
-			.OnDelete(DeleteBehavior.SetNull);
-
-		builder.Navigation(item => item.Image).AutoInclude();
 	}
 }
