@@ -136,7 +136,7 @@ public class ItemTextureResolver(
 				existingRenderedItem.LastUsed = DateTimeOffset.UtcNow;
 				await context.SaveChangesAsync();
 
-				return existingRenderedItem.Url;
+				return existingRenderedItem.ToUrl();
 			}
 		}
 
@@ -152,7 +152,7 @@ public class ItemTextureResolver(
 				existingCheckRendered.LastUsed = DateTimeOffset.UtcNow;
 				await context.SaveChangesAsync(c);
 
-				return resourceId;
+				return existingCheckRendered.ToUrl();
 			}
 
 			using var image = renderResult.CloneAsAnimatedImage();
