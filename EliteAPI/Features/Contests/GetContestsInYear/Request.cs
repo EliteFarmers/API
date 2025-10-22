@@ -3,7 +3,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Contests.GetContestsInYear;
 
-internal sealed class GetContestsInYearRequest : SkyBlockYearRequest {
+internal sealed class GetContestsInYearRequest : SkyBlockYearRequest
+{
 	/// <summary>
 	/// If the year being requested is the current year. Not required.
 	/// </summary>

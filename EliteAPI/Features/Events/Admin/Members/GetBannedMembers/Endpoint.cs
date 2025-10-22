@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.GetBannedMembers;
 
-internal sealed class GetBannedMembersRequest : DiscordIdRequest {
+internal sealed class GetBannedMembersRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 }
 
 internal sealed class GetBannedMembersAdminEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetBannedMembersRequest, List<AdminEventMemberDto>> {
+) : Endpoint<GetBannedMembersRequest, List<AdminEventMemberDto>>
+{
 	public override void Configure() {
 		Get("/guild/{DiscordId}/event/{EventId}/bans");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -50,7 +52,8 @@ internal sealed class GetBannedMembersAdminEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<GetBannedMembersRequest> {
+internal sealed class CreateWeightEventRequestValidator : Validator<GetBannedMembersRequest>
+{
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

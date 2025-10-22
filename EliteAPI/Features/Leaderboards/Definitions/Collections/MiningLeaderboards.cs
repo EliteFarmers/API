@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class LapisLeaderboard : IMemberLeaderboardDefinition {
+public class LapisLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Lapis Lazuli Collection",
 		ShortTitle = "Lapis",
@@ -25,7 +26,8 @@ public class LapisLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RedstoneLeaderboard : IMemberLeaderboardDefinition {
+public class RedstoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Redstone Collection",
 		ShortTitle = "Redstone",
@@ -46,7 +48,8 @@ public class RedstoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class EmeraldLeaderboard : IMemberLeaderboardDefinition {
+public class EmeraldLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Emerald Collection",
 		ShortTitle = "Emerald",
@@ -67,7 +70,8 @@ public class EmeraldLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class DiamondLeaderboard : IMemberLeaderboardDefinition {
+public class DiamondLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Diamond Collection",
 		ShortTitle = "Diamond",
@@ -88,7 +92,8 @@ public class DiamondLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class CoalLeaderboard : IMemberLeaderboardDefinition {
+public class CoalLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Coal Collection",
 		ShortTitle = "Coal",
@@ -109,7 +114,8 @@ public class CoalLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class NetherQuartzLeaderboard : IMemberLeaderboardDefinition {
+public class NetherQuartzLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Nether Quartz Collection",
 		ShortTitle = "Nether Quartz",
@@ -130,7 +136,8 @@ public class NetherQuartzLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GoldLeaderboard : IMemberLeaderboardDefinition {
+public class GoldLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Gold Ingot Collection",
 		ShortTitle = "Gold Ingot",
@@ -151,7 +158,8 @@ public class GoldLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class IronLeaderboard : IMemberLeaderboardDefinition {
+public class IronLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Iron Ingot Collection",
 		ShortTitle = "Iron Ingot",
@@ -172,7 +180,8 @@ public class IronLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SandLeaderboard : IMemberLeaderboardDefinition {
+public class SandLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Sand Collection",
 		ShortTitle = "Sand",
@@ -193,7 +202,8 @@ public class SandLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class RedSandLeaderboard : IMemberLeaderboardDefinition {
+public class RedSandLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Red Sand Collection",
 		ShortTitle = "Red Sand",
@@ -214,7 +224,8 @@ public class RedSandLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class CobblestoneLeaderboard : IMemberLeaderboardDefinition {
+public class CobblestoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Cobblestone Collection",
 		ShortTitle = "Cobblestone",
@@ -235,7 +246,8 @@ public class CobblestoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class ObsidianLeaderboard : IMemberLeaderboardDefinition {
+public class ObsidianLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Obsidian Collection",
 		ShortTitle = "Obsidian",
@@ -256,7 +268,8 @@ public class ObsidianLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class EndStoneLeaderboard : IMemberLeaderboardDefinition {
+public class EndStoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "End Stone Collection",
 		ShortTitle = "End Stone",
@@ -277,7 +290,8 @@ public class EndStoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GlowstoneLeaderboard : IMemberLeaderboardDefinition {
+public class GlowstoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Glowstone Collection",
 		ShortTitle = "Glowstone",
@@ -298,7 +312,8 @@ public class GlowstoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GravelLeaderboard : IMemberLeaderboardDefinition {
+public class GravelLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Gravel Collection",
 		ShortTitle = "Gravel",
@@ -319,7 +334,8 @@ public class GravelLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class NetherrackLeaderboard : IMemberLeaderboardDefinition {
+public class NetherrackLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Netherrack Collection",
 		ShortTitle = "Netherrack",
@@ -340,7 +356,8 @@ public class NetherrackLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class IceLeaderboard : IMemberLeaderboardDefinition {
+public class IceLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Ice Collection",
 		ShortTitle = "Ice",
@@ -361,7 +378,8 @@ public class IceLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MyceliumLeaderboard : IMemberLeaderboardDefinition {
+public class MyceliumLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Mycelium Collection",
 		ShortTitle = "Mycelium",
@@ -382,7 +400,8 @@ public class MyceliumLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GemstoneLeaderboard : IMemberLeaderboardDefinition {
+public class GemstoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Gemstone Collection",
 		ShortTitle = "Gemstone",
@@ -403,7 +422,8 @@ public class GemstoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class MithrilLeaderboard : IMemberLeaderboardDefinition {
+public class MithrilLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Mithril Collection",
 		ShortTitle = "Mithril",
@@ -424,7 +444,8 @@ public class MithrilLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class HardStoneLeaderboard : IMemberLeaderboardDefinition {
+public class HardStoneLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Hard Stone Collection",
 		ShortTitle = "Hard Stone",
@@ -445,7 +466,8 @@ public class HardStoneLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class TungstenLeaderboard : IMemberLeaderboardDefinition {
+public class TungstenLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Tungsten Collection",
 		ShortTitle = "Tungsten",
@@ -466,7 +488,8 @@ public class TungstenLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class UmberLeaderboard : IMemberLeaderboardDefinition {
+public class UmberLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Umber Collection",
 		ShortTitle = "Umber",
@@ -487,7 +510,8 @@ public class UmberLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class GlaciteLeaderboard : IMemberLeaderboardDefinition {
+public class GlaciteLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Glacite Collection",
 		ShortTitle = "Glacite",
@@ -508,7 +532,8 @@ public class GlaciteLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SulphurLeaderboard : IMemberLeaderboardDefinition {
+public class SulphurLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Sulphur Collection",
 		ShortTitle = "Sulphur",

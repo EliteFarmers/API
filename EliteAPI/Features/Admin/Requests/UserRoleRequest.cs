@@ -4,11 +4,13 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Admin.Requests;
 
-public class UserRoleRequest : DiscordIdRequest {
+public class UserRoleRequest : DiscordIdRequest
+{
 	public required string Role { get; set; }
 }
 
-internal sealed class UserRoleRequestValidator : Validator<UserRoleRequest> {
+internal sealed class UserRoleRequestValidator : Validator<UserRoleRequest>
+{
 	public UserRoleRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 

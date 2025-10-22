@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Guilds.User.SetInvite;
 internal sealed class SetInviteEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<SetInviteRequest> {
+) : Endpoint<SetInviteRequest>
+{
 	public override void Configure() {
 		Put("/user/guild/{DiscordId}/invite");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute(GuildPermission.Admin)));

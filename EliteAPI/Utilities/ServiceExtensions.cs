@@ -7,6 +7,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Images.Models;
+using EliteAPI.Features.Textures.Services;
 using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
@@ -17,13 +18,15 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration.Json;
 using NuGet.Packaging;
 using StackExchange.Redis;
 
 namespace EliteAPI.Utilities;
 
-public static class ServiceExtensions {
+public static class ServiceExtensions
+{
 	public static IServiceCollection AddEliteServices(this IServiceCollection services) {
 		// Add AutoMapper
 		services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -35,6 +38,7 @@ public static class ServiceExtensions {
 		services.AddSingleton<IObjectStorageService, ObjectStorageService>();
 
 		services.AddHostedService<BackgroundQueueWorker>();
+		services.AddHostedService<MinecraftRendererInitializer>();
 
 		services.AddHttpClient(HypixelService.HttpClientName,
 			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });
@@ -116,6 +120,15 @@ public static class ServiceExtensions {
 			ConnectRetry = 5
 		};
 		var multiplexer = ConnectionMultiplexer.Connect(config);
+		
+		services.AddHybridCache(options =>
+		{
+			options.DefaultEntryOptions = new HybridCacheEntryOptions()
+			{
+				Expiration = TimeSpan.FromMinutes(1),
+				LocalCacheExpiration = TimeSpan.FromSeconds(20)
+			};
+		});
 
 		services
 			.AddSingleton<IConnectionMultiplexer>(multiplexer)
@@ -213,7 +226,8 @@ public static class ServiceExtensions {
 	}
 }
 
-public static class CachePolicy {
+public static class CachePolicy
+{
 	public const string NoCache = "NoCache";
 	public const string Hours = "Hours";
 }

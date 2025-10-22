@@ -8,7 +8,8 @@ using EliteAPI.Services;
 
 namespace EliteAPI.Mappers.Discord;
 
-public class GuildMapper : Profile {
+public class GuildMapper : Profile
+{
 	public GuildMapper() {
 		CreateMap<Guild, PrivateGuildDto>()
 			.ForMember(g => g.Public, opt => opt.MapFrom(g => g.IsPublic))
@@ -54,7 +55,8 @@ public class GuildMapper : Profile {
 	}
 }
 
-public class GuildFeaturesMapper : Profile {
+public class GuildFeaturesMapper : Profile
+{
 	public GuildFeaturesMapper() {
 		CreateMap<GuildFeatures, PublicGuildFeaturesDto>()
 			.ForMember(g => g.JacobLeaderboard, opt => opt.MapFrom(g => g.JacobLeaderboard));

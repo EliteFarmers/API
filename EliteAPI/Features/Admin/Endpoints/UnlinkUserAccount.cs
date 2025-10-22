@@ -5,14 +5,16 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Admin.Endpoints;
 
-internal sealed class AdminUnlinkAccountRequest {
+internal sealed class AdminUnlinkAccountRequest
+{
 	public required string DiscordId { get; set; }
 	public required string Player { get; set; }
 }
 
 internal sealed class UnlinkUserAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<AdminUnlinkAccountRequest, ErrorOr<Success>> {
+) : Endpoint<AdminUnlinkAccountRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/admin/unlink-account");
 		Policies(ApiUserPolicies.Admin);

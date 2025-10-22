@@ -4,13 +4,15 @@ using Newtonsoft.Json;
 
 namespace EliteAPI.Models.Common;
 
-public class GuildIdRequest {
+public class GuildIdRequest
+{
 	public required long GuildId { get; set; }
 
 	[JsonIgnore] public ulong GuildIdUlong => (ulong)GuildId;
 }
 
-internal sealed class GuildIdRequestValidator : Validator<GuildIdRequest> {
+internal sealed class GuildIdRequestValidator : Validator<GuildIdRequest>
+{
 	public GuildIdRequestValidator() {
 		RuleFor(x => x.GuildId)
 			.NotEmpty()

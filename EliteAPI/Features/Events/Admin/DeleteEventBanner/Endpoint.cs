@@ -7,14 +7,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.DeleteEventBanner;
 
-internal sealed class DeleteEventBannerRequest : DiscordIdRequest {
+internal sealed class DeleteEventBannerRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 }
 
 internal sealed class DeleteEventBannerAdminEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService
-) : Endpoint<DeleteEventBannerRequest> {
+) : Endpoint<DeleteEventBannerRequest>
+{
 	public override void Configure() {
 		Delete("/guild/{DiscordId}/events/{EventId}/banner");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -42,7 +44,8 @@ internal sealed class DeleteEventBannerAdminEndpoint(
 	}
 }
 
-internal sealed class CreateWeightEventRequestValidator : Validator<DeleteEventBannerRequest> {
+internal sealed class CreateWeightEventRequestValidator : Validator<DeleteEventBannerRequest>
+{
 	public CreateWeightEventRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

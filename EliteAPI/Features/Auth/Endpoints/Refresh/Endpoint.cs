@@ -1,11 +1,12 @@
-using EliteAPI.Models.DTOs.Auth;
+using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Auth.Refresh;
 
 internal sealed class RefreshAuthEndpoint(
 	IAuthService authService
-) : Endpoint<AuthRefreshDto, AuthResponseDto> {
+) : Endpoint<AuthRefreshDto, AuthResponseDto>
+{
 	public override void Configure() {
 		Post("/auth/refresh");
 		AllowAnonymous();

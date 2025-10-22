@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Images.Models;
 
-public class Image {
+public class Image
+{
 	[MaxLength(48)] public string Id { get; set; } = Guid.NewGuid().ToString();
 
 	[MaxLength(512)] public required string Path { get; set; }
@@ -23,14 +24,17 @@ public class Image {
 	[Column(TypeName = "jsonb")] public Dictionary<string, string> Metadata { get; set; } = new();
 }
 
-public class ImageEntityConfiguration : IEntityTypeConfiguration<Image> {
+public class ImageEntityConfiguration : IEntityTypeConfiguration<Image>
+{
 	public void Configure(EntityTypeBuilder<Image> builder) {
 		builder.HasKey(image => image.Id);
 		builder.HasIndex(image => image.Path);
+		builder.HasIndex(image => image.Hash);
 	}
 }
 
-public class AllowedFileExtensions : ValidationAttribute {
+public class AllowedFileExtensions : ValidationAttribute
+{
 	protected override ValidationResult? IsValid(object? value, ValidationContext validationContext) {
 		if (value is null) return ValidationResult.Success;
 		if (value is not IFormFile file) return new ValidationResult("File is required");

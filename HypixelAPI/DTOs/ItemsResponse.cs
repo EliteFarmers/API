@@ -3,14 +3,16 @@ using System.Text.Json.Serialization;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class ItemsResponse {
+public class ItemsResponse
+{
 	public bool Success { get; set; }
 	public long LastUpdated { get; set; }
 
 	[JsonPropertyName("items")] public List<ItemResponse> Items { get; set; } = [];
 }
 
-public class ItemResponse {
+public class ItemResponse
+{
 	[JsonPropertyName("id")] public string? Id { get; set; }
 
 	[JsonPropertyName("material")]
@@ -122,18 +124,21 @@ public class ItemResponse {
 	[JsonExtensionData] public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
-public class ItemSkin {
+public class ItemSkin
+{
 	[JsonPropertyName("value")] public string? Value { get; set; }
 
 	[JsonPropertyName("signature")] public string? Signature { get; set; }
 }
 
-public class ItemGemstoneSlot {
+public class ItemGemstoneSlot
+{
 	[JsonPropertyName("slot_type")] public string? SlotType { get; set; }
 	[JsonPropertyName("costs")] public List<ItemGemstoneSlotCosts> Costs { get; set; } = [];
 }
 
-public class ItemGemstoneSlotCosts {
+public class ItemGemstoneSlotCosts
+{
 	[JsonPropertyName("type")] public required string Type { get; set; }
 
 	[JsonPropertyName("item_id")]
@@ -147,7 +152,8 @@ public class ItemGemstoneSlotCosts {
 	[JsonExtensionData] public SortedDictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
-public class ItemRequirement {
+public class ItemRequirement
+{
 	[JsonPropertyName("type")] public required string Type { get; set; }
 
 	[JsonPropertyName("skill")]
@@ -161,7 +167,8 @@ public class ItemRequirement {
 	[JsonExtensionData] public SortedDictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
-public class ItemMuseumData {
+public class ItemMuseumData
+{
 	[JsonPropertyName("donation_xp")] public int DonationXp { get; set; }
 
 	[JsonPropertyName("parent")]
@@ -181,7 +188,8 @@ public class ItemMuseumData {
 	[JsonExtensionData] public SortedDictionary<string, JsonElement>? ExtensionData { get; set; } = new();
 }
 
-public class DungeonItemConversionCost {
+public class DungeonItemConversionCost
+{
 	[JsonPropertyName("essence_type")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? EssenceType { get; set; }
@@ -193,7 +201,8 @@ public class DungeonItemConversionCost {
 	[JsonExtensionData] public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
-public class UpgradeCosts {
+public class UpgradeCosts
+{
 	[JsonPropertyName("type")] public string? Type { get; set; }
 
 	[JsonPropertyName("essence_type")]
@@ -211,7 +220,8 @@ public class UpgradeCosts {
 	[JsonExtensionData] public SortedDictionary<string, JsonElement>? ExtensionData { get; set; }
 }
 
-public class CatacombsRequirements {
+public class CatacombsRequirements
+{
 	[JsonPropertyName("type")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Type { get; set; }

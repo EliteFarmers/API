@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Leaderboards.Models;
 
-public class LeaderboardEntry {
+public class LeaderboardEntry
+{
 	public int LeaderboardEntryId { get; set; }
 	public int LeaderboardId { get; set; }
 	public Leaderboard Leaderboard { get; set; } = null!;
@@ -32,7 +33,8 @@ public class LeaderboardEntry {
 	public string? ProfileType { get; set; }
 }
 
-public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<LeaderboardEntry> {
+public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<LeaderboardEntry>
+{
 	public void Configure(EntityTypeBuilder<LeaderboardEntry> builder) {
 		builder.HasKey(le => le.LeaderboardEntryId);
 
@@ -81,7 +83,8 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 	}
 }
 
-public static class LeaderboardEntryExtensions {
+public static class LeaderboardEntryExtensions
+{
 	public static IQueryable<LeaderboardEntry> FromLeaderboard(this IQueryable<LeaderboardEntry> query,
 		int leaderboardId, bool? memberLeaderboard = null) {
 		if (memberLeaderboard is null) return query.Where(e => e.LeaderboardId == leaderboardId);

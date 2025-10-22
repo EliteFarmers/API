@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class PetDto {
+public class PetDto
+{
 	public string? Uuid { get; set; }
 	public required string Type { get; set; }
 	public double Exp { get; set; } = 0;

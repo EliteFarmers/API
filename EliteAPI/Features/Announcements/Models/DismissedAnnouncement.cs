@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Features.Announcements.Models;
 
-public class DismissedAnnouncement {
+public class DismissedAnnouncement
+{
 	[ForeignKey(nameof(Announcement))] public Guid AnnouncementId { get; set; }
 	public Announcement Announcement { get; set; } = null!;
 
@@ -13,7 +14,8 @@ public class DismissedAnnouncement {
 	public EliteAccount EliteAccount { get; set; } = null!;
 }
 
-public class DismissedAnnouncementConfiguration : IEntityTypeConfiguration<DismissedAnnouncement> {
+public class DismissedAnnouncementConfiguration : IEntityTypeConfiguration<DismissedAnnouncement>
+{
 	public void Configure(EntityTypeBuilder<DismissedAnnouncement> builder) {
 		builder.HasKey(da => new { da.AnnouncementId, da.AccountId });
 	}

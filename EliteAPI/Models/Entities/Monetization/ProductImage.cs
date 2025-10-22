@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Monetization;
 
-public class ProductImage {
+public class ProductImage
+{
 	[ForeignKey("Product")] public ulong ProductId { get; set; }
 	public Product Product { get; set; } = null!;
 
@@ -13,7 +14,8 @@ public class ProductImage {
 	public Image Image { get; set; } = null!;
 }
 
-public class ProductImageEntityConfiguration : IEntityTypeConfiguration<ProductImage> {
+public class ProductImageEntityConfiguration : IEntityTypeConfiguration<ProductImage>
+{
 	public void Configure(EntityTypeBuilder<ProductImage> builder) {
 		builder.HasKey(pi => new { pi.ProductId, pi.ImageId });
 	}

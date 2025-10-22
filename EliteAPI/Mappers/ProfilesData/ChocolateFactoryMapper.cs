@@ -4,7 +4,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.ProfilesData;
 
-public class ChocolateFactoryMapper : Profile {
+public class ChocolateFactoryMapper : Profile
+{
 	public ChocolateFactoryMapper() {
 		CreateMap<ChocolateFactory, ChocolateFactoryDto>()
 			.ForMember(c => c.LastViewed, opt => opt.MapFrom(c => c.LastViewedChocolateFactory));

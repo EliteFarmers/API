@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Entities.Discord;
 
-public class GuildChannel {
+public class GuildChannel
+{
 	[Key] public ulong Id { get; set; }
 	[MaxLength(128)] public required string Name { get; set; }
 

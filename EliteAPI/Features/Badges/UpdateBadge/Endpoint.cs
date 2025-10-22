@@ -11,7 +11,8 @@ internal sealed class UpdateBadgeEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService,
 	IOutputCacheStore cacheStore
-) : Endpoint<UpdateBadgeRequest> {
+) : Endpoint<UpdateBadgeRequest>
+{
 	public override void Configure() {
 		Patch("/badge/{BadgeId}");
 		Policies(ApiUserPolicies.Admin);

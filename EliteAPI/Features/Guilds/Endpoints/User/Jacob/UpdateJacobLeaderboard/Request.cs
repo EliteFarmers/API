@@ -4,12 +4,14 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.UpdateJacobLeaderboard;
 
-public class UpdateJacobLeaderboardRequest : DiscordIdRequest {
+public class UpdateJacobLeaderboardRequest : DiscordIdRequest
+{
 	public required string LeaderboardId { get; set; }
 
 	[FromBody] public required UpdateJacobLeaderboard Leaderboard { get; set; }
 
-	public class UpdateJacobLeaderboard {
+	public class UpdateJacobLeaderboard
+	{
 		[MaxLength(64)] public string? Title { get; set; }
 
 		public string? ChannelId { get; set; }
@@ -27,7 +29,8 @@ public class UpdateJacobLeaderboardRequest : DiscordIdRequest {
 	}
 }
 
-internal sealed class UpdateJacobLeaderboardRequestValidator : Validator<UpdateJacobLeaderboardRequest> {
+internal sealed class UpdateJacobLeaderboardRequestValidator : Validator<UpdateJacobLeaderboardRequest>
+{
 	public UpdateJacobLeaderboardRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

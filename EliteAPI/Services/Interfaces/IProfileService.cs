@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Services.Interfaces;
 
-public interface IProfileService {
+public interface IProfileService
+{
 	public Task<Profile?> GetProfile(string profileUuid);
 	public Task<Profile?> GetPlayersProfileByName(string playerUuid, string profileName);
 	public Task<Profile?> GetPlayersSelectedProfile(string playerUuid);

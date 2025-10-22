@@ -2,13 +2,15 @@ using System.Text.Json.Serialization;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class BazaarResponse {
+public class BazaarResponse
+{
 	public bool Success { get; set; }
 	public long LastUpdated { get; set; }
 	public Dictionary<string, BazaarItem> Products { get; set; } = new();
 }
 
-public class BazaarItem {
+public class BazaarItem
+{
 	public string? ProductId { get; set; }
 
 	/// <summary>
@@ -26,13 +28,15 @@ public class BazaarItem {
 	[JsonPropertyName("quick_status")] public ProductQuickStatus QuickStatus { get; set; } = new();
 }
 
-public class BazaarOrder {
+public class BazaarOrder
+{
 	public int Amount { get; set; }
 	public double PricePerUnit { get; set; }
 	public int Orders { get; set; }
 }
 
-public class ProductQuickStatus {
+public class ProductQuickStatus
+{
 	public string? ProductId { get; set; }
 	public double SellPrice { get; set; }
 	public long SellVolume { get; set; }

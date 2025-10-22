@@ -8,13 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Resources.Items.Endpoints;
 
-internal sealed class SkyblockProductRequest {
+internal sealed class SkyblockProductRequest
+{
 	public required string ItemId { get; set; }
 }
 
 internal sealed class SkyblockProductEndpoint(
 	DataContext context
-) : Endpoint<SkyblockProductRequest, SkyblockItemResponse> {
+) : Endpoint<SkyblockProductRequest, SkyblockItemResponse>
+{
 	public override void Configure() {
 		Get("/resources/items/{ItemId}");
 		AllowAnonymous();
@@ -63,7 +65,8 @@ internal sealed class SkyblockProductEndpoint(
 	}
 }
 
-internal sealed class SkyblockItemResponse {
+internal sealed class SkyblockItemResponse
+{
 	public required string ItemId { get; set; }
 	public string? Name { get; set; }
 

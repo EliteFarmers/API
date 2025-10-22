@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Shop.Products.Admin.GetAllProducts;
 internal sealed class GetAllProductsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : EndpointWithoutRequest<List<ProductDto>> {
+) : EndpointWithoutRequest<List<ProductDto>>
+{
 	public override void Configure() {
 		Get("/products/admin");
 		Policies(ApiUserPolicies.Moderator);

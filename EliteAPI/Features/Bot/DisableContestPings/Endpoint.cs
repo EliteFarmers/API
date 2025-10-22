@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Bot.DisableContestPings;
 
 internal sealed class DisableContestPingsPingsEndpoint(
 	DataContext context
-) : Endpoint<DisableContestPingsRequest> {
+) : Endpoint<DisableContestPingsRequest>
+{
 	public override void Configure() {
 		Delete("/bot/contestpings/{DiscordId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

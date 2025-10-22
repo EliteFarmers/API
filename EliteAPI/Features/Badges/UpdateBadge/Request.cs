@@ -3,10 +3,12 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Badges.UpdateBadge;
 
-public class UpdateBadgeRequest : BadgeRequest {
+public class UpdateBadgeRequest : BadgeRequest
+{
 	[FromForm] public required UpdateBadge Badge { get; set; }
 
-	public class UpdateBadge {
+	public class UpdateBadge
+	{
 		public string? Name { get; set; }
 		public string? Description { get; set; }
 		public string? Requirements { get; set; }
@@ -14,7 +16,8 @@ public class UpdateBadgeRequest : BadgeRequest {
 	}
 }
 
-internal sealed class UpdateBadgeRequestValidator : Validator<UpdateBadgeRequest> {
+internal sealed class UpdateBadgeRequestValidator : Validator<UpdateBadgeRequest>
+{
 	public UpdateBadgeRequestValidator() {
 		Include(new BadgeRequestValidator());
 

@@ -2,12 +2,14 @@
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class PlayerResponse {
+public class PlayerResponse
+{
 	public bool Success { get; set; }
 	public PlayerDataResponse? Player { get; set; }
 }
 
-public class PlayerDataResponse {
+public class PlayerDataResponse
+{
 	public required string Uuid { get; set; }
 
 	[JsonPropertyName("displayname")] public string? DisplayName { get; set; }
@@ -43,11 +45,13 @@ public class PlayerDataResponse {
 	*/
 }
 
-public class SocialMediaResponse {
+public class SocialMediaResponse
+{
 	public SocialMediaLinksResponse? Links { get; set; }
 }
 
-public class SocialMediaLinksResponse {
+public class SocialMediaLinksResponse
+{
 	[JsonPropertyName("DISCORD")] public string? Discord { get; set; }
 	[JsonPropertyName("HYPIXEL")] public string? Hypixel { get; set; }
 	[JsonPropertyName("YOUTUBE")] public string? Youtube { get; set; }

@@ -2,14 +2,25 @@ using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Image = EliteAPI.Features.Images.Models.Image;
 
 namespace EliteAPI.Features.Images.Services;
 
-public interface IImageService {
+public interface IImageService
+{
 	Task<Image> ProcessAndUploadImageAsync(
 		IFormFile file,
+		string basePath,
+		string presetName,
+		string? title = null,
+		string? description = null,
+		CancellationToken token = default
+	);
+
+	Task<Image> ProcessAndUploadImageAsync(
+		Image<Rgba32> image,
 		string basePath,
 		string presetName,
 		string? title = null,
@@ -21,13 +32,16 @@ public interface IImageService {
 
 	Task<Image> CreateImageFromRemoteAsync(string remoteUrl, string basePath, string presetName);
 	Task UpdateImageFromRemoteAsync(Image existingImage, string remoteUrl, string basePath, string presetName);
+	
+	Task DeleteImageAtPathAsync(string path);
 }
 
 [RegisterService<IImageService>(LifeTime.Scoped)]
 public class ImageService(
 	IObjectStorageService objectStorageService,
 	ILogger<IImageService> logger
-) : IImageService {
+) : IImageService
+{
 	public async Task<Image> ProcessAndUploadImageAsync(
 		IFormFile file,
 		string basePath,
@@ -67,6 +81,21 @@ public class ImageService(
 		}
 
 		return imageEntity;
+	}
+
+	public async Task<Image> ProcessAndUploadImageAsync(Image<Rgba32> image, string basePath, string presetName,
+		string? title = null,
+		string? description = null, CancellationToken token = default) {
+		using var ms = new MemoryStream();
+		await image.SaveAsWebpAsync(ms, cancellationToken: token);
+
+		ms.Position = 0;
+		var formFile = new FormFile(ms, 0, ms.Length, "image", "image.webp") {
+			Headers = new HeaderDictionary(),
+			ContentType = "image/webp"
+		};
+
+		return await ProcessAndUploadImageAsync(formFile, basePath, presetName, title, description, token);
 	}
 
 	public async Task DeleteImageVariantsAsync(Image image) {
@@ -135,6 +164,10 @@ public class ImageService(
 
 		existingImage.Path = newImage.Path;
 		existingImage.Metadata = newImage.Metadata;
+	}
+
+	public Task DeleteImageAtPathAsync(string path) {
+		return objectStorageService.DeleteAsync(path);
 	}
 
 	private void ReduceFrameRate(SixLabors.ImageSharp.Image image, int maxFps) {

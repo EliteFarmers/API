@@ -2,12 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class GardenResponse {
+public class GardenResponse
+{
 	public bool Success { get; set; }
 	public GardenResponseData? Garden { get; set; }
 }
 
-public class GardenResponseData {
+public class GardenResponseData
+{
 	/// <summary>
 	/// Profile ID
 	/// </summary>
@@ -63,7 +65,8 @@ public class GardenResponseData {
 	public Dictionary<string, object> CurrentVisitors { get; set; } = new();
 }
 
-public class GardenVisitorData {
+public class GardenVisitorData
+{
 	/// <summary>
 	/// The amount of visits each visitor has made to the garden
 	/// </summary>
@@ -87,7 +90,8 @@ public class GardenVisitorData {
 	public int UniqueVisitorsServed { get; set; }
 }
 
-public class ComposterData {
+public class ComposterData
+{
 	/// <summary>
 	/// Organic matter currently in the composter
 	/// </summary>
@@ -130,7 +134,8 @@ public class ComposterData {
 	public ComposterUpgrades Upgrades { get; set; } = new();
 }
 
-public class ComposterUpgrades {
+public class ComposterUpgrades
+{
 	/// <summary>
 	/// Composter speed upgrade
 	/// </summary>

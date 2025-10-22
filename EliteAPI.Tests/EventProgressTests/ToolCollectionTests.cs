@@ -3,7 +3,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Tests.EventProgressTests;
 
-public class ToolCollectionTests {
+public class ToolCollectionTests
+{
 	[Theory]
 	[InlineData(123, 96)]
 	[InlineData(123121, 456)]

@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints;
 
-public class LeaderboardSliceRequest : LeaderboardRequest {
+public class LeaderboardSliceRequest : LeaderboardRequest
+{
 	[QueryParam] [DefaultValue(0)] public int? Offset { get; set; } = 0;
 
 	[JsonIgnore] public int OffsetFormatted => Offset ?? 0;
@@ -17,7 +18,8 @@ public class LeaderboardSliceRequest : LeaderboardRequest {
 	[JsonIgnore] public int LimitFormatted => Limit ?? 20;
 }
 
-internal sealed class LeaderboardSliceRequestValidator : Validator<LeaderboardSliceRequest> {
+internal sealed class LeaderboardSliceRequestValidator : Validator<LeaderboardSliceRequest>
+{
 	public LeaderboardSliceRequestValidator() {
 		Include(new LeaderboardRequestValidator());
 

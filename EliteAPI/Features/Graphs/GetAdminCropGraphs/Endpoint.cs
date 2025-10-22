@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Graphs.GetAdminCropGraphs;
 internal sealed class GetAdminCropGraphsEndpoint(
 	DataContext context,
 	ITimescaleService timescaleService)
-	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>> {
+	: Endpoint<GraphRequest, List<CropCollectionsDataPointDto>>
+{
 	public override void Configure() {
 		Get("/graph/admin/{PlayerUuid}/{ProfileUuid}/crops");
 		Policies(ApiUserPolicies.Support);

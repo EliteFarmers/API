@@ -1,13 +1,15 @@
 namespace EliteAPI.Features.Account.DTOs;
 
-public class FortuneSettingsDto {
+public class FortuneSettingsDto
+{
 	/// <summary>
 	/// Member fortune settings for each minecraft account, then each profile.
 	/// </summary>
 	public Dictionary<string, Dictionary<string, MemberFortuneSettingsDto>> Accounts { get; set; } = new();
 }
 
-public class MemberFortuneSettingsDto {
+public class MemberFortuneSettingsDto
+{
 	/// <summary>
 	/// Amount of strength used for mooshroom fortune
 	/// </summary>

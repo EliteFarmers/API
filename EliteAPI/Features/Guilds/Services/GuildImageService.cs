@@ -1,11 +1,11 @@
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Images.Services;
-using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.Services;
 
-public interface IGuildImageService {
+public interface IGuildImageService
+{
 	Task<Image?> UpdateGuildBannerAsync(ulong guildId, string bannerHash, Image? image = null, bool force = false);
 	Task<Image?> UpdateGuildIconAsync(ulong guildId, string iconHash, Image? image = null, bool force = false);
 }
@@ -14,7 +14,8 @@ public interface IGuildImageService {
 public class GuildImageService(
 	IImageService imageService,
 	ILogger<IGuildImageService> logger
-) : IGuildImageService {
+) : IGuildImageService
+{
 	public async Task<Image?> UpdateGuildIconAsync(ulong guildId, string iconHash, Image? image = null,
 		bool force = false) {
 		try {

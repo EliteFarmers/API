@@ -5,10 +5,14 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Profiles.Mappers;
+using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Parsers.Events;
 using EliteAPI.Parsers.Farming;
+using EliteAPI.Parsers.Inventories;
 using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
@@ -20,7 +24,8 @@ using Quartz;
 
 namespace EliteAPI.Features.Profiles.Services;
 
-public interface IProfileProcessorService {
+public interface IProfileProcessorService
+{
 	/// <summary>
 	/// Processes the response from the Hypixel API
 	/// </summary>
@@ -79,7 +84,8 @@ public class ProfileProcessorService(
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IOptions<ConfigFarmingWeightSettings> farmingWeightOptions,
 	AutoMapper.IMapper mapper
-) : IProfileProcessorService {
+) : IProfileProcessorService
+{
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
@@ -98,6 +104,8 @@ public class ProfileProcessorService(
 				.Include(p => p.EventEntries)
 				.Include(p => p.ChocolateFactory)
 				.Include(p => p.Metadata)
+				.Include(p => p.Inventories)
+				.ThenInclude(i => i.Items)
 				.AsSplitQuery()
 				.FirstOrDefault(p => p.Profile.ProfileId.Equals(profileUuid) && p.PlayerUuid.Equals(playerUuid))
 		);
@@ -438,6 +446,8 @@ public class ProfileProcessorService(
 			context.ChocolateFactories.Update(member.ChocolateFactory);
 		}
 
+		ParseMemberInventories(member, incomingData);
+
 		await AddTimeScaleRecords(member);
 
 		await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
@@ -485,6 +495,86 @@ public class ProfileProcessorService(
 
 		var scheduler = await schedulerFactory.GetScheduler();
 		await scheduler.TriggerJob(ProcessContestsBackgroundJob.Key, data);
+	}
+
+	private void ParseMemberInventories(ProfileMember member, ProfileMemberResponse incomingData) {
+		ParseInventory("inventory", incomingData.Inventories?.InventoryContents?.Data, member);
+		ParseInventory("ender_chest", incomingData.Inventories?.EnderChestContents?.Data, member);
+		ParseInventory("personal_vault", incomingData.Inventories?.PersonalVaultContents?.Data, member);
+		ParseInventory("armor", incomingData.Inventories?.Armor?.Data, member);
+		ParseInventory("equipment", incomingData.Inventories?.EquipmentContents?.Data, member);
+		ParseInventory("wardrobe", incomingData.Inventories?.WardrobeContents?.Data, member,
+			meta: new Dictionary<string, string>() {
+				{ "equipped_slot", (incomingData.Inventories?.WardrobeEquippedSlot ?? 0).ToString() }
+			});
+		ParseInventory("talisman_bag", incomingData.Inventories?.BagContents?.TalismanBag?.Data, member);
+		ParseInventory("potion_bag", incomingData.Inventories?.BagContents?.PotionBag?.Data, member);
+		ParseInventory("fishing_bag", incomingData.Inventories?.BagContents?.FishingBag?.Data, member);
+		ParseInventory("sacks_bag", incomingData.Inventories?.BagContents?.SacksBag?.Data, member);
+		ParseInventory("quiver", incomingData.Inventories?.BagContents?.Quiver?.Data, member);
+		
+		if (incomingData.Inventories?.BackpackContents is not null) {
+			foreach (var (backpack, contents) in incomingData.Inventories.BackpackContents) {
+				ParseInventory($"backpack_{backpack}", contents.Data, member);
+			}
+		}
+
+		if (incomingData.Inventories?.BackpackIcons is not null) {
+			var hash = HashUtility.ComputeSha256Hash(string.Join(",",
+				incomingData.Inventories.BackpackIcons.Select(i => i.Value.Data)));
+			
+			var existing = member.Inventories.FirstOrDefault(i => i.Name == "icons_backpack");
+			if (existing is not null) {
+				if (existing.Hash == hash) return; // No changes
+				context.HypixelInventory.Remove(existing);
+			}
+
+			var items = new List<ItemDto>();
+
+			foreach (var (backpack, icon) in incomingData.Inventories.BackpackIcons) {
+				var newItems = NbtParser.NbtToItems(icon.Data);
+				if (newItems.Count == 0) continue;
+				var iconItem = newItems.FirstOrDefault(i => i?.SkyblockId is not null);
+				if (iconItem is null) continue;
+
+				iconItem.Slot = backpack.ToString();
+				iconItem.ToHypixelItem();
+				items.Add(iconItem);
+			}
+
+			if (items.Count > 0) {
+				var iconInventory = new HypixelInventory {
+					Name = "icons_backpack",
+					Hash = hash,
+					Items = items.Select(i => i.ToHypixelItem()).ToList(),
+					ProfileMemberId = member.Id
+				};
+
+				member.Inventories.Add(iconInventory);
+			}
+		}
+	}
+
+	private void ParseInventory(string name, string? data, ProfileMember member,
+		Dictionary<string, string>? meta = null) {
+		var hash = HashUtility.ComputeSha256Hash(data ?? string.Empty);
+		
+		// Remove existing inventory if we have new data
+		var existing = member.Inventories.FirstOrDefault(i => i.Name == name);
+		if (existing is not null) {
+			if (existing.Hash == hash) return; // No changes
+			context.HypixelInventory.Remove(existing);
+		}
+		
+		var inventory = NbtParser.ParseInventory(name, data);
+		if (inventory is null) return;
+		
+		if (meta is not null) {
+			inventory.Metadata = meta;
+		}
+
+		inventory.ProfileMemberId = member.Id;
+		member.Inventories.Add(inventory);
 	}
 
 	private async Task AddTimeScaleRecords(ProfileMember member) {

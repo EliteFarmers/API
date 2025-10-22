@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Models.Entities.Timescale;
 
 [Keyless]
-public class CropCollection : ITimeScale {
+public class CropCollection : ITimeScale
+{
 	[HypertableColumn] public DateTimeOffset Time { get; set; }
 
 	[ForeignKey("Member")] public Guid ProfileMemberId { get; set; }

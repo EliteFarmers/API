@@ -3,7 +3,8 @@ using Microsoft.Extensions.Configuration;
 
 namespace EliteAPI.Tests;
 
-public class ConfigurationTests {
+public class ConfigurationTests
+{
 	private readonly IConfiguration _configuration;
 
 	public ConfigurationTests() {

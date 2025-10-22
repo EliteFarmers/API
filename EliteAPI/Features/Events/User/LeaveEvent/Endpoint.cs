@@ -6,14 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.User.LeaveEvent;
 
-internal sealed class LeaveEventRequest {
+internal sealed class LeaveEventRequest
+{
 	[BindFrom("eventId")] public ulong EventId { get; init; }
 }
 
 internal sealed class LeaveEventEndpoint(
 	DataContext context,
 	UserManager userManager)
-	: Endpoint<LeaveEventRequest> {
+	: Endpoint<LeaveEventRequest>
+{
 	public override void Configure() {
 		Post("/event/{EventId}/leave");
 		Version(0);

@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Bot.Accounts.LinkAccount;
 
 internal sealed class LinkAccountBotEndpoint(
 	IAccountService accountService
-) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>> {
+) : Endpoint<DiscordIdPlayerRequest, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Post("/bot/account/{DiscordId}/{Player}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

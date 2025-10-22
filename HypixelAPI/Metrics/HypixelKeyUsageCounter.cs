@@ -2,11 +2,13 @@ using System.Diagnostics.Metrics;
 
 namespace EliteFarmers.HypixelAPI.Metrics;
 
-public interface IHypixelKeyUsageCounter {
+public interface IHypixelKeyUsageCounter
+{
 	void Increment(int value = 1);
 }
 
-public class HypixelKeyUsageCounter : IHypixelKeyUsageCounter {
+public class HypixelKeyUsageCounter : IHypixelKeyUsageCounter
+{
 	private readonly Counter<int> _keyUsageCounter;
 
 	public HypixelKeyUsageCounter(IMeterFactory meterFactory) {

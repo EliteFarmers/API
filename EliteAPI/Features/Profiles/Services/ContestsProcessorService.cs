@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Profiles.Services;
 
-public interface IContestsProcessorService {
+public interface IContestsProcessorService
+{
 	Task ProcessContests(Guid memberId, RawJacobData? incoming);
 	Task ProcessContests(JacobData jacobData, RawJacobData? incomingData);
 }
@@ -18,7 +19,8 @@ public interface IContestsProcessorService {
 public class ContestsProcessorService(
 	DataContext context,
 	ILogger<ContestsProcessorService> logger)
-	: IContestsProcessorService {
+	: IContestsProcessorService
+{
 	public async Task ProcessContests(Guid memberId, RawJacobData? incoming) {
 		if (incoming is null) return;
 

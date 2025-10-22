@@ -5,12 +5,14 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Configuration.Settings;
 
-public static class FarmingWeightConfig {
+public static class FarmingWeightConfig
+{
 	// Accessing config like this is not recommended, but it's the only way (that i know of) to do it without DI in a static class
 	public static ConfigFarmingWeightSettings Settings { get; set; } = new();
 }
 
-public class ConfigFarmingWeightSettings {
+public class ConfigFarmingWeightSettings
+{
 	public List<string> CropItemIds { get; set; } = [];
 	public List<string> FarmingMinions { get; set; } = [];
 	public int MinimumWeightForTracking { get; set; } = 1_000;
@@ -85,7 +87,8 @@ public class ConfigFarmingWeightSettings {
 	}
 }
 
-public class PestDropChance {
+public class PestDropChance
+{
 	public Crop Crop { get; set; }
 	public int Items { get; set; } = 0;
 	public int Base { get; set; } = 0;
@@ -136,7 +139,8 @@ public class PestDropChance {
 	}
 }
 
-public class PestRngDrop {
+public class PestRngDrop
+{
 	public int Drops { get; set; } = 0;
 	public double Chance { get; set; } = 0;
 }

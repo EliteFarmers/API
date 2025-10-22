@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.Public.GetGuild;
 internal sealed class GetPublicGuildEndpoint(
 	IDiscordService discordService,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, PublicGuildDto> {
+) : Endpoint<DiscordIdRequest, PublicGuildDto>
+{
 	public override void Configure() {
 		Get("/guild/{DiscordId}");
 		AllowAnonymous();

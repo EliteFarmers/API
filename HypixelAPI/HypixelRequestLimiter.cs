@@ -3,7 +3,8 @@ using Microsoft.Extensions.Logging;
 
 namespace EliteFarmers.HypixelAPI;
 
-public interface IHypixelRequestLimiter {
+public interface IHypixelRequestLimiter
+{
 	void Sync(int serverLimit, int serverRemaining);
 	ValueTask<RateLimitLease> AcquireAsync(int permitCount, CancellationToken cancellationToken = default);
 
@@ -16,7 +17,8 @@ public interface IHypixelRequestLimiter {
 	}
 }
 
-public class HypixelRequestLimiter(ILogger<IHypixelRequestLimiter> logger) : IHypixelRequestLimiter {
+public class HypixelRequestLimiter(ILogger<IHypixelRequestLimiter> logger) : IHypixelRequestLimiter
+{
 	private volatile SlidingWindowRateLimiter? _limiter;
 	private int _configuredPermitLimit = -1;
 

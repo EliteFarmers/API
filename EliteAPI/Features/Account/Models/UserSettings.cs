@@ -6,7 +6,8 @@ using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Features.Account.Models;
 
-public class UserSettings {
+public class UserSettings
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -43,7 +44,8 @@ public class UserSettings {
 	public MemberLeaderboardCosmeticsDto? CustomLeaderboardStyle { get; set; }
 }
 
-public class ConfiguredProductFeatures {
+public class ConfiguredProductFeatures
+{
 	/// <summary>
 	/// Embed color for the bot
 	/// </summary>

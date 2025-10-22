@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Announcements;
 
 internal sealed class CreateAnnouncementEndpoint(
 	IAnnouncementService announcementService
-) : Endpoint<CreateAnnouncementDto> {
+) : Endpoint<CreateAnnouncementDto>
+{
 	public override void Configure() {
 		Post("/announcements/create");
 		Policies(ApiUserPolicies.Admin);

@@ -7,14 +7,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace EliteAPI.Models.Entities.Events;
 
-public enum EventMemberStatus {
+public enum EventMemberStatus
+{
 	Inactive = 0,
 	Active = 1,
 	Left = 2,
 	Disqualified = 3
 }
 
-public class EventMember {
+public class EventMember
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }
@@ -45,7 +47,8 @@ public class EventMember {
 	public bool IsDisqualified => Status == EventMemberStatus.Disqualified;
 }
 
-public class EventMemberEntityConfiguration : IEntityTypeConfiguration<EventMember> {
+public class EventMemberEntityConfiguration : IEntityTypeConfiguration<EventMember>
+{
 	public void Configure(EntityTypeBuilder<EventMember> builder) {
 		builder.HasIndex(e => new { e.EventId, e.UserId }).IsUnique();
 

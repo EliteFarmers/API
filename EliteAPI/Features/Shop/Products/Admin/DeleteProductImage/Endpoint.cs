@@ -14,7 +14,8 @@ internal sealed class DeleteProductImageEndpoint(
 	IOutputCacheStore cacheStore,
 	IConnectionMultiplexer redis,
 	IObjectStorageService objectStorageService
-) : Endpoint<DeleteProductImageRequest> {
+) : Endpoint<DeleteProductImageRequest>
+{
 	public override void Configure() {
 		Delete("/product/{DiscordId}/images/{ImagePath}");
 		Policies(ApiUserPolicies.Admin);

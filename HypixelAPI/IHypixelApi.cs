@@ -4,7 +4,8 @@ using Refit;
 namespace EliteFarmers.HypixelAPI;
 
 [Headers("Content-Type: application/json")]
-public interface IHypixelApi {
+public interface IHypixelApi
+{
 	public const string BaseHypixelUrl = "https://api.hypixel.net/v2";
 
 	/// <summary>

@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Parsers.Events;
 
-public static class EventProgressParser {
+public static class EventProgressParser
+{
 	public static bool IsEventRunning(this EventMember member) {
 		var currentTime = DateTimeOffset.UtcNow;
 

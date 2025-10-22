@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EliteAPI.Features.Account.Services;
 
 [RegisterService<IBadgeService>(LifeTime.Scoped)]
-public class BadgeService(DataContext context, IMojangService mojangService) : IBadgeService {
+public class BadgeService(DataContext context, IMojangService mojangService) : IBadgeService
+{
 	public async Task<Badge?> GetBadgeById(int id) {
 		return await context.Badges.FindAsync(id);
 	}

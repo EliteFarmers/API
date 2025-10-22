@@ -17,7 +17,8 @@ public class RefreshEntitlementsBackgroundJob(
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IMessageService messageService,
 	IMonetizationService monetizationService
-) : IJob {
+) : IJob
+{
 	public static readonly JobKey Key = new(nameof(RefreshEntitlementsBackgroundJob));
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 

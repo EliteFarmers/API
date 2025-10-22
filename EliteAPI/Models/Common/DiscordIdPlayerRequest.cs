@@ -4,7 +4,8 @@ using Newtonsoft.Json;
 
 namespace EliteAPI.Models.Common;
 
-public class DiscordIdPlayerRequest : PlayerRequest {
+public class DiscordIdPlayerRequest : PlayerRequest
+{
 	/// <summary>
 	/// Discord Snowflake ID of the requested resource (guild, user, etc.)
 	/// </summary>
@@ -13,7 +14,8 @@ public class DiscordIdPlayerRequest : PlayerRequest {
 	[JsonIgnore] public ulong DiscordIdUlong => (ulong)DiscordId;
 }
 
-internal sealed class DiscordIdPlayerRequestValidator : Validator<DiscordIdPlayerRequest> {
+internal sealed class DiscordIdPlayerRequestValidator : Validator<DiscordIdPlayerRequest>
+{
 	public DiscordIdPlayerRequestValidator() {
 		Include(new PlayerRequestValidator());
 

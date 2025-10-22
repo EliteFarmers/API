@@ -3,7 +3,8 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Account.SearchAccounts;
 
-public class SearchRequest {
+public class SearchRequest
+{
 	/// <summary>
 	/// Search query string
 	/// </summary>
@@ -18,7 +19,8 @@ public class SearchRequest {
 	public string? Start { get; set; }
 }
 
-internal sealed class SearchRequestValidator : Validator<SearchRequest> {
+internal sealed class SearchRequestValidator : Validator<SearchRequest>
+{
 	public SearchRequestValidator() {
 		RuleFor(x => x.Query)
 			.NotEmpty()

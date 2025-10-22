@@ -2,7 +2,8 @@
 
 namespace EliteAPI.Services.Interfaces;
 
-public interface IMojangService {
+public interface IMojangService
+{
 	Task<string?> GetUsernameFromUuid(string uuid);
 	Task<string?> GetUuidFromUsername(string username);
 	Task<string?> GetUuid(string usernameOrUuid);

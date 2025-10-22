@@ -4,7 +4,8 @@ using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Features.Monetization.Models;
 
-public class ShopOrderItem {
+public class ShopOrderItem
+{
 	[Key] public ulong Id { get; set; }
 
 	[ForeignKey(nameof(ShopOrder))] public Guid OrderId { get; set; }

@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Resources.Items.Services;
 public class SkyblockItemsIngestionService(
 	IHypixelApi hypixelApi,
 	DataContext context,
-	ILogger<SkyblockItemsIngestionService> logger) {
+	ILogger<SkyblockItemsIngestionService> logger)
+{
 	public async Task IngestItemsDataAsync() {
 		var apiResponse = await hypixelApi.FetchItemsAsync();
 

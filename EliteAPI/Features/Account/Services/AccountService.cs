@@ -18,7 +18,8 @@ public class AccountService(
 	IMemberService memberService,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IOptions<FarmingItemsSettings> farmingItems)
-	: IAccountService {
+	: IAccountService
+{
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly FarmingItemsSettings _farmingItems = farmingItems.Value;
 

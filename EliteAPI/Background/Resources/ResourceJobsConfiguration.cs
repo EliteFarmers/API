@@ -7,7 +7,8 @@ namespace EliteAPI.Background.Resources;
 public class ResourceJobsConfiguration(
 	IOptions<ConfigCooldownSettings> cooldowns,
 	IOptions<AuctionHouseSettings> auctionSettings)
-	: IConfigureOptions<QuartzOptions> {
+	: IConfigureOptions<QuartzOptions>
+{
 	private readonly ConfigCooldownSettings _cooldowns = cooldowns.Value;
 	private readonly AuctionHouseSettings _auctionSettings = auctionSettings.Value;
 

@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class JacobDataDto {
+public class JacobDataDto
+{
 	public MedalInventoryDto Medals { get; set; } = new();
 	public EarnedMedalInventoryDto EarnedMedals { get; set; } = new();
 	public JacobPerksDto Perks { get; set; } = new();
@@ -14,13 +15,15 @@ public class JacobDataDto {
 	public List<ContestParticipationDto> Contests { get; set; } = new();
 }
 
-public class MedalInventoryDto {
+public class MedalInventoryDto
+{
 	public int Bronze { get; set; } = 0;
 	public int Silver { get; set; } = 0;
 	public int Gold { get; set; } = 0;
 }
 
-public class EarnedMedalInventoryDto {
+public class EarnedMedalInventoryDto
+{
 	public int Bronze { get; set; } = 0;
 	public int Silver { get; set; } = 0;
 	public int Gold { get; set; } = 0;
@@ -28,26 +31,30 @@ public class EarnedMedalInventoryDto {
 	public int Diamond { get; set; } = 0;
 }
 
-public class JacobPerksDto {
+public class JacobPerksDto
+{
 	public int DoubleDrops { get; set; } = 0;
 	public int LevelCap { get; set; } = 0;
 	public bool PersonalBests { get; set; } = false;
 }
 
-public class JacobStatsDto {
+public class JacobStatsDto
+{
 	public Dictionary<Crop, ContestMedal> Brackets { get; set; } = new();
 	public Dictionary<Crop, long> PersonalBests { get; set; } = new();
 	public Dictionary<Crop, JacobCropStatsDto> Crops { get; set; } = new();
 }
 
-public class JacobContestDto {
+public class JacobContestDto
+{
 	public required string Crop { get; set; }
 	public long Timestamp { get; set; }
 	public int Participants { get; set; }
 	public ContestBracketsDto Brackets { get; set; } = new();
 }
 
-public class JacobCropStatsDto {
+public class JacobCropStatsDto
+{
 	public int Participations { get; set; }
 	public int FirstPlaceScores { get; set; }
 
@@ -57,7 +64,8 @@ public class JacobCropStatsDto {
 	public EarnedMedalInventoryDto Medals { get; set; } = new();
 }
 
-public class JacobContestWithParticipationsDto {
+public class JacobContestWithParticipationsDto
+{
 	public required string Crop { get; set; }
 	public long Timestamp { get; set; }
 	public int Participants { get; set; }
@@ -65,7 +73,8 @@ public class JacobContestWithParticipationsDto {
 	public List<StrippedContestParticipationDto> Participations { get; set; } = new();
 }
 
-public class StrippedContestParticipationDto {
+public class StrippedContestParticipationDto
+{
 	public int Collected { get; set; } = 0;
 	public int Position { get; set; } = -1;
 	public string? Medal { get; set; }
@@ -75,13 +84,15 @@ public class StrippedContestParticipationDto {
 	public string ProfileUuid { get; set; } = "";
 }
 
-public class ContestBracketsDetailsDto {
+public class ContestBracketsDetailsDto
+{
 	public string Start { get; set; } = "";
 	public string End { get; set; } = "";
 	public Dictionary<string, ContestBracketsDto> Brackets { get; set; } = new();
 }
 
-public class ContestBracketsDto {
+public class ContestBracketsDto
+{
 	public int Bronze { get; set; }
 	public int Silver { get; set; }
 	public int Gold { get; set; }
@@ -89,7 +100,8 @@ public class ContestBracketsDto {
 	public int Diamond { get; set; }
 }
 
-public class ContestParticipationDto {
+public class ContestParticipationDto
+{
 	public string Crop { get; set; } = "";
 
 	/// <summary>
@@ -103,7 +115,8 @@ public class ContestParticipationDto {
 	public string? Medal { get; set; }
 }
 
-public class MedalCutoffsDbDto {
+public class MedalCutoffsDbDto
+{
 	public int Crop { get; set; } = -1;
 	public double? Bronze { get; set; } = -1;
 	public double? Silver { get; set; } = -1;

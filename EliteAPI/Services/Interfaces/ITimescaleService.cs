@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Services.Interfaces;
 
-public interface ITimescaleService {
+public interface ITimescaleService
+{
 	Task<List<CollectionDataPointDto>> GetCropCollection(Guid memberId, Crop crop, DateTimeOffset start,
 		DateTimeOffset end, int perDay = 4);
 

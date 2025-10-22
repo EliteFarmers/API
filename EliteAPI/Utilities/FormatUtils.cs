@@ -5,7 +5,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Utilities;
 
-public static class FormatUtils {
+public static class FormatUtils
+{
 	public static long GetTimeFromContestKey(string contestKey) {
 		var split = contestKey.Split(":");
 		if (split.Length < 3) return 0;

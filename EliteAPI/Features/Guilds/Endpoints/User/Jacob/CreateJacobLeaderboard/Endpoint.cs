@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.User.Jacob.CreateJacobLeaderboard;
 internal sealed class CreateGuildJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<CreateJacobLeaderboardRequest> {
+) : Endpoint<CreateJacobLeaderboardRequest>
+{
 	public override void Configure() {
 		Post("/user/guild/{DiscordId}/jacob/leaderboard");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

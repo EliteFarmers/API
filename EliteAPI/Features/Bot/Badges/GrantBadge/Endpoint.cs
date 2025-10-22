@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Bot.Badges.GrantBadge;
 
 internal sealed class GrantBadgeEndpoint(
 	IBadgeService badgeService
-) : Endpoint<BotGrantBadgeRequest> {
+) : Endpoint<BotGrantBadgeRequest>
+{
 	public override void Configure() {
 		Post("/bot/badges/{Player}/{BadgeId}");
 		Options(o => o.AddEndpointFilter<DiscordBotOnlyFilter>());

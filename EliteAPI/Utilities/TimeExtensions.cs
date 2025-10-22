@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Utilities;
 
-public static class TimeExtensions {
+public static class TimeExtensions
+{
 	public static bool IsValidJacobContestTime(this long unixTimeSeconds, int fromYear = -1) {
 		var time = DateTimeOffset.FromUnixTimeSeconds(unixTimeSeconds);
 		var correctMinute = time is { Minute: 15, Second: 0, Millisecond: 0 };

@@ -4,7 +4,8 @@ using EliteAPI.Features.Account.Models;
 
 namespace EliteAPI.Features.Monetization.Models;
 
-public class UserEntitlement : Entitlement {
+public class UserEntitlement : Entitlement
+{
 	[ForeignKey("Account")]
 	[MaxLength(22)]
 	public ulong AccountId { get; set; }

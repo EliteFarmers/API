@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Badges.DeleteBadgeFromUser;
 
 internal sealed class DeleteBadgeFromUserBadgeEndpoint(
 	IBadgeService badgeService
-) : Endpoint<PlayerBadgeRequest> {
+) : Endpoint<PlayerBadgeRequest>
+{
 	public override void Configure() {
 		Delete("/badge/user/{Player}/{BadgeId}");
 		Policies(ApiUserPolicies.Moderator);

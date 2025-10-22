@@ -11,7 +11,8 @@ using Result = Results<Ok<PlayerDataDto>, NotFound>;
 internal sealed class GetPlayerDataEndpoint(
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
-) : Endpoint<PlayerRequest, Result> {
+) : Endpoint<PlayerRequest, Result>
+{
 	public override void Configure() {
 		Get("/player/{Player}");
 		AllowAnonymous();

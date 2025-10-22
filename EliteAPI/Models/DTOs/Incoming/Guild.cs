@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Models.DTOs.Incoming;
 
-public class IncomingGuildDto {
+public class IncomingGuildDto
+{
 	public string? Id { get; set; }
 	public required string Name { get; set; }
 	public string? Icon { get; set; }
@@ -13,7 +14,8 @@ public class IncomingGuildDto {
 	public List<IncomingGuildRoleDto>? Roles { get; set; }
 }
 
-public class IncomingGuildChannelDto {
+public class IncomingGuildChannelDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public int Type { get; set; }
@@ -21,7 +23,8 @@ public class IncomingGuildChannelDto {
 	public string? Permissions { get; set; }
 }
 
-public class IncomingGuildRoleDto {
+public class IncomingGuildRoleDto
+{
 	public required string Id { get; set; }
 	public required string Name { get; set; }
 	public int Position { get; set; }

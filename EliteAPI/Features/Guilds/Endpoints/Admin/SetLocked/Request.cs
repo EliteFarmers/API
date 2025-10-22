@@ -4,7 +4,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.Admin.SetLocked;
 
-public class SetGuildLockedRequest : DiscordIdRequest {
+public class SetGuildLockedRequest : DiscordIdRequest
+{
 	/// <summary>
 	/// If server subscriptions shouldn't override feature values
 	/// </summary>
@@ -13,7 +14,8 @@ public class SetGuildLockedRequest : DiscordIdRequest {
 	public bool? Locked { get; set; } = true;
 }
 
-internal sealed class SetGuildLockedRequestValidator : Validator<SetGuildLockedRequest> {
+internal sealed class SetGuildLockedRequestValidator : Validator<SetGuildLockedRequest>
+{
 	public SetGuildLockedRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

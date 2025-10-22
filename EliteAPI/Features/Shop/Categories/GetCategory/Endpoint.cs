@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Categories.GetCategory;
 
-internal sealed class GetCategoryRequest {
+internal sealed class GetCategoryRequest
+{
 	/// <summary>
 	/// Category id or slug
 	/// </summary>
@@ -17,7 +18,8 @@ internal sealed class GetCategoryRequest {
 internal sealed class GetCategoryEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetCategoryRequest, ShopCategoryDto> {
+) : Endpoint<GetCategoryRequest, ShopCategoryDto>
+{
 	public override void Configure() {
 		Get("/shop/category/{Category}");
 		Options(o => o.WithMetadata(new OptionalAuthorizeAttribute()));

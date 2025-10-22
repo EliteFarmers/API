@@ -5,17 +5,18 @@ using StackExchange.Redis;
 
 namespace EliteAPI.Authentication;
 
-public class GuildAdminRequirement(GuildPermission permission) : IAuthorizationRequirement {
+public class GuildAdminRequirement(GuildPermission permission) : IAuthorizationRequirement
+{
 	public GuildPermission Permission { get; } = permission;
 
-	public GuildAdminRequirement() : this(GuildPermission.Role) {
-	}
+	public GuildAdminRequirement() : this(GuildPermission.Role) { }
 }
 
 public class GuildAdminHandler(
 	IDiscordService discordService,
 	IConnectionMultiplexer redis)
-	: AuthorizationHandler<GuildAdminRequirement> {
+	: AuthorizationHandler<GuildAdminRequirement>
+{
 	private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 	private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(30);
 	private const int MaxRetries = 5;

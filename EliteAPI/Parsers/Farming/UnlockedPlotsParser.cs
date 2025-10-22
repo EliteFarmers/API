@@ -3,7 +3,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class UnlockedPlotsParser {
+public static class UnlockedPlotsParser
+{
 	private static readonly Dictionary<string, UnlockedPlots> PlotsMap = new() {
 		{ "beginner_1", UnlockedPlots.Beginner1 },
 		{ "beginner_2", UnlockedPlots.Beginner2 },

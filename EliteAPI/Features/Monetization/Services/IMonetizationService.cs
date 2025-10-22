@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EliteAPI.Features.Monetization.Services;
 
-public interface IMonetizationService {
+public interface IMonetizationService
+{
 	Task UpdateProductAsync(ulong productId, EditProductDto editProductDto);
 	Task<List<ProductAccess>> GetEntitlementsAsync(ulong entityId);
 	Task FetchUserEntitlementsAsync(ulong userId);

@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Resources.Firesales.Endpoints;
 
 internal sealed class SkyblockFiresaleEndpoint(
 	DataContext context
-) : EndpointWithoutRequest<SkyblockFiresalesResponse> {
+) : EndpointWithoutRequest<SkyblockFiresalesResponse>
+{
 	public override void Configure() {
 		Get("/resources/firesales/current");
 		AllowAnonymous();
@@ -35,6 +36,7 @@ internal sealed class SkyblockFiresaleEndpoint(
 	}
 }
 
-internal sealed class SkyblockFiresalesResponse {
+internal sealed class SkyblockFiresalesResponse
+{
 	public List<SkyblockFiresaleDto> Firesales { get; set; } = [];
 }

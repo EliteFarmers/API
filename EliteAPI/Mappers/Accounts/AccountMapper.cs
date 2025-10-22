@@ -7,7 +7,8 @@ using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Mappers.Accounts;
 
-public class AccountMapper : Profile {
+public class AccountMapper : Profile
+{
 	public AccountMapper() {
 		CreateMap<EliteAccount, AuthorizedAccountDto>()
 			.ForMember(a => a.Entitlements, opt => opt.MapFrom(a => a.ProductAccesses))
@@ -20,7 +21,8 @@ public class AccountMapper : Profile {
 	}
 }
 
-public class MinecraftAccountMapper : Profile {
+public class MinecraftAccountMapper : Profile
+{
 	public MinecraftAccountMapper() {
 		CreateMap<MinecraftAccount, MinecraftAccountDto>()
 			.ForMember(a => a.FormattedName,
@@ -37,13 +39,15 @@ public class MinecraftAccountMapper : Profile {
 	}
 }
 
-public class MinecraftAccountPropertyMapper : Profile {
+public class MinecraftAccountPropertyMapper : Profile
+{
 	public MinecraftAccountPropertyMapper() {
 		CreateMap<MinecraftAccountProperty, MinecraftAccountPropertyDto>();
 	}
 }
 
-public class EliteMapper : Profile {
+public class EliteMapper : Profile
+{
 	public EliteMapper() {
 		CreateMap<UserSettings, UserSettingsDto>()
 			.ForMember(a => a.WeightStyle, opt => opt.MapFrom(a => a.WeightStyle))

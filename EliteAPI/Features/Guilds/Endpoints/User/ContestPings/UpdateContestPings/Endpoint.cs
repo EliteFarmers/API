@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.User.ContestPings.UpdateContestPings;
 internal sealed class UpdateContestPingsEndpoint(
 	IDiscordService discordService,
 	DataContext context
-) : Endpoint<UpdateContestPingsRequest> {
+) : Endpoint<UpdateContestPingsRequest>
+{
 	public override void Configure() {
 		Put("/user/guild/{DiscordId}/contestpings");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));

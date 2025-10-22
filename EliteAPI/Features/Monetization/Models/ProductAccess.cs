@@ -6,7 +6,8 @@ using EliteAPI.Models.Entities.Monetization;
 
 namespace EliteAPI.Features.Monetization.Models;
 
-public class ProductAccess {
+public class ProductAccess
+{
 	[Key] public Guid Id { get; set; } = Guid.NewGuid();
 
 	[ForeignKey(nameof(Product))] public ulong ProductId { get; set; }
@@ -48,7 +49,8 @@ public class ProductAccess {
 	}
 }
 
-public static class ProductAccessExtensions {
+public static class ProductAccessExtensions
+{
 	public static IQueryable<ProductAccess> WhereActive(this IQueryable<ProductAccess> query) {
 		return query.Where(e => !e.Revoked
 		                        && e.StartDate <= DateTimeOffset.UtcNow

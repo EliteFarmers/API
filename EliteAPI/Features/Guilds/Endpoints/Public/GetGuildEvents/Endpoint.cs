@@ -12,7 +12,8 @@ internal sealed class GetPublicGuildEventsEndpoint(
 	DataContext context,
 	IDiscordService discordService,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, List<EventDetailsDto>> {
+) : Endpoint<DiscordIdRequest, List<EventDetailsDto>>
+{
 	public override void Configure() {
 		Get("/guild/{DiscordId}/events");
 		AllowAnonymous();

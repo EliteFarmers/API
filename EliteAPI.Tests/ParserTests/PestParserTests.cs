@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Tests.ParserTests;
 
-public class PestParserTests {
+public class PestParserTests
+{
 	[Fact]
 	public void ParsePestCropCollectionNumbersTest() {
 		var configurationBuilder = new ConfigurationBuilder();

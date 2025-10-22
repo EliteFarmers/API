@@ -4,10 +4,12 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.CreateJacobLeaderboard;
 
-public class CreateJacobLeaderboardRequest : DiscordIdRequest {
+public class CreateJacobLeaderboardRequest : DiscordIdRequest
+{
 	[FromBody] public required CreateJacobLeaderboard Leaderboard { get; set; }
 
-	public class CreateJacobLeaderboard {
+	public class CreateJacobLeaderboard
+	{
 		public required string Title { get; set; }
 
 		public string? ChannelId { get; set; }
@@ -25,7 +27,8 @@ public class CreateJacobLeaderboardRequest : DiscordIdRequest {
 	}
 }
 
-internal sealed class CreateJacobFeatureRequestValidator : Validator<CreateJacobLeaderboardRequest> {
+internal sealed class CreateJacobFeatureRequestValidator : Validator<CreateJacobLeaderboardRequest>
+{
 	public CreateJacobFeatureRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 

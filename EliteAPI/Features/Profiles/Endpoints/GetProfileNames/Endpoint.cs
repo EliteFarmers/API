@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Profiles.Endpoints.GetProfileNames;
 internal sealed class GetProfileNamesEndpoint(
 	DataContext context,
 	IProfileService profileService
-) : Endpoint<PlayerRequest, List<ProfileNamesDto>> {
+) : Endpoint<PlayerRequest, List<ProfileNamesDto>>
+{
 	public override void Configure() {
 		Get("/profiles/{Player}/names");
 		AllowAnonymous();

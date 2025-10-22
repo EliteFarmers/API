@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Monetization.Endpoints.RemoveTestEntitlement;
 
 internal sealed class RemoveTestEntitlementEndpoint(
 	IMonetizationService monetizationService)
-	: Endpoint<UserEntitlementRequest> {
+	: Endpoint<UserEntitlementRequest>
+{
 	public override void Configure() {
 		Delete("/account/{DiscordId}/entitlement/{ProductId}");
 		Policies(ApiUserPolicies.Admin);

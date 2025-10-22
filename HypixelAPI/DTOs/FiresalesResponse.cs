@@ -2,12 +2,14 @@ using System.Text.Json.Serialization;
 
 namespace EliteFarmers.HypixelAPI.DTOs;
 
-public class FiresalesResponse {
+public class FiresalesResponse
+{
 	public bool Success { get; set; }
 	public List<FiresaleItem> Sales { get; set; } = [];
 }
 
-public class FiresaleItem {
+public class FiresaleItem
+{
 	[JsonPropertyName("item_id")] public required string ItemId { get; set; }
 
 	/// <summary>

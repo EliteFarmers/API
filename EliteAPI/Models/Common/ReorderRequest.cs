@@ -5,15 +5,18 @@ namespace EliteAPI.Models.Common;
 
 using FastEndpoints;
 
-public class ReorderIntRequest {
+public class ReorderIntRequest
+{
 	public List<ReorderElement<int>> Elements { get; set; } = [];
 }
 
-public class ReorderStringRequest {
+public class ReorderStringRequest
+{
 	public List<ReorderElement<string>> Elements { get; set; } = [];
 }
 
-internal sealed class ReorderIntRequestValidator : Validator<ReorderIntRequest> {
+internal sealed class ReorderIntRequestValidator : Validator<ReorderIntRequest>
+{
 	public ReorderIntRequestValidator() {
 		RuleFor(x => x.Elements)
 			.NotEmpty()
@@ -25,7 +28,8 @@ internal sealed class ReorderIntRequestValidator : Validator<ReorderIntRequest> 
 	}
 }
 
-internal sealed class ReorderStringRequestValidator : Validator<ReorderStringRequest> {
+internal sealed class ReorderStringRequestValidator : Validator<ReorderStringRequest>
+{
 	public ReorderStringRequestValidator() {
 		RuleFor(x => x.Elements)
 			.NotEmpty()

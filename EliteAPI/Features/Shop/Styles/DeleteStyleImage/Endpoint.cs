@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.DeleteStyleImage;
 
-internal sealed class DeleteStyleImageRequest {
+internal sealed class DeleteStyleImageRequest
+{
 	public int StyleId { get; set; }
 	public required string ImagePath { get; set; }
 }
@@ -17,7 +18,8 @@ internal sealed class DeleteStyleImageEndpoint(
 	DataContext context,
 	IOutputCacheStore cacheStore,
 	IObjectStorageService objectStorageService
-) : Endpoint<DeleteStyleImageRequest> {
+) : Endpoint<DeleteStyleImageRequest>
+{
 	public override void Configure() {
 		Delete("/product/style/{StyleId}/images/{ImagePath}");
 		Policies(ApiUserPolicies.Admin);

@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Account.UpdateSettings;
 
 internal sealed class UpdateAccountEndpoint(
 	IAccountService accountService
-) : Endpoint<UpdateUserSettingsDto, ErrorOr<Success>> {
+) : Endpoint<UpdateUserSettingsDto, ErrorOr<Success>>
+{
 	public override void Configure() {
 		Patch("/account/settings");
 		Version(0);
@@ -27,7 +28,8 @@ internal sealed class UpdateAccountEndpoint(
 	}
 }
 
-internal sealed class UpdateUserSettingsDtoValidator : Validator<UpdateUserSettingsDto> {
+internal sealed class UpdateUserSettingsDtoValidator : Validator<UpdateUserSettingsDto>
+{
 	public UpdateUserSettingsDtoValidator() {
 		RuleFor(x => x.Suffix)
 			.Must(IsEmoji)

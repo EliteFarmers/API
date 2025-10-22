@@ -20,7 +20,8 @@ public class GuildService(
 	DataContext context,
 	IMapper mapper,
 	IMessageService messageService)
-	: IGuildService {
+	: IGuildService
+{
 	public async Task<ActionResult>
 		SendLeaderboardPanel(ulong guildId, string channelId, string authorId, string lbId) {
 		var guild = await discordService.GetGuild(guildId);

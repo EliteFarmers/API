@@ -5,14 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Shop.Styles.GetStyle;
 
-internal sealed class GetStyleRequest {
+internal sealed class GetStyleRequest
+{
 	public int StyleId { get; set; }
 }
 
 internal sealed class GetStyleEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : Endpoint<GetStyleRequest, WeightStyleWithDataDto> {
+) : Endpoint<GetStyleRequest, WeightStyleWithDataDto>
+{
 	public override void Configure() {
 		Get("/product/style/{StyleId}");
 		AllowAnonymous();

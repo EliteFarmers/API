@@ -4,11 +4,13 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Guilds.User.SetInvite;
 
-public class SetInviteRequest : DiscordIdRequest {
+public class SetInviteRequest : DiscordIdRequest
+{
 	[FromBody] public required string Invite { get; set; }
 }
 
-internal sealed class SetInviteRequestValidator : Validator<SetInviteRequest> {
+internal sealed class SetInviteRequestValidator : Validator<SetInviteRequest>
+{
 	public SetInviteRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 

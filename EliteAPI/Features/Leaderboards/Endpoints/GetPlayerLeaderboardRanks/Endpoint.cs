@@ -6,7 +6,8 @@ using FastEndpoints.Swagger;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetPlayerLeaderboardRanks;
 
-internal sealed class LeaderboardRanksRequest : PlayerProfileUuidRequest {
+internal sealed class LeaderboardRanksRequest : PlayerProfileUuidRequest
+{
 	/// <summary>
 	/// Maximum rank number to return. Used if you don't want ranks higher than a certain number.
 	/// </summary>
@@ -14,14 +15,16 @@ internal sealed class LeaderboardRanksRequest : PlayerProfileUuidRequest {
 	public int? Max { get; set; }
 }
 
-internal sealed class LeaderboardRanksResponse {
+internal sealed class LeaderboardRanksResponse
+{
 	public Dictionary<string, PlayerLeaderboardEntryWithRankDto> Ranks { get; set; } = new();
 }
 
 internal sealed class GetPlayerLeaderboardRanksEndpoint(
 	ILbService lbService,
 	IMemberService memberService
-) : Endpoint<LeaderboardRanksRequest, LeaderboardRanksResponse> {
+) : Endpoint<LeaderboardRanksRequest, LeaderboardRanksResponse>
+{
 	public override void Configure() {
 		Get("/leaderboards/{PlayerUuid}/{ProfileUuid}");
 		AllowAnonymous();

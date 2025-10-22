@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Configuration.Settings;
 
-public class MessagingSettings {
+public class MessagingSettings
+{
 	public string? ErrorAlertServer { get; set; }
 	public string? ErrorAlertChannel { get; set; }
 	public string? ErrorAlertPing { get; set; }

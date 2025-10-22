@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Profiles;
 
 namespace EliteAPI.Parsers.Events;
 
-public static class CollectionEventProgressParser {
+public static class CollectionEventProgressParser
+{
 	public static void UpdateScore(this CollectionEventMember eventMember, CollectionEvent @event,
 		ProfileMember? member = null) {
 		if (member is not null) {

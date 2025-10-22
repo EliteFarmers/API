@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Admin.Endpoints;
 
 internal sealed class RefreshDiscordGuildEndpoint(
 	IDiscordService discordService)
-	: Endpoint<GuildIdRequest> {
+	: Endpoint<GuildIdRequest>
+{
 	public override void Configure() {
 		Post("/admin/guild/{GuildId}/refresh");
 		Policies(ApiUserPolicies.Moderator);

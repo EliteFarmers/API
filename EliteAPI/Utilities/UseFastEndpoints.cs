@@ -5,7 +5,8 @@ using FastEndpoints;
 
 namespace EliteAPI.Utilities;
 
-public static class UseFastEndpoints {
+public static class UseFastEndpoints
+{
 	public static WebApplication UseEliteFastEndpoints(this WebApplication app) {
 		app.UseFastEndpoints(c => {
 			c.Binding.ReflectionCache.AddFromEliteAPI();

@@ -23,7 +23,8 @@ public class RefreshBotGuildsBackgroundJob(
 	IMessageService messageService,
 	IGuildImageService guildImageService,
 	IImageService imageService
-) : IJob {
+) : IJob
+{
 	public static readonly JobKey Key = new(nameof(RefreshBotGuildsBackgroundJob));
 	private const string ClientName = "EliteAPI";
 

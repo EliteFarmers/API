@@ -11,7 +11,8 @@ internal sealed class GetAccountFromDiscordEndpoint(
 	IAccountService accountService,
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, MinecraftAccountDto> {
+) : Endpoint<DiscordIdRequest, MinecraftAccountDto>
+{
 	public override void Configure() {
 		Get("/account/{DiscordId:long:minlength(17)}");
 		AllowAnonymous();

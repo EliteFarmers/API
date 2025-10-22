@@ -15,7 +15,8 @@ internal sealed class GetLinkedAccountsEndpoint(
 	DataContext context,
 	IProfileService profileService,
 	AutoMapper.IMapper mapper
-) : Endpoint<DiscordIdRequest, Result> {
+) : Endpoint<DiscordIdRequest, Result>
+{
 	public override void Configure() {
 		Get("/player/{DiscordId}");
 		AllowAnonymous();

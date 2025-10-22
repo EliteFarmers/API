@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Guilds.Admin.SetEvents;
 internal sealed class SetEventFeatureEndpoint(
 	IDiscordService discordService,
 	DataContext context)
-	: Endpoint<SetEventFeatureRequest> {
+	: Endpoint<SetEventFeatureRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events");
 		Policies(ApiUserPolicies.Admin);

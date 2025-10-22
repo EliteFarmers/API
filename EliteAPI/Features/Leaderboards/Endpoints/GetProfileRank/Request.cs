@@ -8,7 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetProfileRank;
 
-public class GetProfileRankRequest : ProfileUuidRequest {
+public class GetProfileRankRequest : ProfileUuidRequest
+{
 	/// <summary>
 	/// Id of leaderboard
 	/// </summary>
@@ -68,7 +69,8 @@ public class GetProfileRankRequest : ProfileUuidRequest {
 	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
 }
 
-internal sealed class GetProfileRankRequestValidator : Validator<GetProfileRankRequest> {
+internal sealed class GetProfileRankRequestValidator : Validator<GetProfileRankRequest>
+{
 	public GetProfileRankRequestValidator() {
 		Include(new ProfileUuidRequestValidator());
 

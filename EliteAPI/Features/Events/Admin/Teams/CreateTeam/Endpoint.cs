@@ -11,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Events.Admin.CreateTeam;
 
-internal sealed class CreateTeamRequest : DiscordIdRequest {
+internal sealed class CreateTeamRequest : DiscordIdRequest
+{
 	public ulong EventId { get; set; }
 	[FastEndpoints.FromBody] public required CreateEventTeamDto Team { get; set; }
 	[QueryParam] public string? UserId { get; set; }
@@ -21,7 +22,8 @@ internal sealed class CreateTeamAdminEndpoint(
 	IEventTeamService teamService,
 	DataContext context,
 	IOutputCacheStore cacheStore
-) : Endpoint<CreateTeamRequest> {
+) : Endpoint<CreateTeamRequest>
+{
 	public override void Configure() {
 		Post("/guild/{DiscordId}/events/{EventId}/teams");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
@@ -56,7 +58,8 @@ internal sealed class CreateTeamAdminEndpoint(
 	}
 }
 
-internal sealed class CreateTeamRequestValidator : Validator<CreateTeamRequest> {
+internal sealed class CreateTeamRequestValidator : Validator<CreateTeamRequest>
+{
 	public CreateTeamRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 	}

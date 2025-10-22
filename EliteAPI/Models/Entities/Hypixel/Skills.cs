@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
-public class SkillName {
+public class SkillName
+{
 	public const string Combat = "combat";
 	public const string Mining = "mining";
 	public const string Foraging = "foraging";
@@ -17,7 +18,8 @@ public class SkillName {
 	public const string Social = "social";
 }
 
-public class Skills {
+public class Skills
+{
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public int Id { get; set; }

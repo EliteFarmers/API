@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Account.UpdateBadges;
 
 internal sealed class UpdateBadgesEndpoint(
 	DataContext context
-) : Endpoint<UpdateBadgesRequest> {
+) : Endpoint<UpdateBadgesRequest>
+{
 	public override void Configure() {
 		Post("/account/{PlayerUuid}/badges");
 		Version(0);

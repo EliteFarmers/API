@@ -5,10 +5,12 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Guilds.User.ContestPings.UpdateContestPings;
 
-public class UpdateContestPingsRequest : DiscordIdRequest {
+public class UpdateContestPingsRequest : DiscordIdRequest
+{
 	[FromBody] public required UpdateContestPings Settings { get; set; }
 
-	public class UpdateContestPings {
+	public class UpdateContestPings
+	{
 		/// <summary>
 		/// Indicates whether the contest pings feature is enabled for the guild.
 		/// </summary>
@@ -41,7 +43,8 @@ public class UpdateContestPingsRequest : DiscordIdRequest {
 	}
 }
 
-internal sealed class UpdateContestPingsRequestValidator : Validator<UpdateContestPingsRequest> {
+internal sealed class UpdateContestPingsRequestValidator : Validator<UpdateContestPingsRequest>
+{
 	public UpdateContestPingsRequestValidator() {
 		Include(new DiscordIdRequestValidator());
 

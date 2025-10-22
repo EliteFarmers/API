@@ -17,7 +17,8 @@ public class EventTeamService(
 	IEventService eventService,
 	IOptions<ConfigEventSettings> config,
 	DataContext context)
-	: IEventTeamService {
+	: IEventTeamService
+{
 	private readonly ImmutableList<string> _eventTeamWordList =
 		ImmutableList.CreateRange(config.Value.TeamsWordList.First
 			.Concat(config.Value.TeamsWordList.Second)

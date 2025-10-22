@@ -4,7 +4,8 @@ using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
-public class GardenDto {
+public class GardenDto
+{
 	/// <summary>
 	/// Profile ID
 	/// </summary>
@@ -57,7 +58,8 @@ public class GardenDto {
 }
 
 /// <inheritdoc />
-public class ComposterDto : ComposterData {
+public class ComposterDto : ComposterData
+{
 	/// <summary>
 	/// Last save time in unix seconds
 	/// </summary>

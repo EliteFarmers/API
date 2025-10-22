@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Shop.Products.GetProducts;
 internal sealed class GetProductsEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : EndpointWithoutRequest<List<ProductDto>> {
+) : EndpointWithoutRequest<List<ProductDto>>
+{
 	public override void Configure() {
 		Get("/products");
 		AllowAnonymous();

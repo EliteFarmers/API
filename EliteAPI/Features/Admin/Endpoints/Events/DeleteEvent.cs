@@ -10,7 +10,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Events;
 internal sealed class DeleteEventApprovalEndpoint(
 	DataContext context,
 	IObjectStorageService objectStorageService)
-	: Endpoint<EventIdRequest> {
+	: Endpoint<EventIdRequest>
+{
 	public override void Configure() {
 		Delete("/admin/events/{EventId}");
 		Policies(ApiUserPolicies.Admin);

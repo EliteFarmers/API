@@ -1,13 +1,16 @@
 ﻿using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Confirmations.Models;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
+using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Firesales.Models;
 using EliteAPI.Features.Resources.Items.Models;
+using EliteAPI.Features.Textures.Models;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Farming;
@@ -21,7 +24,8 @@ using Npgsql;
 namespace EliteAPI.Data;
 
 public class DataContext(DbContextOptions<DataContext> options, IConfiguration config)
-	: IdentityDbContext<ApiUser>(options) {
+	: IdentityDbContext<ApiUser>(options)
+{
 	private static NpgsqlDataSource? Source { get; set; }
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
@@ -86,6 +90,9 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<Skills> Skills { get; set; } = null!;
 	public DbSet<Farming> Farming { get; set; } = null!;
 	public DbSet<ChocolateFactory> ChocolateFactories { get; set; } = null!;
+	public DbSet<HypixelInventory> HypixelInventory { get; set; } = null!;
+	public DbSet<HypixelItem> HypixelItems { get; set; } = null!;
+	public DbSet<HypixelItemTexture> HypixelItemTextures { get; set; } = null!;
 
 	// Discord
 	public DbSet<Guild> Guilds { get; set; } = null!;
@@ -151,4 +158,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	// Annoucements 
 	public DbSet<Announcement> Announcements { get; set; } = null!;
 	public DbSet<DismissedAnnouncement> DismissedAnnouncements { get; set; } = null!;
+	
+	// Confirmations
+	public DbSet<Confirmation> Confirmations { get; set; } = null!;
+	public DbSet<UserConfirmation> UserConfirmations { get; set; } = null!;
 }

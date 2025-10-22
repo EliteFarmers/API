@@ -5,7 +5,8 @@ using EliteAPI.Models.Entities.Discord;
 
 namespace EliteAPI.Features.Monetization.Models;
 
-public class ShopOrder {
+public class ShopOrder
+{
 	[Key] public Guid Id { get; set; } = Guid.NewGuid();
 
 	[ForeignKey(nameof(Buyer))] public ulong BuyerId { get; set; }
@@ -27,7 +28,8 @@ public class ShopOrder {
 	public virtual ICollection<ShopOrderItem> OrderItems { get; set; } = new List<ShopOrderItem>();
 }
 
-public enum PaymentProvider {
+public enum PaymentProvider
+{
 	None = 0,
 	Discord = 1,
 	Stripe = 2,
@@ -35,7 +37,8 @@ public enum PaymentProvider {
 	Free = 4
 }
 
-public enum OrderStatus {
+public enum OrderStatus
+{
 	Pending = 0,
 	Completed = 1,
 	Failed = 2,

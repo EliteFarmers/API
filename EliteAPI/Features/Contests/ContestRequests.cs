@@ -3,28 +3,32 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Contests;
 
-public class SkyBlockYearRequest {
+public class SkyBlockYearRequest
+{
 	/// <summary>
 	/// SkyBlock year
 	/// </summary>
 	public int Year { get; set; }
 }
 
-public class SkyBlockMonthRequest : SkyBlockYearRequest {
+public class SkyBlockMonthRequest : SkyBlockYearRequest
+{
 	/// <summary>
 	/// SkyBlock month
 	/// </summary>
 	public int Month { get; set; }
 }
 
-public class SkyBlockDayRequest : SkyBlockMonthRequest {
+public class SkyBlockDayRequest : SkyBlockMonthRequest
+{
 	/// <summary>
 	/// SkyBlock day
 	/// </summary>
 	public int Day { get; set; }
 }
 
-internal sealed class SkyBlockYearRequestValidator : Validator<SkyBlockYearRequest> {
+internal sealed class SkyBlockYearRequestValidator : Validator<SkyBlockYearRequest>
+{
 	public SkyBlockYearRequestValidator() {
 		RuleFor(r => r.Year)
 			.GreaterThan(0)
@@ -32,7 +36,8 @@ internal sealed class SkyBlockYearRequestValidator : Validator<SkyBlockYearReque
 	}
 }
 
-internal sealed class SkyBlockMonthRequestValidator : Validator<SkyBlockMonthRequest> {
+internal sealed class SkyBlockMonthRequestValidator : Validator<SkyBlockMonthRequest>
+{
 	public SkyBlockMonthRequestValidator() {
 		Include(new SkyBlockYearRequestValidator());
 		RuleFor(r => r.Month)
@@ -42,7 +47,8 @@ internal sealed class SkyBlockMonthRequestValidator : Validator<SkyBlockMonthReq
 	}
 }
 
-internal sealed class SkyBlockDayRequestValidator : Validator<SkyBlockDayRequest> {
+internal sealed class SkyBlockDayRequestValidator : Validator<SkyBlockDayRequest>
+{
 	public SkyBlockDayRequestValidator() {
 		Include(new SkyBlockMonthRequestValidator());
 		RuleFor(r => r.Day)

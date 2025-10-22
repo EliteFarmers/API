@@ -5,7 +5,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Parsers.Farming;
 
-public static class FarmingToolParser {
+public static class FarmingToolParser
+{
 	public static Dictionary<string, EventToolState> ExtractToolStates(this List<ItemDto> items,
 		Dictionary<string, EventToolState> existing) {
 		var newStates = items.ExtractToolStates();

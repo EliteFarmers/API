@@ -7,7 +7,8 @@ namespace EliteAPI.Features.Admin.Endpoints.Admins;
 
 internal sealed class GetRolesEndpoint(
 	DataContext context)
-	: EndpointWithoutRequest<List<string>> {
+	: EndpointWithoutRequest<List<string>>
+{
 	public override void Configure() {
 		Get("/admin/roles");
 		Policies(ApiUserPolicies.Moderator);
@@ -20,7 +21,7 @@ internal sealed class GetRolesEndpoint(
 		var result = await context.Roles.AsNoTracking()
 			.Select(r => r.Name)
 			.Where(r => r != null)
-			.ToListAsync(c);
+			.ToListAsync(c) as List<string>;
 
 		await Send.OkAsync(result, c);
 	}

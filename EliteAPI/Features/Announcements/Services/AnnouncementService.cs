@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Announcements;
 
-internal interface IAnnouncementService {
+internal interface IAnnouncementService
+{
 	Task CreateAnnouncementAsync(CreateAnnouncementDto dto, CancellationToken c = default);
 	Task<List<AnnouncementDto>> GetAnnouncements(CancellationToken c);
 
@@ -16,7 +17,8 @@ internal interface IAnnouncementService {
 }
 
 [RegisterService<IAnnouncementService>(LifeTime.Scoped)]
-public class AnnouncementService(DataContext context, IOutputCacheStore cacheStore) : IAnnouncementService {
+public class AnnouncementService(DataContext context, IOutputCacheStore cacheStore) : IAnnouncementService
+{
 	public async Task CreateAnnouncementAsync(CreateAnnouncementDto dto, CancellationToken c = default) {
 		await context.Announcements.AddAsync(dto.ToModel(), c);
 		await context.SaveChangesAsync(c);

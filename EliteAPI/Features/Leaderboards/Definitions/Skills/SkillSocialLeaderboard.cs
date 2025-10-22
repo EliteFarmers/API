@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class SkillSocialLeaderboard : IMemberLeaderboardDefinition {
+public class SkillSocialLeaderboard : IMemberLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Social Experience",
 		ShortTitle = "Social XP",
@@ -19,7 +20,8 @@ public class SkillSocialLeaderboard : IMemberLeaderboardDefinition {
 	}
 }
 
-public class SkillSocialProfileLeaderboard : IProfileLeaderboardDefinition {
+public class SkillSocialProfileLeaderboard : IProfileLeaderboardDefinition
+{
 	public LeaderboardInfo Info { get; } = new() {
 		Title = "Co-op Social Experience",
 		ShortTitle = "Co-op Social XP",

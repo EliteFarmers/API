@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Authentication;
 
-public class DiscordBotOnlyFilter : IEndpointFilter {
+public class DiscordBotOnlyFilter : IEndpointFilter
+{
 	public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next) {
 		if (context.HttpContext.Request.Headers.Authorization.Count < 1)
 			return Results.Problem("Only the bot can access this endpoint.",

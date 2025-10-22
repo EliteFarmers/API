@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Badges.GetBadges;
 internal sealed class GetBadgesEndpoint(
 	DataContext context,
 	AutoMapper.IMapper mapper
-) : EndpointWithoutRequest<List<BadgeDto>> {
+) : EndpointWithoutRequest<List<BadgeDto>>
+{
 	public override void Configure() {
 		Get("/badges");
 		AllowAnonymous();

@@ -3,7 +3,8 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Models.Entities.Events;
 
-public class MedalEvent : Event {
+public class MedalEvent : Event
+{
 	[Column("Data", TypeName = "jsonb")] public MedalEventData Data { get; set; } = new();
 
 	public MedalEvent() {
@@ -11,7 +12,8 @@ public class MedalEvent : Event {
 	}
 }
 
-public class MedalEventMember : EventMember, IComparable<MedalEventMember> {
+public class MedalEventMember : EventMember, IComparable<MedalEventMember>
+{
 	[Column("Data", TypeName = "jsonb")] public MedalEventMemberData Data { get; set; } = new();
 
 	public MedalEventMember() {
@@ -46,7 +48,8 @@ public class MedalEventMember : EventMember, IComparable<MedalEventMember> {
 	}
 }
 
-public class MedalEventData {
+public class MedalEventData
+{
 	public Dictionary<ContestMedal, int> MedalWeights { get; set; } = new() {
 		{ ContestMedal.Bronze, 1 },
 		{ ContestMedal.Silver, 2 },
@@ -56,7 +59,8 @@ public class MedalEventData {
 	};
 }
 
-public class MedalEventMemberData {
+public class MedalEventMemberData
+{
 	public int ContestParticipations { get; set; }
 	public Dictionary<ContestMedal, int> EarnedMedals { get; set; } = new();
 }

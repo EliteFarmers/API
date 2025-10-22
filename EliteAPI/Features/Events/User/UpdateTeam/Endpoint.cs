@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.OutputCaching;
 
 namespace EliteAPI.Features.Events.User.UpdateTeam;
 
-internal sealed class UpdateTeamRequest {
+internal sealed class UpdateTeamRequest
+{
 	public ulong EventId { get; set; }
 	public int TeamId { get; set; }
 	[FastEndpoints.FromBody] public required UpdateEventTeamDto Team { get; set; }
@@ -17,7 +18,8 @@ internal sealed class UpdateTeamRequest {
 internal sealed class UpdateTeamEndpoint(
 	IOutputCacheStore cacheStore,
 	IEventTeamService teamService)
-	: Endpoint<UpdateTeamRequest> {
+	: Endpoint<UpdateTeamRequest>
+{
 	public override void Configure() {
 		Patch("/event/{EventId}/team/{TeamId}");
 		Version(0);

@@ -9,7 +9,8 @@ namespace EliteAPI.Features.Contests.GetContestsInMonth;
 internal sealed class GetContestsInMonthEndpoint(
 	AutoMapper.IMapper mapper,
 	DataContext context)
-	: Endpoint<SkyBlockMonthRequest, Dictionary<int, List<JacobContestDto>>> {
+	: Endpoint<SkyBlockMonthRequest, Dictionary<int, List<JacobContestDto>>>
+{
 	public override void Configure() {
 		Get("/contests/at/{Year}/{Month}");
 		AllowAnonymous();

@@ -11,7 +11,8 @@ namespace EliteAPI.Features.Shop.Products.ClaimProduct;
 internal sealed class ClaimProductEndpoint(
 	DataContext context,
 	IMonetizationService monetizationService
-) : Endpoint<DiscordIdRequest> {
+) : Endpoint<DiscordIdRequest>
+{
 	public override void Configure() {
 		Post("/product/{DiscordId}/claim");
 		Version(0);

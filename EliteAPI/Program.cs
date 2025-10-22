@@ -8,6 +8,7 @@ using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Textures.Services;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
@@ -89,7 +90,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 
 builder.Services.AddFastEndpoints(o => { o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All; });
 
-builder.Services.AddSkyblockRepo(opt => { opt.UseNeuRepo = true; });
+builder.Services.AddSkyblockRepo(opt => {
+	opt.UseNeuRepo = true;
+	opt.Matcher.Register(new EliteItemRepoMatcher());
+	opt.Matcher.Register(new RenderContextRepoMatcher());
+});
 
 var app = builder.Build();
 

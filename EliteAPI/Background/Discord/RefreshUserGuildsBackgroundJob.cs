@@ -11,7 +11,8 @@ public class RefreshUserGuildsBackgroundJob(
 	IDiscordService discordService,
 	IConnectionMultiplexer redis,
 	IMessageService messageService
-) : IJob {
+) : IJob
+{
 	public static readonly JobKey Key = new(nameof(RefreshUserGuildsBackgroundJob));
 
 	public async Task Execute(IJobExecutionContext executionContext) {

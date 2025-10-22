@@ -13,7 +13,8 @@ using Result = Results<Ok<GardenDto>, NotFound>;
 internal sealed class GetGardenEndpoint(
 	IProfileService profileService,
 	IMapper mapper)
-	: Endpoint<ProfileUuidRequest, Result> {
+	: Endpoint<ProfileUuidRequest, Result>
+{
 	public override void Configure() {
 		Get("/garden/{ProfileUuid}");
 		AllowAnonymous();

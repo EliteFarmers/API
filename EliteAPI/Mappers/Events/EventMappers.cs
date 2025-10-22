@@ -6,7 +6,8 @@ using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Mappers.Events;
 
-public class EventMappers : Profile {
+public class EventMappers : Profile
+{
 	public EventMappers() {
 		CreateMap<Event, EventDetailsDto>()
 			.ForMember(e => e.Id, opt => opt.MapFrom(e => e.Id.ToString()))
@@ -59,7 +60,8 @@ public class EventMappers : Profile {
 	}
 }
 
-public class EventTeamMappers : Profile {
+public class EventTeamMappers : Profile
+{
 	public EventTeamMappers() {
 		CreateMap<EventTeam, EventTeamDto>()
 			.ForMember(e => e.EventId, opt => opt.MapFrom(e => e.EventId.ToString()))
@@ -79,7 +81,8 @@ public class EventTeamMappers : Profile {
 	}
 }
 
-public class EventMemberMappers : Profile {
+public class EventMemberMappers : Profile
+{
 	public EventMemberMappers() {
 		CreateMap<EventMember, EventMemberDto>()
 			.ForMember(e => e.PlayerUuid, opt => opt.MapFrom(e => e.ProfileMember.PlayerUuid))

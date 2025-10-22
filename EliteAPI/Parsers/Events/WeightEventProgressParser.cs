@@ -4,7 +4,8 @@ using EliteAPI.Parsers.Farming;
 
 namespace EliteAPI.Parsers.Events;
 
-public static class WeightEventProgressParser {
+public static class WeightEventProgressParser
+{
 	/// <summary>
 	/// Cap mushrooms attributed to Mushroom Eater perk to 95% of 72,000 per hour
 	/// </summary>

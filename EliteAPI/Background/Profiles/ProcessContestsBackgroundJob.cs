@@ -9,7 +9,8 @@ namespace EliteAPI.Background.Profiles;
 public class ProcessContestsBackgroundJob(
 	IMessageService messageService,
 	IContestsProcessorService contestsProcessorService)
-	: IJob {
+	: IJob
+{
 	public static readonly JobKey Key = new(nameof(ProcessContestsBackgroundJob));
 
 	public async Task Execute(IJobExecutionContext executionContext) {

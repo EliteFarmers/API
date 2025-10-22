@@ -4,13 +4,15 @@ using FluentValidation;
 
 namespace EliteAPI.Models.Common;
 
-public class PlayerProfileUuidRequest : PlayerUuidRequest {
+public class PlayerProfileUuidRequest : PlayerUuidRequest
+{
 	public required string ProfileUuid { get; set; }
 
 	[JsonIgnore] public string ProfileUuidFormatted => ProfileUuid.ToLowerInvariant().Replace("-", "");
 }
 
-internal sealed class PlayerProfileUuidRequestValidator : Validator<PlayerProfileUuidRequest> {
+internal sealed class PlayerProfileUuidRequestValidator : Validator<PlayerProfileUuidRequest>
+{
 	public PlayerProfileUuidRequestValidator() {
 		Include(new PlayerUuidRequestValidator());
 		RuleFor(x => x.ProfileUuid)

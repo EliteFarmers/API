@@ -6,7 +6,8 @@ using EliteAPI.Services.Interfaces;
 
 namespace EliteAPI.Services;
 
-public class ObjectStorageService : IObjectStorageService {
+public class ObjectStorageService : IObjectStorageService
+{
 	private readonly AmazonS3Client? _client;
 	private readonly string _bucketName;
 	private readonly ILogger<ObjectStorageService> _logger;

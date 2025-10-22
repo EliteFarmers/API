@@ -6,7 +6,8 @@ namespace EliteAPI.Features.Contests.GetContestsInDay;
 
 internal sealed class GetContestsInDayEndpoint(
 	IContestsService contestsService)
-	: Endpoint<SkyBlockDayRequest, List<JacobContestWithParticipationsDto>> {
+	: Endpoint<SkyBlockDayRequest, List<JacobContestWithParticipationsDto>>
+{
 	public override void Configure() {
 		Get("/contests/at/{Year}/{Month}/{Day}");
 		AllowAnonymous();

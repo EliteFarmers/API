@@ -6,7 +6,8 @@ using Profile = AutoMapper.Profile;
 
 namespace EliteAPI.Mappers.PlayerData;
 
-public class PlayerDataMapper : Profile {
+public class PlayerDataMapper : Profile
+{
 	public PlayerDataMapper() {
 		CreateMap<Models.Entities.Hypixel.PlayerData, Models.Entities.Hypixel.PlayerData>()
 			.ForMember(x => x.Id, opt => opt.Ignore());
@@ -27,7 +28,8 @@ public class PlayerDataMapper : Profile {
 	}
 }
 
-public class SocialMediaLinksMapper : Profile {
+public class SocialMediaLinksMapper : Profile
+{
 	public SocialMediaLinksMapper() {
 		CreateMap<SocialMediaLinks, SocialMediaLinksDto>();
 	}

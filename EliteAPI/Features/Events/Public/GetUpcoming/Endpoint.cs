@@ -6,7 +6,8 @@ using FastEndpoints.Swagger;
 
 namespace EliteAPI.Features.Events.Public.GetUpcoming;
 
-internal sealed class GetUpcomingEventsRequest {
+internal sealed class GetUpcomingEventsRequest
+{
 	/// <summary>
 	/// Offset by an amount of days to also include recently ended events.
 	/// </summary>
@@ -17,7 +18,8 @@ internal sealed class GetUpcomingEventsRequest {
 
 internal sealed class GetUpcomingEventsEndpoint(
 	IEventService eventService)
-	: Endpoint<GetUpcomingEventsRequest, List<EventDetailsDto>> {
+	: Endpoint<GetUpcomingEventsRequest, List<EventDetailsDto>>
+{
 	public override void Configure() {
 		Get("/events");
 		AllowAnonymous();

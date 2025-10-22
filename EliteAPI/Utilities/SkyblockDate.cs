@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Utilities;
 
-public class SkyblockDate {
+public class SkyblockDate
+{
 	public const int SkyblockEpochSeconds = 1560275700;
 	public int Year { get; set; }
 	public int Month { get; set; }
@@ -37,8 +38,7 @@ public class SkyblockDate {
 		Day = day;
 	}
 
-	public SkyblockDate(DateTime dateTime) : this(new DateTimeOffset(dateTime).ToUnixTimeSeconds()) {
-	}
+	public SkyblockDate(DateTime dateTime) : this(new DateTimeOffset(dateTime).ToUnixTimeSeconds()) { }
 
 	public bool IsValid() {
 		return Year >= 0 && Month >= 0 && Day >= 0;

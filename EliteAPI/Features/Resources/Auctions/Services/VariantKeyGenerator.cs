@@ -7,7 +7,8 @@ using Microsoft.Extensions.Options;
 namespace EliteAPI.Features.Resources.Auctions.Services;
 
 [RegisterService<VariantKeyGenerator>(LifeTime.Singleton)]
-public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogger<VariantKeyGenerator> logger) {
+public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogger<VariantKeyGenerator> logger)
+{
 	private readonly List<VariantConfigEntry> _configurations = settings.Value.Variants;
 	public const string JoinSeparator = "|";
 	private const string MinedCrops = "mined_crops";

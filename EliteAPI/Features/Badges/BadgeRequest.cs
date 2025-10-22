@@ -3,14 +3,16 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Badges;
 
-public class BadgeRequest {
+public class BadgeRequest
+{
 	/// <summary>
 	/// ID of the badge
 	/// </summary>
 	public int BadgeId { get; set; }
 }
 
-internal sealed class BadgeRequestValidator : Validator<BadgeRequest> {
+internal sealed class BadgeRequestValidator : Validator<BadgeRequest>
+{
 	public BadgeRequestValidator() {
 		RuleFor(x => x.BadgeId)
 			.NotEmpty()

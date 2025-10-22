@@ -32,7 +32,8 @@ public class DiscordService(
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IConnectionMultiplexer redis,
 	IGuildImageService guildImageService)
-	: IDiscordService {
+	: IDiscordService
+{
 	private const string ClientName = "EliteAPI";
 	private const string Scopes = "identify guilds role_connections.write";
 	private const string DiscordBaseUrl = "https://discord.com/api/v10";
@@ -612,7 +613,8 @@ public class DiscordService(
 	}
 }
 
-public class DiscordUpdateResponse {
+public class DiscordUpdateResponse
+{
 	public required string AccessToken { get; set; }
 	public DateTimeOffset AccessTokenExpires { get; set; }
 	public required string RefreshToken { get; set; }
@@ -620,7 +622,8 @@ public class DiscordUpdateResponse {
 	public EliteAccount? Account { get; set; }
 }
 
-public static class DiscordExtensions {
+public static class DiscordExtensions
+{
 	private const ulong Admin = 0x8;
 	private const ulong ManageGuild = 0x20;
 

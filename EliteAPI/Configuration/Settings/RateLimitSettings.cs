@@ -1,6 +1,7 @@
 ﻿namespace EliteAPI.Configuration.Settings;
 
-public class ConfigApiRateLimitSettings {
+public class ConfigApiRateLimitSettings
+{
 	public const string RateLimitName = "ApiRateLimit";
 	public int PermitLimit { get; set; } = 100;
 	public int Window { get; set; } = 10;
@@ -13,7 +14,8 @@ public class ConfigApiRateLimitSettings {
 	public bool AutoReplenishment { get; set; } = false;
 }
 
-public class ConfigGlobalRateLimitSettings {
+public class ConfigGlobalRateLimitSettings
+{
 	public static ConfigGlobalRateLimitSettings Settings { get; set; } = new();
 
 	public const string RateLimitName = "GlobalRateLimit";
