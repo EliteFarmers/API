@@ -10,6 +10,6 @@ public class UnparsedApiData
 	public Dictionary<string, int> LevelCaps { get; set; } = new();
 	public Dictionary<string, int> Perks { get; set; } = new();
 	public List<TempStatBuffResponse> TempStatBuffs { get; set; } = new();
-	public JsonObject AccessoryBagSettings { get; set; } = new();
+	public RawAccessoryBagStorage AccessoryBagSettings { get; set; } = new();
 	public JsonObject Bestiary { get; set; } = new();
 }

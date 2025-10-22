@@ -423,7 +423,7 @@ public class ProfileProcessorService(
 			},
 			Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
-			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
+			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),
 			Bestiary = incomingData.Bestiary ?? new JsonObject()
 		};
 

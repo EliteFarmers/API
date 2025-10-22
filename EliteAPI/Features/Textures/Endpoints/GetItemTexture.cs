@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using System.Text.Json.Serialization;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Textures.Services;
 using FastEndpoints;
@@ -8,6 +9,14 @@ namespace EliteAPI.Features.Textures.Endpoints;
 internal sealed class GetItemTextureRequest
 {
 	public string ItemId { get; set; }
+	
+	[QueryParam]
+	public string? Packs { get; set; }
+	
+	[JsonIgnore]
+	public List<string> PackList => string.IsNullOrWhiteSpace(Packs)
+		? []
+		: Packs.Split(',').Select(p => p.Trim()).ToList();
 }
 
 internal sealed class GetItemTextureEndpoint(
