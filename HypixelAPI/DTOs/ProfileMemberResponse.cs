@@ -43,8 +43,30 @@ public class GardenPlayerDataResponse
 	[JsonPropertyName("larva_consumed")] public int LarvaConsumed { get; set; }
 }
 
+public class RawBestiaryResponse
+{
+	public RawBestiaryKills Kills { get; set; } = new();
+	public Dictionary<string, int> Deaths { get; set; } = new(); 
+	public RawBestiaryMilestone Milestone { get; set; } = new();
+}
+
+public class RawBestiaryKills
+{
+	[JsonPropertyName("last_killed_mob")]
+	public string? LastKilledMob { get; set; }
+	
+	[JsonExtensionData]
+	public Dictionary<string, int> Kills { get; set; } = new();
+}
+
+public class RawBestiaryMilestone
+{
+	[JsonPropertyName("last_claimed_milestone")]
+	public int LastClaimedMilestone { get; set; }
+}
+
 public class RawAccessoryBagStorage {
-	public Dictionary<string, AccessoryBagTuning>? Tuning { get; set; }
+	[JsonPropertyName("tuning")] public AccessoryBagTuningSlots? Tuning { get; set; }
 	[JsonPropertyName("selected_power")] public string? SelectedPower { get; set; }
 	[JsonPropertyName("highest_magical_power")] public int HighestMagicalPower { get; set; }
 	[JsonPropertyName("bag_upgrades_purchased")] public int BagUpgradesPurchased { get; set; }
@@ -64,9 +86,17 @@ public class AccessoryBagTuning {
 	public int Intelligence { get; set; }
 	[JsonPropertyName("attack_speed")]
 	public int AttackSpeed { get; set; }
-	
-	[JsonExtensionData]
-	public Dictionary<string, int> AdditionalData { get; set; } = new();
+}
+
+public class AccessoryBagTuningSlots {
+	[JsonPropertyName("slot_0")] public AccessoryBagTuning? Slot0 { get; set; }
+	[JsonPropertyName("slot_1")] public AccessoryBagTuning? Slot1 { get; set; }
+	[JsonPropertyName("slot_2")] public AccessoryBagTuning? Slot2 { get; set; }
+	[JsonPropertyName("slot_3")] public AccessoryBagTuning? Slot3 { get; set; }
+	[JsonPropertyName("slot_4")] public AccessoryBagTuning? Slot4 { get; set; }
+
+	[JsonPropertyName("highest_unlocked_slot")] public int? HighestUnlockedSlot { get; set; }
+	[JsonPropertyName("refund_1")] public bool? Refund1 { get; set; }
 }
 
 public class RawItemData {

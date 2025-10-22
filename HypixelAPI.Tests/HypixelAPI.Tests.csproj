@@ -18,4 +18,14 @@
         <Using Include="Xunit"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\HypixelAPI\HypixelAPI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="test-data\**\*.*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>
