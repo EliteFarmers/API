@@ -32,7 +32,7 @@ public interface IImageService
 
 	Task<Image> CreateImageFromRemoteAsync(string remoteUrl, string basePath, string presetName);
 	Task UpdateImageFromRemoteAsync(Image existingImage, string remoteUrl, string basePath, string presetName);
-	
+
 	Task DeleteImageAtPathAsync(string path);
 }
 
@@ -53,7 +53,20 @@ public class ImageService(
 			throw new ArgumentException($"Invalid preset: '{presetName}'", nameof(presetName));
 
 		await using var inputStream = file.OpenReadStream();
-		using var image = await SixLabors.ImageSharp.Image.LoadAsync(inputStream, token);
+		using var image = await SixLabors.ImageSharp.Image.LoadAsync<Rgba32>(inputStream, token);
+
+		return await ProcessAndUploadImageAsync(image, basePath, presetName, title, description, token);
+	}
+
+	public async Task<Image> ProcessAndUploadImageAsync(
+		Image<Rgba32> image,
+		string basePath,
+		string presetName,
+		string? title = null,
+		string? description = null,
+		CancellationToken token = default) {
+		if (!ImagePresets.All.TryGetValue(presetName, out var preset))
+			throw new ArgumentException($"Invalid preset: '{presetName}'", nameof(presetName));
 
 		if (image.Frames.Count > 1) ReduceFrameRate(image, 8);
 
@@ -69,6 +82,11 @@ public class ImageService(
 		};
 
 		foreach (var variant in preset.Variants) {
+			if (variant.SkipModification) {
+				await UploadImageVariantAsync(image, basePath, variant, imageEntity, token);
+				continue;
+			}
+
 			using var outputStream = new MemoryStream();
 			using var resizedImage = image.Clone(ctx =>
 				ctx.Resize(new ResizeOptions {
@@ -77,25 +95,11 @@ public class ImageService(
 					Sampler = KnownResamplers.NearestNeighbor
 				})
 			);
+
 			await UploadImageVariantAsync(resizedImage, basePath, variant, imageEntity, token);
 		}
 
 		return imageEntity;
-	}
-
-	public async Task<Image> ProcessAndUploadImageAsync(Image<Rgba32> image, string basePath, string presetName,
-		string? title = null,
-		string? description = null, CancellationToken token = default) {
-		using var ms = new MemoryStream();
-		await image.SaveAsWebpAsync(ms, cancellationToken: token);
-
-		ms.Position = 0;
-		var formFile = new FormFile(ms, 0, ms.Length, "image", "image.webp") {
-			Headers = new HeaderDictionary(),
-			ContentType = "image/webp"
-		};
-
-		return await ProcessAndUploadImageAsync(formFile, basePath, presetName, title, description, token);
 	}
 
 	public async Task DeleteImageVariantsAsync(Image image) {
@@ -123,7 +127,16 @@ public class ImageService(
 	private async Task UploadImageVariantAsync(SixLabors.ImageSharp.Image image, string basePath,
 		ImageVariantDefinition variant, Image imageEntity, CancellationToken token) {
 		var path = $"{basePath}/{variant.Name}.webp";
+
 		await using var memoryStream = new MemoryStream();
+
+		if (variant.SkipModification) {
+			await image.SaveAsWebpAsync(memoryStream, token);
+			memoryStream.Position = 0;
+
+			await objectStorageService.UploadAsync(path, memoryStream, token);
+			return;
+		}
 
 		var encoder = new WebpEncoder {
 			Quality = variant.Quality,
