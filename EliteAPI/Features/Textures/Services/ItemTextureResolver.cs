@@ -58,6 +58,54 @@ public class ItemTextureResolver(
 		}
 	}
 
+	public NbtCompound GetItemNbt(string skyblockId) {
+		var item = repoClient.FindItem(skyblockId);
+		var mappedId = item?.Data?.Material is not null
+			? LegacyItemMappings.MapBukkitIdOrDefault(item.Data.Material, (short)item.Data.Durability)
+			: null;
+
+		if (SkyblockRepoClient.Data.Pets.TryGetValue(skyblockId, out var pet) || item is null) {
+			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3); // Player head
+		}
+
+		if (mappedId is null) {
+			return new NbtCompound(new Dictionary<string, NbtTag> {
+				["id"] = new NbtString("minecraft:missingno")
+			});
+		}
+
+		var components = new List<KeyValuePair<string, NbtTag>>() {
+			new(
+				"minecraft:custom_data",
+				new NbtCompound([
+					new KeyValuePair<string, NbtTag>("id", new NbtString(skyblockId)),
+				])),
+		};
+
+		var dyeColor = item?.Data?.Color;
+		var decimalColor = dyeColor != null
+			? Convert.ToInt32(string.Join("", dyeColor.Split(',').Select(c => int.Parse(c).ToString("X2"))), 16)
+			: (int?)null;
+
+		if (decimalColor.HasValue) {
+			components.Add(new KeyValuePair<string, NbtTag>("minecraft:dyed_color", new NbtInt(decimalColor.Value)));
+		}
+
+		var root = new NbtCompound(new Dictionary<string, NbtTag> {
+			["id"] = new NbtString(mappedId),
+			["components"] = new NbtCompound(components),
+		});
+
+		if (pet is not null) {
+			var skin = pet.Rarities.Values.FirstOrDefault(v => v.Skin?.Value is not null)?.Skin?.Value;
+			if (skin is not null) {
+				root = root.WithProfileComponent(skin);
+			}
+		}
+
+		return root;
+	}
+
 	public NbtCompound GetItemNbt(HypixelItem item) {
 		var extraAttributes =
 			item.Attributes?.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value))) ?? [];
@@ -88,7 +136,7 @@ public class ItemTextureResolver(
 			["count"] = new NbtByte((sbyte)item.Count),
 			["components"] = new NbtCompound(components),
 		});
-		
+
 		if (item.Attributes?.TryGetValue("skin_texture", out var skinData) is true) {
 			root = root.WithProfileComponent(skinData);
 		}
@@ -96,7 +144,7 @@ public class ItemTextureResolver(
 		if (item.Attributes?.TryGetValue("petInfo", out var petInfo) is true) {
 			var info = PetParser.ParsePetInfoOrDefault(petInfo);
 			if (info is not null && SkyblockRepoClient.Data.Pets.TryGetValue(info.Type, out var pet)) {
-				var skin = pet.Rarities.Values.FirstOrDefault()?.Skin?.Value;
+				var skin = pet.Rarities.Values.FirstOrDefault(v => v.Skin?.Value is not null)?.Skin?.Value;
 				if (skin is not null) {
 					root = root.WithProfileComponent(skin);
 				}
@@ -105,12 +153,13 @@ public class ItemTextureResolver(
 
 		return root;
 	}
-	
+
 	public async Task<string> GetItemResourceId(HypixelItem item, List<string>? packIds = null, int size = 64) {
 		return (await GetItemResource(item, packIds, size)).ResourceId;
 	}
-	
-	public async Task<MinecraftBlockRenderer.ResourceIdResult> GetItemResource(HypixelItem item, List<string>? packIds = null, int size = 64) {
+
+	public async Task<MinecraftBlockRenderer.ResourceIdResult> GetItemResource(HypixelItem item,
+		List<string>? packIds = null, int size = 64) {
 		var root = GetItemNbt(item);
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = GetRenderOptions(renderer, packIds, size);
@@ -119,7 +168,16 @@ public class ItemTextureResolver(
 
 	public async Task<string> RenderItemAndGetPathAsync(HypixelItem item, List<string>? packIds = null, int size = 64) {
 		var root = GetItemNbt(item);
+		return await RenderItemAndGetPathAsync(root, packIds, size);
+	}
 
+	public async Task<string> RenderItemAndGetPathAsync(string itemId, List<string>? packIds = null, int size = 64) {
+		var root = GetItemNbt(itemId);
+		return await RenderItemAndGetPathAsync(root, packIds, size);
+	}
+
+	private async Task<string>
+		RenderItemAndGetPathAsync(NbtCompound root, List<string>? packIds = null, int size = 64) {
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = GetRenderOptions(renderer, packIds, size);
 		var preResourceId = renderer.ComputeResourceIdFromNbt(root, renderOptions);
@@ -132,7 +190,8 @@ public class ItemTextureResolver(
 				await imageService.DeleteImageAtPathAsync(existingRenderedItem.Url);
 				context.HypixelItemTextures.Remove(existingRenderedItem);
 				await context.SaveChangesAsync();
-			} else {
+			}
+			else {
 				existingRenderedItem.LastUsed = DateTimeOffset.UtcNow;
 				await context.SaveChangesAsync();
 
@@ -147,7 +206,7 @@ public class ItemTextureResolver(
 			var existingCheckRendered =
 				await context.HypixelItemTextures.FirstOrDefaultAsync(i => i.RenderHash == resourceId,
 					cancellationToken: c);
-			
+
 			if (existingCheckRendered is not null) {
 				existingCheckRendered.LastUsed = DateTimeOffset.UtcNow;
 				await context.SaveChangesAsync(c);
@@ -156,38 +215,38 @@ public class ItemTextureResolver(
 			}
 
 			using var image = renderResult.CloneAsAnimatedImage();
+
 			var savedImage = await imageService.ProcessAndUploadImageAsync(image,
 				$"item-renders/{resourceId}", "item", token: c);
-			
+
 			var itemTexture = new HypixelItemTexture() {
 				RenderHash = resourceId,
 				Url = savedImage.Path
 			};
-			
+
 			await context.HypixelItemTextures.AddAsync(itemTexture, c);
 			await context.SaveChangesAsync(c);
 
 			return savedImage.ToPrimaryUrl()!;
 		});
-		
+
 		return result;
 	}
-	
-	private MinecraftBlockRenderer.BlockRenderOptions GetRenderOptions(MinecraftBlockRenderer renderer, List<string>? packIds, int size) {
-		if (packIds is null)
-		{
+
+	private MinecraftBlockRenderer.BlockRenderOptions GetRenderOptions(MinecraftBlockRenderer renderer,
+		List<string>? packIds, int size) {
+		if (packIds is null) {
 			return provider.Options with { Size = size };
 		}
-		
+
 		packIds = packIds.Where(p => p != "vanilla").ToList();
-		
+
 		if (packIds.Count == 0) {
 			return provider.Options with { Size = size, PackIds = [] };
 		}
 
 		var validPacks = renderer.PackRegistry?.GetRegisteredPacks().Select(p => p.Id).ToList();
-		if (validPacks is null || validPacks.Count == 0 || !packIds.All(p => validPacks.Contains(p)))
-		{
+		if (validPacks is null || validPacks.Count == 0 || !packIds.All(p => validPacks.Contains(p))) {
 			return provider.Options with { Size = size };
 		}
 

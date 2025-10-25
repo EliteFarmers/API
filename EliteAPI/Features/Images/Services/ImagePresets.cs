@@ -11,6 +11,7 @@ public class ImageVariantDefinition
 	public required int Width { get; init; }
 	public int Quality { get; init; } = 80;
 	public ResizeMode Mode { get; init; } = ResizeMode.Max;
+	public bool SkipModification { get; init; } = false;
 }
 
 /// <summary>
@@ -54,7 +55,7 @@ public static class ImagePresets
 		// A preset for small, Hypixel item renders
 		["item"] = new ImagePreset {
 			Variants = [
-				new ImageVariantDefinition { Name = "default", Width = 64 },
+				new ImageVariantDefinition { Name = "default", Width = 64, SkipModification = true },
 			]
 		}
 	};
