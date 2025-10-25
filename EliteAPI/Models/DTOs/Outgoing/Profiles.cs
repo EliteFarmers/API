@@ -58,6 +58,7 @@ public class ProfileMemberDto
 	public Dictionary<string, long> Collections { get; set; } = new();
 	public Dictionary<string, int> CollectionTiers { get; set; } = new();
 	public Dictionary<string, int> CraftedMinions { get; set; } = new();
+	public Dictionary<string, long> Sacks { get; set; } = new();
 	public List<PetDto> Pets { get; set; } = [];
 	public UnparsedApiDataDto Unparsed { get; set; } = new();
 	public required JacobDataDto Jacob { get; set; }

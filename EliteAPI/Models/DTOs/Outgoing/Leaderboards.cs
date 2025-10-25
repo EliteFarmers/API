@@ -8,6 +8,12 @@ public class LeaderboardDto
 	public required string Id { get; set; }
 	public required string Title { get; set; }
 	public string? ShortTitle { get; set; }
+	
+	/// <summary>
+	/// Item Id if this is a collection leaderboard
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? ItemId { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Interval { get; set; }

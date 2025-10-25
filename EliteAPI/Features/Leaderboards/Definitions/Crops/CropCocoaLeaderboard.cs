@@ -13,7 +13,8 @@ public class CropCocoaLeaderboard : IMemberLeaderboardDefinition
 		Category = "Crops",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CropId.CocoaBeans,
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
@@ -33,7 +34,8 @@ public class MilestoneCocoaLeaderboard : IProfileLeaderboardDefinition
 		Category = "Milestones",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CropId.CocoaBeans,
 	};
 
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {

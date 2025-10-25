@@ -13,7 +13,8 @@ public class LapisLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 500_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "INK_SACK:4";
@@ -35,7 +36,8 @@ public class RedstoneLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 500_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "REDSTONE";
@@ -57,7 +59,8 @@ public class EmeraldLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "EMERALD";
@@ -79,7 +82,8 @@ public class DiamondLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "DIAMOND";
@@ -101,7 +105,8 @@ public class CoalLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 500_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "COAL";
@@ -123,7 +128,8 @@ public class NetherQuartzLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "QUARTZ";
@@ -145,7 +151,8 @@ public class GoldLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "GOLD_INGOT";
@@ -167,7 +174,8 @@ public class IronLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "IRON_INGOT";
@@ -189,7 +197,8 @@ public class SandLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "SAND";
@@ -211,7 +220,8 @@ public class RedSandLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "SAND:1";
@@ -233,7 +243,8 @@ public class CobblestoneLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "COBBLESTONE";
@@ -255,7 +266,8 @@ public class ObsidianLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "OBSIDIAN";
@@ -277,7 +289,8 @@ public class EndStoneLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "ENDER_STONE";
@@ -299,7 +312,8 @@ public class GlowstoneLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "GLOWSTONE_DUST";
@@ -321,7 +335,8 @@ public class GravelLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "GRAVEL";
@@ -343,7 +358,8 @@ public class NetherrackLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "NETHERRACK";
@@ -365,7 +381,8 @@ public class IceLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "ICE";
@@ -387,7 +404,8 @@ public class MyceliumLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "MYCEL";
@@ -409,7 +427,8 @@ public class GemstoneLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "GEMSTONE_COLLECTION";
@@ -431,7 +450,8 @@ public class MithrilLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "MITHRIL_ORE";
@@ -453,7 +473,8 @@ public class HardStoneLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "HARD_STONE";
@@ -475,7 +496,8 @@ public class TungstenLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "TUNGSTEN";
@@ -497,7 +519,8 @@ public class UmberLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "UMBER";
@@ -519,7 +542,8 @@ public class GlaciteLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "GLACITE";
@@ -541,7 +565,8 @@ public class SulphurLeaderboard : IMemberLeaderboardDefinition
 		Category = "Mining",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "SULPHUR_ORE";

@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EliteAPI.Data;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Images.Services;
@@ -12,11 +13,12 @@ using MinecraftRenderer.Hypixel;
 using MinecraftRenderer.Nbt;
 using SixLabors.ImageSharp;
 using SkyblockRepo;
+using SkyblockRepo.Models;
 
 namespace EliteAPI.Features.Textures.Services;
 
 [RegisterService<ItemTextureResolver>(LifeTime.Scoped)]
-public class ItemTextureResolver(
+public partial class ItemTextureResolver(
 	MinecraftRendererProvider provider,
 	ILogger<ItemTextureResolver> logger,
 	IImageService imageService,
@@ -58,20 +60,37 @@ public class ItemTextureResolver(
 		}
 	}
 
-	public NbtCompound GetItemNbt(string skyblockId) {
-		var item = repoClient.FindItem(skyblockId);
+	public NbtCompound GetItemNbt(string skyblockId, bool canBePet = false) {
+		var item = SkyblockRepoClient.Data.Items.GetValueOrDefault(skyblockId);
 		var mappedId = item?.Data?.Material is not null
 			? LegacyItemMappings.MapBukkitIdOrDefault(item.Data.Material, (short)item.Data.Durability)
 			: null;
 
-		if (SkyblockRepoClient.Data.Pets.TryGetValue(skyblockId, out var pet) || item is null) {
+		SkyblockPetData? pet = null;
+		if (canBePet && (SkyblockRepoClient.Data.Pets.TryGetValue(skyblockId, out pet) || item is null)) {
 			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3); // Player head
 		}
 
 		if (mappedId is null) {
-			return new NbtCompound(new Dictionary<string, NbtTag> {
-				["id"] = new NbtString("minecraft:missingno")
+			var fallbackRoot = new NbtCompound(new Dictionary<string, NbtTag> {
+				["id"] = new NbtString("minecraft:player_head")
 			});
+			
+			// Reformat RUNE_SPECIAL_1 to SPECIAL_RUNE;1
+			var runeMatch = RuneRegex().Match(skyblockId);
+			if (runeMatch.Success) {
+				var name = runeMatch.Groups["name"].Value;
+				var tier = runeMatch.Groups["tier"].Value;
+			
+				if (SkyblockRepoClient.Data.NeuItems.TryGetValue($"{name.ToUpperInvariant()}_RUNE;{tier}", out var runeItem)) {
+					var skin = SkyblockRepoRegexUtils.ExtractSkullTexture(runeItem.NbtTag)?.Value;
+					if (skin is not null) {
+						fallbackRoot = fallbackRoot.WithProfileComponent(skin);
+					}
+				}
+			}
+
+			return fallbackRoot;
 		}
 
 		var components = new List<KeyValuePair<string, NbtTag>>() {
@@ -176,7 +195,12 @@ public class ItemTextureResolver(
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
-	private async Task<string>
+	public async Task<string> RenderPetAndGetPathAsync(string petId, List<string>? packIds = null, int size = 64) {
+		var root = GetItemNbt(petId, true);
+		return await RenderItemAndGetPathAsync(root, packIds, size);
+	}
+
+	public async Task<string>
 		RenderItemAndGetPathAsync(NbtCompound root, List<string>? packIds = null, int size = 64) {
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = GetRenderOptions(renderer, packIds, size);
@@ -252,4 +276,7 @@ public class ItemTextureResolver(
 
 		return provider.Options with { Size = size, PackIds = packIds };
 	}
+	
+	[GeneratedRegex(@"^RUNE_(?<name>\w+)_(?<tier>\d)$")]
+	public static partial Regex RuneRegex();
 }
