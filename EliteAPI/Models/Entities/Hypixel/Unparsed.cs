@@ -11,5 +11,5 @@ public class UnparsedApiData
 	public Dictionary<string, int> Perks { get; set; } = new();
 	public List<TempStatBuffResponse> TempStatBuffs { get; set; } = new();
 	public RawAccessoryBagStorage AccessoryBagSettings { get; set; } = new();
-	public JsonObject Bestiary { get; set; } = new();
+	public RawBestiaryResponse Bestiary { get; set; } = new();
 }

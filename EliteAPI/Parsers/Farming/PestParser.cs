@@ -89,30 +89,21 @@ public static class PestParser
 	}
 
 	public static void ParsePests(this ProfileMember member, ProfileMemberResponse memberData) {
-		if (memberData.Bestiary is null) return;
-
-		memberData.Bestiary.TryGetPropertyValue("kills", out var kills);
+	var kills = memberData.Bestiary?.Kills?.MobKills;
 		if (kills is null) return;
 
-		try {
-			var bestiaryKills = kills.Deserialize<BestiaryKillsMapping>() ?? new BestiaryKillsMapping();
-			var pests = member.Farming.Pests;
-
-			pests.Beetle = bestiaryKills.Beetle;
-			pests.Cricket = bestiaryKills.Cricket;
-			pests.Fly = bestiaryKills.Fly;
-			pests.Locust = bestiaryKills.Locust;
-			pests.Mite = bestiaryKills.Mite;
-			pests.Mosquito = bestiaryKills.Mosquito;
-			pests.Moth = bestiaryKills.Moth;
-			pests.Rat = bestiaryKills.Rat;
-			pests.Slug = bestiaryKills.Slug;
-			pests.Earthworm = bestiaryKills.Earthworm;
-			pests.Mouse = bestiaryKills.Mouse;
-		}
-		catch (JsonException) {
-			return;
-		}
+		var pests = member.Farming.Pests;
+	pests.Beetle    = kills.TryGetValue("pest_beetle_1", out var v0) ? v0 : 0;
+		pests.Cricket   = kills.TryGetValue("pest_cricket_1", out var v1) ? v1 : 0;
+		pests.Fly       = kills.TryGetValue("pest_fly_1", out var v2) ? v2 : 0;
+		pests.Locust    = kills.TryGetValue("pest_locust_1", out var v3) ? v3 : 0;
+		pests.Mite      = kills.TryGetValue("pest_mite_1", out var v4) ? v4 : 0;
+		pests.Mosquito  = kills.TryGetValue("pest_mosquito_1", out var v5) ? v5 : 0;
+		pests.Moth      = kills.TryGetValue("pest_moth_1", out var v6) ? v6 : 0;
+		pests.Rat       = kills.TryGetValue("pest_rat_1", out var v7) ? v7 : 0;
+		pests.Slug      = kills.TryGetValue("pest_slug_1", out var v8) ? v8 : 0;
+		pests.Earthworm = kills.TryGetValue("pest_worm_1", out var v9) ? v9 : 0;
+		pests.Mouse     = kills.TryGetValue("pest_mouse_1", out var v10) ? v10 : 0;
 
 		member.Farming.ParsePestCropCollectionNumbers();
 	}

@@ -58,12 +58,39 @@ public class ProfilesParsingTests
 				_ = member.Leveling;
 				_ = member.PetsData;
 				_ = member.Dungeons;
+				_ = member.Rift;
 
 				// If Easter rabbits mapping exists, ensure values are non-negative
 				var rabbits = member.Events?.Easter?.Rabbits;
 				if (rabbits is not null)
 				{
 					Assert.All(rabbits, kv => Assert.True(kv.Value >= 0));
+				}
+
+				var rift = member.Rift;
+				if (rift is not null)
+				{
+					Assert.NotNull(rift.AdditionalData);
+					Assert.All(rift.AdditionalData.Keys, key => Assert.False(string.IsNullOrWhiteSpace(key)));
+
+					if (rift.Access is not null)
+					{
+						_ = rift.Access.LastFree;
+						_ = rift.Access.ConsumedPrism;
+						_ = rift.Access.ChargeTrackTimestamp;
+					}
+
+					if (rift.Inventory is not null)
+					{
+						_ = rift.Inventory.InventoryContents;
+						_ = rift.Inventory.Armor;
+						_ = rift.Inventory.EquipmentContents;
+						_ = rift.Inventory.EnderChestContents;
+						if (rift.Inventory.EnderChestPageIcons is not null)
+						{
+							Assert.All(rift.Inventory.EnderChestPageIcons, _ => { });
+						}
+					}
 				}
 
 				// If dungeons present, experiences should be >= 0
