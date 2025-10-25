@@ -56,20 +56,7 @@ public class MinecraftRendererProvider
 
 			Options = MinecraftBlockRenderer.BlockRenderOptions.Default with {
 				Size = 128,
-				SkullTextureResolver = (context) => {
-					if (context.Profile is not null || context.CustomDataId is null) return null;
-
-					var match = repoClient.MatchItem(context);
-					if (match is not null) {
-						return match.VariantData?.Data?.Skin?.Value ?? match.Item.Data?.Skin?.Value;
-					}
-
-					if (SkyblockRepoClient.Data.NeuItems.TryGetValue(context.CustomDataId, out var item)) {
-						return SkyblockRepoRegexUtils.ExtractSkullTexture(item.NbtTag)?.Value;
-					}
-					
-					return null;
-				},
+				SkullTextureResolver = SkullTextureResolver,
 				PackIds = ["hypixelplus"]
 			};
 
@@ -82,5 +69,21 @@ public class MinecraftRendererProvider
 			logger.LogError(ex, "Failed to initialize MinecraftBlockRenderer.");
 			_initializationTcs.SetException(ex);
 		}
+	}
+	
+	private string? SkullTextureResolver(MinecraftBlockRenderer.SkullResolverContext context) {
+		if (context.Profile is not null || context.CustomDataId is null) return null;
+		var skyblockId = context.CustomDataId;
+
+		var match = SkyblockRepoClient.Instance.MatchItem(context);
+		if (match is not null) {
+			return match.VariantData?.Data?.Skin?.Value ?? match.Item.Data?.Skin?.Value;
+		}
+
+		if (SkyblockRepoClient.Data.NeuItems.TryGetValue(skyblockId, out var item)) {
+			return SkyblockRepoRegexUtils.ExtractSkullTexture(item.NbtTag)?.Value;
+		}
+					
+		return null;
 	}
 }

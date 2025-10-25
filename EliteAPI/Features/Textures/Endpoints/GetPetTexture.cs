@@ -4,9 +4,9 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Textures.Endpoints;
 
-internal sealed class GetItemTextureRequest
+internal sealed class GetPetTextureRequest
 {
-	public required string ItemId { get; set; }
+	public required string PetId { get; set; }
 	
 	[QueryParam]
 	public string? Packs { get; set; }
@@ -17,27 +17,27 @@ internal sealed class GetItemTextureRequest
 		: Packs.Split(',').Select(p => p.Trim()).ToList();
 }
 
-internal sealed class GetItemTextureEndpoint(
+internal sealed class GetPetTextureEndpoint(
 	ItemTextureResolver itemTextureResolver
-) : Endpoint<GetItemTextureRequest>
+) : Endpoint<GetPetTextureRequest>
 {
 	public override void Configure() {
-		Get("/textures/items/{ItemId}");
+		Get("/textures/pets/{PetId}");
 		AllowAnonymous();
 		Version(0);
 
 		Summary(s => {
-			s.Summary = "Get Skyblock Item Texture";
+			s.Summary = "Get Skyblock Pet Texture";
 		});
 	}
 
-	public override async Task HandleAsync(GetItemTextureRequest request, CancellationToken c) {
+	public override async Task HandleAsync(GetPetTextureRequest request, CancellationToken c) {
 		// Check if itemId has a file extension and remove it
-		if (request.ItemId.Contains('.')) {
-			request.ItemId = request.ItemId.Split('.')[0];
+		if (request.PetId.Contains('.')) {
+			request.PetId = request.PetId.Split('.')[0];
 		}
 
-		var path = await itemTextureResolver.RenderItemAndGetPathAsync(request.ItemId, request.PackList);
+		var path = await itemTextureResolver.RenderPetAndGetPathAsync(request.PetId, request.PackList);
 
 		await Send.RedirectAsync(path, false, true);
 	}
