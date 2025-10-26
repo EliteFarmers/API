@@ -4,7 +4,7 @@
         <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Version>1.0.2</Version>
+        <Version>1.1.0</Version>
         <Authors>EliteFarmers</Authors>
         <Company>EliteFarmers</Company>
         <Description>A .NET client for the Hypixel API.</Description>
@@ -23,7 +23,7 @@
     <ItemGroup>
         <PackageReference Include="Refit" Version="8.0.0"/>
         <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0"/>
-        <PackageReference Include="System.Threading.RateLimiting" Version="9.0.9"/>
+        <PackageReference Include="System.Threading.RateLimiting" Version="9.0.10" />
     </ItemGroup>
 
     <ItemGroup>

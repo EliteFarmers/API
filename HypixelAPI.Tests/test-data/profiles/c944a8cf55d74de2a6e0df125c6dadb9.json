@@ -1,0 +1,1408 @@
+{
+  "success": true,
+  "profiles": [
+    {
+      "profile_id": "c944a8cf-55d7-4de2-a6e0-df125c6dadb9",
+      "community_upgrades": {
+        "currently_upgrading": {
+          "upgrade": "minion_slots",
+          "new_tier": 1,
+          "start_ms": 1601243784467,
+          "who_started": "c944a8cf55d74de2a6e0df125c6dadb9"
+        }
+      },
+      "members": {
+        "c944a8cf55d74de2a6e0df125c6dadb9": {
+          "player_data": {
+            "visited_zones": [
+              "dynamic_portal_island",
+              "village",
+              "mine",
+              "colosseum",
+              "auction_house",
+              "bazaar_alley",
+              "gold_mine",
+              "deep_caverns",
+              "deep_caverns_room_1",
+              "deep_caverns_room_2",
+              "bank",
+              "tailor",
+              "forest",
+              "mountain",
+              "danger",
+              "ruins",
+              "spiders_den",
+              "library",
+              "flower_house",
+              "farm",
+              "the_barn",
+              "wilderness",
+              "fisherman_hut",
+              "deep_caverns_room_3",
+              "deep_caverns_room_4",
+              "deep_caverns_room_6",
+              "deep_caverns_room_5",
+              "floating_islands_1",
+              "floating_islands_2",
+              "catacombs_entrance",
+              "blazing_fortress",
+              "high_level",
+              "wizard_tower",
+              "mushroom_desert",
+              "dungeon",
+              "dungeon_hub",
+              "winter_island",
+              "ice_pond",
+              "tavern",
+              "enderman_sanctuary",
+              "enderdragon_boss_room",
+              "community_center",
+              "election_room",
+              "colosseum_arena",
+              "farmhouse",
+              "floating_islands_3",
+              "floating_islands_4",
+              "floating_islands_5"
+            ],
+            "last_death": 53146598,
+            "active_effects": [],
+            "temp_stat_buffs": [],
+            "death_count": 283,
+            "visited_modes": [
+              "farming_1",
+              "farming_2",
+              "winter",
+              "foraging_1",
+              "dungeon",
+              "dungeon_hub",
+              "combat_3",
+              "hub",
+              "dynamic",
+              "garden",
+              "mining_1",
+              "combat_2",
+              "mining_2",
+              "combat_1"
+            ],
+            "unlocked_coll_tiers": [
+              "GRAVEL_1",
+              "GOLD_INGOT_1",
+              "NETHERRACK_1",
+              "SLIME_BALL_1",
+              "RAW_CHICKEN_4",
+              "RAW_CHICKEN_3",
+              "RAW_CHICKEN_2",
+              "RAW_CHICKEN_1",
+              "SPIDER_EYE_1",
+              "RAW_FISH:1_-1",
+              "INK_SACK:3_-1",
+              "SPIDER_EYE_3",
+              "SPIDER_EYE_2",
+              "SPIDER_EYE_5",
+              "SPIDER_EYE_4",
+              "STRING_1",
+              "LOG_2:1_1",
+              "SULPHUR_-1",
+              "LOG_2:1_2",
+              "LOG_2:1_3",
+              "LOG:2_1",
+              "DIAMOND_-1",
+              "LOG:2_2",
+              "STRING_5",
+              "STRING_4",
+              "STRING_3",
+              "STRING_2",
+              "PORK_2",
+              "PORK_1",
+              "STRING_6",
+              "PORK_5",
+              "PORK_4",
+              "PORK_3",
+              "LOG:2_-1",
+              "FEATHER_4",
+              "FEATHER_5",
+              "POTATO_ITEM_2",
+              "POTATO_ITEM_1",
+              "NETHERRACK_-1",
+              "FEATHER_2",
+              "FEATHER_3",
+              "FEATHER_1",
+              "GOLD_INGOT_-1",
+              "STRING_-1",
+              "INK_SACK_-1",
+              "COAL_1",
+              "COAL_2",
+              "RAW_FISH_-1",
+              "COBBLESTONE_-1",
+              "RAW_CHICKEN_-1",
+              "REDSTONE_-1",
+              "MAGMA_CREAM_1",
+              "OBSIDIAN_-1",
+              "SPIDER_EYE_-1",
+              "LEATHER_-1",
+              "LOG:1_-1",
+              "RAW_FISH:3_-1",
+              "LOG_2:1_-1",
+              "SEEDS_1",
+              "REDSTONE_1",
+              "BONE_4",
+              "SEEDS_2",
+              "ENDER_PEARL_-1",
+              "BONE_3",
+              "MUTTON_-1",
+              "REDSTONE_2",
+              "SEEDS_3",
+              "SEEDS_4",
+              "BONE_5",
+              "IRON_INGOT_2",
+              "SEEDS_5",
+              "REDSTONE_5",
+              "IRON_INGOT_1",
+              "BONE_-1",
+              "EMERALD_1",
+              "SEEDS_6",
+              "REDSTONE_6",
+              "BONE_2",
+              "REDSTONE_3",
+              "BONE_1",
+              "REDSTONE_4",
+              "LOG_2_-1",
+              "SLIME_BALL_-1",
+              "REDSTONE_7",
+              "CACTUS_-1",
+              "CARROT_ITEM_-1",
+              "COAL_-1",
+              "LOG_2",
+              "LOG_1",
+              "COBBLESTONE_7",
+              "COBBLESTONE_5",
+              "COBBLESTONE_6",
+              "LOG_5",
+              "COBBLESTONE_3",
+              "LOG_4",
+              "COBBLESTONE_4",
+              "LOG_3",
+              "COBBLESTONE_1",
+              "COBBLESTONE_2",
+              "LOG:3_-1",
+              "BLAZE_ROD_-1",
+              "LEATHER_3",
+              "LEATHER_2",
+              "NETHER_STALK_-1",
+              "LEATHER_4",
+              "GRAVEL_-1",
+              "LEATHER_1",
+              "PORK_-1",
+              "ROTTEN_FLESH_4",
+              "ENDER_STONE_-1",
+              "CARROT_ITEM_1",
+              "SEEDS_-1",
+              "CARROT_ITEM_2",
+              "CARROT_ITEM_3",
+              "LOG_-1",
+              "EMERALD_-1",
+              "ROTTEN_FLESH_3",
+              "ROTTEN_FLESH_2",
+              "ROTTEN_FLESH_1",
+              "INK_SACK:4_-1",
+              "WHEAT_6",
+              "WHEAT_4",
+              "WHEAT_5",
+              "WHEAT_2",
+              "INK_SACK:4_1",
+              "WHEAT_3",
+              "WHEAT_1",
+              "WATER_LILY_-1",
+              "GLOWSTONE_DUST_-1",
+              "RABBIT_-1",
+              "WHEAT_-1",
+              "ROTTEN_FLESH_-1",
+              "MAGMA_CREAM_-1",
+              "FEATHER_-1",
+              "NETHER_STALK_2",
+              "NETHER_STALK_1",
+              "IRON_INGOT_-1",
+              "LOG_2_1",
+              "LOG_2_2",
+              "POTATO_ITEM_-1",
+              "NETHER_STALK_3",
+              "LOG_2_3",
+              "CLAY_BALL_-1"
+            ],
+            "crafted_generators": [
+              "COW_1",
+              "COBBLESTONE_5",
+              "COBBLESTONE_3",
+              "COW_3",
+              "COBBLESTONE_4",
+              "COW_2",
+              "COBBLESTONE_1",
+              "COBBLESTONE_2",
+              "REDSTONE_1",
+              "REDSTONE_2",
+              "PIG_2",
+              "REDSTONE_5",
+              "PIG_1",
+              "REDSTONE_3",
+              "PIG_4",
+              "PIG_3",
+              "REDSTONE_4",
+              "CHICKEN_4",
+              "CHICKEN_2",
+              "SPIDER_1",
+              "CHICKEN_3",
+              "CAVESPIDER_3",
+              "CAVESPIDER_4",
+              "COW_4",
+              "CAVESPIDER_1",
+              "CAVESPIDER_2",
+              "WHEAT_6",
+              "WHEAT_4",
+              "CAVESPIDER_5",
+              "WHEAT_5",
+              "WHEAT_2",
+              "SPIDER_2",
+              "WHEAT_3",
+              "SPIDER_3",
+              "CHICKEN_1",
+              "SPIDER_4",
+              "WHEAT_1"
+            ],
+            "fishing_treasure_caught": 1
+          },
+          "events": {
+            "easter": {
+              "rabbits": {
+                "collected_locations": {},
+                "collected_eggs": {}
+              },
+              "time_tower": {},
+              "shop": {},
+              "employees": {},
+              "chocolate": 0,
+              "total_chocolate": 0,
+              "chocolate_since_prestige": 0
+            }
+          },
+          "accessory_bag_storage": {
+            "tuning": {},
+            "highest_magical_power": 9
+          },
+          "leveling": {
+            "completions": {},
+            "completed_tasks": [
+              "OBJECTIVE_TALK_TO_LIBRARIAN",
+              "OBJECTIVE_EXPLORE_VILLAGE",
+              "OBJECTIVE_TALK_TO_FARMHAND_1",
+              "OBJECTIVE_GIVE_PICKAXE_LAPIS_MINER",
+              "OBJECTIVE_INCREASE_FORAGING_SKILL_5",
+              "OBJECTIVE_EXPLORE_HUB",
+              "OBJECTIVE_TALK_TO_LAZY_MINER",
+              "OBJECTIVE_TALK_TO_FARMER",
+              "OBJECTIVE_TALK_TO_BANKER",
+              "OBJECTIVE_MINE_COAL",
+              "COMPLETE_CATACOMBS0",
+              "OBJECTIVE_TALK_TO_LUMBERJACK",
+              "OBJECTIVE_INCREASE_FARMING_SKILL_5",
+              "OBJECTIVE_KILL_DANGER_MOBS"
+            ],
+            "experience": 1017
+          },
+          "jacobs_contest": {
+            "contests": {},
+            "perks": {},
+            "medals_inv": {}
+          },
+          "currencies": {
+            "coin_purse": 1680.75
+          },
+          "dungeons": {
+            "dungeon_types": {
+              "catacombs": {
+                "times_played": {
+                  "0": 2.0
+                },
+                "experience": 0.0,
+                "tier_completions": {
+                  "0": 1.0
+                },
+                "fastest_time": {
+                  "0": 774829.0
+                },
+                "best_runs": {
+                  "0": [
+                    {
+                      "timestamp": 1595441967089,
+                      "score_exploration": 61,
+                      "score_speed": 100,
+                      "score_skill": 55,
+                      "score_bonus": 0,
+                      "dungeon_class": "berserk",
+                      "teammates": [
+                        "3010aa52-184c-472a-be6b-1989b3d9ae22",
+                        "2016cf45-ab18-4307-8bbe-0bf9caa25525",
+                        "3be1b77b-7283-44a1-b0e3-51815422a76e",
+                        "7448670d-c06c-4a47-8e14-219c26d83875"
+                      ],
+                      "elapsed_time": 774829,
+                      "damage_dealt": 5389.855535887282,
+                      "deaths": 4,
+                      "mobs_killed": 0,
+                      "secrets_found": 0,
+                      "damage_mitigated": 4731.3413830280315
+                    }
+                  ]
+                },
+                "best_score": {
+                  "0": 216.0
+                },
+                "mobs_killed": {
+                  "0": 0.0
+                },
+                "most_mobs_killed": {},
+                "most_damage_berserk": {
+                  "0": 5389.855535887282
+                },
+                "watcher_kills": {
+                  "0": 1.0
+                }
+              }
+            },
+            "player_classes": {
+              "archer": {
+                "experience": 0.0
+              },
+              "healer": {},
+              "mage": {
+                "experience": 0.0
+              },
+              "berserk": {
+                "experience": 0.0
+              },
+              "tank": {
+                "experience": 0.0
+              }
+            },
+            "dungeon_journal": {},
+            "dungeons_blah_blah": [
+              "malik_first_talk",
+              "gatekeeper_first_talk",
+              "ophelia_first_talk"
+            ],
+            "selected_dungeon_class": "berserk",
+            "dungeon_hub_race_settings": {
+              "selected_setting": "anything",
+              "selected_race": "crystal_core",
+              "runback": false
+            }
+          },
+          "profile": {
+            "first_join": 1591403465007,
+            "cookie_buff_active": false
+          },
+          "player_id": "c944a8cf-55d7-4de2-a6e0-df125c6dadb9",
+          "mining_core": {
+            "nodes": {}
+          },
+          "pets_data": {
+            "pets": [
+              {
+                "uuid": null,
+                "uniqueId": "71edc9d6-fca4-4a64-ac88-412f6c6dbb28",
+                "type": "JERRY",
+                "exp": 34225.97463151147,
+                "active": false,
+                "tier": "COMMON",
+                "heldItem": null,
+                "candyUsed": 0,
+                "skin": null
+              }
+            ]
+          },
+          "bestiary": {
+            "migrated_stats": true,
+            "deaths": {
+              "lapis_zombie_7": 1,
+              "diamond_skeleton_15": 3,
+              "dasher_spider_4": 3,
+              "diamond_zombie_15": 10,
+              "wither_skeleton_10": 10,
+              "fireball_magma_cube_9": 1,
+              "splitter_spider_2": 1,
+              "cave_spider_1": 3,
+              "magma_cube_3": 3,
+              "lonely_spider_35": 1,
+              "emerald_slime_5": 3,
+              "old_wolf_50": 2,
+              "weaver_spider_3": 3,
+              "ruin_wolf_15": 2,
+              "zombie_villager_1": 1,
+              "fireball_magma_cube_75": 1,
+              "endermite_37": 1,
+              "blaze_25": 3,
+              "zombie_1": 3,
+              "voracious_spider_10": 13,
+              "enderman_42": 9,
+              "unburried_zombie_30": 79,
+              "spider_1": 3,
+              "crypt_lurker_41": 1,
+              "magma_cube_75": 3,
+              "obsidian_wither_55": 1,
+              "redstone_pigman_10": 5,
+              "graveyard_zombie_1": 3,
+              "wither_skeleton_70": 10,
+              "dungeon_respawning_skeleton_skull_40": 3,
+              "blaze_12": 3,
+              "skeleton_1": 1
+            },
+            "kills": {
+              "diamond_skeleton_15": 6,
+              "lapis_zombie_7": 42,
+              "dasher_spider_4": 39,
+              "invisible_creeper_3": 5,
+              "respawning_skeleton_2": 112,
+              "diamond_zombie_15": 20,
+              "pond_squid_1": 1,
+              "wither_skeleton_10": 58,
+              "fireball_magma_cube_9": 11,
+              "splitter_spider_2": 77,
+              "cave_spider_1": 324,
+              "magma_cube_3": 8,
+              "pigman_12": 2,
+              "spider_jockey_3": 113,
+              "emerald_slime_5": 50,
+              "weaver_spider_3": 44,
+              "ruin_wolf_15": 16,
+              "zombie_villager_1": 66,
+              "random_slime_8": 17,
+              "fireball_magma_cube_75": 11,
+              "endermite_37": 1,
+              "watcher_55": 1,
+              "blaze_25": 8,
+              "zombie_1": 276,
+              "voracious_spider_10": 178,
+              "enderman_42": 9,
+              "unburried_zombie_30": 578,
+              "spider_1": 430,
+              "magma_cube_75": 8,
+              "redstone_pigman_10": 79,
+              "witch_1": 4,
+              "graveyard_zombie_1": 276,
+              "wither_skeleton_70": 58,
+              "blaze_12": 8,
+              "skeleton_1": 54
+            },
+            "milestone": {
+              "last_claimed_milestone": 4
+            }
+          },
+          "quests": {},
+          "player_stats": {
+            "deaths": {
+              "liquid_hot_magma": 20.0,
+              "crypt_lurker": 1.0,
+              "fall": 32.0,
+              "unknown": 1.0,
+              "blaze": 3.0,
+              "redstone_pigman": 5.0,
+              "magma_cube": 3.0,
+              "weaver_spider": 3.0,
+              "lapis_zombie": 1.0,
+              "obsidian_wither": 1.0,
+              "cave_spider": 3.0,
+              "total": 290.0,
+              "fire": 1.0,
+              "void": 67.0,
+              "diamond_zombie": 10.0,
+              "endermite": 1.0,
+              "skeleton": 1.0,
+              "voracious_spider": 13.0,
+              "dasher_spider": 3.0,
+              "spider": 3.0,
+              "unburried_zombie": 79.0,
+              "lonely_spider": 1.0,
+              "enderman": 9.0,
+              "zombie_villager": 1.0,
+              "old_wolf": 2.0,
+              "splitter_spider": 1.0,
+              "emerald_slime": 3.0,
+              "fireball_magma_cube": 1.0,
+              "diamond_skeleton": 3.0,
+              "ruin_wolf": 2.0,
+              "zombie": 3.0,
+              "dungeon_respawning_skeleton": 3.0,
+              "wither_skeleton": 10.0
+            },
+            "kills": {
+              "weaver_spider": 44.0,
+              "redstone_pigman": 79.0,
+              "zombie_villager": 66.0,
+              "witch": 4.0,
+              "random_slime": 17.0,
+              "unburried_zombie": 578.0,
+              "pigman": 2.0,
+              "watcher": 1.0,
+              "skeleton": 54.0,
+              "sheep": 1.0,
+              "wither_skeleton": 58.0,
+              "invisible_creeper": 5.0,
+              "dasher_spider": 39.0,
+              "blaze": 8.0,
+              "voracious_spider": 178.0,
+              "zombie": 276.0,
+              "respawning_skeleton": 112.0,
+              "total": 3667.0,
+              "lapis_zombie": 42.0,
+              "cave_spider": 324.0,
+              "ruin_wolf": 16.0,
+              "endermite": 1.0,
+              "diamond_skeleton": 6.0,
+              "pond_squid": 1.0,
+              "liquid_hot_magma": 25.0,
+              "jockey_skeleton": 104.0,
+              "emerald_slime": 50.0,
+              "pig": 234.0,
+              "cow": 238.0,
+              "fireball_magma_cube": 11.0,
+              "rabbit": 1.0,
+              "jockey_shot_silverfish": 30.0,
+              "splitter_spider": 77.0,
+              "night_respawning_skeleton": 48.0,
+              "diamond_zombie": 20.0,
+              "spider_jockey": 113.0,
+              "spider": 430.0,
+              "magma_cube": 8.0,
+              "enderman": 9.0,
+              "splitter_spider_silverfish": 127.0,
+              "chicken": 230.0
+            },
+            "auctions": {
+              "gold_spent": 109421.0,
+              "total_bought": {
+                "UNCOMMON": 2.0,
+                "COMMON": 2.0,
+                "RARE": 3.0,
+                "EPIC": 1.0
+              },
+              "gold_earned": 300000.0,
+              "fees": 60.0,
+              "bids": 19.0,
+              "no_bids": 1.0,
+              "completed": 1.0,
+              "total_sold": {
+                "COMMON": 1.0
+              },
+              "created": 2.0,
+              "highest_bid": 29999.0,
+              "won": 8.0
+            },
+            "winter": {
+              "most_snowballs_hit": 284.0,
+              "most_magma_damage_dealt": 170.0,
+              "most_damage_dealt": 637.0,
+              "most_cannonballs_hit": 40.0
+            },
+            "gifts": {
+              "total_given": 38.0,
+              "total_received": 196.0
+            },
+            "items_fished": {
+              "total": 11.0,
+              "treasure": 1.0,
+              "normal": 10.0
+            },
+            "pets": {
+              "milestone": {
+                "ores_mined": 624.0,
+                "sea_creatures_killed": 1.0
+              }
+            },
+            "highest_critical_damage": 2650.5936
+          },
+          "forge": {
+            "forge_processes": {}
+          },
+          "fairy_soul": {
+            "fairy_exchanges": 1,
+            "total_collected": 11,
+            "unspent_souls": 6
+          },
+          "objectives": {
+            "collect_log": {
+              "status": "COMPLETE",
+              "progress": 1,
+              "completed_at": 1591403487676
+            },
+            "talk_to_guide": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591403641126
+            },
+            "public_island": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591403657023
+            },
+            "craft_workbench": {
+              "status": "COMPLETE",
+              "progress": 1,
+              "completed_at": 1591403540903
+            },
+            "craft_wood_pickaxe": {
+              "status": "COMPLETE",
+              "progress": 1,
+              "completed_at": 1591403567581
+            },
+            "explore_hub": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595360031793
+            },
+            "explore_village": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406724384
+            },
+            "talk_to_librarian": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591929247420
+            },
+            "talk_to_farmer": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591930831202
+            },
+            "talk_to_blacksmith": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591404037081
+            },
+            "talk_to_lumberjack": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591926836396
+            },
+            "talk_to_event_master": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591404102654
+            },
+            "talk_to_auction_master": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591404267940
+            },
+            "talk_to_banker": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406738180
+            },
+            "talk_to_fairy": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595452210120
+            },
+            "talk_to_fisherman_1": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591932160321
+            },
+            "talk_to_carpenter": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406796711
+            },
+            "paint_canvas": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_pet_collector": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406769051
+            },
+            "talk_to_pet_sitter": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406785005
+            },
+            "mine_coal": {
+              "status": "COMPLETE",
+              "progress": 10,
+              "completed_at": 1591404654678
+            },
+            "talk_to_lazy_miner": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591404544833
+            },
+            "increase_mining_skill_5": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591405349214
+            },
+            "talk_to_telekinesis_applier": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406599523
+            },
+            "find_pickaxe": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591404575094
+            },
+            "collect_ingots": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591404585046,
+              "GOLD_INGOT": true,
+              "IRON_INGOT": true
+            },
+            "warp_deep_caverns": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406631512
+            },
+            "talk_to_lapis_miner": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595353368633
+            },
+            "talk_to_lift_operator": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406671181
+            },
+            "reach_lapis_quarry": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406679245
+            },
+            "collect_lapis": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595297212791,
+              "INK_SACK:4": true
+            },
+            "talk_to_blacksmith_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591926053709
+            },
+            "deposit_coins": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406741680
+            },
+            "collect_wool_carpenter": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591406933370
+            },
+            "kill_danger_mobs": {
+              "status": "COMPLETE",
+              "progress": 10,
+              "completed_at": 1591925623888
+            },
+            "talk_to_bartender": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591925684677
+            },
+            "increase_combat_skill": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591925684677
+            },
+            "warp_spiders_den": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591927416842
+            },
+            "increase_mining_skill": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591926053709
+            },
+            "reforge_item": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591926385732
+            },
+            "warp_gold_mine": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595364123696
+            },
+            "chop_tree": {
+              "status": "COMPLETE",
+              "progress": 10,
+              "completed_at": 1591927048896
+            },
+            "talk_to_lumberjack_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591927065338
+            },
+            "increase_foraging_skill": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591927065339
+            },
+            "warp_foraging_islands": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595351613159
+            },
+            "increase_combat_skill_5": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595297421559
+            },
+            "talk_to_rick": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591927742816
+            },
+            "warp_the_end": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595540984580
+            },
+            "talk_to_haymitch": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591927426304
+            },
+            "collect_spider": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591927426305,
+              "STRING": true,
+              "SPIDER_EYE": true
+            },
+            "give_rick_ingots": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591928059398
+            },
+            "enchant_item": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595349449796
+            },
+            "collect_wheat": {
+              "status": "COMPLETE",
+              "progress": 10,
+              "completed_at": 1591930841050
+            },
+            "talk_to_farmer_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591930866531
+            },
+            "increase_farming_skill": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591930866532
+            },
+            "warp_barn_island": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591930958366
+            },
+            "talk_to_farmhand_1": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1591931064687
+            },
+            "increase_farming_skill_5": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595365375887
+            },
+            "craft_wheat_minion": {
+              "status": "COMPLETE",
+              "progress": 1,
+              "completed_at": 1591931589683
+            },
+            "collect_clay": {
+              "status": "ACTIVE",
+              "progress": 2,
+              "completed_at": 0
+            },
+            "reach_pigmens_den": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595297352808
+            },
+            "collect_redstone": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595297352809,
+              "REDSTONE": true
+            },
+            "reach_slimehill": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595297420406
+            },
+            "collect_emerald": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595297791065,
+              "EMERALD": true
+            },
+            "reach_diamond_reserve": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595298494076
+            },
+            "collect_diamond": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595298494077,
+              "DIAMOND": true
+            },
+            "reach_obsidian_sanctuary": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595298494584
+            },
+            "collect_obsidian": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595298494585,
+              "OBSIDIAN": true
+            },
+            "increase_foraging_skill_5": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595351613910
+            },
+            "talk_to_gustave_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "collect_birch_logs": {
+              "status": "COMPLETE",
+              "progress": 64,
+              "completed_at": 1613424258447
+            },
+            "collect_dark_oak_logs": {
+              "status": "COMPLETE",
+              "progress": 64,
+              "completed_at": 1613423812724
+            },
+            "warp_blazing_fortress": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595356054930
+            },
+            "give_pickaxe_lapis_miner": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595353524876
+            },
+            "talk_to_elle": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595356070243
+            },
+            "collect_nether_resources": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_farmhand_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595365311480
+            },
+            "collect_farming_resources": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "warp_mushroom_desert": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595365404414
+            },
+            "collect_farming_resources_2": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_guildford_1": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1596510495792
+            },
+            "give_fairy_souls": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595452218361
+            },
+            "talk_to_frosty": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595529379147
+            },
+            "talk_to_gulliver_1": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595529565744
+            },
+            "complete_the_chicken_race_1": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595529672885
+            },
+            "talk_to_gulliver_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595529689255
+            },
+            "complete_the_chicken_race_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595535797461
+            },
+            "talk_to_gulliver_3": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595535806263
+            },
+            "complete_the_chicken_race_3": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_guber_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_end_dealer": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595541002232
+            },
+            "collect_end_stone": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595541023928,
+              "ENDER_STONE": true
+            },
+            "reach_dragons_nest": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1595541342165
+            },
+            "fight_dragon": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_anything_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_no_pearls_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_no_abilities_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_nothing_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_anything_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_no_pearls_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_no_abilities_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_nothing_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_anything_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_no_pearls_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_no_abilities_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_nothing_with_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_anything_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_no_pearls_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_no_abilities_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_giant_mushroom_nothing_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_anything_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_no_pearls_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_no_abilities_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_precursor_ruins_nothing_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_anything_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_no_pearls_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_no_abilities_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "complete_the_crystal_core_nothing_no_return_race_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_charlie_2": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1613424431375
+            },
+            "talk_to_charlie": {
+              "status": "COMPLETE",
+              "progress": 0,
+              "completed_at": 1613424429629
+            },
+            "tutorial": [
+              "zone_bank",
+              "zone_catacombs_entrance",
+              "zone_flower_house",
+              "togglerds",
+              "zone_farmhouse",
+              "zone_winter_island",
+              "zone_blazing_fortress",
+              "zone_the_barn",
+              "zone_ice_pond",
+              "zone_farm",
+              "zone_deep_caverns",
+              "togglemusic",
+              "hub_portal_destroyed",
+              "zone_floating_islands_3",
+              "zone_floating_islands_4",
+              "zone_auction_house",
+              "zone_floating_islands_5",
+              "zone_danger",
+              "zone_ruins",
+              "zone_floating_islands_1",
+              "zone_floating_islands_2",
+              "reforge_item",
+              "st_jerry_reward_78",
+              "zone_dungeon_hub",
+              "zone_wilderness",
+              "tutorial_trade",
+              "zone_wizard_tower",
+              "zone_election_room",
+              "first_join",
+              "zone_spiders_den",
+              "st_jerry_78",
+              "zone_enderman_sanctuary",
+              "zone_enderdragon_boss_room",
+              "zone_deep_caverns_room_5",
+              "zone_deep_caverns_room_6",
+              "zone_deep_caverns_room_3",
+              "zone_deep_caverns_room_4",
+              "zone_deep_caverns_room_1",
+              "zone_deep_caverns_room_2",
+              "zone_gold_mine",
+              "zone_bazaar_alley",
+              "winter_jerry",
+              "zone_community_center",
+              "zone_tailor",
+              "zone_high_level",
+              "essence_collected_message",
+              "zone_library",
+              "zone_mine",
+              "zone_mushroom_desert",
+              "zone_forest",
+              "winter_island_snowmaker",
+              "zone_village",
+              "zone_colosseum",
+              "zone_mountain",
+              "reach_farming_5",
+              "bag_xp_recheck1",
+              "sam_asks_for_help",
+              "agree_to_help_sam"
+            ],
+            "hub_talk_to_wizard": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_artist_1": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_sam": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            }
+          },
+          "slayer": {
+            "slayer_bosses": {
+              "wolf": {
+                "claimed_levels": {}
+              },
+              "spider": {
+                "claimed_levels": {}
+              },
+              "zombie": {
+                "claimed_levels": {}
+              }
+            }
+          }
+        }
+      },
+      "banking": {
+        "balance": 389483.518833896,
+        "transactions": [
+          {
+            "amount": 15124.119724038232,
+            "timestamp": 1718168326663,
+            "action": "DEPOSIT",
+            "initiator_name": "Bank Interest (x2)"
+          }
+        ]
+      },
+      "cute_name": "Tomato",
+      "selected": true
+    },
+    {
+      "profile_id": "f17a5699-7293-4ac4-b892-ed8033cb0516",
+      "members": {
+        "c944a8cf55d74de2a6e0df125c6dadb9": {
+          "player_data": {
+            "last_death": 31452186,
+            "active_effects": [],
+            "visited_modes": [
+              "dynamic"
+            ]
+          },
+          "profile": {
+            "first_join": 1591727892246,
+            "cookie_buff_active": false
+          },
+          "player_id": "c944a8cf-55d7-4de2-a6e0-df125c6dadb9",
+          "pets_data": {
+            "pets": []
+          },
+          "quests": {},
+          "fairy_soul": {
+            "total_collected": 0
+          },
+          "objectives": {
+            "collect_log": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "talk_to_guide": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "public_island": {
+              "status": "ACTIVE",
+              "progress": 0,
+              "completed_at": 0
+            },
+            "tutorial": [
+              "first_join"
+            ]
+          },
+          "slayer": {
+            "slayer_bosses": {
+              "wolf": {
+                "claimed_levels": {}
+              },
+              "spider": {
+                "claimed_levels": {}
+              },
+              "zombie": {
+                "claimed_levels": {}
+              }
+            }
+          }
+        }
+      },
+      "cute_name": "Coconut",
+      "selected": false
+    }
+  ]
+}

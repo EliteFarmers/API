@@ -15,6 +15,7 @@ public class LeaderboardInfo
 	public string? ShortTitle { get; set; }
 	public required string Slug { get; set; }
 	public required string Category { get; set; }
+	public string? ItemId { get; set; }
 	public bool UseIncreaseForInterval { get; set; } = true;
 	public decimal MinimumScore { get; set; } = 0;
 	public List<LeaderboardType> IntervalType { get; set; } = [];
@@ -51,6 +52,12 @@ public class LeaderboardInfoDto
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Short { get; set; }
+	
+	/// <summary>
+	/// Item Id if a collection based leaderboard
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? ItemId { get; set; }
 
 	/// <summary>
 	/// Leaderboard category

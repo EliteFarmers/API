@@ -1,4 +1,3 @@
-using System.Text.Json.Nodes;
 using EFCore.BulkExtensions;
 using EliteAPI.Background.Profiles;
 using EliteAPI.Configuration.Settings;
@@ -413,6 +412,8 @@ public class ProfileProcessorService(
 		member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
 		member.Purse = incomingData.Currencies?.CoinPurse ?? 0;
 		member.Pets = mapper.Map<List<Pet>>(incomingData.PetsData?.Pets?.ToList() ?? []);
+		member.Sacks = incomingData.Inventories?.SackContents.Where(kv => kv.Value > 0)
+			.ToDictionary(k => k.Key, v => v.Value) ?? new Dictionary<string, long>();
 
 		member.Unparsed = new UnparsedApiData {
 			Copper = incomingData.Garden?.Copper ?? 0,
@@ -423,8 +424,8 @@ public class ProfileProcessorService(
 			},
 			Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
-			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new JsonObject(),
-			Bestiary = incomingData.Bestiary ?? new JsonObject()
+			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),
+			Bestiary = incomingData.Bestiary ?? new RawBestiaryResponse()
 		};
 
 		if (incomingData.Garden?.LarvaConsumed is not null)

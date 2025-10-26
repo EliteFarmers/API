@@ -13,7 +13,8 @@ public class SeedsLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "SEEDS";
@@ -35,7 +36,8 @@ public class RawChickenLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "RAW_CHICKEN";
@@ -57,7 +59,8 @@ public class RawRabbitLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "RABBIT";
@@ -79,7 +82,8 @@ public class MuttonLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "MUTTON";
@@ -101,7 +105,8 @@ public class LeatherLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "LEATHER";
@@ -123,7 +128,8 @@ public class FeatherLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "FEATHER";
@@ -145,7 +151,8 @@ public class RawPorkchopLeaderboard : IMemberLeaderboardDefinition
 		Category = "Farming",
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = CollectionId
 	};
 
 	private const string CollectionId = "PORK";

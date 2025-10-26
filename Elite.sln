@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteAPI.Tests", "EliteAPI.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HypixelAPI", "HypixelAPI\HypixelAPI.csproj", "{0BCA59B7-919C-4C1B-82A2-380914DDCC2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HypixelAPI.Tests", "HypixelAPI.Tests\HypixelAPI.Tests.csproj", "{334E177C-649B-4349-86B0-86EE2905AF88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{0BCA59B7-919C-4C1B-82A2-380914DDCC2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BCA59B7-919C-4C1B-82A2-380914DDCC2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BCA59B7-919C-4C1B-82A2-380914DDCC2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{334E177C-649B-4349-86B0-86EE2905AF88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{334E177C-649B-4349-86B0-86EE2905AF88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{334E177C-649B-4349-86B0-86EE2905AF88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{334E177C-649B-4349-86B0-86EE2905AF88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

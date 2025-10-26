@@ -29,6 +29,7 @@ internal sealed class GetLeaderboardsEndpoint(
 			.ToDictionary(l => l.Key, l => new LeaderboardInfoDto {
 				Title = l.Value.Info.Title,
 				Short = l.Value.Info.ShortTitle,
+				ItemId = l.Value.Info.ItemId,
 				Category = l.Value.Info.Category,
 				Profile = l.Value is IProfileLeaderboardDefinition,
 				MinimumScore = l.Value.Info.MinimumScore,

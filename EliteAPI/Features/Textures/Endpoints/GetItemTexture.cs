@@ -22,7 +22,7 @@ internal sealed class GetItemTextureEndpoint(
 ) : Endpoint<GetItemTextureRequest>
 {
 	public override void Configure() {
-		Get("/textures/{ItemId}");
+		Get("/textures/items/{ItemId}");
 		AllowAnonymous();
 		Version(0);
 

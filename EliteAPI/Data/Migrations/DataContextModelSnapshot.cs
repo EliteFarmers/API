@@ -28,7 +28,7 @@ namespace EliteAPI.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "9.0.7")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1988,6 +1988,10 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<double>("Purse")
                         .HasColumnType("double precision");
+
+                    b.Property<Dictionary<string, long>>("Sacks")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("SkyblockXp")
                         .HasColumnType("integer");

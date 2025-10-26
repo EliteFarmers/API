@@ -19,11 +19,12 @@ services:
       - "9102:9102"
     volumes:
       - ./EliteAPI/TempKeys:/app/TempKeys
+      - /assets:/app/assets
     networks:
       - eliteapi-network
   database:
     image: timescale/timescaledb:latest-pg15
-    shm_size: 512mb
+    shm_size: 1gb
     restart: always
     env_file:
       - ./EliteAPI/.env
