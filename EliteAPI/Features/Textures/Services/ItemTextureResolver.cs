@@ -71,8 +71,10 @@ public partial class ItemTextureResolver(
 			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3); // Player head
 		}
 
+		NbtCompound root;
+
 		if (mappedId is null) {
-			var fallbackRoot = new NbtCompound(new Dictionary<string, NbtTag> {
+			root = new NbtCompound(new Dictionary<string, NbtTag> {
 				["id"] = new NbtString("minecraft:player_head")
 			});
 			
@@ -85,12 +87,18 @@ public partial class ItemTextureResolver(
 				if (SkyblockRepoClient.Data.NeuItems.TryGetValue($"{name.ToUpperInvariant()}_RUNE;{tier}", out var runeItem)) {
 					var skin = SkyblockRepoRegexUtils.ExtractSkullTexture(runeItem.NbtTag)?.Value;
 					if (skin is not null) {
-						fallbackRoot = fallbackRoot.WithProfileComponent(skin);
+						root = root.WithProfileComponent(skin);
 					}
 				}
+
+				return root;
 			}
 
-			return fallbackRoot;
+			if (item?.Data?.Skin?.Value is null) {
+				return root;
+			}
+			
+			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3);
 		}
 
 		var components = new List<KeyValuePair<string, NbtTag>>() {
@@ -110,7 +118,7 @@ public partial class ItemTextureResolver(
 			components.Add(new KeyValuePair<string, NbtTag>("minecraft:dyed_color", new NbtInt(decimalColor.Value)));
 		}
 
-		var root = new NbtCompound(new Dictionary<string, NbtTag> {
+		root = new NbtCompound(new Dictionary<string, NbtTag> {
 			["id"] = new NbtString(mappedId),
 			["components"] = new NbtCompound(components),
 		});
