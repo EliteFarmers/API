@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using SixLabors.ImageSharp;
@@ -134,7 +135,7 @@ public class ImageService(
 			await image.SaveAsWebpAsync(memoryStream, token);
 			memoryStream.Position = 0;
 
-			await objectStorageService.UploadAsync(path, memoryStream, token);
+			await objectStorageService.UploadAsync(path, memoryStream, MediaTypeNames.Image.Webp, token);
 			return;
 		}
 
@@ -149,7 +150,7 @@ public class ImageService(
 		await image.SaveAsWebpAsync(memoryStream, encoder, token);
 		memoryStream.Position = 0;
 
-		await objectStorageService.UploadAsync(path, memoryStream, token);
+		await objectStorageService.UploadAsync(path, memoryStream, MediaTypeNames.Image.Webp, token);
 		imageEntity.Metadata.Add($"path_{variant.Name}", path);
 	}
 

@@ -34,7 +34,7 @@ public class ObjectStorageService : IObjectStorageService
 		});
 	}
 
-	public async Task<string?> UploadAsync(string key, Stream stream, CancellationToken token = default) {
+	public async Task<string?> UploadAsync(string key, Stream stream, string contentType = "application/octet-stream", CancellationToken token = default) {
 		if (_client is null) return null;
 
 		var request = new PutObjectRequest {
@@ -42,7 +42,8 @@ public class ObjectStorageService : IObjectStorageService
 			DisableDefaultChecksumValidation = true, // Needed for R2
 			DisablePayloadSigning = true, // Needed for R2
 			InputStream = stream,
-			Key = key
+			Key = key,
+			ContentType = contentType
 		};
 
 		var response = await _client.PutObjectAsync(request, token);
@@ -54,8 +55,10 @@ public class ObjectStorageService : IObjectStorageService
 		if (_client is null) throw new InvalidOperationException("S3 client not available.");
 
 		await using var stream = file.OpenReadStream();
+		
+		var contentType = file.ContentType;
 
-		var eTag = await UploadAsync(path, stream, token);
+		var eTag = await UploadAsync(path, stream, contentType, token);
 		if (string.IsNullOrEmpty(eTag)) throw new InvalidOperationException("Failed to upload image.");
 
 		var image = new Image {
@@ -106,7 +109,7 @@ public class ObjectStorageService : IObjectStorageService
 		}
 
 		await using var stream = file.OpenReadStream();
-		var eTag = await UploadAsync(image.Path, stream, token);
+		var eTag = await UploadAsync(image.Path, stream, file.ContentType, token);
 
 		if (string.IsNullOrEmpty(eTag)) throw new InvalidOperationException("Failed to upload image.");
 	}

@@ -4,7 +4,7 @@ namespace EliteAPI.Services.Interfaces;
 
 public interface IObjectStorageService
 {
-	Task<string?> UploadAsync(string key, Stream stream, CancellationToken token = default);
+	Task<string?> UploadAsync(string key, Stream stream, string contentType = "application/octet-stream", CancellationToken token = default);
 
 	Task<Image> UploadImageAsync(string path, IFormFile file, Dictionary<string, string>? metadata = null,
 		CancellationToken token = default);

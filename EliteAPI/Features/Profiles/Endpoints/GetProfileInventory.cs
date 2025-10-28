@@ -56,16 +56,20 @@ internal sealed class GetProfileInventoryEndpoint(
 		
 		var inventoryDto = inventory.ToDto();
 		
-		var resourceIds = inventory.Items.ToAsyncEnumerable()
-			.SelectAwait(async item => await itemTextureResolver.GetItemResourceId(item))
-			.ToListAsync(c);
+		var resourceIds = await inventory.Items
+			.Where(i => i.Slot is not null)
+			.ToAsyncEnumerable()
+			.SelectAwait(async item => new { Hash = await itemTextureResolver.GetItemResourceId(item), item.Slot })
+			.ToDictionaryAsync(k => k.Slot!, k => k.Hash, cancellationToken: c);
 		
 		var renderedItems = await context.HypixelItemTextures
-			.Where(i => resourceIds.Result.Contains(i.RenderHash))
+			.Where(i => resourceIds.Values.Contains(i.RenderHash))
 			.ToListAsync(c);
 		
 		foreach (var item in inventory.Items) {
-			var resourceId = await itemTextureResolver.GetItemResourceId(item);
+			if (item.Slot is null) continue;
+			
+			var resourceId = resourceIds.GetValueOrDefault(item.Slot);
 			var renderedItem = renderedItems.FirstOrDefault(i => i.RenderHash == resourceId);
 			if (renderedItem is null || item.Slot is null) continue;
 			
