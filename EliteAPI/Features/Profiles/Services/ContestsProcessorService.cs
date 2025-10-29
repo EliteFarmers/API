@@ -110,7 +110,7 @@ public class ContestsProcessorService(
 
 			// If this participation has no medal, and we already have a claimed contest at this timestamp
 			// Set the medal to unclaimable (this is a duplicate contest)
-			if (medal == ContestMedal.None && contest.Position is null && claimedDictionary.ContainsKey(timestamp)) {
+			if (medal == ContestMedal.None && contest.Position is null && claimedDictionary.TryGetValue(timestamp, out var claimed) && claimed) {
 				medal = ContestMedal.Unclaimable;
 			}
 
