@@ -188,8 +188,7 @@ public class ContestsProcessorService(
 				Count = p.Count()
 			}).ToDictionaryAsync(k => k.Medal, v => v.Count);
 
-		// Claimed dictionary is distinct by timestamp
-		jacob.Participations = claimedDictionary.Count;
+		jacob.Participations = jacob.Contests.Count;
 
 		jacob.EarnedMedals.Bronze = medalCounts.GetValueOrDefault(ContestMedal.Bronze, 0);
 		jacob.EarnedMedals.Silver = medalCounts.GetValueOrDefault(ContestMedal.Silver, 0);
