@@ -12,7 +12,8 @@ public class SkillRunecraftingLeaderboard : IMemberLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "RUNE_RAINBOW_3"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

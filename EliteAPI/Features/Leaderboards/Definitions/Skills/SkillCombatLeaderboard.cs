@@ -12,7 +12,8 @@ public class SkillCombatLeaderboard : IMemberLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "IRON_SWORD"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

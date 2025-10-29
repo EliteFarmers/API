@@ -1,4 +1,5 @@
-﻿using EliteFarmers.HypixelAPI.DTOs;
+﻿using System.Text.Json.Serialization;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -21,4 +22,6 @@ public class UnparsedApiDataDto
 	public List<TempStatBuffResponse>? TempStatBuffs { get; set; }
 	public object? AccessoryBagSettings { get; set; }
 	public object? Bestiary { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public RawDungeonsResponse? Dungeons { get; set; }
 }

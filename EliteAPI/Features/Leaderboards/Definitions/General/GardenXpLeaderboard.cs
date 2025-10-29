@@ -11,7 +11,8 @@ public class GardenXpLeaderboard : IProfileLeaderboardDefinition
 		Category = "General",
 		MinimumScore = 10_000,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "DOUBLE_PLANT"
 	};
 
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {

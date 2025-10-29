@@ -3,20 +3,20 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
-public class SkillTamingLeaderboard : IMemberLeaderboardDefinition
+public class CatacombsLeaderboard : IMemberLeaderboardDefinition
 {
 	public LeaderboardInfo Info { get; } = new() {
-		Title = "Taming Experience",
-		ShortTitle = "Taming XP",
-		Slug = "taming",
-		Category = "Skills",
+		Title = "Catacombs Experience",
+		ShortTitle = "Catacombs XP",
+		Slug = "catacombs",
+		Category = "Dungeons",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Decimal,
-		ItemId = "BONE"
+		ItemId = "WITHER_RELIC"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
-		return (decimal)member.Skills.Taming;
+		return (decimal)(member.Unparsed.Dungeons.DungeonTypes?.Catacombs?.Experience ?? 0);
 	}
 }

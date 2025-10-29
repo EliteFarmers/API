@@ -12,7 +12,8 @@ public class SkyblockLevelLeaderboard : IMemberLeaderboardDefinition
 		Category = "General",
 		MinimumScore = 5_000, // Skyblock level 50
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "GOLDEN_FRAGMENT"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

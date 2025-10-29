@@ -425,7 +425,8 @@ public class ProfileProcessorService(
 			Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
 			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),
-			Bestiary = incomingData.Bestiary ?? new RawBestiaryResponse()
+			Bestiary = incomingData.Bestiary ?? new RawBestiaryResponse(),
+			Dungeons = incomingData.Dungeons ?? new RawDungeonsResponse()
 		};
 
 		if (incomingData.Garden?.LarvaConsumed is not null)

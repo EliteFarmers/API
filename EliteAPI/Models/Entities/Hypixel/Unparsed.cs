@@ -12,4 +12,5 @@ public class UnparsedApiData
 	public List<TempStatBuffResponse> TempStatBuffs { get; set; } = new();
 	public RawAccessoryBagStorage AccessoryBagSettings { get; set; } = new();
 	public RawBestiaryResponse Bestiary { get; set; } = new();
+	public RawDungeonsResponse Dungeons {  get; set; } = new();
 }

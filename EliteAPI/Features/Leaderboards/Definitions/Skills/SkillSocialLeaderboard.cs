@@ -12,7 +12,8 @@ public class SkillSocialLeaderboard : IMemberLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 10_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "EMERALD"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
@@ -29,7 +30,8 @@ public class SkillSocialProfileLeaderboard : IProfileLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 15_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "EMERALD_BLOCK"
 	};
 
 	public decimal GetScoreFromProfile(Profile profile, LeaderboardType type) {

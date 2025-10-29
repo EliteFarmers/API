@@ -12,7 +12,8 @@ public class TotalPestKillsLeaderboard : IMemberLeaderboardDefinition
 		Category = "Pests",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = "PESTHUNTER_ARTIFACT"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

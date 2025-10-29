@@ -232,6 +232,12 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		new HemovibeLeaderboard(),
 		new LivingMetalHeartLeaderboard(),
 		new WiltedBerberisLeaderboard(),
-		new TimiteLeaderboard()
+		new TimiteLeaderboard(),
+		new CatacombsLeaderboard(),
+		new ArcherLeaderboard(),
+		new BerserkLeaderboard(),
+		new HealerLeaderboard(),
+		new MageLeaderboard(),
+		new TankLeaderboard(),
 	];
 }

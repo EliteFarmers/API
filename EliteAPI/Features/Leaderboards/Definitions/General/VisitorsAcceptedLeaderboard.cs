@@ -11,7 +11,8 @@ public class VisitorsAcceptedLeaderboard : IProfileLeaderboardDefinition
 		Category = "General",
 		MinimumScore = 500,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = "EMERALD_BLOCK"
 	};
 
 	public decimal GetScoreFromGarden(EliteAPI.Models.Entities.Hypixel.Garden garden, LeaderboardType type) {

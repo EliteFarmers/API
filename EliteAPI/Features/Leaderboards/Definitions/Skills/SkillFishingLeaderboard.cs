@@ -12,7 +12,8 @@ public class SkillFishingLeaderboard : IMemberLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "FISHING_ROD"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

@@ -12,7 +12,8 @@ public class TotalChocolateLeaderboard : IMemberLeaderboardDefinition
 		Category = "General",
 		MinimumScore = 1_000_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = "PRESTIGE_CHOCOLATE_REALM"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

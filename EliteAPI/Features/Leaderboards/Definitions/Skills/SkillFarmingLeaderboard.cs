@@ -12,7 +12,8 @@ public class SkillFarmingLeaderboard : IMemberLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "GOLD_HOE"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

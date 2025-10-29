@@ -12,7 +12,8 @@ public class JacobContestsLeaderboard : IMemberLeaderboardDefinition
 		Category = "General",
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = "WATCH"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

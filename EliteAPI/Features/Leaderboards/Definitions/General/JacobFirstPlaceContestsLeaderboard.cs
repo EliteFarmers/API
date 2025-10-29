@@ -12,7 +12,8 @@ public class JacobFirstPlaceContestsLeaderboard : IMemberLeaderboardDefinition
 		Category = "General",
 		MinimumScore = 10,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Long
+		ScoreDataType = LeaderboardScoreDataType.Long,
+		ItemId = "SIGN"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {

@@ -12,7 +12,8 @@ public class SkillCarpentryLeaderboard : IMemberLeaderboardDefinition
 		Category = "Skills",
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current],
-		ScoreDataType = LeaderboardScoreDataType.Decimal
+		ScoreDataType = LeaderboardScoreDataType.Decimal,
+		ItemId = "WORKBENCH"
 	};
 
 	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
