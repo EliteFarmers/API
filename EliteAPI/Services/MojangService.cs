@@ -110,14 +110,13 @@ public partial class MojangService(
 	private async Task<(string? Id, bool NotFound)> FetchMinecraftUuidByIgn(string ign, string uri) {
 		var request = new HttpRequestMessage(HttpMethod.Get, uri + ign);
 		var client = httpClientFactory.CreateClient(ClientName);
-
-		var response = await client.SendAsync(request);
-
-		if (response.StatusCode == HttpStatusCode.NotFound) return (null, true);
-
-		if (!response.IsSuccessStatusCode) return (null, false);
-
+		client.Timeout = TimeSpan.FromSeconds(3);
+		
 		try {
+			var response = await client.SendAsync(request);
+			if (response.StatusCode == HttpStatusCode.NotFound) return (null, true);
+			if (!response.IsSuccessStatusCode) return (null, false);
+
 			var data = await response.Content.ReadFromJsonAsync<MojangProfilesResponse>();
 			return (data?.Id, false);
 		}
@@ -132,14 +131,22 @@ public partial class MojangService(
 		if (!UuidRegex().IsMatch(uuid)) return null;
 
 		var request = new HttpRequestMessage(HttpMethod.Get,
-			$"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");
+			$"https://mowojang.matdoes.dev/session/minecraft/profile/{uuid}");
 		var client = httpClientFactory.CreateClient(ClientName);
-
-		var response = await client.SendAsync(request);
-
-		if (!response.IsSuccessStatusCode) return null;
+		client.Timeout = TimeSpan.FromSeconds(3);
 
 		try {
+			var response = await client.SendAsync(request);
+
+			if (!response.IsSuccessStatusCode)
+			{
+				request = new HttpRequestMessage(HttpMethod.Get,
+					$"https://sessionserver.mojang.com/session/minecraft/profile/{uuid}");
+				response = await client.SendAsync(request);
+			};
+
+			if (!response.IsSuccessStatusCode) return null;
+
 			var data = await response.Content.ReadFromJsonAsync<MinecraftAccountResponse>();
 			if (data?.Id == null) return null;
 

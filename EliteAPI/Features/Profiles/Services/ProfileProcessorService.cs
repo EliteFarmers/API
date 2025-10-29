@@ -309,7 +309,7 @@ public class ProfileProcessorService(
 
 				messageService.SendWipedMessage(
 					playerUuid,
-					existing.MinecraftAccount.Name ?? "",
+					existing.MinecraftAccount.Name,
 					existing.ProfileId,
 					existing.MinecraftAccount.AccountId?.ToString() ?? "");
 			}
@@ -323,14 +323,14 @@ public class ProfileProcessorService(
 			// Only update if null (profile names can differ between members)
 			existing.ProfileName ??= profile.ProfileName;
 			existing.Metadata ??= new ProfileMemberMetadata {
-				Name = existing.MinecraftAccount.Name ?? playerUuid,
+				Name = existing.MinecraftAccount.Name,
 				Uuid = existing.MinecraftAccount.Id,
 				Profile = profile.ProfileName,
 				ProfileUuid = profile.ProfileId,
 				SkyblockExperience = existing.SkyblockXp
 			};
 
-			existing.Metadata.Name = existing.MinecraftAccount.Name ?? playerUuid;
+			existing.Metadata.Name = existing.MinecraftAccount.Name;
 			existing.Metadata.Profile = profile.ProfileName;
 			existing.Metadata.SkyblockExperience = existing.SkyblockXp;
 
@@ -400,12 +400,6 @@ public class ProfileProcessorService(
 	}
 
 	private async Task UpdateProfileMember(Profile profile, ProfileMember member, ProfileMemberResponse incomingData) {
-		var previousApi = new ApiAccess {
-			Collections = member.Api.Collections,
-			Inventories = member.Api.Inventories,
-			Skills = member.Api.Skills
-		};
-
 		member.Collections = incomingData.Collection ?? member.Collections;
 		member.Api.Collections = incomingData.Collection is not null;
 
