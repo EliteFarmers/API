@@ -132,10 +132,11 @@ public enum Pest
 
 public enum ContestMedal
 {
-	None,
-	Bronze,
-	Silver,
-	Gold,
-	Platinum,
-	Diamond
+	Unclaimable = -1,
+	None = 0,
+	Bronze = 1,
+	Silver = 2,
+	Gold = 3,
+	Platinum = 4,
+	Diamond = 5
 }

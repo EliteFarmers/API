@@ -127,6 +127,7 @@ public static class FormatUtils
 			ContestMedal.Gold => "gold",
 			ContestMedal.Platinum => "platinum",
 			ContestMedal.Diamond => "diamond",
+			ContestMedal.Unclaimable  => "ghost",
 			_ => "none"
 		};
 	}

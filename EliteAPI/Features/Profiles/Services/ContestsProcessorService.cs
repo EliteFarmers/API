@@ -46,6 +46,8 @@ public class ContestsProcessorService(
 		// This can be triggered manually to correct for errors overtime
 		var fullRefresh = jacob.ContestsLastUpdated == 0;
 
+		var claimedDictionary = new Dictionary<long, bool>();
+
 		await using var transaction = await context.Database.BeginTransactionAsync();
 
 		// Existing contests on the profile
@@ -58,10 +60,18 @@ public class ContestsProcessorService(
 			.Where(c => {
 				if (c.Value.Collected < 100)
 					return false; // Contests with less than 100 crops collected aren't counted in game
+
+				var timestamp = FormatUtils.GetTimeFromContestKey(c.Key);
+				var actualKey = timestamp + (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0);
+				if (c.Value.Position is not null) {
+					claimedDictionary[timestamp] = true;
+				}
+				else {
+					claimedDictionary[timestamp] = claimedDictionary.GetValueOrDefault(timestamp);
+				}
+
 				if (fullRefresh) return true;
 
-				var actualKey = FormatUtils.GetTimeFromContestKey(c.Key) +
-				                (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0);
 				// If the contest is new, add it to the list
 				if (!existingContests.TryGetValue(actualKey, out var existing)) return true;
 
@@ -95,13 +105,20 @@ public class ContestsProcessorService(
 			var crop = FormatUtils.GetCropFromContestKey(key);
 			if (crop is null) continue;
 
-			var actualKey = FormatUtils.GetTimeFromContestKey(key) + (int)crop;
+			var timestamp = FormatUtils.GetTimeFromContestKey(key);
+			var actualKey = timestamp + (int)crop;
+
+			// If this participation has no medal, and we already have a claimed contest at this timestamp
+			// Set the medal to unclaimable (this is a duplicate contest)
+			if (medal == ContestMedal.None && contest.Position is null && claimedDictionary.ContainsKey(timestamp)) {
+				medal = ContestMedal.Unclaimable;
+			}
 
 			if (!fetchedContests.TryGetValue(actualKey, out var fetched)) {
 				var newContest = new JacobContest {
 					Id = actualKey,
 					Crop = crop.GetValueOrDefault(),
-					Timestamp = FormatUtils.GetTimeFromContestKey(key),
+					Timestamp = timestamp,
 					Participants = contest.Participants ?? -1,
 					Finnegan = contest.Medal is not null // Only Finnegan contests have a medal set
 				};
@@ -162,8 +179,6 @@ public class ContestsProcessorService(
 		context.ContestParticipations.AddRange(newParticipations);
 		jacob.Contests.AddRange(newParticipations);
 
-		jacob.Participations = jacob.Contests.Count;
-
 		var medalCounts = await context.JacobData
 			.Where(p => p.Id == jacob.Id)
 			.SelectMany(p => p.Contests)
@@ -173,11 +188,14 @@ public class ContestsProcessorService(
 				Count = p.Count()
 			}).ToDictionaryAsync(k => k.Medal, v => v.Count);
 
-		jacob.EarnedMedals.Bronze = medalCounts.TryGetValue(ContestMedal.Bronze, out var bronze) ? bronze : 0;
-		jacob.EarnedMedals.Silver = medalCounts.TryGetValue(ContestMedal.Silver, out var silver) ? silver : 0;
-		jacob.EarnedMedals.Gold = medalCounts.TryGetValue(ContestMedal.Gold, out var gold) ? gold : 0;
-		jacob.EarnedMedals.Platinum = medalCounts.TryGetValue(ContestMedal.Platinum, out var platinum) ? platinum : 0;
-		jacob.EarnedMedals.Diamond = medalCounts.TryGetValue(ContestMedal.Diamond, out var diamond) ? diamond : 0;
+		// Claimed dictionary is distinct by timestamp
+		jacob.Participations = claimedDictionary.Count;
+
+		jacob.EarnedMedals.Bronze = medalCounts.GetValueOrDefault(ContestMedal.Bronze, 0);
+		jacob.EarnedMedals.Silver = medalCounts.GetValueOrDefault(ContestMedal.Silver, 0);
+		jacob.EarnedMedals.Gold = medalCounts.GetValueOrDefault(ContestMedal.Gold, 0);
+		jacob.EarnedMedals.Platinum = medalCounts.GetValueOrDefault(ContestMedal.Platinum, 0);
+		jacob.EarnedMedals.Diamond = medalCounts.GetValueOrDefault(ContestMedal.Diamond, 0);
 
 		jacob.FirstPlaceScores = jacob.Contests.Count(c => c.Position == 0);
 
@@ -196,6 +214,7 @@ public class ContestsProcessorService(
 		};
 
 		foreach (var contest in jacob.Contests) {
+			if (contest.MedalEarned == ContestMedal.Unclaimable) continue;
 			if (!jacob.Stats.Crops.TryGetValue(contest.JacobContest.Crop, out var cropStats)) continue;
 
 			cropStats.Participations++;

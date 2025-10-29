@@ -45,8 +45,6 @@ public static class JacobContestParser
 	}
 
 	public static void UpdateMedalBracket(this JacobContest contest, ContestParticipation participation) {
-		if (participation.MedalEarned == ContestMedal.None) return;
-
 		switch (participation.MedalEarned) {
 			case ContestMedal.Bronze:
 				if (contest.Bronze == 0 || contest.Bronze > participation.Collected)
@@ -67,6 +65,10 @@ public static class JacobContestParser
 				if (contest.Diamond == 0 || contest.Diamond > participation.Collected)
 					contest.Diamond = participation.Collected;
 				break;
+			case ContestMedal.Unclaimable:
+			case ContestMedal.None:
+			default:
+				return;
 		}
 	}
 
@@ -77,6 +79,7 @@ public static class JacobContestParser
 			ContestMedal.Bronze => "bronze",
 			ContestMedal.Platinum => "platinum",
 			ContestMedal.Diamond => "diamond",
+			ContestMedal.Unclaimable => "ghost",
 			_ => "none"
 		};
 	}
@@ -100,6 +103,7 @@ public static class JacobContestParser
 				inventory.Diamond++;
 				break;
 			case ContestMedal.None:
+			case ContestMedal.Unclaimable:
 			default:
 				break;
 		}
