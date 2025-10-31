@@ -333,7 +333,8 @@ public class LbService(
 				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
 					nameof(Models.LeaderboardEntry.InitialScore),
-					nameof(Models.LeaderboardEntry.IsRemoved)
+					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.ProfileType)
 				]
 			};
 			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
@@ -420,6 +421,7 @@ public class LbService(
 
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				var changed = false;
+				
 				if (entry.IsRemoved != profile.IsDeleted) {
 					entry.IsRemoved = profile.IsDeleted;
 					changed = true;
@@ -428,6 +430,11 @@ public class LbService(
 						await RestoreProfileLeaderboards(profile.ProfileId, c);
 						ranRestore = true;
 					}
+				}
+				
+				if (profile.GameMode != entry.ProfileType) {
+					entry.ProfileType = profile?.GameMode;
+					changed = true;
 				}
 
 				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
@@ -469,7 +476,8 @@ public class LbService(
 				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
 					nameof(Models.LeaderboardEntry.InitialScore),
-					nameof(Models.LeaderboardEntry.IsRemoved)
+					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.ProfileType)
 				]
 			};
 			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
@@ -532,11 +540,12 @@ public class LbService(
 		// Calculate the rank for this specific entry
 		var rank = entry.IsRemoved
 			? -1
-			: await context.LeaderboardEntries
-				.FromLeaderboard(entry.LeaderboardId, definition.IsMemberLeaderboard())
-				.EntryFilter(identifier, removedFilter, gameMode)
-				.Where(otherEntry => otherEntry.Score > entry.Score || (otherEntry.Score == entry.Score && otherEntry.LeaderboardEntryId < entry.LeaderboardEntryId))
-				.CountAsync() + 1; // Rank is 1 + the number of entries with a higher score
+			: await GetRankForEntryAsync(
+				entry.LeaderboardId, 
+				identifier,
+				entry.Score, 
+				entry.LeaderboardEntryId
+			);
 
 		return new PlayerLeaderboardEntryWithRankDto {
 			IntervalIdentifier = entry.IntervalIdentifier,
@@ -549,6 +558,45 @@ public class LbService(
 			Short = entry.Leaderboard.ShortTitle,
 			Type = entry.Leaderboard.ScoreDataType
 		};
+	}
+	
+	public async Task<int> GetRankForEntryAsync(
+		int leaderboardId,
+		string? intervalIdentifier,
+		decimal score,
+		int leaderboardEntryId)
+	{
+		var sql = """
+			SELECT COUNT(*) + 1
+			FROM "LeaderboardEntries" AS o
+			WHERE o."IsRemoved" = false
+			  AND o."LeaderboardId" = @leaderboardId
+			  AND (o."Score", o."LeaderboardEntryId") > (@score, @leaderboardEntryId)
+			""";
+
+		if (intervalIdentifier != null) {
+			sql += """ AND o."IntervalIdentifier" = @intervalIdentifier""";
+		} else {
+			sql += """ AND o."IntervalIdentifier" IS NULL""";
+		}
+		
+		var parameters = new[] {
+			new Npgsql.NpgsqlParameter("leaderboardId", leaderboardId),
+			new Npgsql.NpgsqlParameter("score", score),
+			new Npgsql.NpgsqlParameter("leaderboardEntryId", leaderboardEntryId),
+			new Npgsql.NpgsqlParameter("intervalIdentifier", (object?)intervalIdentifier ?? DBNull.Value)
+		};
+		
+		var connection = context.Database.GetDbConnection();
+		await connection.OpenAsync();
+		await using var command = connection.CreateCommand();
+		command.CommandText = sql;
+		command.Parameters.AddRange(parameters);
+
+		var rank = (long?)await command.ExecuteScalarAsync() ?? -1;
+		await connection.CloseAsync();
+    
+		return (int)rank;
 	}
 
 	public async Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
