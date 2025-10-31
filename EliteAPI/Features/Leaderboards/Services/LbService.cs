@@ -81,6 +81,7 @@ public class LbService(
 				.FromLeaderboard(lb.LeaderboardId, true)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.OrderByDescending(e => e.Score)
+				.ThenByDescending(e => e.LeaderboardEntryId) // New Line
 				.Skip(offset)
 				.Take(limit)
 				.MapToMemberLeaderboardEntries(limit <= 20)
@@ -91,6 +92,7 @@ public class LbService(
 				.FromLeaderboard(lb.LeaderboardId, false)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.OrderByDescending(e => e.Score)
+				.ThenByDescending(e => e.LeaderboardEntryId) // New Line
 				.Skip(offset)
 				.Take(limit)
 				.MapToProfileLeaderboardEntries(removedFilter)
@@ -276,6 +278,11 @@ public class LbService(
 
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				var changed = false;
+
+				if (member.Profile?.GameMode != entry.ProfileType) {
+					entry.ProfileType = member.Profile?.GameMode;
+					changed = true;
+				}
 
 				if (entry.IsRemoved != member.WasRemoved) {
 					entry.IsRemoved = member.WasRemoved;
@@ -510,6 +517,7 @@ public class LbService(
 					.Where(e => e.ProfileId == memberOrProfileId && e.LeaderboardId == lb.LeaderboardId)
 					.EntryFilter(identifier, removedFilter, gameMode))
 			.Select(le => new {
+				le.LeaderboardEntryId,
 				le.LeaderboardId,
 				le.IntervalIdentifier,
 				le.Score,
@@ -527,7 +535,7 @@ public class LbService(
 			: await context.LeaderboardEntries
 				.FromLeaderboard(entry.LeaderboardId, definition.IsMemberLeaderboard())
 				.EntryFilter(identifier, removedFilter, gameMode)
-				.Where(otherEntry => otherEntry.Score > entry.Score)
+				.Where(otherEntry => otherEntry.Score > entry.Score || (otherEntry.Score == entry.Score && otherEntry.LeaderboardEntryId < entry.LeaderboardEntryId))
 				.CountAsync() + 1; // Rank is 1 + the number of entries with a higher score
 
 		return new PlayerLeaderboardEntryWithRankDto {
@@ -746,7 +754,7 @@ public class LbService(
 
 		var sql = @"
 	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
-	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND o.""Score"" > le.""Score"") END AS ""Rank""
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND (o.""Score"", o.""LeaderboardEntryId"") > (le.""Score"", le.""LeaderboardEntryId"")) END AS ""Rank""
 	        FROM ""LeaderboardEntries"" AS le
 	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
 	        WHERE le.""ProfileMemberId"" = @profileMemberId AND le.""IntervalIdentifier"" IN (@monthlyInterval, @weeklyInterval) AND le.""Score"" > 0
@@ -754,7 +762,7 @@ public class LbService(
 	        UNION ALL
 
 	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
-	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" IS NULL AND o.""Score"" > le.""Score"") END AS ""Rank""
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" IS NULL AND (o.""Score"", o.""LeaderboardEntryId"") > (le.""Score"", le.""LeaderboardEntryId"")) END AS ""Rank""
 	        FROM ""LeaderboardEntries"" AS le
 	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
 	        WHERE le.""ProfileMemberId"" = @profileMemberId AND le.""IntervalIdentifier"" IS NULL AND le.""Score"" > 0;
@@ -786,7 +794,7 @@ public class LbService(
 
 		var sql = @"
 	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
-	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND o.""Score"" > le.""Score"") END AS ""Rank""
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" = le.""IntervalIdentifier"" AND (o.""Score"", o.""LeaderboardEntryId"") > (le.""Score"", le.""LeaderboardEntryId"")) END AS ""Rank""
 	        FROM ""LeaderboardEntries"" AS le
 	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
 	        WHERE le.""ProfileId"" = @profileId AND le.""IntervalIdentifier"" IN (@monthlyInterval, @weeklyInterval)
@@ -794,7 +802,7 @@ public class LbService(
 	        UNION ALL
 
 	        SELECT le.""IntervalIdentifier"", le.""Score"", le.""InitialScore"", l.""Title"", l.""Slug"", l.""ShortTitle"", l.""ScoreDataType"",
-	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" IS NULL AND o.""Score"" > le.""Score"") END AS ""Rank""
+	               CASE WHEN le.""IsRemoved"" = true THEN -1 ELSE (SELECT COUNT(*) + 1 FROM ""LeaderboardEntries"" o WHERE o.""IsRemoved"" = false AND o.""LeaderboardId"" = le.""LeaderboardId"" AND o.""IntervalIdentifier"" IS NULL AND (o.""Score"", o.""LeaderboardEntryId"") > (le.""Score"", le.""LeaderboardEntryId"")) END AS ""Rank""
 	        FROM ""LeaderboardEntries"" AS le
 	        INNER JOIN ""Leaderboards"" AS l ON le.""LeaderboardId"" = l.""LeaderboardId""
 	        WHERE le.""ProfileId"" = @profileId AND le.""IntervalIdentifier"" IS NULL;

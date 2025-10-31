@@ -68,14 +68,15 @@ public class LeaderboardEntryConfiguration : IEntityTypeConfiguration<Leaderboar
 		builder.HasIndex(le => le.IsRemoved);
 
 		// Index specifically for getting all ranks of a player in a leaderboard
-		builder.HasIndex(le => new { le.LeaderboardId, le.IsRemoved, le.IntervalIdentifier, le.Score })
-			.IsDescending(false, false, false, true)
+		builder.HasIndex(le => new
+				{ le.LeaderboardId, le.IsRemoved, le.IntervalIdentifier, le.Score, le.LeaderboardEntryId })
+			.IsDescending(false, false, false, true, true) // Score DESC, LeaderboardEntryId DESC
 			.HasDatabaseName("IX_LeaderboardEntries_Ranks_Subquery");
 
 		// Index specifically for getting all ranks of a player in a leaderboard, without interval
-		builder.HasIndex(le => new { le.LeaderboardId, le.IsRemoved, le.Score })
+		builder.HasIndex(le => new { le.LeaderboardId, le.IsRemoved, le.Score, le.LeaderboardEntryId })
 			.HasFilter(@"""IntervalIdentifier"" IS NULL")
-			.IsDescending(false, false, true)
+			.IsDescending(false, false, true, true) // Score DESC, LeaderboardEntryId DESC
 			.HasDatabaseName("IX_LeaderboardEntries_Rank_Subquery_AllTime");
 
 		builder.HasIndex(le => le.ProfileId);
