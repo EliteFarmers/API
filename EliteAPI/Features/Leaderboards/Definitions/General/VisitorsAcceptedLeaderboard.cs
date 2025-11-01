@@ -10,7 +10,7 @@ public class VisitorsAcceptedLeaderboard : IProfileLeaderboardDefinition
 		Slug = "visitors-accepted",
 		Category = "General",
 		MinimumScore = 500,
-		IntervalType = [LeaderboardType.Current],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long,
 		ItemId = "EMERALD_BLOCK"
 	};
