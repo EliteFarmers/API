@@ -137,8 +137,9 @@ public class ItemAttributes
 	public Dictionary<string, object> Extra { get; set; } = new Dictionary<string, object>();
 	
 	public static implicit operator ItemAttributes(Dictionary<string, string>? attributes) {
+		var objDictionary = attributes?.ToDictionary(a => a.Key, (a) => (object)a.Value) ?? new Dictionary<string, object>();
 		return new ItemAttributes() {
-			Extra = attributes?.ToDictionary(a => a.Key, object (a) => a.Value) ?? new Dictionary<string, object>()
+			Extra = objDictionary,
 		};
 	}
 	

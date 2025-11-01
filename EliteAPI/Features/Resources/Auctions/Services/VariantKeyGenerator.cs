@@ -30,14 +30,35 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 		}
 
 		// Not checking cultivating because it could be applied to a lot of items and isn't worth the variation
-		if (itemDto.Attributes is not null && itemDto.Attributes.TryGetValue(MinedCrops, out var minedCrops))
-			if (long.TryParse(minedCrops, out var minedCrop) && minedCrop > 0) {
-				// Get digits for groups, starting from 1,000,000
-				var digits = Math.Max(minedCrop.ToString().Length - 6, 0) + 6;
-				variedBy.Extra ??= new Dictionary<string, string>();
-				variedBy.Extra[MinedCrops] = digits.ToString();
+		if (itemDto.Attributes is not null) {
+			if (itemDto.Attributes.TryGetValue(MinedCrops, out var minedCrops)) {
+				if (long.TryParse(minedCrops, out var minedCrop) && minedCrop > 0) {
+					// Get digits for groups, starting from 1,000,000
+					var digits = Math.Max(minedCrop.ToString().Length - 6, 0) + 6;
+					variedBy.Extra ??= new Dictionary<string, string>();
+					variedBy.Extra[MinedCrops] = digits.ToString();
+				}
 			}
 
+			if (itemDto.Attributes.TryGetValue("party_hat_color", out var partyHatColor)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["party_hat_color"] = partyHatColor;
+			}
+			
+			if (itemDto.Attributes.TryGetValue("party_hat_emoji", out var partyHatEmoji)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["party_hat_emoji"] = partyHatEmoji;
+			}
+
+			if (itemDto.SkyblockId is "RUNE" or "UNIQUE_RUNE") {
+				if (itemDto.Attributes.Runes is { Count: > 0 } runes) {
+					variedBy.Extra ??= new Dictionary<string, string>();
+					var applied = itemDto.Attributes.Runes.FirstOrDefault();
+					variedBy.Extra["rune"] = applied.Key + ":" + applied.Value;
+				}
+			}
+		}
+		
 		// if (itemDto.ItemAttributes is not null && itemDto.ItemAttributes.Count > 0)
 		// {
 		//     variedBy.ItemAttributes = GenerateFromItemAttributes(itemDto);

@@ -244,7 +244,7 @@ public class AuctionsIngestionService(
 		var lookbackTimestampMs = now.AddDays(-maxLookbackDays).ToUnixTimeMilliseconds();
 
 		return await context.AuctionBinPrices
-			.Where(r => r.ListedAt >= lookbackTimestampMs) // or r.IngestedAtUtc > some_point
+			.Where(r => r.ListedAt >= lookbackTimestampMs)
 			.Select(r => new ItemVariantKey(r.SkyblockId, r.VariantKey))
 			.Distinct()
 			.ToListAsync(cancellationToken);

@@ -296,7 +296,7 @@ public static class NbtParser
 			Name = displayName,
 			Lore = loreList,
 			Enchantments = enchantments,
-			Attributes = attributes is null ? attributes : null,
+			Attributes = attributes,
 			ItemAttributes = itemAttributes,
 			Gems = gems.Count > 0 ? gems : null,
 		};
