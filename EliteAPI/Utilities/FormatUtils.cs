@@ -142,4 +142,19 @@ public static class FormatUtils
 
 		return $"{number}th";
 	}
+	
+	/// <summary>
+	/// Extract unix seconds from a uuid v7. Not exactly safe due to differing implementations but should be fine.
+	/// </summary>
+	/// <param name="guid"></param>
+	/// <returns></returns>
+	public static long ExtractUnixSeconds(this Guid guid)
+	{
+		if (guid.Version != 7) return 0;
+		
+		var guidString = guid.ToString("N");
+		var timestampHex = guidString.Substring(0, 12);
+		var timestampValue = Convert.ToInt64(timestampHex, 16);
+		return timestampValue / 1000;
+	}
 }

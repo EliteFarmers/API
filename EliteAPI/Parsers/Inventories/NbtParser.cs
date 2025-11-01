@@ -77,7 +77,7 @@ public static class NbtParser
 	}
 
 	/// <summary>
-	/// Parse NBT data into a list of ItemDto objects with texture IDs.
+	/// Parse NBT data into a list of ItemDto objects
 	/// </summary>
 	public static List<ItemDto?> NbtToItems(string? data) {
 		var list = InventoryDataToNbtList(data);
@@ -93,6 +93,36 @@ public static class NbtParser
 			if (parsedItem?.SkyblockId is null) continue;
 			parsedItem.Slot = i.ToString();
 			items.Add(parsedItem);
+		}
+
+		return items;
+	}
+	
+	/// <summary>
+	/// Parse NBT data into a list of ItemDto objects
+	/// </summary>
+	public static Dictionary<string, ItemDto?> NbtToItemDictionary(string? data) {
+		var list = InventoryDataToNbtList(data);
+		if (list is null || list.Count == 0) return [];
+
+		var items = new Dictionary<string, ItemDto?>();
+		
+		short i = -1;
+		foreach (var item in list) {
+			i++;
+			if (item is not NbtCompound compound) {
+				items.TryAdd(i.ToString(), null);
+				continue;
+			}
+
+			var parsedItem = ToItem(compound);
+			if (parsedItem?.SkyblockId is null) {
+				items.TryAdd(i.ToString(), null);
+				continue;
+			}
+
+			parsedItem.Slot = i.ToString();
+			items.Add(parsedItem.Slot, parsedItem);
 		}
 
 		return items;
@@ -235,7 +265,19 @@ public static class NbtParser
 				kvp.Key,
 				GetValueAsString(kvp.Value) ?? string.Empty))
 			.ToDictionary(x => x.Key, x => x.Value);
-
+		
+		var compoundAttributes = extraAttributes?
+			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) &&
+			              kvp.Key != "id" &&
+			              kvp.Key != "uuid" &&
+			              kvp.Key != "petInfo" &&
+			              kvp.Key != "enchantments" &&
+			              kvp.Key != "gems" &&
+			              kvp.Key != "attributes" &&
+			              !IsSimpleType(kvp.Value))
+			.Select(kvp => new KeyValuePair<string, NbtTag>(kvp.Key, kvp.Value))
+			.ToDictionary(x => x.Key, x => x.Value);
+		
 		// Extract item attributes (Kuudra armor, etc.)
 		var itemAttributes = extraAttributes?.GetCompound("attributes")?
 			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) && IsSimpleType(kvp.Value))
@@ -254,7 +296,7 @@ public static class NbtParser
 			Name = displayName,
 			Lore = loreList,
 			Enchantments = enchantments,
-			Attributes = attributes,
+			Attributes = attributes is null ? attributes : null,
 			ItemAttributes = itemAttributes,
 			Gems = gems.Count > 0 ? gems : null,
 		};
@@ -264,8 +306,91 @@ public static class NbtParser
 			SkyblockRepoClient.Data.Items.TryGetValue(skyblockId, out var repoData);
 			var skin = repoData?.Data?.Skin?.Value;
 			if (skin is null || skin != skullValue) {
-				item.Attributes ??= new Dictionary<string, string>();
-				item.Attributes.TryAdd("skin_texture", skullValue);
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Extra.TryAdd("skin_texture", skullValue);
+			}
+		}
+		
+		if (compoundAttributes is { Count: > 0 }) {
+			if (compoundAttributes.TryGetValue("runes", out var runes) && runes is NbtCompound runesCompound) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Runes = runesCompound
+					.Where(kvp => IsIntType(kvp.Value))
+					.ToDictionary(k => k.Key, v => GetValueAsInt(v.Value) ?? 1);
+			}
+			
+			if (compoundAttributes.TryGetValue("effects", out var effects) && effects is NbtList effectsList) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Effects = effectsList
+					.Where(entry => entry is NbtCompound)
+					.Select(entry => {
+						var effect = (NbtCompound)entry;
+						return new ItemEffectAttribute() {
+							Level = effect.TryGetValue("level", out var level) ? GetValueAsInt(level) ?? 0 : 0,
+							Effect = effect.TryGetValue("effect", out var name) ? GetValueAsString(name) ?? string.Empty : string.Empty,
+							DurationTicks = effect.TryGetValue("duration_ticks", out var ticks) ? GetValueAsInt(ticks) ?? 0 : 0,
+						};
+					}).ToList();
+			}
+			
+			if (compoundAttributes.TryGetValue("necromancer_souls", out var souls) && souls is NbtList soulsList) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.NecromancerSouls = soulsList
+					.Where(entry => entry is NbtCompound)
+					.Select(entry => {
+						var effect = (NbtCompound)entry;
+						return new ItemSoulAttribute() {
+							MobId = effect.TryGetValue("mob_id", out var mob) ? GetValueAsString(mob) : null,
+							DroppedModeId = effect.TryGetValue("dropped_mode_id", out var mode) ? GetValueAsString(mode) : null,
+							DroppedInstanceId = effect.TryGetValue("dropped_instance_id", out var instance) ? GetValueAsString(instance) : null,
+						};
+					}).ToList();
+			}
+
+			if (compoundAttributes.TryGetValue("hook", out var hook) && hook is NbtCompound hookCompound) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Hook = new ItemRodPartAttribute() {
+					Part = hookCompound.TryGetValue("part", out var part) ? GetValueAsString(part) : null,
+				};
+			}
+			
+			if (compoundAttributes.TryGetValue("line", out var line) && line is NbtCompound lineCompound) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Line = new ItemRodPartAttribute() {
+					Part = lineCompound.TryGetValue("part", out var part) ? GetValueAsString(part) : null,
+				};
+			}
+			
+			if (compoundAttributes.TryGetValue("sinker", out var sinker) && sinker is NbtCompound sinkerCompound) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Sinker = new ItemRodPartAttribute() {
+					Part = sinkerCompound.TryGetValue("part", out var part) ? GetValueAsString(part) : null,
+				};
+			}
+			
+			if (compoundAttributes.TryGetValue("ability_scroll", out var scrolls) && scrolls is NbtList scrollsList) {
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.AbilityScrolls = scrollsList
+					.Select(s => GetValueAsString(s) ?? string.Empty)
+					.Where(s => !s.IsNullOrEmpty())
+					.ToList();
+			}
+		}
+
+		var inventoryAttributeValue = extraAttributes?
+			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) && kvp.Key.EndsWith("_data") && kvp.Value is NbtByteArray)
+			.Select(kvp => (NbtByteArray)kvp.Value)
+			.FirstOrDefault();
+		
+		if (inventoryAttributeValue is not null) {
+			try {
+				var stringValue = Convert.ToBase64String(inventoryAttributeValue.Values);
+				var items = NbtToItemDictionary(stringValue);
+				item.Attributes ??= new ItemAttributes();
+				item.Attributes.Inventory = items;
+			}
+			catch {
+				// ignored
 			}
 		}
 
@@ -371,5 +496,28 @@ public static class NbtParser
 	/// </summary>
 	private static bool IsSimpleType(NbtTag tag) {
 		return tag.Type != NbtTagType.Compound && tag.Type != NbtTagType.List;
+	}
+	
+	/// <summary>
+	/// Check if an NBT tag is an int (or byte/short) type
+	/// </summary>
+	private static bool IsIntType(NbtTag tag) {
+		return tag.Type is NbtTagType.Byte or NbtTagType.Short or NbtTagType.Int;
+	}
+	
+	/// <summary>
+	/// Get the value of an NBT tag as a string.
+	/// </summary>
+	private static int? GetValueAsInt(NbtTag tag) {
+		return tag switch {
+			NbtByte b => b.Value,
+			NbtShort s => s.Value,
+			NbtInt i => i.Value,
+			NbtLong l => (int?) l.Value,
+			NbtFloat f => (int?) f.Value,
+			NbtDouble d => (int?) d.Value,
+			NbtString str => int.TryParse(str.Value, out var i) ? i : null,
+			_ => null
+		};
 	}
 }

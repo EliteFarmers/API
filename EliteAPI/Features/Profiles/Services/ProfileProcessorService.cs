@@ -520,7 +520,7 @@ public class ProfileProcessorService(
 				incomingData.Inventories.BackpackIcons.Select(i => i.Value.Data)));
 			
 			var existing = member.Inventories.FirstOrDefault(i => i.Name == "icons_backpack");
-			if (existing is not null) {
+			if (existing is not null && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) {
 				if (existing.Hash == hash) return; // No changes
 				context.HypixelInventory.Remove(existing);
 			}
@@ -555,9 +555,9 @@ public class ProfileProcessorService(
 		Dictionary<string, string>? meta = null) {
 		var hash = HashUtility.ComputeSha256Hash(data ?? string.Empty);
 		
-		// Remove existing inventory if we have new data
+		// Remove existing inventory if we have new data, or it hasn't been updated in a while
 		var existing = member.Inventories.FirstOrDefault(i => i.Name == name);
-		if (existing is not null) {
+		if (existing is not null && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) {
 			if (existing.Hash == hash) return; // No changes
 			context.HypixelInventory.Remove(existing);
 		}

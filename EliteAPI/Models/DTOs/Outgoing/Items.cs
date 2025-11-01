@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
@@ -49,7 +50,7 @@ public class ItemDto
 	/// <summary>
 	/// ExtraAttributes not included elsewhere
 	/// </summary>
-	public Dictionary<string, string>? Attributes { get; set; }
+	public ItemAttributes? Attributes { get; set; }
 
 	/// <summary>
 	/// ExtraAtrributes.Attributes for attribute shards
@@ -104,4 +105,94 @@ public class ItemPetInfoDto
 	public string? HeldItem { get; set; }
 
 	[JsonExtensionData] public Dictionary<string, JsonElement>? ExtensionData { get; set; }
+}
+
+public class ItemAttributes
+{
+	[JsonPropertyName("runes"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, int>? Runes { get; set; }
+	
+	[JsonPropertyName("effects"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public List<ItemEffectAttribute>? Effects { get; set; }
+	
+	[JsonPropertyName("necromancer_souls"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public List<ItemSoulAttribute>? NecromancerSouls { get; set; }
+	
+	[JsonPropertyName("hook"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public ItemRodPartAttribute? Hook { get; set; }
+	
+	[JsonPropertyName("line"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public ItemRodPartAttribute? Line { get; set; }
+	
+	[JsonPropertyName("sinker"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public ItemRodPartAttribute? Sinker { get; set; }
+	
+	[JsonPropertyName("ability_scroll"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public List<string>? AbilityScrolls { get; set; }
+	
+	[JsonPropertyName("inventory_data"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, ItemDto?>? Inventory { get; set; }
+	
+	[JsonExtensionData]
+	public Dictionary<string, object> Extra { get; set; } = new Dictionary<string, object>();
+	
+	public static implicit operator ItemAttributes(Dictionary<string, string>? attributes) {
+		return new ItemAttributes() {
+			Extra = attributes?.ToDictionary(a => a.Key, object (a) => a.Value) ?? new Dictionary<string, object>()
+		};
+	}
+	
+	public static implicit operator ItemAttributes(Dictionary<string, object>? attributes) {
+		return new ItemAttributes() {
+			Extra = attributes ?? new Dictionary<string, object>()
+		};
+	}
+	
+	public string? this[string index]
+	{
+		get => Extra.TryGetValue(index, out var value) ? value.ToString() : null;
+		set => Extra[index] = value ?? string.Empty;
+	}
+	
+	public bool Remove(string index) => Extra.Remove(index);
+
+	public bool TryGetValue(string key, [NotNullWhen(true)] out string? value) {
+		if (Extra.TryGetValue(key, out var objectValue)) {
+			value = objectValue.ToString()!;
+			return true;
+		}
+
+		value = null;
+		return false;
+	}
+}
+
+public class ItemEffectAttribute
+{
+	[JsonPropertyName("level"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public int Level { get; set; }
+	
+	[JsonPropertyName("effect"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? Effect {  get; set; }
+	
+	[JsonPropertyName("duration_ticks"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public int DurationTicks { get; set; }
+}
+
+public class ItemSoulAttribute
+{
+	[JsonPropertyName("mob_id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? MobId { get; set; }
+	
+	[JsonPropertyName("dropped_instance_id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? DroppedInstanceId { get; set; }
+	
+	[JsonPropertyName("dropped_mode_id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? DroppedModeId { get; set; }
+}
+
+public class ItemRodPartAttribute
+{
+	[JsonPropertyName("part"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? Part { get; set; }
 }

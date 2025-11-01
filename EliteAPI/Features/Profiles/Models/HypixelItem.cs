@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EliteAPI.Features.Images.Models;
+using EliteAPI.Models.DTOs.Outgoing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,7 +29,7 @@ public class HypixelItem
 	public string? DonatedMuseum { get; set; }
 
 	[Column(TypeName = "jsonb")] public Dictionary<string, int>? Enchantments { get; set; }
-	[Column(TypeName = "jsonb")] public Dictionary<string, string>? Attributes { get; set; }
+	[Column(TypeName = "jsonb")] public ItemAttributes? Attributes { get; set; }
 	[Column(TypeName = "jsonb")] public Dictionary<string, string?>? Gems { get; set; }
 	
 	public string? Slot { get; set; }

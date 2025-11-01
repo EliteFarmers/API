@@ -55,34 +55,37 @@ public static partial class HypixelItemMapper
 			LastUpdated = DateTimeOffset.UtcNow
 		};
 
-		if (dto.Attributes is not null && dto.Attributes.Count > 0) {
-			var modifer = dto.Attributes.GetValueOrDefault("modifier");
+		var attributes = dto.Attributes?.Extra;
+		if (attributes is not null && attributes.Count > 0) {
+			var modifer = attributes.GetValueOrDefault("modifier");
 			if (modifer is not null) {
-				dto.Attributes.Remove("modifier");
-				item.Modifier = modifer;
+				attributes.Remove("modifier");
+				item.Modifier = modifer.ToString();
 			}
 
-			var rarityUpgrades = dto.Attributes.GetValueOrDefault("rarity_upgrades");
+			var rarityUpgrades = attributes.GetValueOrDefault("rarity_upgrades");
 			if (rarityUpgrades is not null) {
-				dto.Attributes.Remove("rarity_upgrades");
-				item.RarityUpgrades = rarityUpgrades;
+				attributes.Remove("rarity_upgrades");
+				item.RarityUpgrades = rarityUpgrades.ToString();
 			}
 
-			var timestamp = dto.Attributes.GetValueOrDefault("timestamp");
+			var timestamp = attributes.GetValueOrDefault("timestamp");
 			if (timestamp is not null) {
-				dto.Attributes.Remove("timestamp");
-				item.Timestamp = timestamp;
+				attributes.Remove("timestamp");
+				item.Timestamp = timestamp.ToString();
 			}
 
-			var donatedMuseum = dto.Attributes.GetValueOrDefault("donated_museum");
+			var donatedMuseum = attributes.GetValueOrDefault("donated_museum");
 			if (donatedMuseum is not null) {
-				dto.Attributes.Remove("donated_museum");
-				item.DonatedMuseum = donatedMuseum;
+				attributes.Remove("donated_museum");
+				item.DonatedMuseum = donatedMuseum.ToString();
 			}
-
-			item.Attributes = dto.Attributes;
 		}
 
+		if (dto.Attributes is not null) {
+			item.Attributes = dto.Attributes;
+		}
+		
 		return item;
 	}
 
@@ -118,7 +121,7 @@ public static partial class HypixelItemMapper
 		}
 		
 		// Remove edition numbers from attributes and lore (replace with obfuscated edition number in lore)
-		if (dto.Attributes?.TryGetValue("edition", out var edition) is true) {
+		if (dto.Attributes?.Extra.TryGetValue("edition", out var edition) is true) {
             if (dto.Lore is not null) {
 				for (var i = 0; i < dto.Lore.Count; i++) {
 					dto.Lore[i] = HypixelItemExtensions.EditionRegex().Replace(dto.Lore[i], $"Edition #§khidden§r");

@@ -135,7 +135,7 @@ public partial class ItemTextureResolver(
 
 	public NbtCompound GetItemNbt(HypixelItem item) {
 		var extraAttributes =
-			item.Attributes?.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value))) ?? [];
+			item.Attributes?.Extra.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value.ToString() ?? string.Empty))) ?? [];
 		var itemId = LegacyItemMappings.MapNumericIdOrDefault(item.Id, item.Damage);
 
 		// Color is 3 RGB numbers with commas, e.g. "255,0,0"
