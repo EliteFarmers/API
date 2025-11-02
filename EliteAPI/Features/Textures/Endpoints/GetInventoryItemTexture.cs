@@ -1,7 +1,10 @@
+using System.ComponentModel;
 using System.Net.Mime;
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
+using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Textures.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +17,12 @@ internal sealed class GetInventoryItemTextureRequest
 	
 	[QueryParam]
 	public string? Packs { get; set; }
+
+	/// <summary>
+	/// Sub slot if nested inventory
+	/// </summary>
+	[QueryParam, DefaultValue(null)]
+	public string? Sub { get; set; } = null;
 	
 	[JsonIgnore]
 	public List<string> PackList => string.IsNullOrWhiteSpace(Packs)
@@ -56,6 +65,15 @@ internal sealed class GetInventoryItemTextureEndpoint(
 		if (itemData is null) {
 			await Send.NotFoundAsync(c);
 			return;
+		}
+
+		if (!request.Sub.IsNullOrEmpty() && itemData.Attributes?.Inventory is not null) {
+			if (!itemData.Attributes.Inventory.TryGetValue(request.Sub, out var inventoryItem) || inventoryItem is null) {
+				await Send.NotFoundAsync(c);
+				return;
+			}
+
+			itemData = inventoryItem.ToHypixelItem();
 		}
 
 		var path = await itemTextureResolver.RenderItemAndGetPathAsync(itemData, request.PackList);
