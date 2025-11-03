@@ -76,14 +76,12 @@ public class MinecraftRendererProvider
 		var skyblockId = context.CustomDataId;
 
 		var match = SkyblockRepoClient.Instance.MatchItem(context);
-		if (match is not null) {
-			return match.VariantData?.Data?.Skin?.Value ?? match.Item.Data?.Skin?.Value;
-		}
+		var skin = match?.VariantData?.Data?.Skin?.Value ?? match?.Item.Data?.Skin?.Value;
 
-		if (SkyblockRepoClient.Data.NeuItems.TryGetValue(skyblockId, out var item)) {
-			return SkyblockRepoRegexUtils.ExtractSkullTexture(item.NbtTag)?.Value;
+		if (skin is null && SkyblockRepoClient.Data.NeuItems.TryGetValue(skyblockId, out var item)) {
+			skin = SkyblockRepoRegexUtils.ExtractSkullTexture(item.NbtTag)?.Value;
 		}
 					
-		return null;
+		return skin;
 	}
 }
