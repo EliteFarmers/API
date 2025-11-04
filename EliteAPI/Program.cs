@@ -38,7 +38,7 @@ builder.Services.AddEliteSwaggerDocumentation();
 builder.Services.AddEliteServices();
 builder.Services.AddEliteScopedServices();
 builder.Services.AddEliteRateLimiting();
-builder.Services.AddEliteBackgroundJobs();
+builder.AddEliteBackgroundJobs();
 
 builder.Services.AddHypixelApi(opt => {
 	opt.ApiKey = DotNetEnv.Env.GetString("HYPIXEL_API_KEY");

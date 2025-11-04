@@ -1,19 +1,24 @@
 ﻿using EliteAPI.Background.Resources;
 using EliteAPI.Background.Discord;
 using EliteAPI.Background.Profiles;
+using EliteAPI.Utilities;
 using Quartz;
 
 namespace EliteAPI.Background;
 
 public static class QuartzExtensions
 {
-	public static void AddEliteBackgroundJobs(this IServiceCollection services) {
-		services.AddQuartz();
+	public static void AddEliteBackgroundJobs(this WebApplicationBuilder builder) {
+		builder.Services.AddQuartz(options => {
+			options.AddSelfConfiguringJobs(builder.Configuration);
+		});
 
-		services.AddQuartzHostedService(options => { options.WaitForJobsToComplete = true; });
+		builder.Services.AddQuartzHostedService(options => {
+			options.WaitForJobsToComplete = true;
+		});
 
-		services.ConfigureOptions<DiscordJobsConfiguration>();
-		services.ConfigureOptions<HypixelJobsConfiguration>();
-		services.ConfigureOptions<ResourceJobsConfiguration>();
+		builder.Services.ConfigureOptions<DiscordJobsConfiguration>();
+		builder.Services.ConfigureOptions<HypixelJobsConfiguration>();
+		builder.Services.ConfigureOptions<ResourceJobsConfiguration>();
 	}
 }
