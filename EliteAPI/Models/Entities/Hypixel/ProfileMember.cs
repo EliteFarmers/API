@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Models.Entities.Events;
 
 namespace EliteAPI.Models.Entities.Hypixel;
@@ -47,6 +48,7 @@ public class ProfileMember
 	public string? ProfileName { get; set; }
 
 	public List<EventMember> EventEntries { get; set; } = [];
+	public List<EndedAuction> EndedAuctions { get; set; } = [];
 }
 
 [Owned]

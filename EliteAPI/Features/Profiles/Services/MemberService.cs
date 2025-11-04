@@ -39,11 +39,14 @@ public class MemberService(
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
 	public async Task<Guid?> GetProfileMemberId(string playerUuid, string profileId) {
-		return await context.ProfileMembers
+		var guid = await context.ProfileMembers
 			.AsNoTracking()
 			.Where(p => p.PlayerUuid == playerUuid && p.ProfileId == profileId)
 			.Select(p => p.Id)
 			.FirstOrDefaultAsync();
+		
+		if (guid == Guid.Empty) return null;
+		return guid;
 	}
 
 	public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, float cooldownMultiplier = 1) {

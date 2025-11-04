@@ -22,9 +22,10 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 
 		var variedBy = new AuctionItemVariation();
 
-		if (!settings.Value.DontVaryByRarity.Contains(skyblockId)) variedBy.Rarity = rarity.ToUpperInvariant();
+		if (settings.Value.VaryByRarity.Contains(skyblockId)) variedBy.Rarity = rarity.ToUpperInvariant();
 
 		if (itemDto.PetInfo is not null) {
+			variedBy.Rarity = rarity.ToUpperInvariant();
 			variedBy.Pet = itemDto.PetInfo.Type;
 			variedBy.PetLevel = GenerateFromPetLevel(itemDto);
 		}

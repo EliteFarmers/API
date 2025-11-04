@@ -11,7 +11,7 @@
     "RawDataRetentionDays": 10,
     "AggregationMaxLookbackDays": 7,
     "PetLevelGroupOverrides": {},
-    "DontVaryByRarity": [],
+    "VaryByRarity": [],
     "PetLevelGroups": {
       "LVL_1-99": {
         "MinLevel": 1,
