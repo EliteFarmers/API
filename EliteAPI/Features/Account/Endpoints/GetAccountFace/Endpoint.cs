@@ -23,7 +23,7 @@ internal sealed class GetAccountFaceEndpoint(
 		Summary(s => {
 			s.Summary = "Get Minecraft Account Face Image";
 			s.Description =
-				"Returns an 8x8 or 72x72 face png image of the Minecraft account associated with the provided player name or UUID. 72x72 response includes the player's \"hat\" overlay. If not found, returns Steve's face.";
+				"Returns a 72x72 face png image of the Minecraft account associated with the provided player name or UUID. 72x72 response includes the player's \"hat\" overlay. If not found, returns Steve's face.";
 		});
 
 		Options(o => {
@@ -39,12 +39,7 @@ internal sealed class GetAccountFaceEndpoint(
 	public override async Task HandleAsync(PlayerRequest request, CancellationToken c) {
 		var (face, hat) = await mojangService.GetMinecraftAccountFace(request.Player);
 		face ??= SteveBase64;
-
-		if (hat is null) {
-			await Send.BytesAsync(face, contentType: MediaTypeNames.Image.Png, cancellation: c);
-			return;
-		}
-
+		
 		using var faceImage = Image.Load(face);
 
 		using var largeFace = faceImage.Clone(ctx => ctx.Resize(64, 64, KnownResamplers.NearestNeighbor));
@@ -52,6 +47,14 @@ internal sealed class GetAccountFaceEndpoint(
 
 		// ReSharper disable once AccessToDisposedClosure
 		finalImage.Mutate(ctx => ctx.DrawImage(largeFace, new Point(4, 4), 1f));
+		
+		if (hat is null) {
+			using var hatOutputStream = new MemoryStream();
+			await finalImage.SaveAsPngAsync(hatOutputStream, c);
+
+			await Send.BytesAsync(hatOutputStream.ToArray(), contentType: MediaTypeNames.Image.Png, cancellation: c);
+			return;
+		}
 
 		// Resize the 8x8 hat to 72x72.
 		using var hatImage = Image.Load(hat);
@@ -61,9 +64,9 @@ internal sealed class GetAccountFaceEndpoint(
 		// ReSharper disable once AccessToDisposedClosure
 		finalImage.Mutate(ctx => ctx.DrawImage(largeHat, new Point(0, 0), 1f));
 
-		// Step 6: Convert the final composite image to a PNG byte array to be sent.
+		// Convert the final composite image to a PNG byte array to be sent.
 		using var outputStream = new MemoryStream();
-		await finalImage.SaveAsPngAsync(outputStream, c); // Pass the cancellation token
+		await finalImage.SaveAsPngAsync(outputStream, c);
 		var finalBytes = outputStream.ToArray();
 
 		await Send.BytesAsync(finalBytes, contentType: MediaTypeNames.Image.Png, cancellation: c);
