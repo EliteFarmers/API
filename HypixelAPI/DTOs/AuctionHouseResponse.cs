@@ -72,3 +72,31 @@ public class AuctionBidResponse
 
 	[JsonPropertyName("timestamp")] public long Timestamp { get; set; }
 }
+
+public class AuctionHouseRecentlyEndedResponse
+{
+	public bool Success { get; set; }
+	public long LastUpdated { get; set; }
+	public List<AuctionEndedResponse> Auctions { get; set; } = [];
+}
+
+public class AuctionEndedResponse
+{
+	[JsonPropertyName("auction_id")] public required string Uuid { get; set; }
+
+	[JsonPropertyName("seller")] public required string Seller { get; set; }
+
+	[JsonPropertyName("seller_profile")] public required string SellerProfileId { get; set; }
+	
+	[JsonPropertyName("buyer")] public required string Buyer { get; set; }
+
+	[JsonPropertyName("buyer_profile")] public required string BuyerProfileId { get; set; }
+
+	[JsonPropertyName("timestamp")] public long Timestamp { get; set; }
+	
+	[JsonPropertyName("price")] public long Price { get; set; }
+	
+	[JsonPropertyName("bin")] public bool Bin { get; set; }
+
+	[JsonPropertyName("item_bytes")] public required string ItemBytes { get; set; }
+}

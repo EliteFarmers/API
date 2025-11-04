@@ -69,6 +69,15 @@ public interface IHypixelApi
 	[Get("/skyblock/auctions?page={page}")]
 	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
 	Task<ApiResponse<AuctionHouseResponse>> FetchAuctionHouseAsync(int page, CancellationToken ct = default);
+	
+	/// <summary>
+	/// Fetches the Auctions thet have ended in the past 60 seconds.
+	/// <a href="https://api.hypixel.net/#tag/SkyBlock/paths/~1v2~1skyblock~1auctions_ended/get">Hypixel API Documentation</a>
+	/// </summary>
+	/// <param name="ct">Cancellation Token</param>
+	[Get("/skyblock/auctions_ended")]
+	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
+	Task<ApiResponse<AuctionHouseRecentlyEndedResponse>> FetchAuctionHouseRecentlyEndedAsync(CancellationToken ct = default);
 
 	/// <summary>
 	/// Fetches the current or upcoming Firesales data.
