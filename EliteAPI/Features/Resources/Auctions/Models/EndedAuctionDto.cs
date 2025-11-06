@@ -36,6 +36,7 @@ public class EndedAuctionDto
 	public bool Bin { get; set; }
 	public string? SkyblockId { get; set; }
 	public string VariantKey { get; set; } = string.Empty;
+	public string? ItemUuid { get; set; }
 	
 	public ItemDto? Item { get; set; }
 }

@@ -135,6 +135,8 @@ public class HypixelGuildService(
 				existing.JoinedAt = member.Joined;
 
 				foreach (var (date, xp) in xpHistory) {
+					if (xp == 0) continue; // No point in saving zeros
+					
 					var found = existing.ExpHistory.FirstOrDefault(e => e.Day == date);
 					if (found is not null) {
 						found.Xp = xp;
@@ -157,10 +159,12 @@ public class HypixelGuildService(
 				Rank = member.Rank,
 				JoinedAt = member.Joined,
 				QuestParticipation = member.QuestParticipation,
-				ExpHistory = xpHistory.Select(x => new HypixelGuildMemberExp {
-					Day = x.Key,
-					Xp = x.Value
-				}).ToList()
+				ExpHistory = xpHistory
+					.Where(x => x.Value > 0)
+					.Select(x => new HypixelGuildMemberExp {
+						Day = x.Key,
+						Xp = x.Value
+					}).ToList()
 			};
 			
 			context.HypixelGuildMembers.Add(newMember);
