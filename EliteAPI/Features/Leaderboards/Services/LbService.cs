@@ -417,7 +417,13 @@ public class LbService(
 			};
 
 			var score = profileLb.GetScoreFromProfile(profile, type);
-			if (score == -1 && profile.Garden is not null) score = profileLb.GetScoreFromGarden(profile.Garden, type);
+			if (score == -1 && profile.Garden is not null) {
+				if (intervalIdentifier is not null) {
+					var valid = IsWithinInterval(type, profile.Garden.LastUpdated);
+					if (!valid) continue;
+				}
+				score = profileLb.GetScoreFromGarden(profile.Garden, type);
+			}
 
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				var changed = false;
@@ -785,6 +791,14 @@ public class LbService(
 			default:
 				throw new ArgumentOutOfRangeException(nameof(type), type, null);
 		}
+	}
+
+	public bool IsWithinInterval(LeaderboardType type, DateTimeOffset point) {
+		var (start, end) = GetCurrentTimeRange(type);
+		if (start == 0 && end == 0) return true;
+
+		var current = point.ToUnixTimeSeconds();
+		return start <= current && end >= current;
 	}
 
 	public static LeaderboardType GetTypeFromSlug(string slug) {
