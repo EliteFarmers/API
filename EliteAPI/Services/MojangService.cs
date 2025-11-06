@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -21,6 +22,7 @@ public partial class MojangService(
 	DataContext context,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	ICacheService cacheService,
+	IServiceScopeFactory serviceScopeFactory,
 	ILogger<MojangService> logger)
 	: IMojangService
 {
@@ -199,6 +201,38 @@ public partial class MojangService(
 	public async Task<(byte[]? face, byte[]? hat)> GetMinecraftAccountFace(string uuidOrIgn) {
 		var account = await GetMinecraftAccountByUuidOrIgn(uuidOrIgn);
 		return (account?.Face, account?.Hat);
+	}
+
+	public async Task<Dictionary<string, AccountMetaDto?>> GetMinecraftAccounts(List<string> uuids) {
+		var dict = await context.MinecraftAccounts.AsNoTracking()
+			.Include(account => account.EliteAccount)
+			.Where(account => uuids.Contains(account.Id))
+			.SelectMetaDto()
+			.ToDictionaryAsync(account => account.Id, account => (AccountMetaDto?) account);
+		
+		var concurrentDict = new ConcurrentDictionary<string, AccountMetaDto?>(dict);
+
+		await Parallel.ForEachAsync(uuids, new ParallelOptions() { MaxDegreeOfParallelism = 10 },
+			async (string uuid, CancellationToken token) => {
+				using var scope = serviceScopeFactory.CreateScope();
+				var mojang = scope.ServiceProvider.GetRequiredService<IMojangService>();
+				if (concurrentDict.ContainsKey(uuid)) return;
+
+				var account = await mojang.GetMinecraftAccountByUuid(uuid);
+
+				if (account is null) {
+					concurrentDict.TryAdd(uuid, null);
+					return;
+				}
+
+				concurrentDict.TryAdd(uuid, new AccountMetaDto() {
+					Id = account.Id,
+					Name = account.Name,
+					FormattedName = account.Name,
+				});
+			});
+
+		return concurrentDict.ToDictionary(account => account.Key, account => account.Value);
 	}
 
 	private async Task StoreSkinFromProperties(List<MinecraftAccountProperty>? properties, MinecraftAccount account) {

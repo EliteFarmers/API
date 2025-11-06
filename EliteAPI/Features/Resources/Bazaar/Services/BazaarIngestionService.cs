@@ -55,6 +55,13 @@ public class BazaarIngestionService(
 				BuyOrderPrice = representativeBuyOrderPrice,
 				SellOrderPrice = representativeSellOrderPrice
 			});
+
+			await context.BazaarProductSummaries
+				.Where(b => b.ItemId == productId)
+				.ExecuteUpdateAsync(b => b.SetProperty(s => s.Orders, new BazaarOrders() {
+					BuySummary = productDetails.BuySummary,
+					SellSummary = productDetails.SellSummary,
+				}));
 		}
 
 		if (newSnapshots.Count != 0) {
