@@ -11,7 +11,7 @@ public class FarmingWeightLeaderboard : IMemberLeaderboardDefinition
 		Slug = "farmingweight",
 		Category = "General",
 		MinimumScore = 500,
-		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly, LeaderboardType.Weekly],
 		ScoreDataType = LeaderboardScoreDataType.Decimal
 	};
 

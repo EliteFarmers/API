@@ -28,6 +28,7 @@ public class EndedAuction
 	public long Price { get; set; }
 	public short Count { get; set; }
 	public bool Bin { get; set; }
+	public Guid? ItemUuid { get; set; }
 	
 	[MaxLength(256)]
 	public string? SkyblockId { get; set; }

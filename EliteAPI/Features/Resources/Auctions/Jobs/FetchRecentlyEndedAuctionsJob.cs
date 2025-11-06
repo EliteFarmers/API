@@ -91,6 +91,7 @@ public class FetchRecentlyEndedAuctionsJob(
 				Count = count,
 				Bin = auction.Bin,
 				Timestamp = auction.Timestamp,
+				ItemUuid = item?.Uuid is not null ? Guid.Parse(item.Uuid) : null,
 
 				SkyblockId = item?.SkyblockId,
 				VariantKey = variantKey,

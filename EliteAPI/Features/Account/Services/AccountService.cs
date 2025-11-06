@@ -1,13 +1,16 @@
+using System.Collections.Concurrent;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Profiles.Services;
+using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using ErrorOr;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Account.Services;
@@ -16,6 +19,8 @@ namespace EliteAPI.Features.Account.Services;
 public class AccountService(
 	DataContext context,
 	IMemberService memberService,
+	IMojangService mojangService,
+	IServiceScopeFactory scopeFactory,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IOptions<FarmingItemsSettings> farmingItems)
 	: IAccountService
@@ -311,5 +316,44 @@ public class AccountService(
 		await context.SaveChangesAsync();
 
 		return Result.Success;
+	}
+
+	public async Task<AccountMetaDto?> GetAccountMeta(string uuid) {
+		return await context.MinecraftAccounts.AsNoTracking()
+			.Include(account => account.EliteAccount)
+			.SelectMetaDto()
+			.FirstOrDefaultAsync();
+	}
+
+	public async Task<Dictionary<string, AccountMetaDto?>> GetAccountMeta(List<string> uuids) {
+		var dict = await context.MinecraftAccounts.AsNoTracking()
+			.Include(account => account.EliteAccount)
+			.Where(account => uuids.Contains(account.Id))
+			.SelectMetaDto()
+			.ToDictionaryAsync(account => account.Id, account => (AccountMetaDto?) account);
+		
+		var concurrentDict = new ConcurrentDictionary<string, AccountMetaDto?>(dict);
+
+		await Parallel.ForEachAsync(uuids, new ParallelOptions() { MaxDegreeOfParallelism = 10 },
+			async (string uuid, CancellationToken token) => {
+				using var scope = scopeFactory.CreateScope();
+				var mojang = scope.ServiceProvider.GetRequiredService<IMojangService>();
+				if (concurrentDict.ContainsKey(uuid)) return;
+
+				var account = await mojang.GetMinecraftAccountByUuid(uuid);
+
+				if (account is null) {
+					concurrentDict.TryAdd(uuid, null);
+					return;
+				}
+
+				concurrentDict.TryAdd(uuid, new AccountMetaDto() {
+					Id = account.Id,
+					Name = account.Name,
+					FormattedName = account.Name,
+				});
+			});
+
+		return concurrentDict.ToDictionary(account => account.Key, account => account.Value);
 	}
 }

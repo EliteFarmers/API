@@ -11,6 +11,10 @@ public class GetAuctionPriceHistory(DataContext context) : Endpoint<GetAuctionPr
     {
         Get("/resources/auctions/{skyblockId}/{variantKey}");
         AllowAnonymous();
+        
+        Summary(s => {
+            s.Summary = "Get Auction History For Item";
+        });
     }
 
     public override async Task HandleAsync(GetAuctionPriceHistoryRequest r, CancellationToken c)

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+using EliteAPI.Features.Account.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Parsers.Inventories;
 using Riok.Mapperly.Abstractions;
@@ -17,14 +17,17 @@ public static partial class EndedAuctionMapper
 
 public class EndedAuctionDto
 {
-	[Key]
 	public Guid AuctionId { get; set; }
 	
 	public Guid SellerUuid { get; set; }
 	public Guid SellerProfileUuid { get; set; }
+	[MapperIgnore]
+	public AccountMetaDto? Seller { get; set; }
 	
 	public Guid BuyerUuid { get; set; }
 	public Guid BuyerProfileUuid { get; set; }
+	[MapperIgnore]
+	public AccountMetaDto? Buyer { get; set; }
 	
 	public long Timestamp { get; set; }
 	public long Price { get; set; }

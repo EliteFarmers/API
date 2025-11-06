@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FastEndpoints.Testing" Version="7.0.1"/>
+        <PackageReference Include="FastEndpoints.Testing" Version="7.1.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
         <PackageReference Include="NSubstitute" Version="5.3.0" />
