@@ -128,7 +128,9 @@ public class HypixelGuildService(
 	}
 
 	private async Task UpdateGuildMembers(HypixelGuild guild, List<RawHypixelGuildMember> newMembers, CancellationToken c = default) {
-		var current = guild.Members.ToDictionary(m => m.PlayerUuid);
+		var current = guild.Members
+			.GroupBy(p => p.PlayerUuid)
+			.ToDictionary(m => m.Key, m => m.First());
 		
 		var batchGet = await mojangService.GetMinecraftAccounts(newMembers.Select(m => m.Uuid).ToList());
 
