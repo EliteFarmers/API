@@ -13,7 +13,7 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 	public const string JoinSeparator = "|";
 	private const string MinedCrops = "mined_crops";
 
-	public AuctionItemVariation? Generate(ItemDto itemDto, string rarity) {
+	public AuctionItemVariation? Generate(ItemDto itemDto, string? rarity = null) {
 		var skyblockId = itemDto.SkyblockId;
 		if (string.IsNullOrEmpty(skyblockId)) {
 			logger.LogWarning("Cannot generate variant key: SkyblockId is missing from ItemDto");
@@ -22,9 +22,12 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 
 		var variedBy = new AuctionItemVariation();
 
-		if (!settings.Value.DontVaryByRarity.Contains(skyblockId)) variedBy.Rarity = rarity.ToUpperInvariant();
+		if (settings.Value.VaryByRarity.Contains(skyblockId) && rarity is not null) {
+			variedBy.Rarity = rarity.ToUpperInvariant();
+		}
 
 		if (itemDto.PetInfo is not null) {
+			variedBy.Rarity = itemDto.PetInfo.Tier.ToUpperInvariant();
 			variedBy.Pet = itemDto.PetInfo.Type;
 			variedBy.PetLevel = GenerateFromPetLevel(itemDto);
 		}
@@ -56,6 +59,13 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 					var applied = itemDto.Attributes.Runes.FirstOrDefault();
 					variedBy.Extra["rune"] = applied.Key + ":" + applied.Value;
 				}
+			}
+
+			if (itemDto.Attributes.AbilityScrolls is { Count: > 0 } abilities) {
+				abilities.Sort(StringComparer.InvariantCulture);
+				var scrolls = string.Join(JoinSeparator, abilities);
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["scrolls"] = scrolls;
 			}
 		}
 		

@@ -2,6 +2,7 @@
 using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Confirmations.Models;
+using EliteAPI.Features.HypixelGuilds.Models;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
@@ -150,6 +151,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	// Auction House
 	public DbSet<AuctionBinPrice> AuctionBinPrices { get; set; } = null!;
 	public DbSet<AuctionItem> AuctionItems { get; set; } = null!;
+	public DbSet<EndedAuction> EndedAuctions { get; set; } = null!;
+	public DbSet<AuctionPriceHistory> AuctionPriceHistories { get; set; } = null!;
 
 	// Firesales
 	public DbSet<SkyblockFiresale> SkyblockFiresales { get; set; } = null!;
@@ -162,4 +165,9 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	// Confirmations
 	public DbSet<Confirmation> Confirmations { get; set; } = null!;
 	public DbSet<UserConfirmation> UserConfirmations { get; set; } = null!;
+	
+	// Hypixel Guilds
+	public DbSet<HypixelGuild> HypixelGuilds { get; set; } = null!;
+	public DbSet<HypixelGuildMember> HypixelGuildMembers { get; set; } = null!;
+	public DbSet<HypixelGuildMemberExp> HypixelGuildMemberExps { get; set; } = null!;
 }

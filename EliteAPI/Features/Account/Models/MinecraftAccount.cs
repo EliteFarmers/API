@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EliteAPI.Features.Account.DTOs;
+using EliteAPI.Features.HypixelGuilds.Models;
 using EliteAPI.Models.Entities.Hypixel;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,10 @@ public class MinecraftAccount
 	public long LastUpdated { get; set; }
 	public long ProfilesLastUpdated { get; set; }
 	public long PlayerDataLastUpdated { get; set; }
+	public long GuildLastUpdated { get; set; }
+	
+	public long? GuildMemberId { get; set; }
+	public HypixelGuildMember? GuildMember { get; set; }
 }
 
 public class MinecraftAccountProperty

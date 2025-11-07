@@ -5,7 +5,6 @@ using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
-using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Events;
@@ -15,6 +14,7 @@ using EliteAPI.Models.Entities.Monetization;
 using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -23,9 +23,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251106015439_AddMoreAuctionEntities")]
+    partial class AddMoreAuctionEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,12 +130,6 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Flags")
                         .HasColumnType("integer");
 
-                    b.Property<long>("GuildLastUpdated")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("GuildMemberId")
-                        .HasColumnType("bigint");
-
                     b.Property<byte[]>("Hat")
                         .HasColumnType("bytea");
 
@@ -161,8 +157,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("GuildMemberId");
 
                     b.HasIndex(new[] { "Name" }, "idx_minecraft_accounts_name");
 
@@ -469,120 +463,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ConfirmationId");
 
                     b.ToTable("UserConfirmations");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuild", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<long>("CreatedAt")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("Exp")
-                        .HasColumnType("bigint");
-
-                    b.Property<Dictionary<string, long>>("GameExp")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<long>("LastUpdated")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("NameLower")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<List<string>>("PreferredGames")
-                        .HasColumnType("jsonb");
-
-                    b.Property<bool>("Public")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("PubliclyListed")
-                        .HasColumnType("boolean");
-
-                    b.Property<List<RawHypixelGuildRank>>("Ranks")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Tag")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TagColor")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NameLower");
-
-                    b.ToTable("HypixelGuilds");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("GuildId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("JoinedAt")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PlayerUuid")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("QuestParticipation")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Rank")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildId");
-
-                    b.HasIndex("PlayerUuid");
-
-                    b.ToTable("HypixelGuildMembers");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMemberExp", b =>
-                {
-                    b.Property<long>("GuildMemberId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateOnly>("Day")
-                        .HasColumnType("date");
-
-                    b.Property<int>("Xp")
-                        .HasColumnType("integer");
-
-                    b.HasKey("GuildMemberId", "Day");
-
-                    b.HasIndex("Day")
-                        .IsDescending();
-
-                    b.HasIndex("GuildMemberId");
-
-                    b.ToTable("HypixelGuildMemberExps");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Images.Models.Image", b =>
@@ -1460,10 +1340,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<double>("InstaSellPrice")
                         .HasColumnType("double precision");
-
-                    b.Property<BazaarOrders>("Orders")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
 
                     b.Property<double>("SellOrderPrice")
                         .HasColumnType("double precision");
@@ -3058,13 +2934,7 @@ namespace EliteAPI.Data.Migrations
                         .WithMany("MinecraftAccounts")
                         .HasForeignKey("AccountId");
 
-                    b.HasOne("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", "GuildMember")
-                        .WithMany()
-                        .HasForeignKey("GuildMemberId");
-
                     b.Navigation("EliteAccount");
-
-                    b.Navigation("GuildMember");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Account.Models.UserBadge", b =>
@@ -3163,34 +3033,6 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Confirmation");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", b =>
-                {
-                    b.HasOne("EliteAPI.Features.HypixelGuilds.Models.HypixelGuild", "Guild")
-                        .WithMany("Members")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EliteAPI.Features.Account.Models.MinecraftAccount", "MinecraftAccount")
-                        .WithMany()
-                        .HasForeignKey("PlayerUuid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
-
-                    b.Navigation("MinecraftAccount");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMemberExp", b =>
-                {
-                    b.HasOne("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", null)
-                        .WithMany("ExpHistory")
-                        .HasForeignKey("GuildMemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.Leaderboard", b =>
@@ -4280,16 +4122,6 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
                 {
                     b.Navigation("UserConfirmations");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuild", b =>
-                {
-                    b.Navigation("Members");
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", b =>
-                {
-                    b.Navigation("ExpHistory");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Monetization.Models.ShopOrder", b =>

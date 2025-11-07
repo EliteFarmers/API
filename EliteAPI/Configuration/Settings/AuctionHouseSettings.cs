@@ -13,7 +13,7 @@ public class AuctionHouseSettings
 	public int RawDataRetentionDays { get; set; } = 10;
 	public int AggregationMaxLookbackDays { get; set; } = 7;
 	public List<VariantConfigEntry> Variants { get; set; } = [];
-	public List<string> DontVaryByRarity { get; set; } = [];
+	public List<string> VaryByRarity { get; set; } = [];
 	public Dictionary<string, PetLevelGroupConfig> PetLevelGroups { get; set; } = [];
 	public Dictionary<string, Dictionary<string, PetLevelGroupConfig>> PetLevelGroupOverrides { get; set; } = [];
 }

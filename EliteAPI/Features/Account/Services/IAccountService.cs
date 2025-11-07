@@ -13,7 +13,6 @@ public interface IAccountService
 	/// <param name="accountId">Linked Discord account Id</param>
 	/// <returns></returns>
 	Task<EliteAccount?> GetAccount(ulong accountId);
-
 	Task<EliteAccount?> GetAccountByIgn(string ign);
 	Task<EliteAccount?> GetAccountByMinecraftUuid(string uuid);
 	Task<EliteAccount?> GetAccountByIgnOrUuid(string ignOrUuid);
@@ -24,4 +23,7 @@ public interface IAccountService
 
 	Task<ErrorOr<Success>> UpdateFortuneSettings(ulong discordId, string playerUuid, string profileUuid,
 		MemberFortuneSettingsDto settings);
+	
+	Task<AccountMetaDto?> GetAccountMeta(string uuid);
+	Task<Dictionary<string, AccountMetaDto?>> GetAccountMeta(List<string> uuids);
 }

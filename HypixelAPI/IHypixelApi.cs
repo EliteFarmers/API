@@ -87,4 +87,22 @@ public interface IHypixelApi
 	[Get("/skyblock/firesales")]
 	[Headers("API-Key:")] // Clears API-Key, as it's not required for this endpoint
 	Task<ApiResponse<FiresalesResponse>> FetchFiresalesAsync(CancellationToken ct = default);
+
+	/// <summary>
+	/// Fetches a guild by Hypixel object Id.
+	/// <a href="https://api.hypixel.net/#tag/Player-Data/paths/~1v2~1guild/get">Hypixel API Documentation</a>
+	/// </summary>
+	/// <param name="guildId"></param>
+	/// <param name="ct">Cancellation Token</param>
+	[Get("/guild?id={guildId}")]
+	Task<ApiResponse<HypixelGuildResponse>> FetchGuildByIdAsync(string guildId, CancellationToken ct = default);
+	
+	/// <summary>
+	/// Fetches a guild by Hypixel object Id.
+	/// <a href="https://api.hypixel.net/#tag/Player-Data/paths/~1v2~1guild/get">Hypixel API Documentation</a>
+	/// </summary>
+	/// <param name="playerUuid"></param>
+	/// <param name="ct">Cancellation Token</param>
+	[Get("/guild?player={playerUuid}")]
+	Task<ApiResponse<HypixelGuildResponse>> FetchGuildByPlayerUuidAsync(string playerUuid, CancellationToken ct = default);
 }

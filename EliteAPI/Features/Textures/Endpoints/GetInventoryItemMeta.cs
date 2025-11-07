@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
 using EliteAPI.Features.Profiles.Mappers;
+using EliteAPI.Features.Resources.Auctions.Services;
 using EliteAPI.Features.Textures.Services;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -33,10 +34,16 @@ internal sealed class InventoryItemMetaResponse
 	/// Texture Pack ID where the item texture is located
 	/// </summary>
 	public string? PackId { get; set; }
+	
+	/// <summary>
+	/// Variant key for price lookups
+	/// </summary>
+	public string? VariantKey { get; set; }
 }
 
 internal sealed class GetInventoryItemMetaEndpoint(
 	ItemTextureResolver itemTextureResolver,
+	VariantKeyGenerator variantKeyGenerator,
 	DataContext context
 ) : Endpoint<GetInventoryItemMetaRequest, InventoryItemMetaResponse>
 {
@@ -85,7 +92,8 @@ internal sealed class GetInventoryItemMetaEndpoint(
 
 		await Send.OkAsync(new InventoryItemMetaResponse
 		{
-			PackId = resource.SourcePackId
+			PackId = resource.SourcePackId,
+			VariantKey = variantKeyGenerator.Generate(itemData.ToDto())?.ToKey()
 		}, cancellation: c);
 	}
 }
