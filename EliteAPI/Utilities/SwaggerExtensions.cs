@@ -39,6 +39,7 @@ public static class SwaggerExtensions
 		app.MapScalarApiReference("/", opt => {
 			opt.Title = "Elite API Reference";
 			opt.Favicon = "https://elitebot.dev/favicon.ico";
+			opt.Theme = ScalarTheme.DeepSpace;
 		});
 		return app;
 	}

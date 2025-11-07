@@ -59,7 +59,7 @@ public class GetAuctionPriceHistory(DataContext context) : Endpoint<GetAuctionPr
 
     private static string NormalizeVariantKey(string variantKey)
     {
-        if (string.IsNullOrWhiteSpace(variantKey) || variantKey == "-") return string.Empty;
+        if (string.IsNullOrWhiteSpace(variantKey) || variantKey == "-" || variantKey == "default") return string.Empty;
         return Uri.UnescapeDataString(variantKey);
     }
 }
