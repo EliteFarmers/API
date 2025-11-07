@@ -41,14 +41,28 @@ public class HypixelGuildService(
 		var member = await context.HypixelGuildMembers
 			.FirstOrDefaultAsync(m => m.PlayerUuid == account.Id && m.Active, cancellationToken: c);
 
-		if (member is not null) {
-			await UpdateGuild(member.GuildId, c);
-			return;
-		}
+		try {
+			if (member is not null) {
+				await UpdateGuild(member.GuildId, c);
+				return;
+			}
 
-		if (account.GuildLastUpdated.OlderThanSeconds(_coolDowns.HypixelGuildMemberCooldown)) {
-			account.GuildLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-			await UpdateGuildByPlayerUuid(account.Id, c);
+			if (account.GuildLastUpdated.OlderThanSeconds(_coolDowns.HypixelGuildMemberCooldown)) {
+				account.GuildLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+				
+				var hypixelXp = await context.PlayerData
+					.Where(p => p.Uuid == account.Id)
+					.Select(p => p.NetworkExp)
+					.FirstOrDefaultAsync(cancellationToken: c);
+
+				// Check that the player is decently active first
+				// Hypixel network level ~124
+				if (hypixelXp > 20_000_000) {
+					await UpdateGuildByPlayerUuid(account.Id, c);
+				}
+			}
+		} catch (Exception e) {
+			logger.LogError(e, "Failed to update guild");
 		}
 	}
 
@@ -191,7 +205,6 @@ public class HypixelGuildService(
 		var guild = guildResponse.Content?.Guild;
 		
 		if (!guildResponse.IsSuccessful || guild is null) {
-			logger.LogWarning("Failed to fetch guild for {PlayerUuid}", playerUuid);
 			return;
 		}
 			
