@@ -119,7 +119,7 @@ public class HypixelGuildService(
 		var batchGet = await mojangService.GetMinecraftAccounts(newMembers.Select(m => m.Uuid).ToList());
 
 		foreach (var member in newMembers) {
-			if (!batchGet.ContainsKey(member.Uuid)) continue;
+			if (!batchGet.TryGetValue(member.Uuid, out var accountMeta) || accountMeta is null) continue;
 			
 			var xpHistory = member.ExpHistory.ToDictionary(kvp => {
 				var split = kvp.Key.Split('-');
@@ -170,12 +170,19 @@ public class HypixelGuildService(
 			context.HypixelGuildMembers.Add(newMember);
 		}
 
-		// Flag deleted members
+		var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+		
+		// Flag deleted members and update last updated times
 		foreach (var member in guild.Members) {
 			var stillExists = newMembers.FirstOrDefault(n => n.Uuid == member.PlayerUuid);
 			if (stillExists is null) {
 				member.Active = false;
 			}
+			
+			await context.MinecraftAccounts
+				.Where(a => member.PlayerUuid == a.Id)
+				.ExecuteUpdateAsync(a => 
+					a.SetProperty(e => e.GuildLastUpdated, now), cancellationToken: c);
 		}
 	}
 	
