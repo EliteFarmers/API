@@ -816,7 +816,7 @@ public class LbService(
 
 		var monthSplit = interval.Split("-");
 		if (int.TryParse(monthSplit[0], out var monthlyYear) && int.TryParse(monthSplit[1], out var month)) {
-			return GetIntervalTimeRange(LeaderboardType.Weekly, new DateTimeOffset(monthlyYear, month, 1, 0, 0, 0, DateTimeOffset.UtcNow.Offset));
+			return GetIntervalTimeRange(LeaderboardType.Monthly, new DateTimeOffset(monthlyYear, month, 1, 0, 0, 0, DateTimeOffset.UtcNow.Offset));
 		}
 		
 		return (0, 0);
