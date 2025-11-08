@@ -32,7 +32,9 @@ internal sealed class GetLeaderboardEndpoint(
 			identifier: request.Interval);
 
 		var type = LbService.GetTypeFromSlug(request.Leaderboard);
-		var time = lbService.GetCurrentTimeRange(type);
+		var time = request.Interval is not null
+			? lbService.GetIntervalTimeRange(request.Interval)
+			: lbService.GetCurrentTimeRange(type);
 
 		var lastEntry = await lbService.GetLastLeaderboardEntry(
 			request.Leaderboard,

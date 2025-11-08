@@ -7,6 +7,7 @@ using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -49,6 +50,8 @@ public interface ILbService
 		CancellationToken? c = null);
 
 	(long start, long end) GetCurrentTimeRange(LeaderboardType type);
+	(long start, long end) GetIntervalTimeRange(LeaderboardType type, DateTimeOffset now);
+	(long start, long end) GetIntervalTimeRange(string? interval);
 }
 
 [RegisterService<ILbService>(LifeTime.Scoped)]
@@ -767,15 +770,21 @@ public class LbService(
 	}
 
 	public (long start, long end) GetCurrentTimeRange(LeaderboardType type) {
+		return GetIntervalTimeRange(type, DateTimeOffset.UtcNow);
+	}
+	
+	public (long start, long end) GetIntervalTimeRange(LeaderboardType type, DateTimeOffset now) {
 		switch (type) {
 			case LeaderboardType.Current:
 				return (0, 0);
 			case LeaderboardType.Weekly:
-				var nowUtc = DateTime.UtcNow;
+				var nowUtc = now.UtcDateTime;
 				var isoYear = ISOWeek.GetYear(nowUtc);
 				var isoWeekNumber = ISOWeek.GetWeekOfYear(nowUtc);
 
-				var startOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Monday).ToUniversalTime();
+				var startOfWeekUtc = isoWeekNumber == 1 
+					? ISOWeek.ToDateTime(isoYear - 1, ISOWeek.GetWeeksInYear(isoYear - 1), DayOfWeek.Sunday).ToUniversalTime()
+					: ISOWeek.ToDateTime(isoYear, isoWeekNumber - 1, DayOfWeek.Sunday).ToUniversalTime();
 				var endOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Sunday).ToUniversalTime();
 
 				var startTimestamp = ((DateTimeOffset)startOfWeekUtc).ToUnixTimeSeconds();
@@ -783,7 +792,6 @@ public class LbService(
 
 				return (startTimestamp, endTimestamp);
 			case LeaderboardType.Monthly:
-				var now = DateTimeOffset.UtcNow;
 				var startOfMonth = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, now.Offset);
 				var endOfMonth = startOfMonth.AddMonths(1);
 
@@ -791,6 +799,27 @@ public class LbService(
 			default:
 				throw new ArgumentOutOfRangeException(nameof(type), type, null);
 		}
+	}
+
+	public (long start, long end) GetIntervalTimeRange(string? interval) {
+		if (interval.IsNullOrEmpty() || !interval.Contains('-')) {
+			return (0, 0);
+		}
+
+		if (interval.Contains("-W")) {
+			var split = interval.Split("-W");
+			if (int.TryParse(split[0], out var year) && int.TryParse(split[1], out var week)) {
+				return GetIntervalTimeRange(LeaderboardType.Weekly, ISOWeek.ToDateTime(year, week, DayOfWeek.Sunday));
+			}
+			return (0, 0);
+		}
+
+		var monthSplit = interval.Split("-");
+		if (int.TryParse(monthSplit[0], out var monthlyYear) && int.TryParse(monthSplit[1], out var month)) {
+			return GetIntervalTimeRange(LeaderboardType.Weekly, new DateTimeOffset(monthlyYear, month, 1, 0, 0, 0, DateTimeOffset.UtcNow.Offset));
+		}
+		
+		return (0, 0);
 	}
 
 	public bool IsWithinInterval(LeaderboardType type, DateTimeOffset point) {
