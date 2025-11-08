@@ -758,7 +758,7 @@ public class LbService(
 			case LeaderboardType.Weekly:
 				var now = DateTime.UtcNow;
 				var week = ISOWeek.GetWeekOfYear(now);
-				return $"{now.Year}-W{week}";
+				return $"{now.Year}-W{week.ToString().PadLeft(2, '0')}";
 			case LeaderboardType.Monthly:
 				return DateTime.UtcNow.ToString("yyyy-MM", CultureInfo.InvariantCulture);
 			default:
