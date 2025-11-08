@@ -53,8 +53,8 @@ internal sealed class LeaderboardRequestValidator : Validator<LeaderboardRequest
 			.WithMessage("Leaderboard does not exist");
 
 		RuleFor(x => x.Interval)
-			.Matches(@"^\d{4}-\d{2}$")
+			.Matches(@"^\d{4}-W?\d{2}$")
 			.When(x => x.Interval is not null)
-			.WithMessage("Interval is invalid. Expected format: yyyy-MM");
+			.WithMessage("Interval is invalid. Expected format: yyyy-MM or yyyy-Www");
 	}
 }
