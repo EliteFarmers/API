@@ -65,10 +65,10 @@ internal sealed class GetPopularAuctionsEndpoint(DataContext context)
                 ItemsSold = g.Sum(x => x.ItemsSold),
                 SaleAuctions = g.Sum(x => x.SaleAuctions),
                 BinListings = g.Sum(x => x.BinListings),
-                AverageSalePrice = g.Average(x => x.AverageSalePrice),
-                AverageBinPrice = g.Average(x => x.AverageBinPrice),
-                LowestSalePrice = g.Min(x => x.LowestSalePrice),
-                LowestBinPrice = g.Min(x => x.LowestBinPrice)
+                AverageSalePrice = g.Average(x => x.AverageSalePrice.HasValue ? (double?)x.AverageSalePrice.Value : null),
+                AverageBinPrice = g.Average(x => x.AverageBinPrice.HasValue ? (double?)x.AverageBinPrice.Value : null),
+                LowestSalePrice = g.Min(x => x.LowestSalePrice.HasValue ? (double?)x.LowestSalePrice.Value : null),
+                LowestBinPrice = g.Min(x => x.LowestBinPrice.HasValue ? (double?)x.LowestBinPrice.Value : null)
             })
             .Where(x => x.ItemsSold > 0 || x.BinListings > 0);
 
@@ -109,10 +109,10 @@ internal sealed class GetPopularAuctionsEndpoint(DataContext context)
             ItemsSold = r.ItemsSold,
             SaleAuctions = r.SaleAuctions,
             BinListings = r.BinListings,
-            AverageSalePrice = r.AverageSalePrice,
-            AverageBinPrice = r.AverageBinPrice,
-            LowestSalePrice = r.LowestSalePrice,
-            LowestBinPrice = r.LowestBinPrice
+            AverageSalePrice = ToSafeDecimal(r.AverageSalePrice),
+            AverageBinPrice = ToSafeDecimal(r.AverageBinPrice),
+            LowestSalePrice = ToSafeDecimal(r.LowestSalePrice),
+            LowestBinPrice = ToSafeDecimal(r.LowestBinPrice)
         }).ToList();
 
         var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -136,15 +136,23 @@ internal sealed class GetPopularAuctionsEndpoint(DataContext context)
         };
     }
 
+    private static decimal? ToSafeDecimal(double? value) {
+        if (!value.HasValue || double.IsNaN(value.Value) || double.IsInfinity(value.Value)) return null;
+        var v = value.Value;
+        if (v > (double)decimal.MaxValue) return decimal.MaxValue;
+        if (v < (double)decimal.MinValue) return decimal.MinValue;
+        return (decimal)v;
+    }
+
     private sealed class PopularAuctionProjection
     {
         public required string SkyblockId { get; init; }
         public int ItemsSold { get; init; }
         public int SaleAuctions { get; init; }
         public int BinListings { get; init; }
-        public decimal? AverageSalePrice { get; init; }
-        public decimal? AverageBinPrice { get; init; }
-        public decimal? LowestSalePrice { get; init; }
-        public decimal? LowestBinPrice { get; init; }
+        public double? AverageSalePrice { get; init; }
+        public double? AverageBinPrice { get; init; }
+        public double? LowestSalePrice { get; init; }
+        public double? LowestBinPrice { get; init; }
     }
 }
