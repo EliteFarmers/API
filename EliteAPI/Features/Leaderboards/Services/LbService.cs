@@ -782,10 +782,8 @@ public class LbService(
 				var isoYear = ISOWeek.GetYear(nowUtc);
 				var isoWeekNumber = ISOWeek.GetWeekOfYear(nowUtc);
 
-				var startOfWeekUtc = isoWeekNumber == 1 
-					? ISOWeek.ToDateTime(isoYear - 1, ISOWeek.GetWeeksInYear(isoYear - 1), DayOfWeek.Sunday).ToUniversalTime()
-					: ISOWeek.ToDateTime(isoYear, isoWeekNumber - 1, DayOfWeek.Sunday).ToUniversalTime();
-				var endOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Sunday).ToUniversalTime();
+				var startOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Monday).ToUniversalTime();
+				var endOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber + 1, DayOfWeek.Monday).ToUniversalTime();
 
 				var startTimestamp = ((DateTimeOffset)startOfWeekUtc).ToUnixTimeSeconds();
 				var endTimestamp = ((DateTimeOffset)endOfWeekUtc).ToUnixTimeSeconds();
@@ -809,7 +807,7 @@ public class LbService(
 		if (interval.Contains("-W")) {
 			var split = interval.Split("-W");
 			if (int.TryParse(split[0], out var year) && int.TryParse(split[1], out var week)) {
-				return GetIntervalTimeRange(LeaderboardType.Weekly, ISOWeek.ToDateTime(year, week, DayOfWeek.Sunday));
+				return GetIntervalTimeRange(LeaderboardType.Weekly, ISOWeek.ToDateTime(year, week, DayOfWeek.Monday));
 			}
 			return (0, 0);
 		}
