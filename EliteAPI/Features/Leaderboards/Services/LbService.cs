@@ -783,7 +783,9 @@ public class LbService(
 				var isoWeekNumber = ISOWeek.GetWeekOfYear(nowUtc);
 
 				var startOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Monday).ToUniversalTime();
-				var endOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber + 1, DayOfWeek.Monday).ToUniversalTime();
+				var endOfWeekUtc = isoWeekNumber == ISOWeek.GetWeeksInYear(isoYear) 
+					? ISOWeek.ToDateTime(isoYear + 1, 1, DayOfWeek.Monday).ToUniversalTime()
+					: ISOWeek.ToDateTime(isoYear, isoWeekNumber + 1, DayOfWeek.Monday).ToUniversalTime();
 
 				var startTimestamp = ((DateTimeOffset)startOfWeekUtc).ToUnixTimeSeconds();
 				var endTimestamp = ((DateTimeOffset)endOfWeekUtc).ToUnixTimeSeconds();
