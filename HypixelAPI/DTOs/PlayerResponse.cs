@@ -29,6 +29,7 @@ public class PlayerDataResponse
 
 	public string? Prefix { get; set; }
 	public string? Rank { get; set; }
+	public string? PackageRank { get; set; }
 	public string? NewPackageRank { get; set; }
 	public string? RankPlusColor { get; set; }
 	public string? MonthlyPackageRank { get; set; }
