@@ -42,6 +42,11 @@ public class AuthSessionDto
 	public required string[] Roles { get; set; }
 	
 	/// <summary>
+	/// List of account flags
+	/// </summary>
+	public required string[] Flags { get; set; }
+	
+	/// <summary>
 	/// The pending confirmation for the user, if any
 	/// </summary>
 	[JsonPropertyName("pending_confirmation")]

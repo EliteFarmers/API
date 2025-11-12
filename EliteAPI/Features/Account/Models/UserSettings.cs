@@ -65,4 +65,9 @@ public class ConfiguredProductFeatures
 	/// Show "More Info" on weight command by default
 	/// </summary>
 	public bool MoreInfoDefault { get; set; }
+	
+	/// <summary>
+	/// Special feature flags
+	/// </summary>
+	public string[] Flags { get; set; } = [];
 }

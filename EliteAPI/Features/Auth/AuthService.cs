@@ -208,7 +208,8 @@ public partial class AuthService(
 			new(ClaimNames.Avatar, user.Account.Avatar ?? string.Empty),
 			new(ClaimNames.Ign, primaryAccount?.Name ?? string.Empty),
 			new(ClaimNames.FormattedIgn, user.Account.GetFormattedIgn()),
-			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty)
+			new(ClaimNames.Uuid, primaryAccount?.Id ?? string.Empty),
+			new(ClaimNames.Flags, string.Join("|", user.Account?.UserSettings?.Features?.Flags ?? [])),
 		};
 
 		// Add roles to the claims

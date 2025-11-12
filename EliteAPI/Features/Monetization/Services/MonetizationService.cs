@@ -8,7 +8,6 @@ using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.Monetization.Models;
-using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
 using EliteAPI.Models.Entities.Monetization;
 using EliteAPI.Services.Interfaces;
@@ -80,7 +79,8 @@ public class MonetizationService(
 			product.Features.MoreInfoDefault =
 				editProductDto.Features.MoreInfoDefault ?? product.Features.MoreInfoDefault;
 			product.Features.CustomEmoji = editProductDto.Features.CustomEmoji ?? product.Features.CustomEmoji;
-
+			product.Features.Flags = editProductDto.Features.Flags ?? product.Features.Flags;
+			
 			context.Entry(product).Property(p => p.Features).IsModified = true;
 		}
 
@@ -223,6 +223,16 @@ public class MonetizationService(
 
 		// Flag the account as having active rewards (or not)
 		account.ActiveRewards = hasHideShopPromotions || hasWeightStyleOverride || hasMoreInfoDefault;
+		
+		account.UserSettings.Features.Flags = account.ProductAccesses
+			.Where(e => e.Product.Features.Flags.Length > 0)
+			.SelectMany(e => e.Product.Features.Flags)
+			.Distinct()
+			.ToArray();
+
+		if (account.UserSettings.Features.Flags.Length > 0) {
+			account.ActiveRewards = true;
+		}
 
 		// Disable features if the user doesn't have the entitlement
 		account.UserSettings.Features.HideShopPromotions =

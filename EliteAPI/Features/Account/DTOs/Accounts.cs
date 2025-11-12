@@ -297,6 +297,12 @@ public class UnlockedProductFeaturesDto
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int? MaxJacobLeaderboards { get; set; }
+	
+	/// <summary>
+	/// Unlocked product flags
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string[]? Flags { get; set; }
 }
 
 public class LinkedAccountsDto

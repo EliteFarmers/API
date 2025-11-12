@@ -220,6 +220,12 @@ public class AccountService(
 			.AsNoTracking()
 			.ToListAsync();
 
+		account.UserSettings.Features.Flags = entitlements
+			.Where(e => e.Product.Features.Flags.Length > 0)
+			.SelectMany(e => e.Product.Features.Flags)
+			.Distinct()
+			.ToArray();
+
 		if (settings.WeightStyleId is not null) {
 			var validChange = entitlements.Any(ue => ue.HasWeightStyle(settings.WeightStyleId.Value));
 

@@ -133,4 +133,9 @@ public class UnlockedProductFeatures
 	/// Maximum number of jacob leaderboard that can be active at once. (For guilds)
 	/// </summary>
 	public int? MaxJacobLeaderboards { get; set; }
+
+	/// <summary>
+	/// Special feature flags
+	/// </summary>
+	public string[] Flags { get; set; } = [];
 }

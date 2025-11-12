@@ -33,6 +33,7 @@ public static class ClaimNames
 	public const string Ign = "Ign";
 	public const string FormattedIgn = "FIgn";
 	public const string Uuid = "Uuid";
+	public const string Flags = "Flags";
 }
 
 public static class ApiUserPolicies
