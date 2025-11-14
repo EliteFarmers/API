@@ -1,8 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using EliteFarmers.HypixelAPI.DTOs;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Riok.Mapperly.Abstractions;
 
 namespace EliteAPI.Features.HypixelGuilds.Models;
@@ -11,6 +7,23 @@ namespace EliteAPI.Features.HypixelGuilds.Models;
 public static partial class HypixelGuildMapper
 {
 	public static partial HypixelGuildDto ToDto(this HypixelGuild guild);
+
+	public static partial IQueryable<HypixelGuildDetailsDto> SelectDetailsDto(this IQueryable<HypixelGuild> guild);
+	public static HypixelGuildDetailsDto ToDetailsDto(this HypixelGuild guild) {
+		return new HypixelGuildDetailsDto() {
+			Id = guild.Id,
+			Name = guild.Name,
+			CreatedAt = guild.CreatedAt,
+			Tag = guild.Tag,
+			TagColor = guild.TagColor,
+			MemberCount = guild.MemberCount,
+			LastUpdated = guild.LastUpdated,
+			Stats = guild.Stats.OrderByDescending(x => x.RecordedAt).First().ToDto()
+		};
+	}
+	
+	public static partial IQueryable<HypixelGuildStatsDto> SelectDto(this IQueryable<HypixelGuildStats> guild);
+	public static partial HypixelGuildStatsDto ToDto(this HypixelGuildStats guild);
 
 	public static HypixelGuildMemberDto ToDto(this HypixelGuildMember guildMember) {
 		var prefix = guildMember.MinecraftAccount.EliteAccount?.UserSettings.Prefix ?? string.Empty;
@@ -56,6 +69,25 @@ public class HypixelGuildDto
 	public List<RawHypixelGuildRank> Ranks { get; set; } = [];
 
 	public List<HypixelGuildMemberDto> Members { get; set; } = [];
+	public int MemberCount { get; set; }
+	public long LastUpdated { get; set; }
+	
+	public List<HypixelGuildStatsDto> Stats { get; set; } = [];
+}
+
+public class HypixelGuildDetailsDto
+{
+	public required string Id { get; set; }
+	public required string Name { get; set; }
+
+	public long CreatedAt { get; set; }
+	
+	public string? Tag { get; set; }
+	public string? TagColor { get; set; }
+
+	public int MemberCount { get; set; }
 	
 	public long LastUpdated { get; set; }
+	
+	public HypixelGuildStatsDto? Stats { get; set; }
 }

@@ -1,6 +1,7 @@
 using EliteAPI.Data;
 using EliteAPI.Features.HypixelGuilds.Models;
 using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.HypixelGuilds.Endpoints;
@@ -24,6 +25,11 @@ internal sealed class GetHypixelGuildEndpoint(DataContext context) : Endpoint<Ge
 		Version(0);
 
 		Summary(s => { s.Summary = "Get Hypixel Guild"; });
+		
+		Options(o => {
+			o.AutoTagOverride("Hypixel Guilds");
+			o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(10)).Tag("hypixel-guilds"));
+		});
 	}
 
 	public override async Task HandleAsync(GetHypixelGuildRequest request, CancellationToken c) {
@@ -37,6 +43,7 @@ internal sealed class GetHypixelGuildEndpoint(DataContext context) : Endpoint<Ge
 			.ThenInclude(g => g.MinecraftAccount)
 			.ThenInclude(g => g.EliteAccount)
 			.ThenInclude(g => g!.UserSettings)
+			.Include(g => g.Stats.OrderByDescending(s => s.RecordedAt).Take(1))
 			.FirstOrDefaultAsync(g => g.Id == request.GuildId, cancellationToken: c);
 
 		if (guild is null) {

@@ -88,7 +88,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 	opt.KnownNetworks.Add(new IPNetwork(IPAddress.IPv6Any, 0));
 });
 
-builder.Services.AddFastEndpoints(o => { o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All; });
+builder.AddEliteFastEndpoints();
 
 builder.Services.AddSkyblockRepo(opt => {
 	opt.UseNeuRepo = true;

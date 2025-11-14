@@ -256,7 +256,15 @@ public class ProfileProcessorService(
 		}
 
 		if (existing is not null) {
-			profile.GameMode = profileData.GameMode;
+			if (profile.GameMode != profileData.GameMode) {
+				context.GameModeHistories.Add(new GameModeHistory() {
+					ProfileId = profile.ProfileId,
+					Old = profile.GameMode ?? "classic",
+					New = profileData.GameMode ?? "classic",
+					ChangedAt = DateTimeOffset.UtcNow
+				});
+				profile.GameMode = profileData.GameMode;
+			}
 			profile.ProfileName = profileData.CuteName;
 		}
 		else {
@@ -422,6 +430,8 @@ public class ProfileProcessorService(
 			Bestiary = incomingData.Bestiary ?? new RawBestiaryResponse(),
 			Dungeons = incomingData.Dungeons ?? new RawDungeonsResponse()
 		};
+
+		member.Slayers = incomingData.Slayer?.ToDto();
 
 		if (incomingData.Garden?.LarvaConsumed is not null)
 			member.Unparsed.Consumed.Add("wriggling_larva", incomingData.Garden.LarvaConsumed);

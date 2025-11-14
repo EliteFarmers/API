@@ -11,13 +11,13 @@ using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
-using Quartz.Impl.Calendar;
 
 namespace EliteAPI.Features.HypixelGuilds.Services;
 
 public interface IHypixelGuildService
 {
 	Task UpdateGuildIfNeeded(MinecraftAccount account, CancellationToken c = default);
+	Task<List<HypixelGuildDetailsDto>> GetGuildListAsync(HypixelGuildListQuery query, CancellationToken c = default);
 }
 
 [RegisterService<IHypixelGuildService>(LifeTime.Scoped)]
@@ -73,7 +73,7 @@ public class HypixelGuildService(
 				.Select(g => g.LastUpdated)
 				.FirstOrDefaultAsync(cancellationToken: ct);
 
-			if (guildLastUpdated.OlderThanSeconds(_coolDowns.HypixelGuildCooldown)) {
+			if (!guildLastUpdated.OlderThanSeconds(_coolDowns.HypixelGuildCooldown)) {
 				return true;
 			}
 			
@@ -86,7 +86,14 @@ public class HypixelGuildService(
 			}
 			
 			await UpdateGuildInternal(guild, guildId, ct);
+			
+			// Queue stats update
+			await new HypixelGuildStatUpdateCommand { GuildId = guildId }.QueueJobAsync(ct: ct);
+			
 			return true;
+		}, new HybridCacheEntryOptions() {
+			LocalCacheExpiration = TimeSpan.FromMinutes(1),
+			Expiration = TimeSpan.FromMinutes(1)
 		}, cancellationToken: c);
 	}
 	
@@ -94,8 +101,11 @@ public class HypixelGuildService(
 		var sevenDaysAgo = DateTimeOffset.UtcNow.AddDays(-7);
 		var date = new DateOnly(sevenDaysAgo.Year, sevenDaysAgo.Month, sevenDaysAgo.Day);
 
+		var playerUuids = guild.Members.Select(m => m.Uuid).ToList();
+		
 		var existing = await context.HypixelGuilds
-			.Include(g => g.Members)
+			.IgnoreQueryFilters()
+			.Include(g => g.Members.Where(m => m.Active || playerUuids.Contains(m.PlayerUuid)))
 			.ThenInclude(m => m.ExpHistory.Where(e => e.Day >= date))
 			.FirstOrDefaultAsync(g => g.Id == guild.Id, c);
 
@@ -110,6 +120,7 @@ public class HypixelGuildService(
 			context.HypixelGuilds.Add(existing);
 		}
 
+		existing.MemberCount = guild.Members.Count;
 		existing.Name = guild.Name;
 		existing.NameLower = guild.Name.ToLowerInvariant();
 		existing.CreatedAt = guild.Created;
@@ -192,13 +203,16 @@ public class HypixelGuildService(
 		foreach (var member in guild.Members) {
 			var stillExists = newMembers.FirstOrDefault(n => n.Uuid == member.PlayerUuid);
 			if (stillExists is null) {
+				member.LeftAt = now;
 				member.Active = false;
+			} else {
+				member.Active = true;
+				member.LeftAt = 0;
+				await context.MinecraftAccounts
+					.Where(a => member.PlayerUuid == a.Id)
+					.ExecuteUpdateAsync(a => 
+						a.SetProperty(e => e.GuildLastUpdated, now), cancellationToken: c);
 			}
-			
-			await context.MinecraftAccounts
-				.Where(a => member.PlayerUuid == a.Id)
-				.ExecuteUpdateAsync(a => 
-					a.SetProperty(e => e.GuildLastUpdated, now), cancellationToken: c);
 		}
 	}
 	
@@ -212,4 +226,66 @@ public class HypixelGuildService(
 			
 		await UpdateGuildInternal(guild, guild.Id, c);
 	}
+	
+	public Task<List<HypixelGuildDetailsDto>> GetGuildListAsync(HypixelGuildListQuery query, CancellationToken c = default) {
+		var guildsQuery = context.HypixelGuilds
+			.Include(g => g.Stats
+				.OrderByDescending(s => s.RecordedAt)
+				.Take(1))
+			.Where(g => g.Stats.Count > 0 && g.MemberCount > 30)
+			.AsQueryable();
+
+		guildsQuery = query.SortBy switch {
+			SortHypixelGuildsBy.MemberCount => query.Descending
+				? guildsQuery.OrderByDescending(g => g.MemberCount)
+				: guildsQuery.OrderBy(g => g.MemberCount),
+			SortHypixelGuildsBy.SkyblockExperienceAverage => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().SkyblockExperience.Average)
+				: guildsQuery.OrderBy(g => g.Stats.First().SkyblockExperience.Average),
+			SortHypixelGuildsBy.SkyblockExperience => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().SkyblockExperience.Total)
+				: guildsQuery.OrderBy(g => g.Stats.First().SkyblockExperience.Total),
+			SortHypixelGuildsBy.SkillLevelAverage => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().SkillLevel.Average)
+				: guildsQuery.OrderBy(g => g.Stats.First().SkillLevel.Average),
+			SortHypixelGuildsBy.SkillLevel => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().SkillLevel.Total)
+				: guildsQuery.OrderBy(g => g.Stats.First().SkillLevel.Total),
+			SortHypixelGuildsBy.HypixelLevelAverage => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().HypixelLevel.Average)
+				: guildsQuery.OrderBy(g => g.Stats.First().HypixelLevel.Average),
+			SortHypixelGuildsBy.SlayerExperience => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().SlayerExperience.Total)
+				: guildsQuery.OrderBy(g => g.Stats.First().SlayerExperience.Total),
+			SortHypixelGuildsBy.CatacombsExperience => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().CatacombsExperience.Total)
+				: guildsQuery.OrderBy(g => g.Stats.First().CatacombsExperience.Total),
+			SortHypixelGuildsBy.FarmingWeight => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().FarmingWeight.Total)
+				: guildsQuery.OrderBy(g => g.Stats.First().FarmingWeight.Total),
+			SortHypixelGuildsBy.Networth => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().Networth.Total)
+				: guildsQuery.OrderBy(g => g.Stats.First().Networth.Total),
+			SortHypixelGuildsBy.NetworthAverage => query.Descending
+				? guildsQuery.OrderByDescending(g => g.Stats.First().Networth.Average)
+				: guildsQuery.OrderBy(g => g.Stats.First().Networth.Average),
+			_ => guildsQuery.OrderByDescending(g => g.Stats.First().SkyblockExperience.Average),
+		};
+
+		var skip = (query.Page - 1) * query.PageSize;
+
+		return guildsQuery
+			.Skip(skip)
+			.Take(query.PageSize)
+			.SelectDetailsDto()
+			.ToListAsync(c);
+	}
+}
+
+public class HypixelGuildListQuery
+{
+	public SortHypixelGuildsBy SortBy { get; set; } = SortHypixelGuildsBy.SkyblockExperienceAverage;
+	public bool Descending { get; set; } = true;
+	public int Page { get; set; } = 1;
+	public int PageSize { get; set; } = 50;
 }

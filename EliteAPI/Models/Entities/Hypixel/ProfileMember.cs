@@ -37,7 +37,7 @@ public class ProfileMember
 
 	[Column(TypeName = "jsonb")] public Dictionary<string, int> CollectionTiers { get; set; } = new();
 	[Column(TypeName = "jsonb")] public Dictionary<string, long> Sacks { get; set; } = new();
-
+	[Column(TypeName = "jsonb")] public Slayers? Slayers { get; set; }
 	[Column(TypeName = "jsonb")] public List<Pet> Pets { get; set; } = new();
 
 	[ForeignKey("MinecraftAccount")] public required string PlayerUuid { get; set; }

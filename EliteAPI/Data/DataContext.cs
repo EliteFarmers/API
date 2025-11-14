@@ -81,6 +81,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<Badge> Badges { get; set; } = null!;
 	public DbSet<UserBadge> UserBadges { get; set; } = null!;
 	public DbSet<Profile> Profiles { get; set; } = null!;
+	public DbSet<GameModeHistory> GameModeHistories { get; set; } = null!;
 	public DbSet<ProfileMember> ProfileMembers { get; set; } = null!;
 	public DbSet<ProfileMemberMetadata> ProfileMemberMetadata { get; set; } = null!;
 	public DbSet<Garden> Gardens { get; set; } = null!;
@@ -170,4 +171,5 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<HypixelGuild> HypixelGuilds { get; set; } = null!;
 	public DbSet<HypixelGuildMember> HypixelGuildMembers { get; set; } = null!;
 	public DbSet<HypixelGuildMemberExp> HypixelGuildMemberExps { get; set; } = null!;
+	public DbSet<HypixelGuildStats> HypixelGuildStats { get; set; } = null!;
 }

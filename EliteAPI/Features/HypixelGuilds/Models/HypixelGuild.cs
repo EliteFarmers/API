@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Riok.Mapperly.Abstractions;
 
 namespace EliteAPI.Features.HypixelGuilds.Models;
 
@@ -11,6 +12,7 @@ public class HypixelGuild
 	[Key]
 	public required string Id { get; set; }
 	public required string Name { get; set; }
+	[MapperIgnore]
 	public required string NameLower { get; set; }
 
 	public long CreatedAt { get; set; }
@@ -38,8 +40,10 @@ public class HypixelGuild
 	[Column(TypeName = "jsonb")] public List<RawHypixelGuildRank> Ranks { get; set; } = [];
 
 	public List<HypixelGuildMember> Members { get; set; } = [];
-	
+	public int MemberCount { get; set; }
 	public long LastUpdated { get; set; }
+	
+	public List<HypixelGuildStats> Stats { get; set; } = [];
 }
 
 public class HypixelGuildEntityConfiguration : IEntityTypeConfiguration<HypixelGuild>
@@ -47,5 +51,6 @@ public class HypixelGuildEntityConfiguration : IEntityTypeConfiguration<HypixelG
 	public void Configure(EntityTypeBuilder<HypixelGuild> builder) {
 		builder.HasKey(x => x.Id);
 		builder.HasIndex(x => x.NameLower);
+		builder.HasIndex(x => x.MemberCount);
 	}
 }

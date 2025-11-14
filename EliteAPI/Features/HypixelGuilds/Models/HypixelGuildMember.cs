@@ -23,6 +23,7 @@ public class HypixelGuildMember
 	public int QuestParticipation { get; set; }
 	
 	public bool Active { get; set; }
+	public long LeftAt { get; set; }
 
 	public List<HypixelGuildMemberExp> ExpHistory { get; set; } = [];
 }
@@ -30,6 +31,10 @@ public class HypixelGuildMember
 public class HypixelGuildMemberEntityConfiguration : IEntityTypeConfiguration<HypixelGuildMember>
 {
 	public void Configure(EntityTypeBuilder<HypixelGuildMember> builder) {
+		builder.HasIndex(x => x.Active);
+		builder.HasIndex(x => new { x.GuildId, x.Active });
+		builder.HasIndex(x => new { x.GuildId, x.PlayerUuid }).IsUnique();
+		
 		builder.HasOne(x => x.MinecraftAccount)
 			.WithMany()
 			.HasForeignKey(x => x.PlayerUuid);
@@ -41,5 +46,7 @@ public class HypixelGuildMemberEntityConfiguration : IEntityTypeConfiguration<Hy
 		builder.HasMany(x => x.ExpHistory)
 			.WithOne()
 			.HasForeignKey(x => x.GuildMemberId);
+		
+		builder.HasQueryFilter(x => x.Active);
 	}
 }

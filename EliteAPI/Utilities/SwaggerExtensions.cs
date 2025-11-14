@@ -69,4 +69,18 @@ public static class SwaggerExtensions
 
 		return info;
 	}
+	
+	private static void AddTagDescriptions(this DocumentOptions doc) {
+		doc.TagDescriptions = t =>
+		{
+			t["Account"] = "Endpoints related to user accounts and settings.";
+			t["Admin"] = "Administrative endpoints for managing the API.";
+			t["Hypixel Guilds"] = "Endpoints for retrieving and managing Hypixel Guild data.";
+			t["Announcements"] = "Endpoints for fetching and managing announcements.";
+			t["Auth"] = "Endpoints for authentication and authorization.";
+			t["Badge"] = "Endpoints related to user badges.";
+			t["Bot"] = "Endpoints for the Discord bot.";
+			t["Events"] = "Endpoints for managing and retrieving event data.";
+		};
+	}
 }
