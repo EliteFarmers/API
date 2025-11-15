@@ -53,20 +53,10 @@ public class HypixelGuildStatsService(
 			HypixelLevel = new HypixelGuildStat() {
 				Total = guild.Members.Sum(m => m.HypixelLevel),
 				Average = guild.Members.Count > 0
-					? guild.Members.Average(m => m.HypixelLevel)
+					? guild.Members.Where(m => m.HypixelLevel > 0).Average(m => m.HypixelLevel)
 					: 0
 			}
 		};
-		
-		/*
-		 * 	public HypixelGuildStat HypixelLevel { get; set; } = new();
-	public HypixelGuildStat SkyblockExperience { get; set; } = new();
-	public HypixelGuildStat SkillLevel { get; set; } = new();
-	public HypixelGuildStat SlayerExperience { get; set; } = new();
-	public HypixelGuildStat CatacombsExperience { get; set; } = new();
-	public HypixelGuildStat FarmingWeight { get; set; } = new();
-	public HypixelGuildStat Networth { get; set; } = new();
-		 */
 		
 		var memberStats = await context.ProfileMembers
 			.Include(p => p.Farming)
@@ -75,10 +65,10 @@ public class HypixelGuildStatsService(
 			.Select(p => new {
 				SkyblockXp = p.SkyblockXp,
 				SkillsEnabled = p.Api.Skills,
-				SkillXp = p.Skills.Alchemy + p.Skills.Carpentry + p.Skills.Combat + p.Skills.Enchanting + p.Skills.Farming +
-				          p.Skills.Fishing + p.Skills.Foraging + p.Skills.Mining + p.Skills.Taming,
 				SlayerXp = p.Slayers != null ? p.Slayers.Xp : 0,
 				CataXp = p.Unparsed.Dungeons.DungeonTypes != null ? p.Unparsed.Dungeons.DungeonTypes.Catacombs.Experience : 0,
+				Collections = p.Collections,
+				Skills = p.Skills,
 				CollectionsEnabled = p.Api.Collections,
 				FarmingWeight = p.Farming.TotalWeight,
 			})
@@ -86,18 +76,61 @@ public class HypixelGuildStatsService(
 		
 		newStats.FarmingWeight.Total = memberStats.Sum(m => m.FarmingWeight);
 		newStats.FarmingWeight.Average = memberStats.Count > 0 
-			? memberStats.Where(m => m.CollectionsEnabled).Average(m => m.FarmingWeight)
+			? memberStats.Where(m => m.CollectionsEnabled && m.FarmingWeight > 0).Average(m => m.FarmingWeight)
 			: 0;
 		newStats.SkyblockExperience.Total = memberStats.Sum(m => m.SkyblockXp);
-		newStats.SkyblockExperience.Average = memberStats.Average(m => m.SkyblockXp);
+		newStats.SkyblockExperience.Average = memberStats.Where(m => m.SkyblockXp > 0)
+			.Average(m => m.SkyblockXp);
 		// newStats.SkillLevel.Total = memberStats.Sum(m => m.SkillXp);
 		// newStats.SkillLevel.Average = memberStats.Count > 0
 		// 	? memberStats.Where(m => m.SkillsEnabled).Average(m => m.SkillXp)
 		// 	: 0;
 		newStats.CatacombsExperience.Total = memberStats.Sum(m => m.CataXp);
-		newStats.CatacombsExperience.Average = memberStats.Average(m => m.CataXp);
+		newStats.CatacombsExperience.Average = memberStats.Where(m => m.CataXp > 0).Average(m => m.CataXp);
 		newStats.SlayerExperience.Total = memberStats.Sum(m => m.SlayerXp);
-		newStats.SlayerExperience.Average = memberStats.Average(m => m.SlayerXp);
+		newStats.SlayerExperience.Average = memberStats.Where(m => m.SlayerXp > 0).Average(m => m.SlayerXp);
+		
+		var collections = new Dictionary<string, long>();
+		var skills = new Dictionary<string, long>() {
+			{ "farming", 0 },
+			{ "mining", 0 },
+			{ "combat", 0 },
+			{ "foraging", 0 },
+			{ "fishing", 0 },
+			{ "enchanting", 0 },
+			{ "alchemy", 0 },
+			{ "carpentry", 0 },
+			{ "runecrafting", 0 },
+			{ "taming", 0 },
+			{ "social", 0 },
+		};
+
+		foreach (var member in memberStats) {
+			if (member.CollectionsEnabled) {
+				foreach (var (key, value) in member.Collections) {
+					if (!collections.TryAdd(key, value)) {
+						collections[key] += value;
+					}
+				}
+			}
+
+			if (!member.SkillsEnabled) continue;
+			
+			skills["farming"] += (long) member.Skills.Farming;
+			skills["mining"] += (long) member.Skills.Mining;
+			skills["combat"] += (long) member.Skills.Combat;
+			skills["foraging"] += (long) member.Skills.Foraging;
+			skills["fishing"] += (long) member.Skills.Fishing;
+			skills["enchanting"] += (long) member.Skills.Enchanting;
+			skills["alchemy"] += (long) member.Skills.Alchemy;
+			skills["carpentry"] += (long) member.Skills.Carpentry;
+			skills["runecrafting"] += (long) member.Skills.Runecrafting;
+			skills["taming"] += (long) member.Skills.Taming;
+			skills["social"] += (long) member.Skills.Social;
+		}
+		
+		newStats.Collections = collections;
+		newStats.Skills = skills;
 		
 		context.HypixelGuildStats.Add(newStats);
 		await context.SaveChangesAsync(ct);

@@ -24,6 +24,12 @@ public class HypixelGuildStats
 	public HypixelGuildStat CatacombsExperience { get; set; } = new();
 	public HypixelGuildStat FarmingWeight { get; set; } = new();
 	public HypixelGuildStat Networth { get; set; } = new();
+	
+	[Column(TypeName = "jsonb")]
+	public Dictionary<string, long> Collections { get; set; } = new();
+	
+	[Column(TypeName = "jsonb")]
+	public Dictionary<string, long> Skills { get; set; } = new();
 }
 
 [Owned]
