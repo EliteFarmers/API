@@ -1,11 +1,8 @@
-using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.HypixelGuilds.Models;
+using EliteAPI.Parsers.Profiles;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 
 namespace EliteAPI.Features.HypixelGuilds.Services;
 
@@ -35,7 +32,8 @@ public class HypixelGuildStatsService(
 				g.MemberCount,
 				Members = g.Members.Select(m => new {
 					m.PlayerUuid, 
-					HypixelLevel = m.MinecraftAccount.PlayerData != null ? m.MinecraftAccount.PlayerData.NetworkExp : 0
+					HypixelLevelXp = m.MinecraftAccount.PlayerData != null ? m.MinecraftAccount.PlayerData.NetworkExp : 0,
+					HypixelLevel = m.MinecraftAccount.PlayerData != null ? m.MinecraftAccount.PlayerData.GetNetworkLevel() : 0
 				}).ToList(),
 			})
 			.FirstOrDefaultAsync(g => g.Id == guildId, cancellationToken: ct);
@@ -51,7 +49,7 @@ public class HypixelGuildStatsService(
 			RecordedAt = DateTimeOffset.UtcNow,
 			MemberCount = guild.MemberCount,
 			HypixelLevel = new HypixelGuildStat() {
-				Total = guild.Members.Sum(m => m.HypixelLevel),
+				Total = guild.Members.Sum(m => m.HypixelLevelXp),
 				Average = guild.Members.Count > 0
 					? guild.Members.Where(m => m.HypixelLevel > 0).Average(m => m.HypixelLevel)
 					: 0
@@ -100,10 +98,17 @@ public class HypixelGuildStatsService(
 				.Where(m => m > 0)
 				.Average()
 			: 0;
-		// newStats.SkillLevel.Total = memberStats.Sum(m => m.SkillXp);
-		// newStats.SkillLevel.Average = memberStats.Count > 0
-		// 	? memberStats.Where(m => m.SkillsEnabled).Average(m => m.SkillXp)
-		// 	: 0;
+		newStats.SkillLevel.Total = memberStats
+			.Sum(m => m.Sum(p => p.SkillsEnabled ? p.Skills.GetStandardSkillsXp() : 0));
+		newStats.SkillLevel.Average = memberStats.Count > 0 
+			? memberStats.Select(g => g.Where(m => m.SkillsEnabled)
+					.Select(m => m.Skills.GetAverageSkillLevel())
+					.OrderByDescending(m => m)
+					.Take(1)
+					.FirstOrDefault())
+				.Where(m => m > 0)
+				.Average()
+			: 0;
 		newStats.CatacombsExperience.Total = memberStats
 			.Sum(m => m.Sum(p => p.CataXp));
 		newStats.CatacombsExperience.Average = memberStats.Count > 0 
@@ -129,17 +134,17 @@ public class HypixelGuildStatsService(
 		
 		var collections = new Dictionary<string, long>();
 		var skills = new Dictionary<string, long>() {
-			{ "farming", 0 },
-			{ "mining", 0 },
-			{ "combat", 0 },
-			{ "foraging", 0 },
-			{ "fishing", 0 },
-			{ "enchanting", 0 },
-			{ "alchemy", 0 },
-			{ "carpentry", 0 },
-			{ "runecrafting", 0 },
-			{ "taming", 0 },
-			{ "social", 0 },
+			{ SkillName.Farming, 0 },
+			{ SkillName.Mining, 0 },
+			{ SkillName.Combat, 0 },
+			{ SkillName.Foraging, 0 },
+			{ SkillName.Fishing, 0 },
+			{ SkillName.Enchanting, 0 },
+			{ SkillName.Alchemy, 0 },
+			{ SkillName.Carpentry, 0 },
+			{ SkillName.Runecrafting, 0 },
+			{ SkillName.Taming, 0 },
+			{ SkillName.Social, 0 },
 		};
 
 		foreach (var member in memberStats.SelectMany(group => group)) {
@@ -153,17 +158,17 @@ public class HypixelGuildStatsService(
 
 			if (!member.SkillsEnabled) continue;
 
-			skills["farming"] += (long)member.Skills.Farming;
-			skills["mining"] += (long)member.Skills.Mining;
-			skills["combat"] += (long)member.Skills.Combat;
-			skills["foraging"] += (long)member.Skills.Foraging;
-			skills["fishing"] += (long)member.Skills.Fishing;
-			skills["enchanting"] += (long)member.Skills.Enchanting;
-			skills["alchemy"] += (long)member.Skills.Alchemy;
-			skills["carpentry"] += (long)member.Skills.Carpentry;
-			skills["runecrafting"] += (long)member.Skills.Runecrafting;
-			skills["taming"] += (long)member.Skills.Taming;
-			skills["social"] += (long)member.Skills.Social;
+			skills[SkillName.Farming] += (long)member.Skills.Farming;
+			skills[SkillName.Mining] += (long)member.Skills.Mining;
+			skills[SkillName.Combat] += (long)member.Skills.Combat;
+			skills[SkillName.Foraging] += (long)member.Skills.Foraging;
+			skills[SkillName.Fishing] += (long)member.Skills.Fishing;
+			skills[SkillName.Enchanting] += (long)member.Skills.Enchanting;
+			skills[SkillName.Alchemy] += (long)member.Skills.Alchemy;
+			skills[SkillName.Carpentry] += (long)member.Skills.Carpentry;
+			skills[SkillName.Runecrafting] += (long)member.Skills.Runecrafting;
+			skills[SkillName.Taming] += (long)member.Skills.Taming;
+			skills[SkillName.Social] += (long)member.Skills.Social;
 		}
 
 		newStats.Collections = collections;

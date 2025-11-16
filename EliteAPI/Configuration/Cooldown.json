@@ -2,7 +2,7 @@
   "CooldownSeconds": {
     "HypixelPlayerDataCooldown": 43200,
     "HypixelPlayerDataLinkingCooldown": 60,
-    "HypixelGuildCooldown": 21600,
+    "HypixelGuildCooldown": 10800,
     "HypixelGuildMemberCooldown": 604800,
     "SkyblockProfileCooldown": 900,
     "SkyblockGardenCooldown": 3600,

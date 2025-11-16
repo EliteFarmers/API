@@ -3,21 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EliteAPI.Models.Entities.Hypixel;
 
-public class SkillName
-{
-	public const string Combat = "combat";
-	public const string Mining = "mining";
-	public const string Foraging = "foraging";
-	public const string Fishing = "fishing";
-	public const string Enchanting = "enchanting";
-	public const string Alchemy = "alchemy";
-	public const string Carpentry = "carpentry";
-	public const string Runecrafting = "runecrafting";
-	public const string Taming = "taming";
-	public const string Farming = "farming";
-	public const string Social = "social";
-}
-
 public class Skills
 {
 	[Key]
@@ -35,6 +20,8 @@ public class Skills
 	public double Taming { get; set; } = 0;
 	public double Farming { get; set; } = 0;
 	public double Social { get; set; } = 0;
+
+	[Column(TypeName = "jsonb")] public Dictionary<string, int> LevelCaps { get; set; } = new();
 
 	[ForeignKey("ProfileMember")] public Guid ProfileMemberId { get; set; }
 	public ProfileMember? ProfileMember { get; set; }
