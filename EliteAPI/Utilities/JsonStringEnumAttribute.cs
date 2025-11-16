@@ -1,10 +1,9 @@
 using NJsonSchema;
 using NJsonSchema.Generation;
-
-namespace EliteAPI.Utilities;
-
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+namespace EliteAPI.Utilities;
 
 /// <summary>
 /// When applied to an enum, serializes its values as camelCase strings.
@@ -12,7 +11,7 @@ using System.Text.Json.Serialization;
 public class JsonStringEnumAttribute : JsonConverterAttribute
 {
 	public override JsonConverter CreateConverter(Type typeToConvert) {
-		return new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower);
+		return new JsonStringEnumConverter(JsonNamingPolicy.CamelCase);
 	}
 }
 
@@ -35,7 +34,7 @@ public class EnumAttributeSchemaProcessor : ISchemaProcessor
 
 		// Add the string values
 		foreach (var name in Enum.GetNames(type)) {
-			schema.Enumeration.Add(JsonNamingPolicy.KebabCaseLower.ConvertName(name));
+			schema.Enumeration.Add(JsonNamingPolicy.CamelCase.ConvertName(name));
 		}
 	}
 }

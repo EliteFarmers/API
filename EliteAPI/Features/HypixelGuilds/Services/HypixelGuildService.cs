@@ -8,6 +8,7 @@ using EliteFarmers.HypixelAPI;
 using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +20,8 @@ public interface IHypixelGuildService
 	Task<List<HypixelGuildDetailsDto>> GetGuildListAsync(HypixelGuildListQuery query, CancellationToken c = default);
 	Task<IReadOnlyList<HypixelGuildSearchResultDto>> SearchGuildsAsync(string query, int limit,
         CancellationToken c = default);
+	Task<(int rank, double amount)> GetGuildRankAsync(string guildId, SortHypixelGuildsBy? sortBy, 
+		string? collection, string? skill, CancellationToken c = default);
 }
 
 [RegisterService<IHypixelGuildService>(LifeTime.Scoped)]
@@ -448,6 +451,130 @@ public class HypixelGuildService(
 			.ToList();
 	}
 
+	public async Task<(int rank, double amount)> GetGuildRankAsync(string guildId, SortHypixelGuildsBy? sortBy, 
+		string? collection, string? skill, CancellationToken c = default) {
+		
+		if (collection is not null) {
+			return await GetGuildCollectionRankAsync(guildId, collection, c);
+		}
+		
+		if (skill is not null) {
+			return await GetGuildSkillRankAsync(guildId, skill, c);
+		}
+		
+		var sort = sortBy ?? SortHypixelGuildsBy.SkyblockExperienceAverage;
+		return await GetGuildGeneralRankAsync(guildId, sort, c);
+	}
+
+	private async Task<(int rank, double amount)> GetGuildCollectionRankAsync(string guildId, string collectionId, CancellationToken c) {
+		var sql = """
+			WITH ranked_guilds AS (
+				SELECT 
+					g."Id",
+					COALESCE((stats."Collections"->>@collectionId)::bigint, 0) as amount,
+					ROW_NUMBER() OVER (ORDER BY COALESCE((stats."Collections"->>@collectionId)::bigint, 0) DESC) as rank
+				FROM "HypixelGuilds" g
+				LEFT JOIN LATERAL (
+					SELECT "Collections"
+					FROM "HypixelGuildStats"
+					WHERE "GuildId" = g."Id"
+					  AND "Collections"->>@collectionId IS NOT NULL
+					ORDER BY "RecordedAt" DESC
+					LIMIT 1
+				) stats ON true
+				WHERE (stats."Collections"->>@collectionId) IS NOT NULL
+			)
+			SELECT rank::int as "Rank", amount::float as "Amount"
+			FROM ranked_guilds WHERE "Id" = @guildId
+		""";
+
+		var result = await context.Database
+			.SqlQueryRaw<GuildRankResult>(sql,
+				new Npgsql.NpgsqlParameter("collectionId", collectionId),
+				new Npgsql.NpgsqlParameter("guildId", guildId))
+			.FirstOrDefaultAsync(c);
+
+		return result is not null ? (result.Rank, result.Amount) : (0, 0);
+	}
+
+	private async Task<(int rank, double amount)> GetGuildSkillRankAsync(string guildId, string skillId, CancellationToken c) {
+		var sql = """
+			WITH ranked_guilds AS (
+				SELECT 
+					g."Id",
+					COALESCE((stats."Skills"->>@skillId)::bigint, 0) as amount,
+					ROW_NUMBER() OVER (ORDER BY COALESCE((stats."Skills"->>@skillId)::bigint, 0) DESC) as rank
+				FROM "HypixelGuilds" g
+				LEFT JOIN LATERAL (
+					SELECT "Skills"
+					FROM "HypixelGuildStats"
+					WHERE "GuildId" = g."Id"
+					  AND "Skills"->>@skillId IS NOT NULL
+					ORDER BY "RecordedAt" DESC
+					LIMIT 1
+				) stats ON true
+				WHERE (stats."Skills"->>@skillId) IS NOT NULL
+			)
+			SELECT rank::int as "Rank", amount::float as "Amount"
+			FROM ranked_guilds WHERE "Id" = @guildId
+		""";
+
+		var result = await context.Database
+			.SqlQueryRaw<GuildRankResult>(sql,
+				new Npgsql.NpgsqlParameter("skillId", skillId),
+				new Npgsql.NpgsqlParameter("guildId", guildId))
+			.FirstOrDefaultAsync(c);
+
+		return result is not null ? (result.Rank, result.Amount) : (0, 0);
+	}
+
+	private async Task<(int rank, double amount)> GetGuildGeneralRankAsync(string guildId, SortHypixelGuildsBy sortBy, CancellationToken c) {
+		// Build the ORDER BY expression using the same logic as GetGuildListAsync
+		var (orderColumn, useStats) = sortBy switch {
+			SortHypixelGuildsBy.MemberCount => ("g.\"MemberCount\"", false),
+			SortHypixelGuildsBy.SkyblockExperience => ("stats.\"SkyblockExperience_Total\"", true),
+			SortHypixelGuildsBy.SkyblockExperienceAverage => ("stats.\"SkyblockExperience_Average\"", true),
+			SortHypixelGuildsBy.SkillLevel => ("stats.\"SkillLevel_Total\"", true),
+			SortHypixelGuildsBy.SkillLevelAverage => ("stats.\"SkillLevel_Average\"", true),
+			SortHypixelGuildsBy.HypixelLevelAverage => ("stats.\"HypixelLevel_Average\"", true),
+			SortHypixelGuildsBy.SlayerExperience => ("stats.\"SlayerExperience_Total\"", true),
+			SortHypixelGuildsBy.CatacombsExperience => ("stats.\"CatacombsExperience_Total\"", true),
+			SortHypixelGuildsBy.FarmingWeight => ("stats.\"FarmingWeight_Total\"", true),
+			SortHypixelGuildsBy.Networth => ("stats.\"Networth_Total\"", true),
+			SortHypixelGuildsBy.NetworthAverage => ("stats.\"Networth_Average\"", true),
+			_ => ("stats.\"SkyblockExperience_Average\"", true)
+		};
+
+		var whereClause = useStats ? "WHERE stats.\"Id\" IS NOT NULL AND g.\"MemberCount\" > 30" : "WHERE g.\"MemberCount\" > 0";
+
+		var sql = $"""
+			WITH ranked_guilds AS (
+				SELECT 
+					g."Id",
+					COALESCE({orderColumn}, 0) as amount,
+					ROW_NUMBER() OVER (ORDER BY COALESCE({orderColumn}, 0) DESC) as rank
+				FROM "HypixelGuilds" g
+				LEFT JOIN LATERAL (
+					SELECT *
+					FROM "HypixelGuildStats"
+					WHERE "GuildId" = g."Id"
+					ORDER BY "RecordedAt" DESC
+					LIMIT 1
+				) stats ON true
+				{whereClause}
+			)
+			SELECT rank::int as "Rank", amount::float as "Amount"
+			FROM ranked_guilds WHERE "Id" = @guildId
+		""";
+
+		var result = await context.Database
+			.SqlQueryRaw<GuildRankResult>(sql,
+				new Npgsql.NpgsqlParameter("guildId", guildId))
+			.FirstOrDefaultAsync(c);
+
+		return result is not null ? (result.Rank, result.Amount) : (0, 0);
+	}
+
 	private static HypixelGuildSearchResultDto ToDto(HypixelGuildSearchCandidate candidate) => new() {
 		Id = candidate.Id,
 		Name = candidate.Name,
@@ -464,6 +591,14 @@ public class HypixelGuildService(
 		return maxLength == 0 ? 1d : 1d - (double)distance / maxLength;
 	}
 
+	private static int LevenshteinDistance(string left, string right) {
+		if (string.IsNullOrEmpty(right)) return 0;
+
+		var distance = FormatUtils.LevenshteinDistance(left, right);
+		var maxLength = Math.Max(left.Length, right.Length);
+		return maxLength == 0 ? 0 : (int)Math.Round((double)distance / maxLength, 4);
+	}
+
 	private sealed class HypixelGuildSearchCandidate
 	{
 		public required string Id { get; init; }
@@ -473,5 +608,19 @@ public class HypixelGuildService(
 		public string? Tag { get; init; }
 		public string? TagColor { get; init; }
 		public double Score { get; set; }
+	}
+}
+
+public class GuildRankResult
+{
+	public int Rank { get; set; }
+	public double Amount { get; set; }
+}
+
+public class GuildRankResultEntityConfiguration : IEntityTypeConfiguration<GuildRankResult>
+{
+	public void Configure(EntityTypeBuilder<GuildRankResult> builder) {
+		builder.HasNoKey();
+		builder.ToTable("GuildRankResult", t => t.ExcludeFromMigrations());
 	}
 }
