@@ -114,7 +114,7 @@ public class HypixelGuildStatsService(
 		newStats.CatacombsExperience.Average = memberStats.Count > 0 
 			? memberStats.Select(g => g.Where(m => m.CataXp > 0)
 					.OrderByDescending(m => m.CataXp)
-					.Select(m => m.CataXp)
+					.Select(m => SkillParser.GetDungeoneeringLevel(m.CataXp))
 					.Take(1)
 					.FirstOrDefault())
 				.Where(m => m > 0)

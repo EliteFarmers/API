@@ -63,4 +63,12 @@ public class SkillLevelTests
 		SkillParser.GetNetworkLevel(0).ShouldBe(1);
 		SkillParser.GetNetworkLevel(int.MaxValue).ShouldBe(1000);
 	}
+	
+	
+	[Fact]
+	public void DungeonLevelTests() {
+		SkillParser.GetDungeoneeringLevel(0).ShouldBe(0);
+		SkillParser.GetDungeoneeringLevel(298_720).ShouldBe(22);
+		SkillParser.GetDungeoneeringLevel(9_460_237_602).ShouldBe(94);
+	}
 }
