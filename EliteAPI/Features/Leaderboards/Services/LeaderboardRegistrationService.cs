@@ -239,5 +239,12 @@ public class LeaderboardRegistrationService(IServiceScopeFactory provider) : ILe
 		new HealerLeaderboard(),
 		new MageLeaderboard(),
 		new TankLeaderboard(),
+		new ZombieSlayerLeaderboard(),
+		new SpiderSlayerLeaderboard(),
+		new WolfSlayerLeaderboard(),
+		new EndermanSlayerLeaderboard(),
+		new BlazeSlayerLeaderboard(),
+		new VampireSlayerLeaderboard(),
+		new TotalSlayerXpLeaderboard()
 	];
 }
