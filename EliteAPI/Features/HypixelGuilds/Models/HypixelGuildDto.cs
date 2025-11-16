@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using EliteFarmers.HypixelAPI.DTOs;
 using Riok.Mapperly.Abstractions;
 
@@ -22,8 +23,14 @@ public static partial class HypixelGuildMapper
 		};
 	}
 	
+	[MapperIgnoreTarget(nameof(HypixelGuildDetailsDto.Stats))]
+	public static partial HypixelGuildDetailsDto ToDto(this HypixelGuildLeaderboardResult guild);
 	public static partial IQueryable<HypixelGuildStatsDto> SelectDto(this IQueryable<HypixelGuildStats> guild);
+	
+	[MapperIgnoreSource(nameof(HypixelGuildStats.Collections))]
+	[MapperIgnoreSource(nameof(HypixelGuildStats.Skills))]
 	public static partial HypixelGuildStatsDto ToDto(this HypixelGuildStats guild);
+	public static partial HypixelGuildStatsFullDto ToFullDto(this HypixelGuildStats guild);
 
 	public static HypixelGuildMemberDto ToDto(this HypixelGuildMember guildMember) {
 		var prefix = guildMember.MinecraftAccount.EliteAccount?.UserSettings.Prefix ?? string.Empty;
@@ -72,7 +79,7 @@ public class HypixelGuildDto
 	public int MemberCount { get; set; }
 	public long LastUpdated { get; set; }
 	
-	public List<HypixelGuildStatsDto> Stats { get; set; } = [];
+	public List<HypixelGuildStatsFullDto> Stats { get; set; } = [];
 }
 
 public class HypixelGuildDetailsDto
@@ -89,5 +96,12 @@ public class HypixelGuildDetailsDto
 	
 	public long LastUpdated { get; set; }
 	
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public HypixelGuildStatsDto? Stats { get; set; }
+	
+	/// <summary>
+	/// Populated when sorting guilds by a specific collection or skill
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public double Amount { get; set; }
 }

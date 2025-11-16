@@ -18,3 +18,9 @@ public class HypixelGuildStatsDto
 	public HypixelGuildStat FarmingWeight { get; set; } = new();
 	public HypixelGuildStat Networth { get; set; } = new();
 }
+
+public class HypixelGuildStatsFullDto : HypixelGuildStatsDto
+{
+	public Dictionary<string, long> Collections { get; set; } = new();
+	public Dictionary<string, long> Skills { get; set; } = new();
+}

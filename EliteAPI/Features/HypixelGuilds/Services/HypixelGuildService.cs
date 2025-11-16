@@ -228,6 +228,14 @@ public class HypixelGuildService(
 	}
 	
 	public Task<List<HypixelGuildDetailsDto>> GetGuildListAsync(HypixelGuildListQuery query, CancellationToken c = default) {
+		if (query.Collection is not null) {
+			return GetGuildListByCollectionAsync(query, c);
+		}
+		
+		if (query.Skill is not null) {
+			return GetGuildListBySkillAsync(query, c);
+		}
+		
 		var guildsQuery = context.HypixelGuilds
 			.Include(g => g.Stats
 				.OrderByDescending(s => s.RecordedAt)
@@ -280,6 +288,64 @@ public class HypixelGuildService(
 			.SelectDetailsDto()
 			.ToListAsync(c);
 	}
+
+	private async Task<List<HypixelGuildDetailsDto>> GetGuildListByCollectionAsync(HypixelGuildListQuery query,
+		CancellationToken c = default) 
+	{
+		var sql = $"""
+		           SELECT c."Amount", g."Id", g."Name", g."CreatedAt", g."Tag", g."TagColor", g."MemberCount", g."LastUpdated"
+		           FROM "HypixelGuilds" g
+		           LEFT JOIN (
+		           	SELECT DISTINCT ON ("GuildId")
+		           		"GuildId",
+		                   ("Collections"->>@collectionId)::bigint as "Amount"
+		               FROM "HypixelGuildStats"
+		               WHERE "Collections"->>@collectionId IS NOT NULL
+		               ORDER BY "GuildId", "RecordedAt" DESC
+		           ) AS c ON c."GuildId" = g."Id"
+		           WHERE c."Amount" IS NOT NULL
+		           ORDER BY c."Amount"::bigint DESC
+		           LIMIT @pageSize OFFSET @offset;
+		           """;
+		
+		var results = await context.Set<HypixelGuildLeaderboardResult>()
+			.FromSqlRaw(sql,
+				new Npgsql.NpgsqlParameter("collectionId", query.Collection!),
+				new Npgsql.NpgsqlParameter("pageSize", query.PageSize),
+				new Npgsql.NpgsqlParameter("offset", (query.Page - 1) * query.PageSize))
+			.ToListAsync(c);
+		
+		return results.Select(r => r.ToDto()).ToList();
+	}
+	
+	private async Task<List<HypixelGuildDetailsDto>> GetGuildListBySkillAsync(HypixelGuildListQuery query,
+		CancellationToken c = default) 
+	{
+		var sql = $"""
+		           SELECT c."Amount", g."Id", g."Name", g."CreatedAt", g."Tag", g."TagColor", g."MemberCount", g."LastUpdated"
+		           FROM "HypixelGuilds" g
+		           LEFT JOIN (
+		           	SELECT DISTINCT ON ("GuildId")
+		           		"GuildId",
+		                   ("Skills"->>@skillId)::bigint as "Amount"
+		               FROM "HypixelGuildStats"
+		               WHERE "Skills"->>@skillId IS NOT NULL
+		               ORDER BY "GuildId", "RecordedAt" DESC
+		           ) AS c ON c."GuildId" = g."Id"
+		           WHERE c."Amount" IS NOT NULL
+		           ORDER BY c."Amount"::bigint DESC
+		           LIMIT @pageSize OFFSET @offset;
+		           """;
+		
+		var results = await context.Set<HypixelGuildLeaderboardResult>()
+			.FromSqlRaw(sql,
+				new Npgsql.NpgsqlParameter("skillId", query.Skill!),
+				new Npgsql.NpgsqlParameter("pageSize", query.PageSize),
+				new Npgsql.NpgsqlParameter("offset", (query.Page - 1) * query.PageSize))
+			.ToListAsync(c);
+		
+		return results.Select(r => r.ToDto()).ToList();
+	}
 }
 
 public class HypixelGuildListQuery
@@ -288,4 +354,6 @@ public class HypixelGuildListQuery
 	public bool Descending { get; set; } = true;
 	public int Page { get; set; } = 1;
 	public int PageSize { get; set; } = 50;
+	public string? Collection { get; set; } = null;
+	public string? Skill { get; set; } = null;
 }

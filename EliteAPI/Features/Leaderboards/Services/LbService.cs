@@ -52,6 +52,9 @@ public interface ILbService
 	(long start, long end) GetCurrentTimeRange(LeaderboardType type);
 	(long start, long end) GetIntervalTimeRange(LeaderboardType type, DateTimeOffset now);
 	(long start, long end) GetIntervalTimeRange(string? interval);
+
+	Task<List<LeaderboardEntryDto>> GetGuildMembersLeaderboardEntriesAsync(string guildId, string leaderboardSlug,
+		string? identifier = null, string? gameMode = null);
 }
 
 [RegisterService<ILbService>(LifeTime.Scoped)]
@@ -84,7 +87,7 @@ public class LbService(
 				.FromLeaderboard(lb.LeaderboardId, true)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.OrderByDescending(e => e.Score)
-				.ThenByDescending(e => e.LeaderboardEntryId) // New Line
+				.ThenByDescending(e => e.LeaderboardEntryId)
 				.Skip(offset)
 				.Take(limit)
 				.MapToMemberLeaderboardEntries(limit <= 20)
@@ -95,7 +98,7 @@ public class LbService(
 				.FromLeaderboard(lb.LeaderboardId, false)
 				.EntryFilter(gameMode: gameMode, removedFilter: removedFilter, interval: identifier)
 				.OrderByDescending(e => e.Score)
-				.ThenByDescending(e => e.LeaderboardEntryId) // New Line
+				.ThenByDescending(e => e.LeaderboardEntryId)
 				.Skip(offset)
 				.Take(limit)
 				.MapToProfileLeaderboardEntries(removedFilter)
@@ -917,6 +920,64 @@ public class LbService(
 			Short = r.ShortTitle,
 			Type = Enum.Parse<LeaderboardScoreDataType>(r.ScoreDataType)
 		}).ToList();
+	}
+
+	public async Task<List<LeaderboardEntryDto>> GetGuildMembersLeaderboardEntriesAsync(string guildId, string leaderboardSlug,
+		string? identifier = null, string? gameMode = null) {
+		// Resolve leaderboard definition and leaderboard
+		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardSlug, out var definition)) return [];
+
+		var lb = await context.Leaderboards.AsNoTracking().FirstOrDefaultAsync(l => l.Slug == leaderboardSlug);
+		if (lb is null) return [];
+
+		identifier ??= GetCurrentIdentifier(GetTypeFromSlug(leaderboardSlug));
+
+		// Get active guild members' player uuids
+		var guildMemberUuids = await context.HypixelGuildMembers
+			.AsNoTracking()
+			.Where(gm => gm.GuildId == guildId && gm.Active)
+			.Select(gm => gm.PlayerUuid)
+			.ToListAsync();
+
+		if (guildMemberUuids.Count == 0) return [];
+
+		// Get corresponding selected profile members for those player uuids
+		var profileMembers = await context.ProfileMembers
+			.AsNoTracking()
+			.Where(pm => guildMemberUuids.Contains(pm.PlayerUuid) && pm.IsSelected && !pm.WasRemoved)
+			.Select(pm => new { pm.Id, pm.ProfileId })
+			.ToListAsync();
+
+		var memberIds = profileMembers.Select(pm => pm.Id).ToList();
+		var profileIds = profileMembers.Select(pm => pm.ProfileId).Distinct().ToList();
+		
+		if (memberIds.Count == 0) return [];
+		
+		// Make a nullable list to match the ProfileMemberId nullable type on LeaderboardEntry
+		var memberIdsNullable = memberIds.Select(g => (Guid?)g).ToList();
+
+		// Fetch leaderboard entries for these members or profiles depending on leaderboard type
+		if (definition.IsMemberLeaderboard()) {
+			return await context.LeaderboardEntries.AsNoTracking()
+				.FromLeaderboard(lb.LeaderboardId, true)
+				.EntryFilter(identifier, RemovedFilter.NotRemoved, gameMode)
+				.Include(p => p.ProfileMember)
+				.Where(e => memberIdsNullable.Contains(e.ProfileMemberId))
+				.OrderByDescending(e => e.Score)
+				.ThenByDescending(e => e.LeaderboardEntryId)
+				.MapToMemberLeaderboardEntries(true)
+				.ToListAsync();
+		}
+		
+		return await context.LeaderboardEntries.AsNoTracking()
+			.FromLeaderboard(lb.LeaderboardId, false)
+			.EntryFilter(identifier, RemovedFilter.NotRemoved, gameMode)
+			.Include(p => p.Profile)
+			.Where(e => profileIds.Contains(e.ProfileId!))
+			.OrderByDescending(e => e.Score)
+			.ThenByDescending(e => e.LeaderboardEntryId)
+			.MapToProfileLeaderboardEntries()
+			.ToListAsync();
 	}
 }
 
