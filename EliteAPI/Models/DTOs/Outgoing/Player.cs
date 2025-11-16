@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using EliteAPI.Features.HypixelGuilds.Models;
 
 namespace EliteAPI.Models.DTOs.Outgoing;
 
@@ -14,6 +15,8 @@ public class PlayerDataDto
 
 	public long Karma { get; set; }
 	public double NetworkExp { get; set; }
+	
+	public HypixelGuildMemberDetailsDto? GuildMember { get; set; }
 
 	public int RewardHighScore { get; set; }
 	public int RewardScore { get; set; }

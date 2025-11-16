@@ -45,9 +45,8 @@ public class MinecraftAccount
 	public long ProfilesLastUpdated { get; set; }
 	public long PlayerDataLastUpdated { get; set; }
 	public long GuildLastUpdated { get; set; }
-	
-	public long? GuildMemberId { get; set; }
-	public HypixelGuildMember? GuildMember { get; set; }
+
+	public List<HypixelGuildMember> GuildMembers { get; set; } = [];
 }
 
 public class MinecraftAccountProperty

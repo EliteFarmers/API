@@ -36,7 +36,7 @@ public class HypixelGuildMemberEntityConfiguration : IEntityTypeConfiguration<Hy
 		builder.HasIndex(x => new { x.GuildId, x.PlayerUuid }).IsUnique();
 		
 		builder.HasOne(x => x.MinecraftAccount)
-			.WithMany()
+			.WithMany(x => x.GuildMembers)
 			.HasForeignKey(x => x.PlayerUuid);
 		
 		builder.HasOne(x => x.Guild)

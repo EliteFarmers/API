@@ -21,3 +21,16 @@ public class HypixelGuildMemberDto
 
 	public Dictionary<string, int> ExpHistory { get; set; } = new();
 }
+
+public class HypixelGuildMemberDetailsDto
+{
+	public HypixelGuildDetailsDto? Guild { get; set; }
+	public string? Rank { get; set; }
+
+	public long JoinedAt { get; set; }
+	public int QuestParticipation { get; set; }
+	
+	public bool Active { get; set; }
+
+	public Dictionary<string, int> ExpHistory { get; set; } = new();
+}

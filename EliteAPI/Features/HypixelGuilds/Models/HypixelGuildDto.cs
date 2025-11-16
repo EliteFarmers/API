@@ -19,7 +19,7 @@ public static partial class HypixelGuildMapper
 			TagColor = guild.TagColor,
 			MemberCount = guild.MemberCount,
 			LastUpdated = guild.LastUpdated,
-			Stats = guild.Stats.OrderByDescending(x => x.RecordedAt).First().ToDto()
+			Stats = guild.Stats.OrderByDescending(x => x.RecordedAt).Take(1).Select(x => x.ToDto()).FirstOrDefault()
 		};
 	}
 	
@@ -42,6 +42,17 @@ public static partial class HypixelGuildMapper
 			FormattedName = $"{prefix} {guildMember.MinecraftAccount.Name} {suffix}".Trim(),
 			Rank = guildMember.Rank,
 			JoinedAt = guildMember.JoinedAt,
+			Active = guildMember.Active,
+			ExpHistory = guildMember.ExpHistory.ToDto()
+		};
+	}
+
+	public static HypixelGuildMemberDetailsDto ToDetailsDto(this HypixelGuildMember guildMember) {
+		return new HypixelGuildMemberDetailsDto() {
+			Guild = ((HypixelGuild?)guildMember.Guild)?.ToDetailsDto(),
+			Rank = guildMember.Rank,
+			JoinedAt = guildMember.JoinedAt,
+			QuestParticipation = guildMember.QuestParticipation,
 			Active = guildMember.Active,
 			ExpHistory = guildMember.ExpHistory.ToDto()
 		};

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using EliteAPI.Features.HypixelGuilds.Models;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteFarmers.HypixelAPI.DTOs;
@@ -24,6 +25,7 @@ public class PlayerDataMapper : Profile
 			));
 
 		CreateMap<Models.Entities.Hypixel.PlayerData, PlayerDataDto>()
+			.ForMember(p => p.GuildMember, opt => opt.MapFrom(x => x.MinecraftAccount != null && x.MinecraftAccount.GuildMembers.Count > 0 ? x.MinecraftAccount.GuildMembers.First().ToDetailsDto() : null))
 			.ForMember(p => p.SocialMedia, opt => opt.MapFrom(x => x.SocialMedia));
 	}
 }

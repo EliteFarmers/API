@@ -28,11 +28,16 @@ public static class SkillParser
 		skills.Runecrafting = incoming.SkillRunecrafting ?? skills.Runecrafting;
 		skills.Social = incoming.SkillSocial ?? skills.Social;
 		skills.Farming = incoming.SkillFarming ?? skills.Farming;
-
-		skills.LevelCaps = new Dictionary<string, int> {
-			{ SkillName.Farming, memberData.Jacob?.Perks?.FarmingLevelCap ?? 0 },
-			{ SkillName.Taming, memberData.PetsData?.PetCare?.PetTypesSacrificed.Count ?? 0 }
-		};
+		
+		if (memberData.Jacob?.Perks?.FarmingLevelCap is not null && memberData.Jacob.Perks.FarmingLevelCap != 0) {
+			skills.LevelCaps ??= new Dictionary<string, int>();
+			skills.LevelCaps[SkillName.Farming] = memberData.Jacob.Perks.FarmingLevelCap.Value;
+		}
+		
+		if (memberData.PetsData?.PetCare?.PetTypesSacrificed.Count is not null && memberData.PetsData.PetCare.PetTypesSacrificed.Count != 0) {
+			skills.LevelCaps ??= new Dictionary<string, int>();
+			skills.LevelCaps[SkillName.Taming] = memberData.PetsData.PetCare.PetTypesSacrificed.Count;
+		}
 	}
 
 	public static Dictionary<string, double> ExtractSkills(this SkillExperience skills) {

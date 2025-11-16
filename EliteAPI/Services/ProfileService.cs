@@ -151,6 +151,11 @@ public class ProfileService(
 		var data = await context.PlayerData
 			.AsNoTracking()
 			.Include(p => p.MinecraftAccount)
+			.ThenInclude(p => p.GuildMembers)
+			.ThenInclude(p => p.ExpHistory.OrderByDescending(e => e.Day).Take(14))
+			.Include(p => p.MinecraftAccount)
+			.ThenInclude(p => p.GuildMembers)
+			.ThenInclude(p => p.Guild)
 			.FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
 
 		if (data is not null && !data.LastUpdated.OlderThanSeconds(skipCooldown
@@ -163,6 +168,11 @@ public class ProfileService(
 		return await context.PlayerData
 			.AsNoTracking()
 			.Include(p => p.MinecraftAccount)
+			.ThenInclude(p => p.GuildMembers)
+			.ThenInclude(p => p.ExpHistory.OrderByDescending(e => e.Day).Take(14))
+			.Include(p => p.MinecraftAccount)
+			.ThenInclude(p => p.GuildMembers)
+			.ThenInclude(p => p.Guild)
 			.FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
 	}
 

@@ -2,6 +2,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.HypixelGuilds.Models;
+using EliteAPI.Parsers.Profiles;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI;
@@ -59,9 +60,8 @@ public class HypixelGuildService(
 					.Select(p => p.NetworkExp)
 					.FirstOrDefaultAsync(cancellationToken: c);
 
-				// Check that the player is decently active first
-				// Hypixel network level ~124
-				if (hypixelXp > 20_000_000) {
+				// Limit automatic guild updates to players with at least Hypixel level 100
+				if (SkillParser.GetNetworkLevel(hypixelXp) >= 100) {
 					await UpdateGuildByPlayerUuid(account.Id, c);
 				}
 			}
@@ -138,8 +138,8 @@ public class HypixelGuildService(
 		existing.Ranks = guild.Ranks;
 		existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
+		// Changes are saved in UpdateGuildMembers
 		await UpdateGuildMembers(existing, guild.Members, c);
-		await context.SaveChangesAsync(c);
 	}
 
 	private async Task UpdateGuildMembers(HypixelGuild guild, List<RawHypixelGuildMember> newMembers, CancellationToken c = default) {
@@ -161,6 +161,9 @@ public class HypixelGuildService(
 			}, kvp => kvp.Value);
 			
 			if (current.TryGetValue(member.Uuid, out var existing)) {
+				existing.Active = true;
+				existing.LeftAt = 0;
+				
 				existing.QuestParticipation = member.QuestParticipation;
 				existing.Rank = member.Rank;
 				existing.JoinedAt = member.Joined;
@@ -200,23 +203,43 @@ public class HypixelGuildService(
 			
 			context.HypixelGuildMembers.Add(newMember);
 		}
+		
+		await context.SaveChangesAsync(c);
 
 		var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+		var guildId = guild.Id;
+		
+		var newMemberUuids = newMembers.Select(n => n.Uuid).ToHashSet();
+		var oldMemberUuids = guild.Members.Select(m => m.PlayerUuid).ToHashSet();
+		
+		var leftMemberUuids = oldMemberUuids.Except(newMemberUuids).ToList();
+		var activeMemberUuids = newMemberUuids.ToList();
+		
+		// Update members who left the guild
+		if (leftMemberUuids.Count != 0) {
+			await context.HypixelGuildMembers
+				.Where(m => m.GuildId == guildId && leftMemberUuids.Contains(m.PlayerUuid))
+				.ExecuteUpdateAsync(s => s
+						.SetProperty(e => e.Active, false)
+						.SetProperty(e => e.LeftAt, now),
+					cancellationToken: c);
+		}
 		
 		// Flag deleted members and update last updated times
-		foreach (var member in guild.Members) {
-			var stillExists = newMembers.FirstOrDefault(n => n.Uuid == member.PlayerUuid);
-			if (stillExists is null) {
-				member.LeftAt = now;
-				member.Active = false;
-			} else {
-				member.Active = true;
-				member.LeftAt = 0;
-				await context.MinecraftAccounts
-					.Where(a => member.PlayerUuid == a.Id)
-					.ExecuteUpdateAsync(a => 
-						a.SetProperty(e => e.GuildLastUpdated, now), cancellationToken: c);
-			}
+		if (activeMemberUuids.Count != 0) {
+			// Update the GuildLastUpdated timestamp for all active members.
+			await context.MinecraftAccounts
+				.Where(a => activeMemberUuids.Contains(a.Id))
+				.ExecuteUpdateAsync(s => s.SetProperty(e => e.GuildLastUpdated, now), 
+					cancellationToken: c);
+
+			// Make sure members are only active in one guild at a time
+			await context.HypixelGuildMembers
+				.Where(m => m.GuildId != guildId && activeMemberUuids.Contains(m.PlayerUuid))
+				.ExecuteUpdateAsync(s => s
+						.SetProperty(e => e.Active, false)
+						.SetProperty(e => e.LeftAt, e => e.LeftAt == 0 ? now : e.LeftAt),
+					cancellationToken: c);
 		}
 	}
 	
@@ -240,57 +263,87 @@ public class HypixelGuildService(
 			return GetGuildListBySkillAsync(query, c);
 		}
 		
-		var guildsQuery = context.HypixelGuilds
-			.Include(g => g.Stats
-				.OrderByDescending(s => s.RecordedAt)
-				.Take(1))
-			.Where(g => g.Stats.Count > 0 && g.MemberCount > 30)
-			.AsQueryable();
+		return GetGuildListGeneralAsync(query, c);
+	}
 
-		guildsQuery = query.SortBy switch {
-			SortHypixelGuildsBy.MemberCount => query.Descending
+	private async Task<List<HypixelGuildDetailsDto>> GetGuildListGeneralAsync(HypixelGuildListQuery query,
+		CancellationToken c = default) 
+	{
+		var sortBy = query.SortBy;
+		var statField = GetStatField(sortBy);
+		var orderDirection = query.Descending ? "DESC" : "ASC";
+		
+		if (sortBy == SortHypixelGuildsBy.MemberCount) {
+			var guildsQuery = context.HypixelGuilds
+				.Include(g => g.Stats.OrderByDescending(s => s.RecordedAt).Take(1))
+				.Where(g => g.MemberCount > 0);
+			
+			guildsQuery = query.Descending
 				? guildsQuery.OrderByDescending(g => g.MemberCount)
-				: guildsQuery.OrderBy(g => g.MemberCount),
-			SortHypixelGuildsBy.SkyblockExperienceAverage => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().SkyblockExperience.Average)
-				: guildsQuery.OrderBy(g => g.Stats.First().SkyblockExperience.Average),
-			SortHypixelGuildsBy.SkyblockExperience => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().SkyblockExperience.Total)
-				: guildsQuery.OrderBy(g => g.Stats.First().SkyblockExperience.Total),
-			SortHypixelGuildsBy.SkillLevelAverage => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().SkillLevel.Average)
-				: guildsQuery.OrderBy(g => g.Stats.First().SkillLevel.Average),
-			SortHypixelGuildsBy.SkillLevel => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().SkillLevel.Total)
-				: guildsQuery.OrderBy(g => g.Stats.First().SkillLevel.Total),
-			SortHypixelGuildsBy.HypixelLevelAverage => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().HypixelLevel.Average)
-				: guildsQuery.OrderBy(g => g.Stats.First().HypixelLevel.Average),
-			SortHypixelGuildsBy.SlayerExperience => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().SlayerExperience.Total)
-				: guildsQuery.OrderBy(g => g.Stats.First().SlayerExperience.Total),
-			SortHypixelGuildsBy.CatacombsExperience => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().CatacombsExperience.Total)
-				: guildsQuery.OrderBy(g => g.Stats.First().CatacombsExperience.Total),
-			SortHypixelGuildsBy.FarmingWeight => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().FarmingWeight.Total)
-				: guildsQuery.OrderBy(g => g.Stats.First().FarmingWeight.Total),
-			SortHypixelGuildsBy.Networth => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().Networth.Total)
-				: guildsQuery.OrderBy(g => g.Stats.First().Networth.Total),
-			SortHypixelGuildsBy.NetworthAverage => query.Descending
-				? guildsQuery.OrderByDescending(g => g.Stats.First().Networth.Average)
-				: guildsQuery.OrderBy(g => g.Stats.First().Networth.Average),
-			_ => guildsQuery.OrderByDescending(g => g.Stats.First().SkyblockExperience.Average),
-		};
-
-		var skip = (query.Page - 1) * query.PageSize;
-
-		return guildsQuery
-			.Skip(skip)
-			.Take(query.PageSize)
-			.SelectDetailsDto()
+				: guildsQuery.OrderBy(g => g.MemberCount);
+			
+			var skip = (query.Page - 1) * query.PageSize;
+			var guilds = await guildsQuery.Skip(skip).Take(query.PageSize).ToListAsync(c);
+			
+			return guilds.Select(g => g.ToDetailsDto()).ToList();
+		}
+		
+		// For stats-based sorting, first get the ordered guild IDs, then load full entities with stats
+		var sql = $"""
+		           SELECT g."Id"
+		           FROM "HypixelGuilds" g
+		           INNER JOIN LATERAL (
+		           	SELECT *
+		               FROM "HypixelGuildStats"
+		               WHERE "GuildId" = g."Id"
+		               ORDER BY "RecordedAt" DESC
+		               LIMIT 1
+		           ) AS stats ON true
+		           WHERE g."MemberCount" > 30 AND stats."{statField}" IS NOT NULL AND stats."{statField}" > 0
+		           ORDER BY stats."{statField}" {orderDirection}
+		           LIMIT @pageSize OFFSET @offset;
+		           """;
+		
+		var guildIdResults = await context.Database
+			.SqlQueryRaw<GuildIdResult>(sql,
+				new Npgsql.NpgsqlParameter("pageSize", query.PageSize),
+				new Npgsql.NpgsqlParameter("offset", (query.Page - 1) * query.PageSize))
 			.ToListAsync(c);
+		
+		var guildIds = guildIdResults.Select(r => r.Id).ToList();
+		
+		if (guildIds.Count == 0) {
+			return [];
+		}
+		
+		var guildsWithStats = await context.HypixelGuilds
+			.Include(g => g.Stats.OrderByDescending(s => s.RecordedAt).Take(1))
+			.Where(g => guildIds.Contains(g.Id))
+			.ToListAsync(c);
+		
+		var orderedGuilds = guildIds
+			.Select(id => guildsWithStats.FirstOrDefault(g => g.Id == id))
+			.Where(g => g != null)
+			.Select(g => g!.ToDetailsDto())
+			.ToList();
+		
+		return orderedGuilds;
+	}
+
+	private static string GetStatField(SortHypixelGuildsBy sortBy) {
+		return sortBy switch {
+			SortHypixelGuildsBy.SkyblockExperience => "SkyblockExperience_Total",
+			SortHypixelGuildsBy.SkyblockExperienceAverage => "SkyblockExperience_Average",
+			SortHypixelGuildsBy.SkillLevel => "SkillLevel_Total",
+			SortHypixelGuildsBy.SkillLevelAverage => "SkillLevel_Average",
+			SortHypixelGuildsBy.HypixelLevelAverage => "HypixelLevel_Average",
+			SortHypixelGuildsBy.SlayerExperience => "SlayerExperience_Total",
+			SortHypixelGuildsBy.CatacombsExperience => "CatacombsExperience_Total",
+			SortHypixelGuildsBy.FarmingWeight => "FarmingWeight_Total",
+			SortHypixelGuildsBy.Networth => "Networth_Total",
+			SortHypixelGuildsBy.NetworthAverage => "Networth_Average",
+			_ => "SkyblockExperience_Average"
+		};
 	}
 
 	private async Task<List<HypixelGuildDetailsDto>> GetGuildListByCollectionAsync(HypixelGuildListQuery query,
@@ -624,3 +677,17 @@ public class GuildRankResultEntityConfiguration : IEntityTypeConfiguration<Guild
 		builder.ToTable("GuildRankResult", t => t.ExcludeFromMigrations());
 	}
 }
+
+public class GuildIdResult
+{
+	public required string Id { get; set; }
+}
+
+public class GuildIdResultEntityConfiguration : IEntityTypeConfiguration<GuildIdResult>
+{
+	public void Configure(EntityTypeBuilder<GuildIdResult> builder) {
+		builder.HasNoKey();
+		builder.ToTable("GuildIdResult", t => t.ExcludeFromMigrations());
+	}
+}
+
