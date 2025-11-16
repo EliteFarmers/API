@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Text;
+using EliteAPI.Utilities;
 
 namespace EliteAPI.Features.Resources.Auctions.Endpoints;
 
@@ -307,34 +308,13 @@ internal sealed class SearchAuctionItemsEndpoint(DataContext context, IOptions<A
 		var leftLower = left.ToLowerInvariant();
 		var rightLower = right.ToLowerInvariant();
 
-		var distance = LevenshteinDistance(leftLower, rightLower);
+		var distance = FormatUtils.LevenshteinDistance(leftLower, rightLower);
 		var maxLength = Math.Max(leftLower.Length, rightLower.Length);
 		if (maxLength == 0) return 1d;
 
 		return 1d - (double)distance / maxLength;
 	}
-
-	private static int LevenshteinDistance(string left, string right) {
-		var n = left.Length;
-		var m = right.Length;
-
-		var d = new int[n + 1, m + 1];
-
-		for (var i = 0; i <= n; i++) d[i, 0] = i;
-		for (var j = 0; j <= m; j++) d[0, j] = j;
-
-		for (var i = 1; i <= n; i++) {
-			for (var j = 1; j <= m; j++) {
-				var cost = left[i - 1] == right[j - 1] ? 0 : 1;
-				d[i, j] = Math.Min(
-					Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-					d[i - 1, j - 1] + cost);
-			}
-		}
-
-		return d[n, m];
-	}
-
+	
 	private static string CreateCandidateKey(string itemId, string? variantKey) {
 		var variantPart = variantKey is null ? string.Empty : variantKey.ToUpperInvariant();
 		return string.Concat(itemId.ToUpperInvariant(), "::", variantPart);

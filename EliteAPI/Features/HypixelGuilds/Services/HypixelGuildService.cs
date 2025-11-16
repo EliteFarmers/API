@@ -1,7 +1,6 @@
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
-using EliteAPI.Features.Account.Services;
 using EliteAPI.Features.HypixelGuilds.Models;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
@@ -18,6 +17,8 @@ public interface IHypixelGuildService
 {
 	Task UpdateGuildIfNeeded(MinecraftAccount account, CancellationToken c = default);
 	Task<List<HypixelGuildDetailsDto>> GetGuildListAsync(HypixelGuildListQuery query, CancellationToken c = default);
+	Task<IReadOnlyList<HypixelGuildSearchResultDto>> SearchGuildsAsync(string query, int limit,
+        CancellationToken c = default);
 }
 
 [RegisterService<IHypixelGuildService>(LifeTime.Scoped)]
@@ -346,14 +347,131 @@ public class HypixelGuildService(
 		
 		return results.Select(r => r.ToDto()).ToList();
 	}
-}
 
-public class HypixelGuildListQuery
-{
-	public SortHypixelGuildsBy SortBy { get; set; } = SortHypixelGuildsBy.SkyblockExperienceAverage;
-	public bool Descending { get; set; } = true;
-	public int Page { get; set; } = 1;
-	public int PageSize { get; set; } = 50;
-	public string? Collection { get; set; } = null;
-	public string? Skill { get; set; } = null;
+	public async Task<IReadOnlyList<HypixelGuildSearchResultDto>> SearchGuildsAsync(string query, int limit,
+		CancellationToken c = default) {
+		if (string.IsNullOrWhiteSpace(query)) {
+			return [];
+		}
+
+		var normalized = query.Trim().ToLowerInvariant();
+		var cappedLimit = Math.Clamp(limit, 1, 50);
+		const int directBatchSize = 250;
+		const int fallbackBatchSize = 1000;
+
+		var guilds = context.HypixelGuilds
+			.AsNoTracking()
+			.Where(g => g.MemberCount > 0);
+
+		static string EscapeLike(string value) {
+			return value
+				.Replace("\\", "\\\\", StringComparison.Ordinal)
+				.Replace("%", "\\%", StringComparison.Ordinal)
+				.Replace("_", "\\_", StringComparison.Ordinal);
+		}
+
+		var pattern = $"%{EscapeLike(normalized)}%";
+
+		var directMatches = await guilds
+			.Where(g => EF.Functions.ILike(g.NameLower, pattern))
+			.OrderBy(g => g.NameLower)
+			.Take(directBatchSize)
+			.Select(g => new HypixelGuildSearchCandidate {
+				Id = g.Id,
+				Name = g.Name,
+				NameLower = g.NameLower,
+				MemberCount = g.MemberCount,
+				Tag = g.Tag,
+				TagColor = g.TagColor
+			})
+			.ToListAsync(c);
+
+		var candidates = new Dictionary<string, HypixelGuildSearchCandidate>(StringComparer.OrdinalIgnoreCase);
+		foreach (var candidate in directMatches) {
+			candidates.TryAdd(candidate.Id, candidate);
+		}
+
+		if (candidates.Count < directBatchSize) {
+			var fallback = await guilds
+				.OrderByDescending(g => g.MemberCount)
+				.ThenBy(g => g.NameLower)
+				.Take(fallbackBatchSize)
+				.Select(g => new HypixelGuildSearchCandidate {
+					Id = g.Id,
+					Name = g.Name,
+					NameLower = g.NameLower,
+					MemberCount = g.MemberCount,
+					Tag = g.Tag,
+					TagColor = g.TagColor
+				})
+				.ToListAsync(c);
+
+			foreach (var candidate in fallback) {
+				candidates.TryAdd(candidate.Id, candidate);
+			}
+		}
+
+		if (candidates.Count == 0) {
+			return [];
+		}
+
+		foreach (var candidate in candidates.Values) {
+			var score = ComputeNormalizedSimilarity(normalized, candidate.NameLower);
+			if (candidate.NameLower.Contains(normalized, StringComparison.Ordinal)) {
+				score = Math.Max(score, 0.95);
+			}
+			candidate.Score = score;
+		}
+
+		var ordered = candidates.Values
+			.OrderByDescending(a => a.Score)
+			.ThenByDescending(a => a.MemberCount)
+			.ThenBy(a => a.Name, StringComparer.OrdinalIgnoreCase)
+			.ToList();
+
+		var scoreFloor = normalized.Length switch {
+			<= 3 => 0.35,
+			<= 5 => 0.25,
+			_ => 0.2
+		};
+
+		if (ordered.Count > cappedLimit) {
+			var filtered = ordered.Where(a => a.Score >= scoreFloor).ToList();
+			if (filtered.Count > 0) {
+				ordered = filtered;
+			}
+		}
+
+		return ordered
+			.Take(cappedLimit)
+			.Select(ToDto)
+			.ToList();
+	}
+
+	private static HypixelGuildSearchResultDto ToDto(HypixelGuildSearchCandidate candidate) => new() {
+		Id = candidate.Id,
+		Name = candidate.Name,
+		MemberCount = candidate.MemberCount,
+		Tag = candidate.Tag,
+		TagColor = candidate.TagColor
+	};
+
+	private static double ComputeNormalizedSimilarity(string left, string right) {
+		if (string.IsNullOrEmpty(right)) return 0d;
+
+		var distance = FormatUtils.LevenshteinDistance(left, right);
+		var maxLength = Math.Max(left.Length, right.Length);
+		return maxLength == 0 ? 1d : 1d - (double)distance / maxLength;
+	}
+
+	private sealed class HypixelGuildSearchCandidate
+	{
+		public required string Id { get; init; }
+		public required string Name { get; init; }
+		public required string NameLower { get; init; }
+		public int MemberCount { get; init; }
+		public string? Tag { get; init; }
+		public string? TagColor { get; init; }
+		public double Score { get; set; }
+	}
 }
