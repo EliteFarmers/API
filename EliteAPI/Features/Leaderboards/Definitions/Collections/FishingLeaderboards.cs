@@ -14,7 +14,8 @@ public class ClayLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "CLAY_BALL";
@@ -37,7 +38,8 @@ public class ClownfishLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "RAW_FISH:2";
@@ -60,7 +62,8 @@ public class InkSacLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 10_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "INK_SACK";
@@ -83,7 +86,8 @@ public class LilyPadLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 50_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "WATER_LILY";
@@ -106,7 +110,8 @@ public class MagmafishLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "MAGMA_FISH";
@@ -129,7 +134,8 @@ public class PrismarineCrystalsLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "PRISMARINE_CRYSTALS";
@@ -152,7 +158,8 @@ public class PrismarineShardLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "PRISMARINE_SHARD";
@@ -175,7 +182,8 @@ public class PufferfishLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "RAW_FISH:3";
@@ -198,7 +206,8 @@ public class RawFishLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "RAW_FISH";
@@ -221,7 +230,8 @@ public class RawSalmonLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "RAW_FISH:1";
@@ -244,7 +254,8 @@ public class SpongeLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "SPONGE";

@@ -14,7 +14,8 @@ public class AcaciaLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LOG_2";
@@ -37,7 +38,8 @@ public class BirchLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LOG:2";
@@ -60,7 +62,8 @@ public class DarkOakLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LOG_2:1";
@@ -83,7 +86,8 @@ public class JungleLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LOG:3";
@@ -106,7 +110,8 @@ public class OakLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LOG";
@@ -129,7 +134,8 @@ public class SpruceLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LOG:1";
@@ -152,7 +158,8 @@ public class SeaLumiesLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 5_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "SEA_LUMIES";
@@ -175,7 +182,8 @@ public class VinesapLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 1_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "VINESAP";
@@ -198,7 +206,8 @@ public class LushlilacLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 500,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "LUSHLILAC";
@@ -221,7 +230,8 @@ public class MangroveLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "MANGROVE_LOG";
@@ -244,7 +254,8 @@ public class FigLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "FIG_LOG";
@@ -267,7 +278,8 @@ public class TenderWoodLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 1_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "TENDER_WOOD";

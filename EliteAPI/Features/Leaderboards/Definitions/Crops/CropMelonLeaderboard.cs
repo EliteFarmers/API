@@ -11,6 +11,7 @@ public class CropMelonLeaderboard : IMemberLeaderboardDefinition
 		ShortTitle = "Melon",
 		Slug = "melon",
 		Category = "Crops",
+		Source = LeaderboardSourceType.Collection,
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long,

@@ -14,7 +14,8 @@ public class BlazeRodLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "BLAZE_ROD";
@@ -37,7 +38,8 @@ public class BoneLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "BONE";
@@ -60,7 +62,8 @@ public class ChiliPepperLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 10,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "CHILI_PEPPER";
@@ -83,7 +86,8 @@ public class EnderPearlLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "ENDER_PEARL";
@@ -106,7 +110,8 @@ public class GhastTearLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 10_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "GHAST_TEAR";
@@ -129,7 +134,8 @@ public class GunpowderLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "SULPHUR";
@@ -152,7 +158,8 @@ public class MagmaCreamLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "MAGMA_CREAM";
@@ -175,7 +182,8 @@ public class RottenFleshLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "ROTTEN_FLESH";
@@ -198,7 +206,8 @@ public class SlimeballLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "SLIME_BALL";
@@ -221,7 +230,8 @@ public class SpiderEyeLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "SPIDER_EYE";
@@ -244,7 +254,8 @@ public class StringLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100_000,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "STRING";

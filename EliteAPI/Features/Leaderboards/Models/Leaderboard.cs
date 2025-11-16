@@ -47,6 +47,12 @@ public enum LeaderboardType
 	Monthly
 }
 
+public enum LeaderboardSourceType
+{
+	Collection,
+	Skill,
+}
+
 public enum LeaderboardEntryType
 {
 	Member,

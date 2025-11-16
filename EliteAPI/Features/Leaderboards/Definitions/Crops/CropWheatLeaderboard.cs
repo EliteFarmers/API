@@ -11,6 +11,7 @@ public class CropWheatLeaderboard : IMemberLeaderboardDefinition
 		ShortTitle = "Wheat",
 		Slug = "wheat",
 		Category = "Crops",
+		Source = LeaderboardSourceType.Collection,
 		MinimumScore = 1_000_000,
 		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
 		ScoreDataType = LeaderboardScoreDataType.Long,

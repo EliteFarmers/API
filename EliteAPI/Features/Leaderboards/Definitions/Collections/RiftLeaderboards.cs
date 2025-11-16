@@ -14,7 +14,8 @@ public class AgaricusCapLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "AGARICUS_CAP";
@@ -37,7 +38,8 @@ public class CaducousStemLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "CADUCOUS_STEM";
@@ -60,7 +62,8 @@ public class HalfEatenCarrotLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "HALF_EATEN_CARROT";
@@ -83,7 +86,8 @@ public class HemovibeLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "HEMOVIBE";
@@ -106,7 +110,8 @@ public class LivingMetalHeartLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "METAL_HEART";
@@ -129,7 +134,8 @@ public class WiltedBerberisLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "WILTED_BERBERIS";
@@ -152,7 +158,8 @@ public class TimiteLeaderboard : IMemberLeaderboardDefinition
 		MinimumScore = 100,
 		IntervalType = [LeaderboardType.Current],
 		ScoreDataType = LeaderboardScoreDataType.Long,
-		ItemId = CollectionId
+		ItemId = CollectionId,
+		Source = LeaderboardSourceType.Collection
 	};
 
 	private const string CollectionId = "TIMITE";

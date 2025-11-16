@@ -20,6 +20,7 @@ public class LeaderboardInfo
 	public decimal MinimumScore { get; set; } = 0;
 	public List<LeaderboardType> IntervalType { get; set; } = [];
 	public LeaderboardScoreDataType ScoreDataType { get; set; }
+	public LeaderboardSourceType? Source { get; set; }
 }
 
 public interface IMemberLeaderboardDefinition : ILeaderboardDefinition
