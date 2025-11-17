@@ -46,7 +46,7 @@ public class RawHypixelGuildMember
 public class RawHypixelGuildRank
 {
 	public required string Name { get; set; }
-	public required string Tag { get; set; }
+	public string? Tag { get; set; }
 	public bool Default { get; set; }
 	public long Created { get; set; }
 	public int Priority { get; set; }

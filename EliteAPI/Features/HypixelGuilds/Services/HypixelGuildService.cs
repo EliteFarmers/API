@@ -18,6 +18,7 @@ namespace EliteAPI.Features.HypixelGuilds.Services;
 public interface IHypixelGuildService
 {
 	Task UpdateGuildIfNeeded(MinecraftAccount account, CancellationToken c = default);
+	Task UpdateGuildIfNeeded(string guildId, CancellationToken c = default);
 	Task<List<HypixelGuildDetailsDto>> GetGuildListAsync(HypixelGuildListQuery query, CancellationToken c = default);
 	Task<IReadOnlyList<HypixelGuildSearchResultDto>> SearchGuildsAsync(string query, int limit,
         CancellationToken c = default);
@@ -68,6 +69,10 @@ public class HypixelGuildService(
 		} catch (Exception e) {
 			logger.LogError(e, "Failed to update guild");
 		}
+	}
+
+	public async Task UpdateGuildIfNeeded(string guildId, CancellationToken c = default) {
+		await UpdateGuild(guildId, c);
 	}
 
 	private async Task UpdateGuild(string guildId, CancellationToken c = default) {
