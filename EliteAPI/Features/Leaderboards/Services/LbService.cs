@@ -941,10 +941,10 @@ public class LbService(
 
 		if (guildMemberUuids.Count == 0) return [];
 
-		// Get corresponding selected profile members for those player uuids
+		// Get corresponding profile members for those player uuids
 		var profileMembers = await context.ProfileMembers
 			.AsNoTracking()
-			.Where(pm => guildMemberUuids.Contains(pm.PlayerUuid) && pm.IsSelected && !pm.WasRemoved)
+			.Where(pm => guildMemberUuids.Contains(pm.PlayerUuid) && !pm.WasRemoved)
 			.Select(pm => new { pm.Id, pm.ProfileId })
 			.ToListAsync();
 
