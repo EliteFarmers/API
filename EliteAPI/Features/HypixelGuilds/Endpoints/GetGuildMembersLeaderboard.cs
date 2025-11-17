@@ -29,7 +29,7 @@ internal sealed class GetHypixelGuildMembersLeaderboardEndpoint(
 		AllowAnonymous();
 		Version(0);
 
-		Description(d => d.AutoTagOverride("Leaderboard"));
+		Description(d => d.AutoTagOverride("Hypixel Guilds"));
 		Summary(s => { s.Summary = "Get Hypixel Guild Members Leaderboard"; });
 	}
 
