@@ -41,7 +41,8 @@ internal sealed class GetAccountEndpoint(
 
 		var minecraftAccount = account is null
 			? await mojangService.GetMinecraftAccountByUuidOrIgn(request.Player)
-			: account.MinecraftAccounts.Find(m => m.Id.Equals(request.Player) || m.Name.Equals(request.Player))
+			: account.MinecraftAccounts.Find(m => 
+				  m.Id.ToLowerInvariant().Equals(request.Player.ToLowerInvariant()) || m.Name.ToLowerInvariant().Equals(request.Player.ToLowerInvariant()))
 			  ?? account.MinecraftAccounts.Find(m => m.Selected) ?? account.MinecraftAccounts.FirstOrDefault();
 
 		if (minecraftAccount is null) ThrowError("Minecraft account not found", StatusCodes.Status404NotFound);

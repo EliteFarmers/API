@@ -18,7 +18,7 @@ internal sealed class GetLinkedAccountsEndpoint(
 ) : Endpoint<DiscordIdRequest, Result>
 {
 	public override void Configure() {
-		Get("/player/{DiscordId}");
+		Get("/player/{DiscordId:long:minlength(17)}");
 		AllowAnonymous();
 		Version(0);
 
