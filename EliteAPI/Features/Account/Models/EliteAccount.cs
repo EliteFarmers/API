@@ -29,8 +29,11 @@ public class EliteAccount
 	public List<ProductAccess> ProductAccesses { get; set; } = [];
 	public List<DismissedAnnouncement> DismissedAnnouncements { get; set; } = [];
 
-	public string GetFormattedIgn() {
+	public string GetFormattedIgn(string? uuid = null) {
 		var primaryMinecraftAccount = MinecraftAccounts.FirstOrDefault(a => a.Selected);
+		if (uuid != primaryMinecraftAccount?.Id) {
+			return MinecraftAccounts.FirstOrDefault(a => a.Id == uuid)?.Name ?? Username;
+		}
 		var prefix = UserSettings.Prefix ?? string.Empty;
 		var suffix = UserSettings.Suffix ?? string.Empty;
 		var ign = primaryMinecraftAccount?.Name ?? Username;

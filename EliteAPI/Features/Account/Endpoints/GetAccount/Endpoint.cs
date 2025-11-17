@@ -53,6 +53,7 @@ internal sealed class GetAccountEndpoint(
 		var mappedPlayerData = mapper.Map<PlayerDataDto>(playerData);
 		var result = mapper.Map<MinecraftAccountDto>(minecraftAccount);
 
+		result.FormattedName = account?.GetFormattedIgn(minecraftAccount.Id) ?? result.Name;
 		result.DiscordId = account?.Id.ToString();
 		result.DiscordUsername = account?.Username;
 		result.DiscordAvatar = account?.Avatar;

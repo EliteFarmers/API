@@ -26,7 +26,7 @@ public class MinecraftAccountMapper : Profile
 	public MinecraftAccountMapper() {
 		CreateMap<MinecraftAccount, MinecraftAccountDto>()
 			.ForMember(a => a.FormattedName,
-				opt => opt.MapFrom(a => a.EliteAccount != null ? a.EliteAccount.GetFormattedIgn() : a.Name))
+				opt => opt.MapFrom(a => a.EliteAccount != null ? a.EliteAccount.GetFormattedIgn(null) : a.Name))
 			.ForMember(a => a.PrimaryAccount, opt => opt.MapFrom(a => a.Selected))
 			.ForMember(a => a.Skin, opt => opt.MapFrom(a => a.Skin))
 			.ForMember(a => a.Badges, opt => opt.MapFrom(a => a.Badges))
