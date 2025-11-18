@@ -322,8 +322,36 @@ public class HypixelGuildService(
 				return result;
 			}
 			
-			var count = await context.HypixelGuilds
-				.Where(g => g.MemberCount >= 30)
+			var sortBy = query.SortBy;
+			var statField = GetStatField(sortBy);
+			var orderDirection = query.Descending ? "DESC" : "ASC";
+		
+			if (sortBy == SortHypixelGuildsBy.MemberCount) {
+				return await context.HypixelGuilds
+					.Include(g => g.Stats.OrderByDescending(s => s.RecordedAt).Take(1))
+					.Where(g => g.MemberCount >= 30)
+					.CountAsync(ct);
+			}
+			
+			var statSql = $"""
+			           SELECT g."Id"
+			           FROM "HypixelGuilds" g
+			           INNER JOIN LATERAL (
+			           	SELECT *
+			               FROM "HypixelGuildStats"
+			               WHERE "GuildId" = g."Id"
+			               ORDER BY "RecordedAt" DESC
+			               LIMIT 1
+			           ) AS stats ON true
+			           WHERE g."MemberCount" >= 30 AND stats."{statField}" IS NOT NULL AND stats."{statField}" > 0
+			           ORDER BY stats."{statField}" {orderDirection}
+			           LIMIT @pageSize OFFSET @offset
+			           """;
+		
+			var count = await context.Database
+				.SqlQueryRaw<GuildIdResult>(statSql,
+					new Npgsql.NpgsqlParameter("pageSize", query.PageSize),
+					new Npgsql.NpgsqlParameter("offset", (query.Page - 1) * query.PageSize))
 				.CountAsync(ct);
 			
 			return count;
