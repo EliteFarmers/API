@@ -323,7 +323,7 @@ public class HypixelGuildService(
 			}
 			
 			var count = await context.HypixelGuilds
-				.Where(g => g.MemberCount > 0)
+				.Where(g => g.MemberCount >= 30)
 				.CountAsync(ct);
 			
 			return count;
@@ -343,7 +343,7 @@ public class HypixelGuildService(
 		if (sortBy == SortHypixelGuildsBy.MemberCount) {
 			var guildsQuery = context.HypixelGuilds
 				.Include(g => g.Stats.OrderByDescending(s => s.RecordedAt).Take(1))
-				.Where(g => g.MemberCount > 0);
+				.Where(g => g.MemberCount >= 30);
 			
 			guildsQuery = query.Descending
 				? guildsQuery.OrderByDescending(g => g.MemberCount)
@@ -366,7 +366,7 @@ public class HypixelGuildService(
 		               ORDER BY "RecordedAt" DESC
 		               LIMIT 1
 		           ) AS stats ON true
-		           WHERE g."MemberCount" > 30 AND stats."{statField}" IS NOT NULL AND stats."{statField}" > 0
+		           WHERE g."MemberCount" >= 30 AND stats."{statField}" IS NOT NULL AND stats."{statField}" > 0
 		           ORDER BY stats."{statField}" {orderDirection}
 		           LIMIT @pageSize OFFSET @offset;
 		           """;
@@ -665,7 +665,7 @@ public class HypixelGuildService(
 			_ => ("stats.\"SkyblockExperience_Average\"", true)
 		};
 
-		var whereClause = useStats ? "WHERE stats.\"Id\" IS NOT NULL AND g.\"MemberCount\" > 30" : "WHERE g.\"MemberCount\" > 0";
+		var whereClause = useStats ? "WHERE stats.\"Id\" IS NOT NULL AND g.\"MemberCount\" >= 30" : "WHERE g.\"MemberCount\" >= 30";
 
 		var sql = $"""
 			WITH ranked_guilds AS (
