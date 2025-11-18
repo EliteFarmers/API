@@ -26,6 +26,7 @@ internal sealed class GetHypixelGuildsRequest
 
 internal sealed class GetHypixelGuildsResponse
 {
+	public int TotalGuilds { get; set; }
 	public required List<HypixelGuildDetailsDto> Guilds { get; set; }
 }
 
@@ -45,16 +46,19 @@ internal sealed class GetHypixelGuildsEndpoint(IHypixelGuildService hypixelGuild
 	}
 
 	public override async Task HandleAsync(GetHypixelGuildsRequest request, CancellationToken c) {
-		var result = await hypixelGuildService.GetGuildListAsync(new HypixelGuildListQuery {
+		var query = new HypixelGuildListQuery {
 			SortBy = request.SortBy ?? SortHypixelGuildsBy.SkyblockExperienceAverage,
 			Descending = request.Descending ?? true,
 			Page = request.Page ?? 1,
 			PageSize = request.PageSize ?? 50,
 			Collection = request.Collection,
 			Skill = request.Skill
-		}, c);
+		};
+		
+		var result = await hypixelGuildService.GetGuildListAsync(query, c);
 		
 		await Send.OkAsync(new GetHypixelGuildsResponse() {
+			TotalGuilds = await hypixelGuildService.GetGuildLeaderboardTotalCount(query, c),
 			Guilds = result
 		}, c);
 	}

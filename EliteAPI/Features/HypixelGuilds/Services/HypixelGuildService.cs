@@ -24,6 +24,7 @@ public interface IHypixelGuildService
         CancellationToken c = default);
 	Task<(int rank, double amount)> GetGuildRankAsync(string guildId, SortHypixelGuildsBy? sortBy, 
 		string? collection, string? skill, CancellationToken c = default);
+	Task<int> GetGuildLeaderboardTotalCount(HypixelGuildListQuery query, CancellationToken c = default);
 }
 
 [RegisterService<IHypixelGuildService>(LifeTime.Scoped)]
@@ -34,6 +35,7 @@ public class HypixelGuildService(
 	IMojangService mojangService,
 	ILogger<HypixelGuildService> logger,
 	IHypixelApi hypixelApi,
+	HybridCache cache,
 	IOptions<ConfigCooldownSettings> cooldownSettings
 	) : IHypixelGuildService
 {
@@ -269,6 +271,66 @@ public class HypixelGuildService(
 		}
 		
 		return GetGuildListGeneralAsync(query, c);
+	}
+	
+	public async Task<int> GetGuildLeaderboardTotalCount(HypixelGuildListQuery query, CancellationToken c = default) {
+		var key = query.Collection ?? (query.Skill ?? query.SortBy.ToString());
+		return await cache.GetOrCreateAsync($"hguilds_leaderboard_count_{key}", async (ct) => {
+			if (query.Collection is not null) {
+				var sql = """
+				           SELECT COUNT(*)::int as "Value"
+				           FROM "HypixelGuilds" g
+				           LEFT JOIN (
+				           	SELECT DISTINCT ON ("GuildId")
+				           		"GuildId",
+				                   ("Collections"->>@collectionId)::bigint as "Amount"
+				               FROM "HypixelGuildStats"
+				               WHERE "Collections"->>@collectionId IS NOT NULL
+				               ORDER BY "GuildId", "RecordedAt" DESC
+				           ) AS c ON c."GuildId" = g."Id"
+				           WHERE c."Amount" IS NOT NULL
+				           """;
+				
+				var result = await context.Database
+					.SqlQueryRaw<int>(sql,
+						new Npgsql.NpgsqlParameter("collectionId", query.Collection!))
+					.FirstAsync(ct);
+				
+				return result;
+			}
+			
+			if (query.Skill is not null) {
+				var sql = """
+				           SELECT COUNT(*)::int as "Value"
+				           FROM "HypixelGuilds" g
+				           LEFT JOIN (
+				           	SELECT DISTINCT ON ("GuildId")
+				           		"GuildId",
+				                   ("Skills"->>@skillId)::bigint as "Amount"
+				               FROM "HypixelGuildStats"
+				               WHERE "Skills"->>@skillId IS NOT NULL
+				               ORDER BY "GuildId", "RecordedAt" DESC
+				           ) AS c ON c."GuildId" = g."Id"
+				           WHERE c."Amount" IS NOT NULL
+				           """;
+				
+				var result = await context.Database
+					.SqlQueryRaw<int>(sql,
+						new Npgsql.NpgsqlParameter("skillId", query.Skill!))
+					.FirstAsync(ct);
+				
+				return result;
+			}
+			
+			var count = await context.HypixelGuilds
+				.Where(g => g.MemberCount > 0)
+				.CountAsync(ct);
+			
+			return count;
+		}, new HybridCacheEntryOptions {
+			LocalCacheExpiration = TimeSpan.FromMinutes(5),
+			Expiration = TimeSpan.FromMinutes(10)
+		}, cancellationToken: c);
 	}
 
 	private async Task<List<HypixelGuildDetailsDto>> GetGuildListGeneralAsync(HypixelGuildListQuery query,
