@@ -41,7 +41,8 @@ internal sealed class GetBazaarProductEndpoint(
 					AverageSell = s.AvgInstaSellPrice,
 					AverageBuy = s.AvgInstaBuyPrice,
 					AverageBuyOrder = s.AvgBuyOrderPrice,
-					AverageSellOrder = s.AvgSellOrderPrice
+					AverageSellOrder = s.AvgSellOrderPrice,
+					Orders = s.Orders
 				}
 			})
 			.Where(s => s.ProductId == request.ItemId)

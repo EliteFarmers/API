@@ -103,4 +103,10 @@ internal sealed class BazaarProductSummaryDto
 	/// Calculated average Buy Order price that should be more resistant to price fluctuations
 	/// </summary>
 	public double AverageBuyOrder { get; set; }
+
+	/// <summary>
+	/// Current orders in the bazaar for this item if they exist.
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public BazaarOrders? Orders { get; set; } = null;
 }
