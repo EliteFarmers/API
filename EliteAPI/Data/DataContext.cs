@@ -152,7 +152,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	// Auction House
 	public DbSet<AuctionBinPrice> AuctionBinPrices { get; set; } = null!;
 	public DbSet<AuctionItem> AuctionItems { get; set; } = null!;
-	public DbSet<EndedAuction> EndedAuctions { get; set; } = null!;
+	public DbSet<Auction> Auctions { get; set; } = null!;
 	public DbSet<AuctionPriceHistory> AuctionPriceHistories { get; set; } = null!;
 
 	// Firesales

@@ -11,7 +11,7 @@ public class GetAuctionRequest
 
 public class GetAuctionResponse
 {
-    public required EndedAuctionDto Ended { get; set; }
+    public required AuctionDto Auction { get; set; }
 }
 
 public class GetAuction(DataContext context) : Endpoint<GetAuctionRequest, GetAuctionResponse>
@@ -30,7 +30,7 @@ public class GetAuction(DataContext context) : Endpoint<GetAuctionRequest, GetAu
 
     public override async Task HandleAsync(GetAuctionRequest r, CancellationToken c)
     {
-        var auction = context.EndedAuctions.FirstOrDefault(e => e.AuctionId == r.AuctionId);
+        var auction = context.Auctions.FirstOrDefault(e => e.AuctionId == r.AuctionId);
 
         if (auction is null) {
             await Send.NotFoundAsync(c);
@@ -38,7 +38,7 @@ public class GetAuction(DataContext context) : Endpoint<GetAuctionRequest, GetAu
         }
 
         await Send.OkAsync(new GetAuctionResponse() {
-            Ended = auction.ToDto(),
+            Auction = auction.ToDto(),
         }, c);
     }
 }

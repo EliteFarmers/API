@@ -1,7 +1,7 @@
 {
   "Auctions": {
-    "AuctionsRefreshInterval": 300,
-    "FullAuctionsRefreshInterval": 7200,
+    "AuctionsRefreshInterval": 120,
+    "FullAuctionsRefreshInterval": 1800,
     "RecentWindowHours": 2,
     "ShortTermRepresentativeLowestDays": 3,
     "LongTermRepresentativeLowestDays": 7,

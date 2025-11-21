@@ -22,7 +22,7 @@ public class GetProfileAuctionsResponse
 	/// <summary>
 	/// Ended auctions
 	/// </summary>
-	public List<EndedAuctionDto> Ended { get; set; } = [];
+	public List<AuctionDto> Ended { get; set; } = [];
 }
 
 internal sealed class GetProfileAuctionsEndpoint(
@@ -46,9 +46,9 @@ internal sealed class GetProfileAuctionsEndpoint(
 			return;
 		}
 
-		var endedAuctions = await context.EndedAuctions
+		var endedAuctions = await context.Auctions
 			.Where(a => a.SellerProfileMemberId == memberId)
-			.OrderByDescending(a => a.Timestamp)
+			.OrderByDescending(a => a.SoldAt)
 			.Take(50)
 			.ToListAsync(c);
 

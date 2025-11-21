@@ -7,7 +7,8 @@ using Riok.Mapperly.Abstractions;
 
 namespace EliteAPI.Features.Resources.Auctions.Models;
 
-public class EndedAuction
+[Table("EndedAuctions")]
+public class Auction
 {
 	[Key]
 	public Guid AuctionId { get; set; }
@@ -18,13 +19,16 @@ public class EndedAuction
 	[MapperIgnore]
 	public Guid? SellerProfileMemberId { get; set; }
 	
-	public Guid BuyerUuid { get; set; }
-	public Guid BuyerProfileUuid { get; set; }
+	public Guid? BuyerUuid { get; set; }
+	public Guid? BuyerProfileUuid { get; set; }
 	
 	[MapperIgnore]
 	public Guid? BuyerProfileMemberId { get; set; }
 	
-	public long Timestamp { get; set; }
+	public long Start { get; set; }
+	public long End { get; set; }
+	
+	public long SoldAt { get; set; }
 	public long Price { get; set; }
 	public short Count { get; set; }
 	public bool Bin { get; set; }
@@ -35,30 +39,34 @@ public class EndedAuction
 	[MaxLength(512)]
 	public string VariantKey { get; set; } = string.Empty;
 	public required byte[] Item { get; set; }
+	
+	public DateTimeOffset LastUpdatedAt { get; set; }
+	public long StartingBid { get; set; }
+	public long? HighestBid { get; set; }
 }
 
-public class EndedAuctionWorkItem
+public class AuctionWorkItem
 {
 	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	public long Id { get; set; }
 	
 	public required Guid AuctionId { get; set; }
-	public required EndedAuction Auction { get; set; }
+	public required Auction Auction { get; set; }
 }
 
-public class EndedAuctionConfiguration : IEntityTypeConfiguration<EndedAuction>
+public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
 {
-	public void Configure(EntityTypeBuilder<EndedAuction> builder) {
+	public void Configure(EntityTypeBuilder<Auction> builder) {
 		builder.HasIndex(e => e.Price);
-		builder.HasIndex(e => e.Timestamp);
-		builder.HasIndex(e => new { e.SkyblockId, e.Timestamp });
-		builder.HasIndex(e => new { e.SkyblockId, e.VariantKey, e.Timestamp });
+		builder.HasIndex(e => e.SoldAt);
+		builder.HasIndex(e => new { e.SkyblockId, Timestamp = e.SoldAt });
+		builder.HasIndex(e => new { e.SkyblockId, e.VariantKey, Timestamp = e.SoldAt });
 		builder.HasIndex(e => e.SellerProfileMemberId);
 		builder.HasIndex(e => e.BuyerProfileMemberId);
 		builder.Property(e => e.VariantKey).HasDefaultValue(string.Empty);
 		
 		builder.HasOne<ProfileMember>()
-			.WithMany(p => p.EndedAuctions)
+			.WithMany(p => p.Auctions)
 			.HasForeignKey(e => e.SellerProfileMemberId);
 		
 		builder.HasOne<ProfileMember>()

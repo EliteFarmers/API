@@ -8,7 +8,8 @@ namespace EliteAPI.Features.Resources.Auctions.Endpoints;
 
 internal sealed class AuctionOverviewResponse
 {
-	public List<EndedAuctionDto> Ended { get; set; } = [];
+	public List<AuctionDto> New { get; set; } = [];
+	public List<AuctionDto> Ended { get; set; } = [];
 }
 
 internal sealed class GetAuctionHouseOverviewEndpoint(
@@ -36,22 +37,38 @@ internal sealed class GetAuctionHouseOverviewEndpoint(
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
-		var data = await context.EndedAuctions.AsNoTracking()
-			.OrderByDescending(a => a.Timestamp)
+		var newAuctions = await context.Auctions.AsNoTracking()
+			.Where(a => a.Bin && a.SoldAt == 0)
+			.OrderByDescending(a => a.Start)
 			.Take(10)
 			.ToListAsync(c);
 		
-		var uuids = data.Select(d => d.BuyerUuid.ToString("N"))
-			.Concat(data.Select(d => d.SellerUuid.ToString("N")))
+		var ended = await context.Auctions.AsNoTracking()
+			.Where(a => a.Bin && a.BuyerUuid != null)
+			.OrderByDescending(a => a.SoldAt)
+			.Take(10)
+			.ToListAsync(c);
+		
+		var uuids = ended.Select(d => d.BuyerUuid?.ToString("N"))
+			.Concat(ended.Select(d => d.SellerUuid.ToString("N")))
+			.Concat(newAuctions.Select(d => d.SellerUuid.ToString("N")))
+			.Concat(newAuctions.Select(d => d.BuyerUuid?.ToString("N")))
+			.Where(u => u != null)
 			.Distinct()
 			.ToList();
 
-		var meta = await accountService.GetAccountMeta(uuids);
+		var meta = await accountService.GetAccountMeta(uuids!);
 
 		var response = new AuctionOverviewResponse {
-			Ended = data.Select(e => {
+			Ended = ended.Select(e => {
 				var dto = e.ToDto();
-				dto.Buyer = meta.GetValueOrDefault(dto.BuyerUuid.ToString("N"));
+				dto.Buyer = e.BuyerUuid != null ? meta.GetValueOrDefault(e.BuyerUuid.Value.ToString("N")) : null;
+				dto.Seller = meta.GetValueOrDefault(dto.SellerUuid.ToString("N"));
+				return dto;
+			}).ToList(),
+			New = newAuctions.Select(e => {
+				var dto = e.ToDto();
+				dto.Buyer = e.BuyerUuid != null ? meta.GetValueOrDefault(e.BuyerUuid.Value.ToString("N")) : null;
 				dto.Seller = meta.GetValueOrDefault(dto.SellerUuid.ToString("N"));
 				return dto;
 			}).ToList()

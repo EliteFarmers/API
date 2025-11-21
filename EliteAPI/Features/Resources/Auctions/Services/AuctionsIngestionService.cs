@@ -62,6 +62,14 @@ public class AuctionsIngestionService(
 			var auctionItems = apiResponse.Auctions
 				.Select(a => new { a.Uuid, Item = NbtParser.NbtToItem(a.ItemBytes) })
 				.ToDictionary(a => a.Uuid, a => a.Item);
+			
+			var newAuctionIds = apiResponse.Auctions
+				.Select(au => Guid.Parse(au.Uuid))
+				.ToList();
+			
+			var existingAuctions = await context.Auctions
+				.Where(a => newAuctionIds.Contains(a.AuctionId))
+				.ToDictionaryAsync(a => a.AuctionId, cancellationToken);
 
 			foreach (var auction in apiResponse.Auctions) {
 				if (!auction.Bin || !allSeenAuctionUuidsThisRun.Add(auction.Uuid) ||
@@ -82,6 +90,42 @@ public class AuctionsIngestionService(
 					AuctionUuid = Guid.Parse(auction.Uuid),
 					IngestedAt = ingestionTime
 				});
+
+				// Upsert Auction record
+				var auctionId = Guid.Parse(auction.Uuid);
+				
+				if (!existingAuctions.TryGetValue(auctionId, out var existingAuction))
+				{
+					var newAuction = new Auction
+					{
+						AuctionId = auctionId,
+						SellerUuid = Guid.Parse(auction.Auctioneer),
+						SellerProfileUuid = Guid.Parse(auction.ProfileId),
+						Start = auction.Start,
+						End = auction.End,
+						Price = (long)price,
+						StartingBid = auction.StartingBid,
+						HighestBid = auction.HighestBidAmount,
+						Count = (short)count,
+						Bin = auction.Bin,
+						ItemUuid = itemDto.Uuid != null ? Guid.Parse(itemDto.Uuid) : null,
+						SkyblockId = itemDto.SkyblockId,
+						VariantKey = variedBy.ToKey(),
+						Item = Convert.FromBase64String(auction.ItemBytes),
+						LastUpdatedAt = ingestionTime
+					};
+					context.Auctions.Add(newAuction);
+				}
+				else
+				{
+					// Update existing auction if needed (e.g. price changed, though rare for BIN)
+					if (existingAuction.Price != (long)price || existingAuction.HighestBid != auction.HighestBidAmount)
+					{
+						existingAuction.Price = (long)price;
+						existingAuction.HighestBid = auction.HighestBidAmount;
+						existingAuction.LastUpdatedAt = ingestionTime;
+					}
+				}
 			}
 
 			logger.LogDebug("Processed page {PageNumber}/{TotalPagesValue}", page + 1, totalPages);

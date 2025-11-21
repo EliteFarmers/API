@@ -24,7 +24,7 @@ internal sealed class GetItemEndedAuctionsEndpoint(
     DataContext context,
     IAccountService accountService,
     VariantBundleService bundleService
-) : Endpoint<ItemEndedAuctionsRequest, List<EndedAuctionDto>>
+) : Endpoint<ItemEndedAuctionsRequest, List<AuctionDto>>
 {
     public override void Configure()
     {
@@ -44,12 +44,12 @@ internal sealed class GetItemEndedAuctionsEndpoint(
     {
         var bundle = bundleService.ParseBundleKey(req.SkyblockId);
         
-        IQueryable<EndedAuction> query;
+        IQueryable<Auction> query;
         
         if (bundle is null)
         {
-            query = context.EndedAuctions.AsNoTracking()
-                .Where(a => a.SkyblockId == req.SkyblockId);
+            query = context.Auctions.AsNoTracking()
+                .Where(a => a.SkyblockId == req.SkyblockId && a.Bin && a.BuyerUuid != null);
 
             if (!string.IsNullOrEmpty(req.Variant))
             {
@@ -64,12 +64,12 @@ internal sealed class GetItemEndedAuctionsEndpoint(
                 return;
             }
             
-            query = context.EndedAuctions.AsNoTracking()
-                .Where(a => a.SkyblockId == bundle.Value.SkyblockId);
+            query = context.Auctions.AsNoTracking()
+                .Where(a => a.SkyblockId == bundle.Value.SkyblockId && a.Bin && a.BuyerUuid != null);
         }
 
         var data = await query
-            .OrderByDescending(a => a.Timestamp)
+            .OrderByDescending(a => a.SoldAt)
             .Take(Math.Clamp(req.Limit, 1, 100) * (bundle is null ? 1 : 10))
             .ToListAsync(c);
 
@@ -81,16 +81,17 @@ internal sealed class GetItemEndedAuctionsEndpoint(
                 .ToList();
         }
 
-        var uuids = data.Select(d => d.BuyerUuid.ToString("N"))
+        var uuids = data.Select(d => d.BuyerUuid?.ToString("N"))
             .Concat(data.Select(d => d.SellerUuid.ToString("N")))
+            .Where(u => u != null)
             .Distinct()
             .ToList();
 
-        var meta = await accountService.GetAccountMeta(uuids);
+        var meta = await accountService.GetAccountMeta(uuids!);
 
         var response = data.Select(e => {
             var dto = e.ToDto();
-            dto.Buyer = meta.GetValueOrDefault(dto.BuyerUuid.ToString("N"));
+            dto.Buyer = e.BuyerUuid != null ? meta.GetValueOrDefault(e.BuyerUuid.Value.ToString("N")) : null;
             dto.Seller = meta.GetValueOrDefault(dto.SellerUuid.ToString("N"));
             return dto;
         }).ToList();

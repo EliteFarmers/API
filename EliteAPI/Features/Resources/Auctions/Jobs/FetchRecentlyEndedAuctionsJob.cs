@@ -44,17 +44,17 @@ public class FetchRecentlyEndedAuctionsJob(
 		var auctions = fetched.Content.Auctions;
 		var auctionIds = auctions.Select(a => Guid.Parse(a.Uuid)).ToList();
 
-		var existing = await context.EndedAuctions
+		var existingAuctions = await context.Auctions
 			.Where(a => auctionIds.Contains(a.AuctionId))
-			.Select(a => a.AuctionId)
-			.ToHashSetAsync();
+			.ToDictionaryAsync(a => a.AuctionId, a => a);
 
 		var newAuctions = 0;
+		var updatedAuctions = 0;
 		var profileMemberCache = new Dictionary<(string Player, string Profile), Guid?>();
 
 		foreach (var auction in auctions) {
-			if (existing.Contains(Guid.Parse(auction.Uuid))) continue;
-
+			var auctionId = Guid.Parse(auction.Uuid);
+			
 			var sellerKey = (auction.Seller, auction.SellerProfileId);
 			var buyerKey = (auction.Buyer, auction.BuyerProfileId);
 
@@ -68,43 +68,64 @@ public class FetchRecentlyEndedAuctionsJob(
 				profileMemberCache[buyerKey] = buyer;
 			}
 
-			var item = NbtParser.NbtToItem(auction.ItemBytes);
-			var rarity = DetermineRarity(item);
-			var variation = item is not null
-				? variantKeyGenerator.Generate(item, rarity)
-				: null;
-			var variantKey = variation?.ToKey() ?? string.Empty;
-			var count = item?.Count > 0 ? (short)item.Count : (short)1;
+			if (existingAuctions.TryGetValue(auctionId, out var existingAuction))
+			{
+				// Update existing auction
+				if (existingAuction.BuyerUuid == null)
+				{
+					existingAuction.BuyerUuid = Guid.Parse(auction.Buyer);
+					existingAuction.BuyerProfileUuid = Guid.Parse(auction.BuyerProfileId);
+					existingAuction.BuyerProfileMemberId = buyer;
+					existingAuction.Price = auction.Price;
+					existingAuction.SoldAt = auction.Timestamp;
+					existingAuction.LastUpdatedAt = DateTimeOffset.UtcNow;
+					updatedAuctions++;
+				}
+			}
+			else
+			{
+				// Create new auction (missed during ingestion)
+				var item = NbtParser.NbtToItem(auction.ItemBytes);
+				var rarity = DetermineRarity(item);
+				var variation = item is not null
+					? variantKeyGenerator.Generate(item, rarity)
+					: null;
+				var variantKey = variation?.ToKey() ?? string.Empty;
+				var count = item?.Count > 0 ? (short)item.Count : (short)1;
 
-			var endedAuction = new EndedAuction() {
-				AuctionId = Guid.Parse(auction.Uuid),
+				var newAuction = new Auction() {
+					AuctionId = auctionId,
 
-				SellerUuid = Guid.Parse(auction.Seller),
-				SellerProfileUuid = Guid.Parse(auction.SellerProfileId),
-				SellerProfileMemberId = seller,
+					SellerUuid = Guid.Parse(auction.Seller),
+					SellerProfileUuid = Guid.Parse(auction.SellerProfileId),
+					SellerProfileMemberId = seller,
 
-				BuyerUuid = Guid.Parse(auction.Buyer),
-				BuyerProfileUuid = Guid.Parse(auction.BuyerProfileId),
-				BuyerProfileMemberId = buyer,
+					BuyerUuid = Guid.Parse(auction.Buyer),
+					BuyerProfileUuid = Guid.Parse(auction.BuyerProfileId),
+					BuyerProfileMemberId = buyer,
 
-				Price = auction.Price,
-				Count = count,
-				Bin = auction.Bin,
-				Timestamp = auction.Timestamp,
-				ItemUuid = item?.Uuid is not null ? Guid.Parse(item.Uuid) : null,
+					Price = auction.Price,
+					Count = count,
+					Bin = auction.Bin,
+					SoldAt = auction.Timestamp,
+					ItemUuid = item?.Uuid is not null ? Guid.Parse(item.Uuid) : null,
 
-				SkyblockId = item?.SkyblockId,
-				VariantKey = variantKey,
-				Item = Convert.FromBase64String(auction.ItemBytes)
-			};
+					SkyblockId = item?.SkyblockId,
+					VariantKey = variantKey,
+					Item = Convert.FromBase64String(auction.ItemBytes),
+					
+					LastUpdatedAt = DateTimeOffset.UtcNow,
+					StartingBid = auction.Price,
+				};
 
-			newAuctions++;
-			context.EndedAuctions.Add(endedAuction);
+				newAuctions++;
+				context.Auctions.Add(newAuction);
+			}
 		}
 		
 		await context.SaveChangesAsync();
-		if (newAuctions > 0) {
-			logger.LogInformation("Processed {auctionCount} recently ended auctions", newAuctions);
+		if (newAuctions > 0 || updatedAuctions > 0) {
+			logger.LogInformation("Processed {newCount} new and {updatedCount} updated recently ended auctions", newAuctions, updatedAuctions);
 		}
 	}
 

@@ -48,7 +48,7 @@ public class ProfileMember
 	public string? ProfileName { get; set; }
 
 	public List<EventMember> EventEntries { get; set; } = [];
-	public List<EndedAuction> EndedAuctions { get; set; } = [];
+	public List<Auction> Auctions { get; set; } = [];
 }
 
 [Owned]

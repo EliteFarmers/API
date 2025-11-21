@@ -131,13 +131,13 @@ public class AuctionPriceHistoryJob(DataContext context, ILogger<AuctionPriceHis
 
 	private async Task AggregateEndedAuctions(Dictionary<(string SkyblockId, string VariantKey, long BucketStart), AggregateState> aggregates,
 		long cutoff, CancellationToken cancellationToken) {
-		var endedAuctions = await context.EndedAuctions
+		var endedAuctions = await context.Auctions
 			.AsNoTracking()
-			.Where(a => a.Bin && a.SkyblockId != null && a.Timestamp >= cutoff)
+			.Where(a => a.Bin && a.SkyblockId != null && a.SoldAt >= cutoff && a.BuyerUuid != null)
 			.Select(a => new {
 				SkyblockId = a.SkyblockId!,
 				VariantKey = a.VariantKey ?? string.Empty,
-				BucketStart = a.Timestamp - (a.Timestamp % HourBucketSizeMilliseconds),
+				BucketStart = a.SoldAt - (a.SoldAt % HourBucketSizeMilliseconds),
 				PricePerUnit = a.Count > 0 ? (decimal)a.Price / a.Count : (decimal)a.Price,
 				ItemsSold = a.Count > 0 ? (int)a.Count : 1
 			})
