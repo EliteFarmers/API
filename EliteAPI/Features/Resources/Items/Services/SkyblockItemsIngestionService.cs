@@ -1,8 +1,10 @@
 using EliteAPI.Data;
 using EliteAPI.Features.Resources.Items.Models;
 using EliteFarmers.HypixelAPI;
+using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using SkyblockRepo;
 
 namespace EliteAPI.Features.Resources.Items.Services;
 
@@ -10,6 +12,7 @@ namespace EliteAPI.Features.Resources.Items.Services;
 public class SkyblockItemsIngestionService(
 	IHypixelApi hypixelApi,
 	DataContext context,
+	ISkyblockRepoClient repo,
 	ILogger<SkyblockItemsIngestionService> logger)
 {
 	public async Task IngestItemsDataAsync() {
@@ -34,11 +37,13 @@ public class SkyblockItemsIngestionService(
 
 		foreach (var item in items) {
 			if (item.Id is null) continue;
+			var repoItem = repo.FindItem(item.Id);
 
 			if (existingItems.TryGetValue(item.Id, out var skyblockItem)) {
 				// Update existing record
 				skyblockItem.NpcSellPrice = item.NpcSellPrice;
 				skyblockItem.Data = item;
+				skyblockItem.Data.Name = repoItem?.Name ?? repoItem?.Data?.Name ?? item.Name;
 				updatedCount++;
 			}
 			else {
@@ -48,10 +53,24 @@ public class SkyblockItemsIngestionService(
 					NpcSellPrice = item.NpcSellPrice,
 					Data = item
 				};
+				
+				newItem.Data.Name = repoItem?.Data?.Name ?? item.Name;
 
 				context.SkyblockItems.Add(newItem);
 				newCount++;
 			}
+		}
+
+		foreach (var item in existingItems.Values) {
+			if (item.Data is not null) continue;
+			var repoItem = repo.FindItem(item.ItemId);
+
+			item.Data = new ItemResponse() {
+				Id = item.ItemId,
+				Name = repoItem?.Name ?? repoItem?.Data?.Name ?? item.ItemId,
+			};
+			
+			updatedCount++;
 		}
 
 		if (newCount > 0 || updatedCount > 0) {

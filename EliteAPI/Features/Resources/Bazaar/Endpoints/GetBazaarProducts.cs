@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using EliteAPI.Data;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using SkyblockRepo;
 
 namespace EliteAPI.Features.Resources.Bazaar.Endpoints;
 
