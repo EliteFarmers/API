@@ -2403,6 +2403,12 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
 
+                    b.Property<double>("Networth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PersonalBank")
+                        .HasColumnType("double precision");
+
                     b.Property<List<Pet>>("Pets")
                         .IsRequired()
                         .HasColumnType("jsonb");

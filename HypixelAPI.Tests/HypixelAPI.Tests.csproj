@@ -20,12 +20,17 @@
 
     <ItemGroup>
         <ProjectReference Include="..\HypixelAPI\HypixelAPI.csproj" />
+        <ProjectReference Include="..\HypixelAPI.Networth\HypixelAPI.Networth.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Include="test-data\**\*.*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="NetworthTests.cs" />
     </ItemGroup>
 
 </Project>

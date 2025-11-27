@@ -3,7 +3,10 @@ using EliteAPI.Data;
 using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Resources.Auctions.Services;
 using EliteAPI.Features.Textures.Services;
+using EliteAPI.Mappers;
 using FastEndpoints;
+using HypixelAPI.Networth.Models;
+using HypixelAPI.Networth.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Textures.Endpoints;
@@ -39,12 +42,20 @@ internal sealed class InventoryItemMetaResponse
 	/// Variant key for price lookups
 	/// </summary>
 	public string? VariantKey { get; set; }
+	
+	/// <summary>
+	/// Networth calculation result for this item
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public NetworthResult? Networth { get; set; }
 }
 
 internal sealed class GetInventoryItemMetaEndpoint(
 	ItemTextureResolver itemTextureResolver,
 	VariantKeyGenerator variantKeyGenerator,
-	DataContext context
+	NetworthService networthService,
+	DataContext context,
+	ILogger<GetInventoryItemMetaEndpoint> logger
 ) : Endpoint<GetInventoryItemMetaRequest, InventoryItemMetaResponse>
 {
 	public override void Configure() {
@@ -89,11 +100,25 @@ internal sealed class GetInventoryItemMetaEndpoint(
 		}
 
 		var resource = await itemTextureResolver.GetItemResource(itemData, request.PackList);
+		var itemDto = itemData.ToDto();
+		
+		// Calculate networth
+		NetworthResult? networthResult = null;
+		try
+		{
+			var networthItem = itemDto.ToNetworthItem();
+			networthResult = await networthService.GetItemNetworthAsync(networthItem);
+		}
+		catch (Exception e)
+		{
+			logger.LogError(e, "Failed to calculate networth for item {SlotId}", request.SlotId);
+		}
 
 		await Send.OkAsync(new InventoryItemMetaResponse
 		{
 			PackId = resource.SourcePackId,
-			VariantKey = variantKeyGenerator.Generate(itemData.ToDto())?.ToKey()
+			VariantKey = variantKeyGenerator.Generate(itemDto)?.ToKey(),
+			Networth = networthResult
 		}, cancellation: c);
 	}
 }

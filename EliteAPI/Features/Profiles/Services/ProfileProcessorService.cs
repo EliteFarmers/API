@@ -17,6 +17,8 @@ using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
+using HypixelAPI.Networth.Calculators;
+using HypixelAPI.Networth.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
@@ -69,10 +71,12 @@ public interface IProfileProcessorService
 	/// <param name="profileData">Raw profile data</param>
 	Task ProcessMemberData(Profile profile, ProfileMemberResponse memberData, string playerUuid,
 		string requestedPlayerUuid, ProfileResponse? profileData = null);
+
+	Task<NetworthBreakdown> GetNetworthBreakdownAsync(ProfileMember member);
 }
 
 [RegisterService<IProfileProcessorService>(LifeTime.Scoped)]
-public class ProfileProcessorService(
+public partial class ProfileProcessorService(
 	DataContext context,
 	ILogger<ProfileProcessorService> logger,
 	IMojangService mojangService,
@@ -82,12 +86,18 @@ public class ProfileProcessorService(
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IOptions<ConfigFarmingWeightSettings> farmingWeightOptions,
-	AutoMapper.IMapper mapper
+	AutoMapper.IMapper mapper,
+	SkyBlockItemNetworthCalculator networthCalculator,
+	PetNetworthCalculator petNetworthCalculator,
+	IPriceProvider priceProvider
 ) : IProfileProcessorService
 {
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
+	private readonly SkyBlockItemNetworthCalculator _networthCalculator = networthCalculator;
+	private readonly PetNetworthCalculator _petNetworthCalculator = petNetworthCalculator;
+	private readonly IPriceProvider _priceProvider = priceProvider;
 
 	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData =
 		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>
@@ -413,6 +423,7 @@ public class ProfileProcessorService(
 
 		member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
 		member.Purse = incomingData.Currencies?.CoinPurse ?? 0;
+		member.PersonalBank = incomingData.Profile?.BankAccount ?? 0;
 		member.Pets = mapper.Map<List<Pet>>(incomingData.PetsData?.Pets?.ToList() ?? []);
 		member.Sacks = incomingData.Inventories?.SackContents.Where(kv => kv.Value > 0)
 			.ToDictionary(k => k.Key, v => v.Value) ?? new Dictionary<string, long>();
@@ -428,7 +439,17 @@ public class ProfileProcessorService(
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
 			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),
 			Bestiary = incomingData.Bestiary ?? new RawBestiaryResponse(),
-			Dungeons = incomingData.Dungeons ?? new RawDungeonsResponse()
+			Dungeons = incomingData.Dungeons ?? new RawDungeonsResponse(),
+			Essence = new Dictionary<string, int> {
+				{ "WITHER", incomingData.Currencies?.Essence?.Wither?.Current ?? 0 },
+				{ "DRAGON", incomingData.Currencies?.Essence?.Dragon?.Current ?? 0 },
+				{ "DIAMOND", incomingData.Currencies?.Essence?.Diamond?.Current ?? 0 },
+				{ "SPIDER", incomingData.Currencies?.Essence?.Spider?.Current ?? 0 },
+				{ "UNDEAD", incomingData.Currencies?.Essence?.Undead?.Current ?? 0 },
+				{ "ICE", incomingData.Currencies?.Essence?.Ice?.Current ?? 0 },
+				{ "GOLD", incomingData.Currencies?.Essence?.Gold?.Current ?? 0 },
+				{ "CRIMSON", incomingData.Currencies?.Essence?.Crimson?.Current ?? 0 }
+			}
 		};
 
 		member.Slayers = incomingData.Slayer?.ToDto();

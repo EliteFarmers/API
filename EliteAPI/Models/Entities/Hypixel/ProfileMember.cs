@@ -17,6 +17,8 @@ public class ProfileMember
 
 	public int SkyblockXp { get; set; } = 0;
 	public double Purse { get; set; } = 0;
+	public double PersonalBank { get; set; } = 0;
+	public double Networth { get; set; } = 0;
 
 	public JacobData JacobData { get; set; } = new();
 	public Skills Skills { get; set; } = new();

@@ -103,6 +103,10 @@ public class ItemPetInfoDto
 	[JsonPropertyName("heldItem")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? HeldItem { get; set; }
+	
+	[JsonPropertyName("skin")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? Skin { get; set; }
 
 	[JsonExtensionData] public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
