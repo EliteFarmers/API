@@ -134,4 +134,5 @@ public class NetworthItemSoulAttribute
 public class NetworthItemRodPartAttribute
 {
 	public string? Part { get; set; }
+	public bool Donated { get; set; }
 }

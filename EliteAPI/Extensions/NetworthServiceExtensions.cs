@@ -1,7 +1,6 @@
 using HypixelAPI.Networth.Calculators;
 using HypixelAPI.Networth.Calculators.Handlers;
 using HypixelAPI.Networth.Interfaces;
-using EliteAPI.Services.Networth;
 
 namespace EliteAPI.Extensions;
 
@@ -12,7 +11,6 @@ public static class NetworthServiceExtensions
         // Register the calculator
         services.AddScoped<SkyBlockItemNetworthCalculator>();
         services.AddScoped<PetNetworthCalculator>();
-        services.AddScoped<IPriceProvider, ElitePriceProvider>();
 
         // Register all handlers
         var assembly = typeof(IItemNetworthHandler).Assembly;

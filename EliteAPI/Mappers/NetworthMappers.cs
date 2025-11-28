@@ -40,16 +40,16 @@ public static partial class NetworthMappers
 				DroppedInstanceId = s.DroppedInstanceId,
 				DroppedModeId = s.DroppedModeId
 			}).ToList(),
-			Hook = attributes.Hook != null ? new NetworthItemRodPartAttribute { Part = attributes.Hook.Part } : null,
-			Line = attributes.Line != null ? new NetworthItemRodPartAttribute { Part = attributes.Line.Part } : null,
-			Sinker = attributes.Sinker != null
-				? new NetworthItemRodPartAttribute { Part = attributes.Sinker.Part }
-				: null,
+			Hook = attributes.Hook?.ToNetworthDto(),
+			Line = attributes.Line?.ToNetworthDto(),
+			Sinker = attributes.Sinker?.ToNetworthDto(),
 			AbilityScrolls = attributes.AbilityScrolls,
 			Inventory = attributes.Inventory?.ToDictionary(k => k.Key, v => v.Value?.ToNetworthItem()),
 			Extra = attributes.Extra ?? new Dictionary<string, object>()
 		};
 	}
+	
+	public static partial NetworthItemRodPartAttribute ToNetworthDto(this ItemRodPartAttribute rodPartAttribute);
 
 	private static NetworthItemPetInfo ToNetworthItemPetInfo(ItemPetInfoDto petInfo) {
 		return new NetworthItemPetInfo {
