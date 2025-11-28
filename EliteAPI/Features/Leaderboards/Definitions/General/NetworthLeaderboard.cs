@@ -3,6 +3,7 @@ using EliteAPI.Models.Entities.Hypixel;
 
 namespace EliteAPI.Features.Leaderboards.Definitions;
 
+// Not currently in use
 public class NetworthLeaderboard : IMemberLeaderboardDefinition
 {
     public LeaderboardInfo Info { get; } = new() {

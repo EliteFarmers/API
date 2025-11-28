@@ -65,6 +65,24 @@ public class HypixelService(
 		return response.Content;
 	}
 
+	public async Task<ActionResult<MuseumResponse>> FetchMuseum(string profileId) {
+		if (profileId.Length is not (32 or 36)) return new BadRequestResult();
+		var response = await hypixelApi.FetchMuseumAsync(profileId);
+
+		if (!response.IsSuccessStatusCode) {
+			if (response.StatusCode == HttpStatusCode.NotFound) return new NotFoundResult();
+			LogRateLimitWarnings(response);
+
+			logger.LogError("Failed to fetch museum for {ProfileId}, Error: {Error}", profileId, response.StatusCode);
+
+			return new BadRequestResult();
+		}
+
+		if (response.Content is not { Success: true }) return new BadRequestResult();
+
+		return response.Content;
+	}
+
 	private void LogRateLimitWarnings<T>(ApiResponse<T> response) {
 		if (response.StatusCode != HttpStatusCode.TooManyRequests) return;
 

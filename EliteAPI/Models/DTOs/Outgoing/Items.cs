@@ -200,4 +200,7 @@ public class ItemRodPartAttribute
 {
 	[JsonPropertyName("part"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Part { get; set; }
+	
+	[JsonPropertyName("donated_museum"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public bool Donated { get; set; }
 }
