@@ -9,13 +9,13 @@ public class PrestigeHandler : IItemNetworthHandler
 		return item.SkyblockId != null && NetworthConstants.Prestiges.ContainsKey(item.SkyblockId);
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.SkyblockId == null || !NetworthConstants.Prestiges.TryGetValue(item.SkyblockId, out var prestiges)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		// If the item itself has a price, we don't need to calculate prestige cost (handled in base price)
-		if (prices.ContainsKey(item.SkyblockId)) return 0;
+		if (prices.ContainsKey(item.SkyblockId)) return new NetworthCalculationData();
 
 		foreach (var prestigeItem in prestiges) {
 			if (item.SkyblockId != null && NetworthConstants.Prestiges.TryGetValue(item.SkyblockId, out var tierList)) {
@@ -29,12 +29,11 @@ public class PrestigeHandler : IItemNetworthHandler
 						Count = 1
 					});
 
-					item.Price += price;
-					return price;
+					return new NetworthCalculationData { Value = price };
 				}
 			}
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

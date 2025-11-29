@@ -9,7 +9,11 @@ public class NetworthResult
 	public List<NetworthCalculation>? Calculation { get; set; }
 	public bool Soulbound { get; set; }
 	public bool Cosmetic { get; set; }
-	public double UnsoulboundNetworth { get; set; }
+	public double LiquidNetworth { get; set; }
+	public double NonCosmeticNetworth { get; set; }
+	public double LiquidFunctionalNetworth { get; set; }
+	public double CosmeticValue { get; set; }
+	public double SoulboundValue { get; set; }
 }
 
 public class NetworthCalculation

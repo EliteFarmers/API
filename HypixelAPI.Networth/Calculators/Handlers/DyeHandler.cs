@@ -11,15 +11,15 @@ public class DyeHandler : IItemNetworthHandler
 		       !string.IsNullOrEmpty(dye.ToString());
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("dye_item", out var dyeObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var dye = dyeObj.ToString();
-		if (string.IsNullOrEmpty(dye)) return 0;
+		if (string.IsNullOrEmpty(dye)) return new NetworthCalculationData();
 
-		if (prices.TryGetValue(dye.ToUpper(), out var price)) {
+		if (prices.TryGetValue(dye, out var price)) {
 			var value = price * NetworthConstants.ApplicationWorth.Dye;
 
 			item.Calculation ??= new List<NetworthCalculation>();
@@ -30,9 +30,9 @@ public class DyeHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			return value;
+			return new NetworthCalculationData { Value = value, IsCosmetic = true };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

@@ -12,14 +12,15 @@ public class ShensAuctionHandler : IItemNetworthHandler
 		       item.Attributes.Extra.ContainsKey("bid");
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("price", out var priceObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var pricePaid = Convert.ToDouble(priceObj) * NetworthConstants.ApplicationWorth.ShensAuctionPrice;
 
 		if (pricePaid > item.BasePrice) {
+			var diff = pricePaid - item.BasePrice;
 			item.BasePrice = pricePaid;
 
 			item.Calculation ??= new List<NetworthCalculation>();
@@ -29,8 +30,10 @@ public class ShensAuctionHandler : IItemNetworthHandler
 				Value = pricePaid,
 				Count = 1
 			});
+
+			return new NetworthCalculationData { Value = diff };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

@@ -11,45 +11,70 @@ public class PetNetworthCalculator
 
 	public PetNetworthCalculator() {
 		_handlers = new List<IItemNetworthHandler> {
+			new PetCandyHandler(),
 			new PetItemHandler(),
-			new SoulboundPetSkinHandler(),
-			new PetCandyHandler() // Must be last
+			new SoulboundPetSkinHandler()
 		};
 	}
 
 	public async Task<NetworthResult> CalculateAsync(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.PetInfo == null) return new NetworthResult { Item = item, Networth = 0 };
+		var result = new NetworthResult { Item = item };
 
-		// Calculate base price
-		var basePrice = GetBasePrice(item, prices);
-		if (basePrice == null) {
-			return new NetworthResult { Item = item, Networth = 0 };
+		if (item.PetInfo == null) {
+			return result;
 		}
 
-		item.BasePrice = basePrice.Value;
-		item.Price = item.BasePrice;
+		// Calculate Base Price
+		var basePrice = CalculateBasePrice(item.PetInfo, prices);
+		if (basePrice == null) {
+			return result;
+		}
+
+		result.BasePrice = basePrice.Value;
+		result.Price = basePrice.Value;
+
+		item.BasePrice = result.BasePrice;
+		item.Price = result.Price;
 		item.Calculation ??= new List<NetworthCalculation>();
 
-		// Apply handlers
+		double totalHandlerValue = 0;
+		double cosmeticValue = 0;
+
 		foreach (var handler in _handlers) {
 			if (handler.Applies(item)) {
-				handler.Calculate(item, prices);
+				var data = handler.Calculate(item, prices);
+				totalHandlerValue += data.Value;
+				if (data.IsCosmetic) {
+					cosmeticValue += data.Value;
+				}
 			}
 		}
 
-		return new NetworthResult {
-			Item = item,
-			Price = item.Price,
-			BasePrice = item.BasePrice,
-			Networth = item.Price, // Assuming Count is 1 for pets usually, or use item.Count
-			Calculation = item.Calculation
-		};
+		item.Price += totalHandlerValue;
+
+		result.Price = item.Price;
+		result.Networth = result.Price * item.Count;
+		result.Calculation = item.Calculation;
+
+		// Calculate modes
+		result.CosmeticValue = cosmeticValue;
+
+		if (item.IsSoulbound) {
+			result.SoulboundValue = result.Networth;
+		} else {
+			result.SoulboundValue = 0;
+		}
+
+		result.LiquidNetworth = result.Networth - result.SoulboundValue;
+		result.NonCosmeticNetworth = result.Networth - result.CosmeticValue;
+		result.LiquidFunctionalNetworth = result.Networth - result.SoulboundValue - result.CosmeticValue;
+
+		return result;
 	}
 
-	private double? GetBasePrice(NetworthItem item, Dictionary<string, double> prices) {
-		var petInfo = item.PetInfo!;
-		var tier = petInfo.Tier;
+	private double? CalculateBasePrice(NetworthItemPetInfo petInfo, Dictionary<string, double> prices) {
 		var type = petInfo.Type;
+		var tier = petInfo.Tier;
 		var skin = petInfo.Skin;
 
 		var basePetId = $"{tier}_{type}";

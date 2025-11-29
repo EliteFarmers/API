@@ -14,15 +14,15 @@ public class GemstonePowerScrollHandlerTests : BaseHandlerTest<GemstonePowerScro
 				Description = "Applies correctly",
 				Item = new {
 					SkyblockId = "FLORID_ZOMBIE_SWORD",
-					Attributes = new { Extra = new { power_ability_scroll = "RUBY_POWER_SCROLL" } },
+					Attributes = new { Extra = new { power_ability_scroll = "POWER_SCROLL" } },
 					Price = 100
 				},
-				Prices = new Dictionary<string, double> { { "RUBY_POWER_SCROLL", 650000 } },
+				Prices = new Dictionary<string, double> { { "GEMSTONE_POWER_SCROLL", 650000 } },
 				ShouldApply = true,
 				ExpectedPriceChange = 650000 * NetworthConstants.ApplicationWorth.GemstonePowerScroll,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
-						Id = "RUBY_POWER_SCROLL",
+						Id = "GEMSTONE_POWER_SCROLL",
 						Type = "GEMSTONE_POWER_SCROLL",
 						Value = 650000 * NetworthConstants.ApplicationWorth.GemstonePowerScroll,
 						Count = 1

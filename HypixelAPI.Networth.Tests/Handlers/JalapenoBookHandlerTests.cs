@@ -14,18 +14,18 @@ public class JalapenoBookHandlerTests : BaseHandlerTest<JalapenoBookHandler>
 				Description = "Applies correctly",
 				Item = new {
 					SkyblockId = "SOS_FLARE",
-					Attributes = new { Extra = new { jalapeno_count = 1 } },
+					Attributes = new { Extra = new { jalapeno_count = 4 } },
 					Price = 100
 				},
 				Prices = new Dictionary<string, double> { { "JALAPENO_BOOK", 31000000 } },
 				ShouldApply = true,
-				ExpectedPriceChange = 31000000 * NetworthConstants.ApplicationWorth.JalapenoBook,
+				ExpectedPriceChange = 4 * 31000000 * NetworthConstants.ApplicationWorth.JalapenoBook,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
 						Id = "JALAPENO_BOOK",
 						Type = "JALAPENO_BOOK",
-						Value = 31000000 * NetworthConstants.ApplicationWorth.JalapenoBook,
-						Count = 1
+						Value = 4 * 31000000 * NetworthConstants.ApplicationWorth.JalapenoBook,
+						Count = 4
 					}
 				}
 			},

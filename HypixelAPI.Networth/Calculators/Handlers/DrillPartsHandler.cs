@@ -5,35 +5,33 @@ namespace HypixelAPI.Networth.Calculators.Handlers;
 
 public class DrillPartsHandler : IItemNetworthHandler
 {
-	private static readonly string[] DrillPartTypes =
-		["drill_part_upgrade_module", "drill_part_fuel_tank", "drill_part_engine"];
-
 	public bool Applies(NetworthItem item) {
-		if (item.Attributes?.Extra == null) return false;
-		foreach (var type in DrillPartTypes) {
-			if (item.Attributes.Extra.ContainsKey(type)) return true;
-		}
-
-		return false;
+		return item.Attributes?.Extra != null && (
+			item.Attributes.Extra.ContainsKey("drill_part_upgrade_module") ||
+			item.Attributes.Extra.ContainsKey("drill_part_engine") ||
+			item.Attributes.Extra.ContainsKey("drill_part_fuel_tank")
+		);
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.Attributes?.Extra == null) return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Attributes?.Extra == null) return new NetworthCalculationData();
 
 		var totalValue = 0.0;
 		item.Calculation ??= new List<NetworthCalculation>();
 
-		foreach (var type in DrillPartTypes) {
-			if (item.Attributes.Extra.TryGetValue(type, out var partObj)) {
-				var part = partObj.ToString();
-				if (string.IsNullOrEmpty(part)) continue;
+		var parts = new[] { "drill_part_upgrade_module", "drill_part_engine", "drill_part_fuel_tank" };
 
-				if (prices.TryGetValue(part.ToUpper(), out var price)) {
+		foreach (var partKey in parts) {
+			if (item.Attributes.Extra.TryGetValue(partKey, out var partObj)) {
+				var partId = partObj.ToString();
+				if (string.IsNullOrEmpty(partId)) continue;
+
+				if (prices.TryGetValue(partId.ToUpper(), out var price)) {
 					var value = price * NetworthConstants.ApplicationWorth.DrillPart;
 					totalValue += value;
 
 					item.Calculation.Add(new NetworthCalculation {
-						Id = part.ToUpper(),
+						Id = partId.ToUpper(),
 						Type = "DRILL_PART",
 						Value = value,
 						Count = 1
@@ -42,6 +40,6 @@ public class DrillPartsHandler : IItemNetworthHandler
 			}
 		}
 
-		return totalValue;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

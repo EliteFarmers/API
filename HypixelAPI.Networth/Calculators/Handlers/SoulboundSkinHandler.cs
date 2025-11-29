@@ -13,13 +13,13 @@ public class SoulboundSkinHandler : IItemNetworthHandler
 		// && !item.nonCosmetic
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("skin", out var skinObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var skin = skinObj.ToString();
-		if (string.IsNullOrEmpty(skin)) return 0;
+		if (string.IsNullOrEmpty(skin)) return new NetworthCalculationData();
 
 		if (prices.TryGetValue(skin, out var price)) {
 			var value = price * NetworthConstants.ApplicationWorth.SoulboundSkins;
@@ -32,10 +32,9 @@ public class SoulboundSkinHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			item.Price += value;
-			return value;
+			return new NetworthCalculationData { Value = value, IsCosmetic = true };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

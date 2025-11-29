@@ -9,7 +9,7 @@ public class GemstonesHandler : IItemNetworthHandler
 		return item.Gems != null && item.Gems.Count > 0 && item.GemstoneSlots != null && item.GemstoneSlots.Count > 0;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		var totalValue = 0.0;
 		item.Calculation ??= new List<NetworthCalculation>();
 
@@ -111,6 +111,6 @@ public class GemstonesHandler : IItemNetworthHandler
 			}
 		}
 
-		return totalValue;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

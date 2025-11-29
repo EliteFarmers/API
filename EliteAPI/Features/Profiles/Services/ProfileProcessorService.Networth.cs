@@ -46,7 +46,7 @@ public partial class ProfileProcessorService
 				category.Items.Add(result);
 
 				breakdown.Networth += result.Price;
-				breakdown.UnsoulboundNetworth += result.UnsoulboundNetworth;
+				breakdown.UnsoulboundNetworth += result.LiquidNetworth;
 			}
 		}
 

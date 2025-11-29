@@ -14,18 +14,18 @@ public class ArtOfPeaceHandlerTests : BaseHandlerTest<ArtOfPeaceHandler>
 				Description = "Applies correctly",
 				Item = new {
 					SkyblockId = "LEATHER_CHESTPLATE",
-					Attributes = new { Extra = new { artOfPeaceApplied = 1 } },
+					Attributes = new { Extra = new { artOfPeaceApplied = 3 } },
 					Price = 100
 				},
 				Prices = new Dictionary<string, double> { { "THE_ART_OF_PEACE", 50000000 } },
 				ShouldApply = true,
-				ExpectedPriceChange = 50000000 * NetworthConstants.ApplicationWorth.ArtOfPeace,
+				ExpectedPriceChange = 3 * 50000000 * NetworthConstants.ApplicationWorth.ArtOfPeace,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
 						Id = "THE_ART_OF_PEACE",
 						Type = "THE_ART_OF_PEACE",
-						Value = 50000000 * NetworthConstants.ApplicationWorth.ArtOfPeace,
-						Count = 1
+						Value = 3 * 50000000 * NetworthConstants.ApplicationWorth.ArtOfPeace,
+						Count = 3
 					}
 				}
 			},

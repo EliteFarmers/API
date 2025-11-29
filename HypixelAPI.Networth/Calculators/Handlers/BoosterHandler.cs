@@ -1,3 +1,4 @@
+using HypixelAPI.Networth.Calculators.Helpers;
 using HypixelAPI.Networth.Constants;
 using HypixelAPI.Networth.Models;
 using System.Collections;
@@ -12,14 +13,15 @@ public class BoosterHandler : IItemNetworthHandler
 		       boosters is IEnumerable;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("boosters", out var boostersObj) ||
 		    boostersObj is not IEnumerable boosters) {
 			return 0;
 		}
 
 		var totalValue = 0.0;
-		item.Calculation ??= new List<NetworthCalculation>();
+		item.Calculation ??= [];
 
 		foreach (var booster in boosters) {
 			var boosterStr = booster.ToString();

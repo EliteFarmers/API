@@ -45,7 +45,7 @@ public class RecombobulatorHandler : IItemNetworthHandler
 		return isRecombobulated && (hasEnchantments || allowsRecomb || isAllowedCategory || isAccessory);
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		var recombobulatorApplicationWorth = item.SkyblockId == "BONE_BOOMERANG"
 			? NetworthConstants.ApplicationWorth.Recombobulator * 0.5
 			: NetworthConstants.ApplicationWorth.Recombobulator;
@@ -61,10 +61,9 @@ public class RecombobulatorHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			item.Price += value;
-			return value;
+			return new NetworthCalculationData { Value = value };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

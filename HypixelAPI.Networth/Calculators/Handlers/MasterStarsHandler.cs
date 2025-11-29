@@ -1,55 +1,58 @@
+using HypixelAPI.Networth.Calculators.Helpers;
 using HypixelAPI.Networth.Constants;
 using HypixelAPI.Networth.Models;
-using System.Text.RegularExpressions;
 
 namespace HypixelAPI.Networth.Calculators.Handlers;
 
 public class MasterStarsHandler : IItemNetworthHandler
 {
-	private int GetUpgradeLevel(NetworthItem item) {
-		var dungeonItemLevel = 0;
-		if (item.Attributes?.Extra != null &&
-		    item.Attributes.Extra.TryGetValue("dungeon_item_level", out var dungeonLevelObj)) {
-			int.TryParse(Regex.Replace(dungeonLevelObj.ToString() ?? "0", @"\D", ""), out dungeonItemLevel);
-		}
-
-		var upgradeLevel = 0;
-		if (item.Attributes?.Extra != null &&
-		    item.Attributes.Extra.TryGetValue("upgrade_level", out var upgradeLevelObj)) {
-			int.TryParse(Regex.Replace(upgradeLevelObj.ToString() ?? "0", @"\D", ""), out upgradeLevel);
-		}
-
-		return Math.Max(dungeonItemLevel, upgradeLevel);
-	}
-
 	public bool Applies(NetworthItem item) {
-		return item.UpgradeCosts != null && GetUpgradeLevel(item) > 5;
+		if (item.Attributes?.Extra == null) return false;
+
+		if (item.Attributes.Extra.TryGetValue("dungeon_item_level", out var level)) {
+			return AttributeHelper.ToInt32(level) > 5;
+		}
+
+		if (item.Attributes.Extra.TryGetValue("upgrade_level", out var upgradeLevel)) {
+			return AttributeHelper.ToInt32(upgradeLevel) > 5;
+		}
+
+		return false;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		var level = GetUpgradeLevel(item);
-		var starsUsed = Math.Min(level - 5, 5);
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Attributes?.Extra == null) return new NetworthCalculationData();
+
+		var level = 0;
+		if (item.Attributes.Extra.TryGetValue("dungeon_item_level", out var levelObj)) {
+			level = AttributeHelper.ToInt32(levelObj);
+		} else if (item.Attributes.Extra.TryGetValue("upgrade_level", out var upgradeLevelObj)) {
+			level = AttributeHelper.ToInt32(upgradeLevelObj);
+		}
+
+		if (level <= 5) return new NetworthCalculationData();
+
+		var masterStars = level - 5;
 		var totalValue = 0.0;
 
 		item.Calculation ??= new List<NetworthCalculation>();
 
-		if (item.UpgradeCosts!.Count <= 5) {
-			for (var i = 0; i < starsUsed; i++) {
-				var starId = NetworthConstants.MasterStars[i];
-				if (prices.TryGetValue(starId, out var price)) {
-					var value = price * NetworthConstants.ApplicationWorth.MasterStar;
-					totalValue += value;
+		for (var i = 1; i <= masterStars; i++) {
+			var starItem = NetworthConstants.MasterStars[i - 1];
+			if (prices.TryGetValue(starItem, out var price)) {
+				var value = price * NetworthConstants.ApplicationWorth.MasterStar;
+				Console.WriteLine($"[DEBUG] MasterStar: Star={starItem}, Price={price}, Worth={NetworthConstants.ApplicationWorth.MasterStar}, Value={value}");
+				totalValue += value;
 
-					item.Calculation.Add(new NetworthCalculation {
-						Id = starId,
-						Type = "MASTER_STAR",
-						Value = value,
-						Count = 1
-					});
-				}
+				item.Calculation.Add(new NetworthCalculation {
+					Id = starItem,
+					Type = "MASTER_STAR",
+					Value = value,
+					Count = 1
+				});
 			}
 		}
 
-		return totalValue;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

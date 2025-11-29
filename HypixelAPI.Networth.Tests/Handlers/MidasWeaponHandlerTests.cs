@@ -45,11 +45,11 @@ public class MidasWeaponHandlerTests : BaseHandlerTest<MidasWeaponHandler>
 				},
 				Prices = new Dictionary<string, double> { { "MIDAS_SWORD_50M", 300000000 } },
 				ShouldApply = true,
-				ExpectedNewBasePrice = 300000000,
+				ExpectedPriceChange = 300000000 - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
-						Id = "MIDAS_SWORD",
-						Type = "MIDAS_SWORD_50M",
+						Id = "MIDAS_SWORD_50M",
+						Type = "MIDAS_WEAPON_MAX",
 						Value = 300000000,
 						Count = 1
 					}
@@ -65,11 +65,11 @@ public class MidasWeaponHandlerTests : BaseHandlerTest<MidasWeaponHandler>
 				},
 				Prices = new Dictionary<string, double> { { "MIDAS_STAFF_100M", 400000000 } },
 				ShouldApply = true,
-				ExpectedNewBasePrice = 400000000,
+				ExpectedPriceChange = 400000000 - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
-						Id = "MIDAS_STAFF",
-						Type = "MIDAS_STAFF_100M",
+						Id = "MIDAS_STAFF_100M",
+						Type = "MIDAS_WEAPON_MAX",
 						Value = 400000000,
 						Count = 1
 					}
@@ -83,13 +83,13 @@ public class MidasWeaponHandlerTests : BaseHandlerTest<MidasWeaponHandler>
 					BasePrice = 100,
 					Price = 100
 				},
-				Prices = new Dictionary<string, double> { { "STARRED_MIDAS_STAFF_500M", 580000000 } },
+				Prices = new Dictionary<string, double> { { "STARRED_MIDAS_STAFF_100M", 580000000 } },
 				ShouldApply = true,
-				ExpectedNewBasePrice = 580000000,
+				ExpectedPriceChange = 580000000 - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
-						Id = "STARRED_MIDAS_STAFF",
-						Type = "STARRED_MIDAS_STAFF_500M",
+						Id = "STARRED_MIDAS_STAFF_100M",
+						Type = "MIDAS_WEAPON_MAX",
 						Value = 580000000,
 						Count = 1
 					}

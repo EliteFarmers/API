@@ -12,8 +12,8 @@ public class RuneHandler : IItemNetworthHandler
 		       !item.SkyblockId.StartsWith("RUNE");
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.Attributes?.Runes == null || item.Attributes.Runes.Count == 0) return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Attributes?.Runes == null || item.Attributes.Runes.Count == 0) return new NetworthCalculationData();
 
 		var (runeType, runeTier) = item.Attributes.Runes.First();
 
@@ -30,10 +30,9 @@ public class RuneHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			item.Price += value;
-			return value;
+			return new NetworthCalculationData { Value = value, IsCosmetic = true };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

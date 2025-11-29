@@ -12,10 +12,10 @@ public class PotatoBooksHandler : IItemNetworthHandler
 		       AttributeHelper.ToInt32(count) > 0;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null ||
 		    !item.Attributes.Extra.TryGetValue("hot_potato_count", out var countObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var potatoBookCount = AttributeHelper.ToInt32(countObj);
@@ -51,6 +51,6 @@ public class PotatoBooksHandler : IItemNetworthHandler
 			}
 		}
 
-		return totalValue;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

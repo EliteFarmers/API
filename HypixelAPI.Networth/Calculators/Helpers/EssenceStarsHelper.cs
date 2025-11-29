@@ -23,12 +23,13 @@ public static class EssenceStarsHelper
 	}
 
 	public static double StarCosts(Dictionary<string, double> prices, List<NetworthCalculation> calculation,
-		List<List<NetworthItemUpgradeCost>> upgrades, string? prestigeItem = null) {
+		List<List<NetworthItemUpgradeCost>> upgrades, string? prestigeItem = null, int? maxStars = null) {
 		var price = 0.0;
 		var star = 0;
 		var datas = new List<NetworthCalculation?>();
 
 		foreach (var upgradeList in upgrades) {
+			if (maxStars.HasValue && star >= maxStars.Value) break;
 			star++;
 			foreach (var cost in upgradeList) {
 				var data = StarCost(prices, cost, star);

@@ -12,9 +12,9 @@ public class PolarvoidBookHandler : IItemNetworthHandler
 		       AttributeHelper.ToInt32(count) > 0;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("polarvoid", out var countObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var count = AttributeHelper.ToInt32(countObj);
@@ -30,9 +30,9 @@ public class PolarvoidBookHandler : IItemNetworthHandler
 				Count = count
 			});
 
-			return value;
+			return new NetworthCalculationData { Value = value };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

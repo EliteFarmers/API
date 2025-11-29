@@ -24,14 +24,14 @@ public class EnchantedBookHandlerTests : BaseHandlerTest<EnchantedBookHandler>
                 },
                 Prices = new Dictionary<string, double> { { "ENCHANTMENT_ULTIMATE_LEGION_7", 50000000 } },
                 ShouldApply = true,
-                ExpectedNewBasePrice = 50000000,
+                ExpectedPriceChange = 50000000 * NetworthConstants.ApplicationWorth.Enchantments,
                 ExpectedCalculation = new List<NetworthCalculation>
                 {
                     new()
                     {
-                        Id = "ULTIMATE_LEGION_7",
-                        Type = "ENCHANT",
-                        Value = 50000000,
+                        Id = "ENCHANTMENT_ULTIMATE_LEGION_7",
+                        Type = "ENCHANTED_BOOK_ENCHANT",
+                        Value = 50000000 * NetworthConstants.ApplicationWorth.Enchantments,
                         Count = 1
                     }
                 }
@@ -48,20 +48,20 @@ public class EnchantedBookHandlerTests : BaseHandlerTest<EnchantedBookHandler>
                 },
                 Prices = new Dictionary<string, double> { { "ENCHANTMENT_ULTIMATE_LEGION_7", 50000000 }, { "ENCHANTMENT_SMITE_7", 4000000 } },
                 ShouldApply = true,
-                ExpectedNewBasePrice = 50000000 * NetworthConstants.ApplicationWorth.Enchantments + 4000000 * NetworthConstants.ApplicationWorth.Enchantments,
+                ExpectedPriceChange = 50000000 * NetworthConstants.ApplicationWorth.Enchantments + 4000000 * NetworthConstants.ApplicationWorth.Enchantments,
                 ExpectedCalculation = new List<NetworthCalculation>
                 {
                     new()
                     {
-                        Id = "ULTIMATE_LEGION_7",
-                        Type = "ENCHANT",
+                        Id = "ENCHANTMENT_ULTIMATE_LEGION_7",
+                        Type = "ENCHANTED_BOOK_ENCHANT",
                         Value = 50000000 * NetworthConstants.ApplicationWorth.Enchantments,
                         Count = 1
                     },
                     new()
                     {
-                        Id = "SMITE_7",
-                        Type = "ENCHANT",
+                        Id = "ENCHANTMENT_SMITE_7",
+                        Type = "ENCHANTED_BOOK_ENCHANT",
                         Value = 4000000 * NetworthConstants.ApplicationWorth.Enchantments,
                         Count = 1
                     }
@@ -79,7 +79,7 @@ public class EnchantedBookHandlerTests : BaseHandlerTest<EnchantedBookHandler>
                 },
                 Prices = new Dictionary<string, double>(),
                 ShouldApply = true,
-                ExpectedNewBasePrice = 0,
+                ExpectedPriceChange = 0,
                 ExpectedCalculation = new List<NetworthCalculation>()
             },
             new()

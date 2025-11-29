@@ -41,7 +41,7 @@ public class PickonimbusHandlerTests : BaseHandlerTest<PickonimbusHandler>
 				ShouldApply = false
 			},
 			new() {
-				Description = "Does not apply (durability 5000)",
+				Description = "Applies (durability 5000)",
 				Item = new {
 					SkyblockId = "PICKONIMBUS",
 					Attributes = new { Extra = new { pickonimbus_durability = 5000 } },
@@ -49,7 +49,16 @@ public class PickonimbusHandlerTests : BaseHandlerTest<PickonimbusHandler>
 					Price = 50000
 				},
 				Prices = new Dictionary<string, double>(),
-				ShouldApply = false
+				ShouldApply = true,
+				ExpectedPriceChange = 0,
+				ExpectedCalculation = new List<NetworthCalculation> {
+					new() {
+						Id = "PICKONIMBUS_DURABLITY",
+						Type = "PICKONIMBUS",
+						Value = 0,
+						Count = 5000
+					}
+				}
 			}
 		};
 

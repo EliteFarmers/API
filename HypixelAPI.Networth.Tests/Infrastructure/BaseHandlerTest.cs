@@ -33,6 +33,9 @@ public abstract class BaseHandlerTest<THandler> where THandler : IItemNetworthHa
 		var applies = Handler.Applies(item);
 
 		// Assert - Applies
+		if (applies != testCase.ShouldApply) {
+			Console.WriteLine($"[FAIL] Applies mismatch. Test: '{testCase.Description}'. Expected: {testCase.ShouldApply}, Actual: {applies}");
+		}
 		Assert.True(applies == testCase.ShouldApply,
 			$"Test '{testCase.Description}': Expected Applies to be {testCase.ShouldApply}, but was {applies}");
 
@@ -41,13 +44,18 @@ public abstract class BaseHandlerTest<THandler> where THandler : IItemNetworthHa
 
 			// Assert - Price Change
 			if (testCase.ExpectedPriceChange.HasValue) {
-				// Check the return value
-				Assert.True(Math.Abs(result - testCase.ExpectedPriceChange.Value) < 0.001,
-					$"Test '{testCase.Description}': Expected result {testCase.ExpectedPriceChange}, but got {result}");
+				if (Math.Abs(result.Value - testCase.ExpectedPriceChange.Value) >= 0.001) {
+					Console.WriteLine($"[FAIL] PriceChange mismatch. Test: '{testCase.Description}'. Expected: {testCase.ExpectedPriceChange}, Actual: {result.Value}");
+				}
+				Assert.True(Math.Abs(result.Value - testCase.ExpectedPriceChange.Value) < 0.001,
+					$"Test '{testCase.Description}': Expected result {testCase.ExpectedPriceChange}, but got {result.Value}");
 			}
 
 			// Assert - New Base Price
 			if (testCase.ExpectedNewBasePrice.HasValue) {
+				if (Math.Abs(item.BasePrice - testCase.ExpectedNewBasePrice.Value) >= 0.001) {
+					Console.WriteLine($"[FAIL] BasePrice mismatch. Test: '{testCase.Description}'. Expected: {testCase.ExpectedNewBasePrice}, Actual: {item.BasePrice}");
+				}
 				Assert.True(Math.Abs(item.BasePrice - testCase.ExpectedNewBasePrice.Value) < 0.001,
 					$"Test '{testCase.Description}': Expected BasePrice {testCase.ExpectedNewBasePrice}, but got {item.BasePrice}");
 			}
@@ -69,6 +77,9 @@ public abstract class BaseHandlerTest<THandler> where THandler : IItemNetworthHa
 					Assert.Equal(expected.Id, actual.Id);
 					Assert.Equal(expected.Type, actual.Type);
 					Assert.Equal(expected.Count, actual.Count);
+					if (Math.Abs(expected.Value - actual.Value) >= 0.001) {
+						Console.WriteLine($"[FAIL] Calculation Value mismatch. Test: '{testCase.Description}'. Calc[{i}]. Expected: {expected.Value}, Actual: {actual.Value}");
+					}
 					Assert.True(Math.Abs(expected.Value - actual.Value) < 0.001,
 						$"Test '{testCase.Description}': Calc[{i}] Value mismatch. Expected {expected.Value}, got {actual.Value}");
 				}

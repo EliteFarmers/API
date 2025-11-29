@@ -20,7 +20,7 @@ public class AvariceCoinsCollectedHandlerTests : BaseHandlerTest<AvariceCoinsCol
 				Prices = new Dictionary<string, double>
 					{ { "CROWN_OF_AVARICE", 250_000_000 }, { "CROWN_OF_AVARICE_1B", 4_500_000_000 } },
 				ShouldApply = true,
-				ExpectedNewBasePrice = 2_375_000_000,
+				ExpectedPriceChange = 2_375_000_000 - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
 						Id = "CROWN_OF_AVARICE",
@@ -41,7 +41,7 @@ public class AvariceCoinsCollectedHandlerTests : BaseHandlerTest<AvariceCoinsCol
 				Prices = new Dictionary<string, double>
 					{ { "CROWN_OF_AVARICE", 250_000_000 }, { "CROWN_OF_AVARICE_1B", 4_500_000_000 } },
 				ShouldApply = true,
-				ExpectedNewBasePrice = 4_500_000_000,
+				ExpectedPriceChange = 4_500_000_000 - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
 						Id = "CROWN_OF_AVARICE",
@@ -62,7 +62,7 @@ public class AvariceCoinsCollectedHandlerTests : BaseHandlerTest<AvariceCoinsCol
 				Prices = new Dictionary<string, double>
 					{ { "CROWN_OF_AVARICE", 250_000_000 }, { "CROWN_OF_AVARICE_1B", 4_500_000_000 } },
 				ShouldApply = true,
-				ExpectedNewBasePrice = 4_500_000_000,
+				ExpectedPriceChange = 4_500_000_000 - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
 						Id = "CROWN_OF_AVARICE",

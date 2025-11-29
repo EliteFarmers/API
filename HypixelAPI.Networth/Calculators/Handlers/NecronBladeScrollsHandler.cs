@@ -1,29 +1,43 @@
 using HypixelAPI.Networth.Constants;
 using HypixelAPI.Networth.Models;
+using System.Text.Json;
+using System.Linq;
 
 namespace HypixelAPI.Networth.Calculators.Handlers;
 
 public class NecronBladeScrollsHandler : IItemNetworthHandler
 {
 	public bool Applies(NetworthItem item) {
-		return item.Attributes?.AbilityScrolls != null && item.Attributes.AbilityScrolls.Count > 0;
+		return item.Attributes?.Extra != null && item.Attributes.Extra.ContainsKey("ability_scroll");
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.Attributes?.AbilityScrolls == null) return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("ability_scroll", out var scrollsObj)) {
+			return new NetworthCalculationData();
+		}
 
 		var totalValue = 0.0;
 		item.Calculation ??= new List<NetworthCalculation>();
 
-		foreach (var scroll in item.Attributes.AbilityScrolls) {
-			if (string.IsNullOrEmpty(scroll)) continue;
+		var scrolls = new List<string>();
+		if (scrollsObj is JsonElement { ValueKind: JsonValueKind.Array } scrollsArray) {
+			foreach (var scrollElement in scrollsArray.EnumerateArray()) {
+				var s = scrollElement.GetString();
+				if (!string.IsNullOrEmpty(s)) scrolls.Add(s);
+			}
+		} else if (scrollsObj is IEnumerable<string> strEnum) {
+			scrolls.AddRange(strEnum);
+		} else if (scrollsObj is IEnumerable<object> objEnum) {
+			scrolls.AddRange(objEnum.Select(o => o.ToString()).Where(s => !string.IsNullOrEmpty(s))!);
+		}
 
+		foreach (var scroll in scrolls) {
 			if (prices.TryGetValue(scroll.ToUpper(), out var price)) {
 				var value = price * NetworthConstants.ApplicationWorth.NecronBladeScroll;
 				totalValue += value;
 
 				item.Calculation.Add(new NetworthCalculation {
-					Id = scroll,
+					Id = scroll.ToUpper(),
 					Type = "NECRON_SCROLL",
 					Value = value,
 					Count = 1
@@ -31,6 +45,6 @@ public class NecronBladeScrollsHandler : IItemNetworthHandler
 			}
 		}
 
-		return totalValue;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

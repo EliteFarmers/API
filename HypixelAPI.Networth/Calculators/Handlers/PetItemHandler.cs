@@ -9,8 +9,8 @@ public class PetItemHandler : IItemNetworthHandler
 		return item.PetInfo != null && !string.IsNullOrEmpty(item.PetInfo.HeldItem);
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.PetInfo?.HeldItem == null) return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.PetInfo?.HeldItem == null) return new NetworthCalculationData();
 
 		var heldItem = item.PetInfo.HeldItem;
 
@@ -25,10 +25,9 @@ public class PetItemHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			item.Price += value;
-			return value;
+			return new NetworthCalculationData { Value = value };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

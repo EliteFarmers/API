@@ -1,50 +1,46 @@
+using HypixelAPI.Networth.Calculators.Helpers;
+using HypixelAPI.Networth.Constants;
 using HypixelAPI.Networth.Models;
 
 namespace HypixelAPI.Networth.Calculators.Handlers;
 
 public class MidasWeaponHandler : IItemNetworthHandler
 {
-	private static readonly Dictionary<string, (double MaxBid, string Type)> MidasSwords = new() {
-		{ "MIDAS_SWORD", (50_000_000, "MIDAS_SWORD_50M") },
-		{ "STARRED_MIDAS_SWORD", (250_000_000, "STARRED_MIDAS_SWORD_250M") },
-		{ "MIDAS_STAFF", (100_000_000, "MIDAS_STAFF_100M") },
-		{ "STARRED_MIDAS_STAFF", (500_000_000, "STARRED_MIDAS_STAFF_500M") }
-	};
-
 	public bool Applies(NetworthItem item) {
-		return item.SkyblockId != null && MidasSwords.ContainsKey(item.SkyblockId);
+		return item.SkyblockId != null && (item.SkyblockId == "MIDAS_SWORD" || item.SkyblockId == "MIDAS_STAFF" || item.SkyblockId == "STARRED_MIDAS_SWORD" || item.SkyblockId == "STARRED_MIDAS_STAFF");
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.SkyblockId == null || !MidasSwords.TryGetValue(item.SkyblockId, out var midasData)) {
-			return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("winning_bid", out var bidObj)) {
+			return new NetworthCalculationData();
 		}
 
-		var winningBid = 0.0;
-		if (item.Attributes?.Extra != null && item.Attributes.Extra.TryGetValue("winning_bid", out var bidObj)) {
-			winningBid = Convert.ToDouble(bidObj);
+		var winningBid = Convert.ToDouble(bidObj);
+		if (item.Attributes.Extra.TryGetValue("additional_coins", out var additionalCoinsObj)) {
+			winningBid += Convert.ToDouble(additionalCoinsObj);
 		}
+		var maxBid = item.SkyblockId == "MIDAS_SWORD" ? 50_000_000 : 100_000_000;
+		Console.WriteLine($"[DEBUG] Midas: Id={item.SkyblockId}, Bid={winningBid}, Max={maxBid}, Additional={item.Attributes.Extra.ContainsKey("additional_coins")}");
 
-		var additionalCoins = 0.0;
-		if (item.Attributes?.Extra != null && item.Attributes.Extra.TryGetValue("additional_coins", out var coinsObj)) {
-			additionalCoins = Convert.ToDouble(coinsObj);
-		}
+		if (winningBid >= maxBid) {
+			var maxPriceId = $"{item.SkyblockId}_50M"; // or 100M
+			if (item.SkyblockId == "MIDAS_STAFF" || item.SkyblockId == "STARRED_MIDAS_STAFF") maxPriceId = $"{item.SkyblockId}_100M";
 
-		if (winningBid + additionalCoins >= midasData.MaxBid) {
-			if (prices.TryGetValue(midasData.Type, out var price)) {
+			if (prices.TryGetValue(maxPriceId, out var price)) {
 				item.Calculation ??= new List<NetworthCalculation>();
 				item.Calculation.Add(new NetworthCalculation {
-					Id = item.SkyblockId,
-					Type = midasData.Type,
+					Id = maxPriceId,
+					Type = "MIDAS_WEAPON_MAX",
 					Value = price,
 					Count = 1
 				});
 				
+				var valueDiff = price - item.BasePrice;
 				item.BasePrice = price;
-				return 0;
+				return new NetworthCalculationData { Value = valueDiff };
 			}
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

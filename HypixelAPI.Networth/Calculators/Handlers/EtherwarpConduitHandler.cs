@@ -1,3 +1,4 @@
+using HypixelAPI.Networth.Calculators.Helpers;
 using HypixelAPI.Networth.Constants;
 using HypixelAPI.Networth.Models;
 
@@ -6,19 +7,17 @@ namespace HypixelAPI.Networth.Calculators.Handlers;
 public class EtherwarpConduitHandler : IItemNetworthHandler
 {
 	public bool Applies(NetworthItem item) {
-		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("ethermerge", out var merge))
-			return false;
-
-		var mergeStr = merge.ToString();
-		if (string.IsNullOrEmpty(mergeStr)) return false;
-
-		if (bool.TryParse(mergeStr, out var b)) return b;
-		if (int.TryParse(mergeStr, out var i)) return i != 0;
-
-		return true;
+		return item.Attributes?.Extra != null &&
+		       item.Attributes.Extra.TryGetValue("ethermerge", out var ethermerge) &&
+		       AttributeHelper.ToInt32(ethermerge) > 0;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Attributes?.Extra == null ||
+		    !item.Attributes.Extra.TryGetValue("ethermerge", out var ethermergeObj)) {
+			return new NetworthCalculationData();
+		}
+
 		if (prices.TryGetValue("ETHERWARP_CONDUIT", out var price)) {
 			var value = price * NetworthConstants.ApplicationWorth.Etherwarp;
 
@@ -30,9 +29,9 @@ public class EtherwarpConduitHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			return value;
+			return new NetworthCalculationData { Value = value };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

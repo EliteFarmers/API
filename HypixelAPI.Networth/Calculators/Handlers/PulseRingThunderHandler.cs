@@ -15,9 +15,9 @@ public class PulseRingThunderHandler : IItemNetworthHandler
 		       AttributeHelper.ToInt32(charge) > 0;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("thunder_charge", out var chargeObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var charge = AttributeHelper.ToInt32(chargeObj);
@@ -34,9 +34,9 @@ public class PulseRingThunderHandler : IItemNetworthHandler
 				Count = (int)thunderUpgrades
 			});
 
-			return value;
+			return new NetworthCalculationData { Value = value };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

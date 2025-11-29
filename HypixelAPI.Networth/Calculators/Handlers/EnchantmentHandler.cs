@@ -20,10 +20,10 @@ public class EnchantmentHandler : IItemNetworthHandler
 		return item.SkyblockId != "ENCHANTED_BOOK" && item.Enchantments is { Count: > 0 };
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		double totalValue = 0;
 
-		if (item.Enchantments == null) return 0;
+		if (item.Enchantments == null) return new NetworthCalculationData();
 
 		foreach (var (name, level) in item.Enchantments) {
 			var upperName = name.ToUpper();
@@ -103,10 +103,6 @@ public class EnchantmentHandler : IItemNetworthHandler
 			}
 		}
 
-		if (totalValue > 0) {
-			item.Price += totalValue;
-		}
-
-		return totalValue;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

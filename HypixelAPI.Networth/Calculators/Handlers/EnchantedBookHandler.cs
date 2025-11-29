@@ -1,57 +1,39 @@
 using HypixelAPI.Networth.Constants;
 using HypixelAPI.Networth.Models;
-using System.Globalization;
 
 namespace HypixelAPI.Networth.Calculators.Handlers;
 
 public class EnchantedBookHandler : IItemNetworthHandler
 {
 	public bool Applies(NetworthItem item) {
-		return item is { SkyblockId: "ENCHANTED_BOOK", Enchantments.Count: > 0 };
+		return item.SkyblockId == "ENCHANTED_BOOK" && item.Enchantments != null &&
+		       item.Enchantments.Count > 0;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.Enchantments == null) return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.Enchantments == null) return new NetworthCalculationData();
 
-		var isSingleEnchantBook = item.Enchantments.Count == 1;
-		var enchantmentPrice = 0.0;
-
+		var totalValue = 0.0;
 		item.Calculation ??= new List<NetworthCalculation>();
 
 		foreach (var enchant in item.Enchantments) {
-			var name = enchant.Key;
-			var value = enchant.Value;
-			var priceKey = $"ENCHANTMENT_{name.ToUpper()}_{value}";
+			var id = enchant.Key.ToUpper();
+			var level = enchant.Value;
 
-			if (prices.TryGetValue(priceKey, out var price)) {
-				var finalPrice = price * (isSingleEnchantBook ? 1 : NetworthConstants.ApplicationWorth.Enchantments);
+			var enchantId = $"ENCHANTMENT_{id}_{level}";
+			if (prices.TryGetValue(enchantId, out var price)) {
+				var value = price * NetworthConstants.ApplicationWorth.Enchantments;
+				totalValue += value;
 
 				item.Calculation.Add(new NetworthCalculation {
-					Id = $"{name}_{value}".ToUpper(),
-					Type = "ENCHANT",
-					Value = finalPrice,
+					Id = enchantId,
+					Type = "ENCHANTED_BOOK_ENCHANT",
+					Value = value,
 					Count = 1
 				});
-
-				enchantmentPrice += finalPrice;
-
-				if (isSingleEnchantBook) {
-					if (NetworthConstants.SpecialEnchantmentNames.TryGetValue(name.ToLower(), out var specialName)) {
-						item.Name = specialName;
-					}
-					else {
-						item.Name = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name.Replace("_", " ").ToLower());
-					}
-				}
 			}
 		}
 
-		if (enchantmentPrice > 0) {
-			item.BasePrice = enchantmentPrice;
-			item.Price += enchantmentPrice;
-			return enchantmentPrice;
-		}
-
-		return 0;
+		return new NetworthCalculationData { Value = totalValue };
 	}
 }

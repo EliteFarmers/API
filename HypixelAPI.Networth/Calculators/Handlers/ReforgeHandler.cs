@@ -12,13 +12,13 @@ public class ReforgeHandler : IItemNetworthHandler
 		       item.SkyblockId != null;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null || !item.Attributes.Extra.TryGetValue("modifier", out var modifierObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var modifier = modifierObj.ToString();
-		if (string.IsNullOrEmpty(modifier)) return 0;
+		if (string.IsNullOrEmpty(modifier)) return new NetworthCalculationData();
 
 		if (NetworthConstants.Reforges.TryGetValue(modifier, out var reforgeItem)) {
 			if (prices.TryGetValue(reforgeItem, out var price)) {
@@ -32,11 +32,10 @@ public class ReforgeHandler : IItemNetworthHandler
 					Count = 1
 				});
 
-				item.Price += value;
-				return value;
+				return new NetworthCalculationData { Value = value };
 			}
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

@@ -12,8 +12,8 @@ public class SoulboundPetSkinHandler : IItemNetworthHandler
 		// && !item.nonCosmetic
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
-		if (item.PetInfo?.Skin == null) return 0;
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
+		if (item.PetInfo?.Skin == null) return new NetworthCalculationData();
 
 		var skin = item.PetInfo.Skin;
 		var priceKey = $"PET_SKIN_{skin}";
@@ -29,10 +29,9 @@ public class SoulboundPetSkinHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			item.Price += value;
-			return value;
+			return new NetworthCalculationData { Value = value, IsCosmetic = true };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

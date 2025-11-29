@@ -20,7 +20,7 @@ public class ShensAuctionHandlerTests : BaseHandlerTest<ShensAuctionHandler>
 				},
 				Prices = new Dictionary<string, double>(),
 				ShouldApply = true,
-				ExpectedNewBasePrice = 2500000000 * NetworthConstants.ApplicationWorth.ShensAuctionPrice,
+				ExpectedPriceChange = 2500000000 * NetworthConstants.ApplicationWorth.ShensAuctionPrice - 100,
 				ExpectedCalculation = new List<NetworthCalculation> {
 					new() {
 						Id = "CLOVER_HELMET",

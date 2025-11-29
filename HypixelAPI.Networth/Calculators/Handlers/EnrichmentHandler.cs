@@ -11,14 +11,14 @@ public class EnrichmentHandler : IItemNetworthHandler
 		       !string.IsNullOrEmpty(enrichment.ToString());
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null ||
 		    !item.Attributes.Extra.TryGetValue("talisman_enrichment", out var enrichmentObj)) {
-			return 0;
+			return new NetworthCalculationData();
 		}
 
 		var enrichment = enrichmentObj.ToString();
-		if (string.IsNullOrEmpty(enrichment)) return 0;
+		if (string.IsNullOrEmpty(enrichment)) return new NetworthCalculationData();
 
 		// Calculate min price of all enrichments
 		var minEnrichmentPrice = double.MaxValue;
@@ -39,9 +39,9 @@ public class EnrichmentHandler : IItemNetworthHandler
 				Count = 1
 			});
 
-			return value;
+			return new NetworthCalculationData { Value = value };
 		}
 
-		return 0;
+		return new NetworthCalculationData();
 	}
 }

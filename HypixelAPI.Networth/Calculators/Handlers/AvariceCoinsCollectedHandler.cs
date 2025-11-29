@@ -14,7 +14,7 @@ public class AvariceCoinsCollectedHandler : IItemNetworthHandler
 		return false;
 	}
 
-	public double Calculate(NetworthItem item, Dictionary<string, double> prices) {
+	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		var zeroPrice = prices.GetValueOrDefault("CROWN_OF_AVARICE", 0);
 		var billionPrice = prices.GetValueOrDefault("CROWN_OF_AVARICE_1B", 0);
 
@@ -35,8 +35,9 @@ public class AvariceCoinsCollectedHandler : IItemNetworthHandler
 			Count = (int)cappedCoins
 		});
 
+		var valueDiff = newPrice - item.BasePrice;
 		item.BasePrice = newPrice;
 
-		return 0;
+		return new NetworthCalculationData { Value = valueDiff };
 	}
 }

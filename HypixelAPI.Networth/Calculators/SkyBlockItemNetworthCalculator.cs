@@ -46,7 +46,6 @@ public class SkyBlockItemNetworthCalculator
 		new RuneHandler(),
 		new SoulboundPetSkinHandler(),
 		new SoulboundSkinHandler(),
-
 		new EnchantmentHandler(),
 		new ReforgeHandler()
 	}) { }
@@ -55,8 +54,6 @@ public class SkyBlockItemNetworthCalculator
 		var result = new NetworthResult { Item = item };
 
 		// Base price logic
-		// Base price logic - simple lookup by SkyblockId
-		// For now, simple lookup
 		if (item.SkyblockId != null && prices.TryGetValue(item.SkyblockId, out var price)) {
 			result.BasePrice = price;
 			result.Price = price;
@@ -70,18 +67,27 @@ public class SkyBlockItemNetworthCalculator
 		item.Price = result.Price;
 		item.Calculation ??= new List<NetworthCalculation>();
 
+		double totalHandlerValue = 0;
+		double cosmeticValue = 0;
+		double totalHandlerSoulboundValue = 0;
+
 		// Apply handlers
-		// Note: Handlers modify item.Price directly and return the value they added
-		// The return value is currently not used but could be for validation/logging
 		foreach (var handler in _handlers) {
 			if (handler.Applies(item)) {
-				var value = handler.Calculate(item, prices);
-				// item.Price is updated inside the handler
+				var data = handler.Calculate(item, prices);
+				totalHandlerValue += data.Value;
+				totalHandlerSoulboundValue += data.SoulboundValue;
+				if (data.IsCosmetic) {
+					cosmeticValue += data.Value;
+				}
 			}
 		}
 
+		item.Price += totalHandlerValue;
+
 		// Recursive inventory calculation
 		if (item.Attributes?.Inventory?.Count > 0) {
+			// Console.WriteLine($"[DEBUG] Calculator: Processing inventory with {item.Attributes.Inventory.Count} items");
 			double inventoryValue = 0;
 			foreach (var subItem in item.Attributes.Inventory.Values) {
 				if (subItem is null) continue;
@@ -105,6 +111,20 @@ public class SkyBlockItemNetworthCalculator
 		result.BasePrice = item.BasePrice;
 		result.Networth = result.Price * item.Count;
 		result.Calculation = item.Calculation;
+
+		// Calculate modes
+		result.CosmeticValue = cosmeticValue;
+		
+		// If the item is soulbound, the entire value is soulbound
+		if (item.IsSoulbound) {
+			result.SoulboundValue = result.Networth;
+		} else {
+			result.SoulboundValue = totalHandlerSoulboundValue;
+		}
+
+		result.LiquidNetworth = result.Networth - result.SoulboundValue;
+		result.NonCosmeticNetworth = result.Networth - result.CosmeticValue;
+		result.LiquidFunctionalNetworth = result.Networth - result.SoulboundValue - result.CosmeticValue;
 
 		return result;
 	}
