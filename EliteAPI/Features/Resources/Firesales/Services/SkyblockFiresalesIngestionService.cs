@@ -40,12 +40,13 @@ public class SkyblockFiresalesIngestionService(
 				var newSale = new SkyblockFiresale {
 					StartsAt = start,
 					EndsAt = DateTimeOffset.FromUnixTimeMilliseconds(items.First().End).ToUnixTimeSeconds(),
-					Items = items.Select(i => new SkyblockFiresaleItem {
-						ItemId = i.ItemId,
-						Amount = i.Amount,
-						Price = i.Price,
-						StartsAt = DateTimeOffset.FromUnixTimeMilliseconds(i.Start).ToUnixTimeSeconds(),
-						EndsAt = DateTimeOffset.FromUnixTimeMilliseconds(i.End).ToUnixTimeSeconds()
+					Items = items.Select((item, i) => new SkyblockFiresaleItem {
+						SlotId = i,
+						ItemId = item.ItemId,
+						Amount = item.Amount,
+						Price = item.Price,
+						StartsAt = DateTimeOffset.FromUnixTimeMilliseconds(item.Start).ToUnixTimeSeconds(),
+						EndsAt = DateTimeOffset.FromUnixTimeMilliseconds(item.End).ToUnixTimeSeconds()
 					}).ToList()
 				};
 				newCount++;
@@ -54,8 +55,9 @@ public class SkyblockFiresalesIngestionService(
 				continue;
 			}
 
-			foreach (var item in items) {
-				var existingItem = existingSale.Items.FirstOrDefault(i => i.ItemId == item.ItemId);
+			for (var index = 0; index < items.Count; index++) {
+				var item = items[index];
+				var existingItem = existingSale.Items.FirstOrDefault(i => i.SlotId == index);
 				if (existingItem is not null) {
 					existingItem.Amount = item.Amount;
 					existingItem.Price = item.Price;

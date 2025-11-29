@@ -16,6 +16,7 @@ public class SkyblockFiresale
 public class SkyblockFiresaleItem
 {
 	public Guid FiresaleId { get; set; }
+	public int SlotId { get; set; }
 	public required string ItemId { get; set; }
 	public required int Amount { get; set; }
 	public required int Price { get; set; }
@@ -40,6 +41,6 @@ public class SkyblockFiresaleConfiguration : IEntityTypeConfiguration<SkyblockFi
 public class SkyblockFiresaleItemConfiguration : IEntityTypeConfiguration<SkyblockFiresaleItem>
 {
 	public void Configure(EntityTypeBuilder<SkyblockFiresaleItem> builder) {
-		builder.HasKey(x => new { x.FiresaleId, x.ItemId });
+		builder.HasKey(x => new { x.FiresaleId, x.SlotId });
 	}
 }
