@@ -24,6 +24,7 @@ public class SkyblockFiresaleDto
 public class SkyblockFiresaleItemDto
 {
 	public required string ItemId { get; set; }
+	public int SlotId { get; set; }
 	public int Amount { get; set; }
 
 	/// <summary>
