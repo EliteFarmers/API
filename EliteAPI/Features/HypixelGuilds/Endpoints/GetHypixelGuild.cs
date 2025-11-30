@@ -33,8 +33,8 @@ internal sealed class GetHypixelGuildEndpoint(DataContext context) : Endpoint<Ge
 	}
 
 	public override async Task HandleAsync(GetHypixelGuildRequest request, CancellationToken c) {
-		var twoWeeksAgo = DateTimeOffset.UtcNow.AddDays(-14);
-		var date = new DateOnly(twoWeeksAgo.Year, twoWeeksAgo.Month, twoWeeksAgo.Day);
+		var oneWeekAgo = DateTimeOffset.UtcNow.AddDays(-7);
+		var date = new DateOnly(oneWeekAgo.Year, oneWeekAgo.Month, oneWeekAgo.Day);
 		
 		var guild = await context.HypixelGuilds
 			.Include(g => g.Members.Where(m => m.Active))
