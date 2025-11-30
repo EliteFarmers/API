@@ -16,6 +16,7 @@ using EliteAPI.Models.Entities.Monetization;
 using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -24,9 +25,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251129191615_AddFiresaleItemSlot")]
+    partial class AddFiresaleItemSlot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,7 +73,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.ToTable("Badges", (string)null);
+                    b.ToTable("Badges");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Account.Models.EliteAccount", b =>
@@ -109,7 +112,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("UserSettingsId");
 
-                    b.ToTable("Accounts", (string)null);
+                    b.ToTable("Accounts");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Account.Models.MinecraftAccount", b =>
@@ -162,7 +165,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex(new[] { "Name" }, "idx_minecraft_accounts_name");
 
-                    b.ToTable("MinecraftAccounts", (string)null);
+                    b.ToTable("MinecraftAccounts");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Account.Models.UserBadge", b =>
@@ -196,7 +199,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("MinecraftAccountId");
 
-                    b.ToTable("UserBadges", (string)null);
+                    b.ToTable("UserBadges");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Account.Models.UserSettings", b =>
@@ -246,7 +249,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("WeightStyleId");
 
-                    b.ToTable("UserSettings", (string)null);
+                    b.ToTable("UserSettings");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Announcements.Models.Announcement", b =>
@@ -288,7 +291,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Announcements", (string)null);
+                    b.ToTable("Announcements");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Announcements.Models.DismissedAnnouncement", b =>
@@ -303,7 +306,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("DismissedAnnouncements", (string)null);
+                    b.ToTable("DismissedAnnouncements");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Auth.Models.ApiUser", b =>
@@ -421,7 +424,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("UserId", "Token");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
@@ -446,7 +449,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Confirmations", (string)null);
+                    b.ToTable("Confirmations");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.UserConfirmation", b =>
@@ -464,7 +467,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ConfirmationId");
 
-                    b.ToTable("UserConfirmations", (string)null);
+                    b.ToTable("UserConfirmations");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuild", b =>
@@ -525,7 +528,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("NameLower");
 
-                    b.ToTable("HypixelGuilds", (string)null);
+                    b.ToTable("HypixelGuilds");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildLeaderboardResult", b =>
@@ -603,7 +606,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("GuildId", "PlayerUuid")
                         .IsUnique();
 
-                    b.ToTable("HypixelGuildMembers", (string)null);
+                    b.ToTable("HypixelGuildMembers");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMemberExp", b =>
@@ -624,7 +627,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("GuildMemberId");
 
-                    b.ToTable("HypixelGuildMemberExps", (string)null);
+                    b.ToTable("HypixelGuildMemberExps");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildStats", b =>
@@ -659,7 +662,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("RecordedAt");
 
-                    b.ToTable("HypixelGuildStats", (string)null);
+                    b.ToTable("HypixelGuildStats");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Services.GuildIdResult", b =>
@@ -726,7 +729,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("Path");
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.Leaderboard", b =>
@@ -786,7 +789,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Leaderboards", (string)null);
+                    b.ToTable("Leaderboards");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardEntry", b =>
@@ -849,7 +852,7 @@ namespace EliteAPI.Data.Migrations
                         .IsDescending(false, false, false, true, true)
                         .HasDatabaseName("IX_LeaderboardEntries_Ranks_Subquery");
 
-                    b.ToTable("LeaderboardEntries", (string)null);
+                    b.ToTable("LeaderboardEntries");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardRanksQueryResult", b =>
@@ -914,7 +917,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex(new[] { "LeaderboardId", "SnapshotTimestamp", "IntervalIdentifier" }, "IX_LeaderboardSnapshots_Definition_Timestamp_Interval")
                         .IsUnique();
 
-                    b.ToTable("LeaderboardSnapshots", (string)null);
+                    b.ToTable("LeaderboardSnapshots");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Leaderboards.Models.LeaderboardSnapshotEntry", b =>
@@ -994,7 +997,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("ProfileMemberId");
 
-                    b.ToTable("ProfileMemberMetadata", (string)null);
+                    b.ToTable("ProfileMemberMetadata");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Monetization.Models.Entitlement", b =>
@@ -1029,7 +1032,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Entitlements", (string)null);
+                    b.ToTable("Entitlements");
 
                     b.HasDiscriminator<int>("Target").HasValue(0);
 
@@ -1076,7 +1079,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductAccesses", (string)null);
+                    b.ToTable("ProductAccesses");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Monetization.Models.ShopOrder", b =>
@@ -1121,7 +1124,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("RecipientId");
 
-                    b.ToTable("ShopOrders", (string)null);
+                    b.ToTable("ShopOrders");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Monetization.Models.ShopOrderItem", b =>
@@ -1148,7 +1151,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ShopOrderItems", (string)null);
+                    b.ToTable("ShopOrderItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Profiles.Models.GameModeHistory", b =>
@@ -1178,7 +1181,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("GameModeHistories", (string)null);
+                    b.ToTable("GameModeHistories");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelInventory", b =>
@@ -1217,7 +1220,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("HypixelInventory", (string)null);
+                    b.ToTable("HypixelInventory");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Profiles.Models.HypixelItem", b =>
@@ -1286,7 +1289,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("SkyblockId");
 
-                    b.ToTable("HypixelItems", (string)null);
+                    b.ToTable("HypixelItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.Auction", b =>
@@ -1372,7 +1375,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("SkyblockId", "VariantKey", "SoldAt");
 
-                    b.ToTable("EndedAuctions", (string)null);
+                    b.ToTable("EndedAuctions");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionBinPrice", b =>
@@ -1411,7 +1414,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("SkyblockId", "VariantKey", "ListedAt");
 
-                    b.ToTable("AuctionBinPrices", (string)null);
+                    b.ToTable("AuctionBinPrices");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionItem", b =>
@@ -1452,7 +1455,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("CalculatedAt");
 
-                    b.ToTable("AuctionItems", (string)null);
+                    b.ToTable("AuctionItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionPriceHistory", b =>
@@ -1509,7 +1512,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("SkyblockId", "VariantKey", "BucketStart")
                         .IsUnique();
 
-                    b.ToTable("AuctionPriceHistories", (string)null);
+                    b.ToTable("AuctionPriceHistories");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionSubscription", b =>
@@ -1535,7 +1538,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("AuctionSubscription", (string)null);
+                    b.ToTable("AuctionSubscription");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Bazaar.BazaarProductSnapshot", b =>
@@ -1575,7 +1578,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProductId", "RecordedAt")
                         .IsUnique();
 
-                    b.ToTable("BazaarProductSnapshots", (string)null);
+                    b.ToTable("BazaarProductSnapshots");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Bazaar.BazaarProductSummary", b =>
@@ -1619,7 +1622,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("CalculationTimestamp");
 
-                    b.ToTable("BazaarProductSummaries", (string)null);
+                    b.ToTable("BazaarProductSummaries");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Firesales.Models.SkyblockFiresale", b =>
@@ -1638,7 +1641,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("StartsAt");
 
-                    b.ToTable("SkyblockFiresales", (string)null);
+                    b.ToTable("SkyblockFiresales");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Firesales.Models.SkyblockFiresaleItem", b =>
@@ -1667,7 +1670,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("FiresaleId", "SlotId");
 
-                    b.ToTable("SkyblockFiresaleItems", (string)null);
+                    b.ToTable("SkyblockFiresaleItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Items.Models.SkyblockItem", b =>
@@ -1683,7 +1686,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("ItemId");
 
-                    b.ToTable("SkyblockItems", (string)null);
+                    b.ToTable("SkyblockItems");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Textures.Models.HypixelItemTexture", b =>
@@ -1700,7 +1703,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("RenderHash");
 
-                    b.ToTable("HypixelItemTextures", (string)null);
+                    b.ToTable("HypixelItemTextures");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.Guild", b =>
@@ -1763,7 +1766,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("IconId");
 
-                    b.ToTable("Guilds", (string)null);
+                    b.ToTable("Guilds");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildChannel", b =>
@@ -1796,7 +1799,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.ToTable("GuildChannels", (string)null);
+                    b.ToTable("GuildChannels");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildMember", b =>
@@ -1830,7 +1833,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.ToTable("GuildMembers", (string)null);
+                    b.ToTable("GuildMembers");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Discord.GuildRole", b =>
@@ -1860,7 +1863,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.ToTable("GuildRoles", (string)null);
+                    b.ToTable("GuildRoles");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Events.Event", b =>
@@ -1937,7 +1940,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.ToTable("Events", (string)null);
+                    b.ToTable("Events");
 
                     b.HasDiscriminator<int>("Type").HasValue(0);
 
@@ -2000,7 +2003,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("EventId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("EventMembers", (string)null);
+                    b.ToTable("EventMembers");
 
                     b.HasDiscriminator<int>("Type").HasValue(0);
 
@@ -2042,7 +2045,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("EventId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("EventTeams", (string)null);
+                    b.ToTable("EventTeams");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Farming.Farming", b =>
@@ -2082,7 +2085,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("FarmingWeights", (string)null);
+                    b.ToTable("FarmingWeights");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ChocolateFactory", b =>
@@ -2128,7 +2131,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("ChocolateFactories", (string)null);
+                    b.ToTable("ChocolateFactories");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ContestParticipation", b =>
@@ -2165,7 +2168,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("ContestParticipations", (string)null);
+                    b.ToTable("ContestParticipations");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Garden", b =>
@@ -2198,7 +2201,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("ProfileId");
 
-                    b.ToTable("Gardens", (string)null);
+                    b.ToTable("Gardens");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobContest", b =>
@@ -2240,7 +2243,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("Timestamp");
 
-                    b.ToTable("JacobContests", (string)null);
+                    b.ToTable("JacobContests");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.JacobData", b =>
@@ -2271,7 +2274,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("JacobData", (string)null);
+                    b.ToTable("JacobData");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.PlayerData", b =>
@@ -2351,7 +2354,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("Uuid")
                         .IsUnique();
 
-                    b.ToTable("PlayerData", (string)null);
+                    b.ToTable("PlayerData");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Profile", b =>
@@ -2384,7 +2387,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("ProfileId");
 
-                    b.ToTable("Profiles", (string)null);
+                    b.ToTable("Profiles");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
@@ -2406,12 +2409,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
-
-                    b.Property<double>("Networth")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("PersonalBank")
-                        .HasColumnType("double precision");
 
                     b.Property<List<Pet>>("Pets")
                         .IsRequired()
@@ -2454,7 +2451,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("ProfileMembers", (string)null);
+                    b.ToTable("ProfileMembers");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.Skills", b =>
@@ -2510,7 +2507,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProfileMemberId")
                         .IsUnique();
 
-                    b.ToTable("Skills", (string)null);
+                    b.ToTable("Skills");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Category", b =>
@@ -2546,7 +2543,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.CosmeticImage", b =>
@@ -2561,7 +2558,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.ToTable("CosmeticImage", (string)null);
+                    b.ToTable("CosmeticImage");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Product", b =>
@@ -2615,7 +2612,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ThumbnailId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductCategory", b =>
@@ -2635,7 +2632,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("Order");
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductImage", b =>
@@ -2650,7 +2647,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ImageId");
 
-                    b.ToTable("ProductImage", (string)null);
+                    b.ToTable("ProductImage");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductTag", b =>
@@ -2670,7 +2667,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("ProductTags", (string)null);
+                    b.ToTable("ProductTags");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.ProductWeightStyle", b =>
@@ -2693,7 +2690,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("WeightStyleId");
 
-                    b.ToTable("ProductCosmetics", (string)null);
+                    b.ToTable("ProductCosmetics");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.Tag", b =>
@@ -2729,7 +2726,7 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Monetization.WeightStyle", b =>
@@ -2780,7 +2777,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("Type");
 
-                    b.ToTable("Cosmetics", (string)null);
+                    b.ToTable("Cosmetics");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.CropCollection", b =>
@@ -2859,7 +2856,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("CropCollections", (string)null);
+                    b.ToTable("CropCollections");
                 });
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Timescale.SkillExperience", b =>
@@ -2905,7 +2902,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasIndex("ProfileMemberId");
 
-                    b.ToTable("SkillExperiences", (string)null);
+                    b.ToTable("SkillExperiences");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -3377,7 +3374,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3398,7 +3395,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3419,7 +3416,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3442,7 +3439,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3465,7 +3462,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3488,7 +3485,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3509,7 +3506,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasIndex("Total");
 
-                            b1.ToTable("HypixelGuildStats", (string)null);
+                            b1.ToTable("HypixelGuildStats");
 
                             b1.WithOwner()
                                 .HasForeignKey("HypixelGuildStatsId");
@@ -3614,7 +3611,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("ProfileMemberMetadataProfileMemberId");
 
-                            b1.ToTable("ProfileMemberMetadata", (string)null);
+                            b1.ToTable("ProfileMemberMetadata");
 
                             b1.ToJson("Cosmetics");
 
@@ -3650,7 +3647,7 @@ namespace EliteAPI.Data.Migrations
 
                                     b2.HasKey("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId");
 
-                                    b2.ToTable("ProfileMemberMetadata", (string)null);
+                                    b2.ToTable("ProfileMemberMetadata");
 
                                     b2.WithOwner()
                                         .HasForeignKey("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId");
@@ -3991,7 +3988,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("FarmingId");
 
-                            b1.ToTable("FarmingWeights", (string)null);
+                            b1.ToTable("FarmingWeights");
 
                             b1.WithOwner()
                                 .HasForeignKey("FarmingId");
@@ -4039,7 +4036,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("ChocolateFactoryId");
 
-                            b1.ToTable("ChocolateFactories", (string)null);
+                            b1.ToTable("ChocolateFactories");
 
                             b1.WithOwner()
                                 .HasForeignKey("ChocolateFactoryId");
@@ -4073,7 +4070,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("ChocolateFactoryId");
 
-                            b1.ToTable("ChocolateFactories", (string)null);
+                            b1.ToTable("ChocolateFactories");
 
                             b1.WithOwner()
                                 .HasForeignKey("ChocolateFactoryId");
@@ -4119,49 +4116,6 @@ namespace EliteAPI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.MilestoneCrops", "Crops", b1 =>
-                        {
-                            b1.Property<string>("GardenProfileId")
-                                .HasColumnType("character varying(36)");
-
-                            b1.Property<long>("Cactus")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Carrot")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("CocoaBeans")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Melon")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Mushroom")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("NetherWart")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Potato")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Pumpkin")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("SugarCane")
-                                .HasColumnType("bigint");
-
-                            b1.Property<long>("Wheat")
-                                .HasColumnType("bigint");
-
-                            b1.HasKey("GardenProfileId");
-
-                            b1.ToTable("Gardens", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("GardenProfileId");
-                        });
-
                     b.OwnsOne("EliteAPI.Models.Entities.Hypixel.CropUpgrades", "Upgrades", b1 =>
                         {
                             b1.Property<string>("GardenProfileId")
@@ -4199,7 +4153,50 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("GardenProfileId");
 
-                            b1.ToTable("Gardens", (string)null);
+                            b1.ToTable("Gardens");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GardenProfileId");
+                        });
+
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.MilestoneCrops", "Crops", b1 =>
+                        {
+                            b1.Property<string>("GardenProfileId")
+                                .HasColumnType("character varying(36)");
+
+                            b1.Property<long>("Cactus")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("Carrot")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("CocoaBeans")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("Melon")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("Mushroom")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("NetherWart")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("Potato")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("Pumpkin")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("SugarCane")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("Wheat")
+                                .HasColumnType("bigint");
+
+                            b1.HasKey("GardenProfileId");
+
+                            b1.ToTable("Gardens");
 
                             b1.WithOwner()
                                 .HasForeignKey("GardenProfileId");
@@ -4244,29 +4241,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("JacobDataId");
 
-                            b1.ToTable("JacobData", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("JacobDataId");
-                        });
-
-                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.MedalInventory", "Medals", b1 =>
-                        {
-                            b1.Property<int>("JacobDataId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Bronze")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Gold")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Silver")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("JacobDataId");
-
-                            b1.ToTable("JacobData", (string)null);
+                            b1.ToTable("JacobData");
 
                             b1.WithOwner()
                                 .HasForeignKey("JacobDataId");
@@ -4288,7 +4263,29 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("JacobDataId");
 
-                            b1.ToTable("JacobData", (string)null);
+                            b1.ToTable("JacobData");
+
+                            b1.WithOwner()
+                                .HasForeignKey("JacobDataId");
+                        });
+
+                    b.OwnsOne("EliteAPI.Models.Entities.Hypixel.MedalInventory", "Medals", b1 =>
+                        {
+                            b1.Property<int>("JacobDataId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Bronze")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Gold")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Silver")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("JacobDataId");
+
+                            b1.ToTable("JacobData");
 
                             b1.WithOwner()
                                 .HasForeignKey("JacobDataId");
@@ -4330,7 +4327,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("PlayerDataId");
 
-                            b1.ToTable("PlayerData", (string)null);
+                            b1.ToTable("PlayerData");
 
                             b1.WithOwner()
                                 .HasForeignKey("PlayerDataId");
@@ -4378,7 +4375,7 @@ namespace EliteAPI.Data.Migrations
 
                             b1.HasKey("ProfileMemberId");
 
-                            b1.ToTable("ProfileMembers", (string)null);
+                            b1.ToTable("ProfileMembers");
 
                             b1.WithOwner()
                                 .HasForeignKey("ProfileMemberId");
