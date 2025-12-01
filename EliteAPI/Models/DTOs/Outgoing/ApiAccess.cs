@@ -8,9 +8,8 @@ public class ApiAccessDto
 	public bool Inventories { get; set; } = false;
 	public bool Collections { get; set; } = false;
 	public bool Skills { get; set; } = false;
-
 	public bool Vault { get; set; } = false;
-	// public bool Museum { get; set; } = false; // Don't have a way to get this yet
+	public bool Museum { get; set; } = false;
 }
 
 public class UnparsedApiDataDto
