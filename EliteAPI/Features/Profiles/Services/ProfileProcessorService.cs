@@ -17,6 +17,8 @@ using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI.DTOs;
 using FastEndpoints;
+using HypixelAPI.Networth.Calculators;
+using HypixelAPI.Networth.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Quartz;
@@ -69,10 +71,12 @@ public interface IProfileProcessorService
 	/// <param name="profileData">Raw profile data</param>
 	Task ProcessMemberData(Profile profile, ProfileMemberResponse memberData, string playerUuid,
 		string requestedPlayerUuid, ProfileResponse? profileData = null);
+
+	Task<NetworthBreakdown> GetNetworthBreakdownAsync(ProfileMember member);
 }
 
 [RegisterService<IProfileProcessorService>(LifeTime.Scoped)]
-public class ProfileProcessorService(
+public partial class ProfileProcessorService(
 	DataContext context,
 	ILogger<ProfileProcessorService> logger,
 	IMojangService mojangService,
@@ -82,12 +86,19 @@ public class ProfileProcessorService(
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IOptions<ConfigFarmingWeightSettings> farmingWeightOptions,
-	AutoMapper.IMapper mapper
+	AutoMapper.IMapper mapper,
+	SkyBlockItemNetworthCalculator networthCalculator,
+	PetNetworthCalculator petNetworthCalculator,
+	IPriceProvider priceProvider,
+	IHttpContextAccessor httpContextAccessor
 ) : IProfileProcessorService
 {
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
+	private readonly SkyBlockItemNetworthCalculator _networthCalculator = networthCalculator;
+	private readonly PetNetworthCalculator _petNetworthCalculator = petNetworthCalculator;
+	private readonly IPriceProvider _priceProvider = priceProvider;
 
 	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData =
 		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>
@@ -265,6 +276,7 @@ public class ProfileProcessorService(
 				});
 				profile.GameMode = profileData.GameMode;
 			}
+
 			profile.ProfileName = profileData.CuteName;
 		}
 		else {
@@ -280,8 +292,16 @@ public class ProfileProcessorService(
 
 		await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
 
-		if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown))
-			await UpdateGardenData(profileId);
+		if (httpContextAccessor.HttpContext is not null && !httpContextAccessor.HttpContext.IsKnownBot()) {
+			if (existing?.Garden is null ||
+			    existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
+				await UpdateGardenData(profileId);
+			}
+
+			if (existing is null || existing.MuseumLastUpdated.OlderThanSeconds(_coolDowns.SkyblockMuseumCooldown)) {
+				await new MuseumUpdateCommand { ProfileId = profileId }.QueueJobAsync();
+			}
+		}
 
 		return (profile, members);
 	}
@@ -413,6 +433,7 @@ public class ProfileProcessorService(
 
 		member.SkyblockXp = incomingData.Leveling?.Experience ?? 0;
 		member.Purse = incomingData.Currencies?.CoinPurse ?? 0;
+		member.PersonalBank = incomingData.Profile?.BankAccount ?? 0;
 		member.Pets = mapper.Map<List<Pet>>(incomingData.PetsData?.Pets?.ToList() ?? []);
 		member.Sacks = incomingData.Inventories?.SackContents.Where(kv => kv.Value > 0)
 			.ToDictionary(k => k.Key, v => v.Value) ?? new Dictionary<string, long>();
@@ -428,7 +449,17 @@ public class ProfileProcessorService(
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
 			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),
 			Bestiary = incomingData.Bestiary ?? new RawBestiaryResponse(),
-			Dungeons = incomingData.Dungeons ?? new RawDungeonsResponse()
+			Dungeons = incomingData.Dungeons ?? new RawDungeonsResponse(),
+			Essence = new Dictionary<string, int> {
+				{ "WITHER", incomingData.Currencies?.Essence?.Wither?.Current ?? 0 },
+				{ "DRAGON", incomingData.Currencies?.Essence?.Dragon?.Current ?? 0 },
+				{ "DIAMOND", incomingData.Currencies?.Essence?.Diamond?.Current ?? 0 },
+				{ "SPIDER", incomingData.Currencies?.Essence?.Spider?.Current ?? 0 },
+				{ "UNDEAD", incomingData.Currencies?.Essence?.Undead?.Current ?? 0 },
+				{ "ICE", incomingData.Currencies?.Essence?.Ice?.Current ?? 0 },
+				{ "GOLD", incomingData.Currencies?.Essence?.Gold?.Current ?? 0 },
+				{ "CRIMSON", incomingData.Currencies?.Essence?.Crimson?.Current ?? 0 }
+			}
 		};
 
 		member.Slayers = incomingData.Slayer?.ToDto();
@@ -482,6 +513,17 @@ public class ProfileProcessorService(
 		context.JacobData.Update(member.JacobData);
 		context.Profiles.Update(profile);
 
+		try {
+			var networth = await GetNetworthBreakdownAsync(member);
+			member.Networth = networth.Networth;
+			member.LiquidNetworth = networth.LiquidNetworth;
+			member.FunctionalNetworth = networth.FunctionalNetworth;
+			member.LiquidFunctionalNetworth = networth.LiquidFunctionalNetworth;
+		} catch (Exception e) {
+			logger.LogError(e, "Failed to calculate networth for {PlayerUuid} in {ProfileId}", member.PlayerUuid,
+				member.ProfileId);
+		}
+
 		await context.SaveChangesAsync();
 
 		// Runs on background service
@@ -518,7 +560,7 @@ public class ProfileProcessorService(
 		ParseInventory("fishing_bag", incomingData.Inventories?.BagContents?.FishingBag?.Data, member);
 		ParseInventory("sacks_bag", incomingData.Inventories?.BagContents?.SacksBag?.Data, member);
 		ParseInventory("quiver", incomingData.Inventories?.BagContents?.Quiver?.Data, member);
-		
+
 		if (incomingData.Inventories?.BackpackContents is not null) {
 			foreach (var (backpack, contents) in incomingData.Inventories.BackpackContents) {
 				ParseInventory($"backpack_{backpack}", contents.Data, member);
@@ -528,7 +570,7 @@ public class ProfileProcessorService(
 		if (incomingData.Inventories?.BackpackIcons is not null) {
 			var hash = HashUtility.ComputeSha256Hash(string.Join(",",
 				incomingData.Inventories.BackpackIcons.Select(i => i.Value.Data)));
-			
+
 			var existing = member.Inventories.FirstOrDefault(i => i.Name == "icons_backpack");
 			if (existing is not null) {
 				if (existing.Hash == hash && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) return;
@@ -564,17 +606,17 @@ public class ProfileProcessorService(
 	private void ParseInventory(string name, string? data, ProfileMember member,
 		Dictionary<string, string>? meta = null) {
 		var hash = HashUtility.ComputeSha256Hash(data ?? string.Empty);
-		
+
 		// Remove existing inventory if we have new data, or it hasn't been updated in a while
 		var existing = member.Inventories.FirstOrDefault(i => i.Name == name);
 		if (existing is not null) {
 			if (existing.Hash == hash && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) return;
 			context.HypixelInventory.Remove(existing);
 		}
-		
+
 		var inventory = NbtParser.ParseInventory(name, data);
 		if (inventory is null) return;
-		
+
 		if (meta is not null) {
 			inventory.Metadata = meta;
 		}

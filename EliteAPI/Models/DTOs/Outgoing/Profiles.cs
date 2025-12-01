@@ -39,6 +39,14 @@ public class MemberDetailsDto
 	public MemberCosmeticsDto? Meta { get; set; }
 }
 
+public class ProfileMemberNetworthDto
+{
+	public double Normal { get; set; } = 0;
+	public double Liquid { get; set; } = 0;
+	public double Functional { get; set; } = 0;
+	public double LiquidFunctional { get; set; } = 0;
+}
+
 public class ProfileMemberDto
 {
 	public required string ProfileId { get; set; }
@@ -51,6 +59,8 @@ public class ProfileMemberDto
 	public double SocialXp { get; set; }
 	public double Purse { get; set; }
 	public double BankBalance { get; set; }
+	public double PersonalBank { get; set; } = 0;
+	public ProfileMemberNetworthDto Networth { get; set; } = new();
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public MemberCosmeticsDto? Meta { get; set; }

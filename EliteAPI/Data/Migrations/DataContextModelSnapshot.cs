@@ -2375,6 +2375,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("MuseumLastUpdated")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ProfileName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -2401,11 +2404,26 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<double>("FunctionalNetworth")
+                        .HasColumnType("double precision");
+
                     b.Property<bool>("IsSelected")
                         .HasColumnType("boolean");
 
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
+
+                    b.Property<double>("LiquidFunctionalNetworth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("LiquidNetworth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Networth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PersonalBank")
+                        .HasColumnType("double precision");
 
                     b.Property<List<Pet>>("Pets")
                         .IsRequired()

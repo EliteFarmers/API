@@ -157,8 +157,11 @@ public class MemberExperienceResponse
 public class MemberProfileDataResponse
 {
 	[JsonPropertyName("coop_invitation")] public RawCoopInvitation? CoopInvitation { get; set; }
-
 	[JsonPropertyName("deletion_notice")] public JsonObject? DeletionNotice { get; set; }
+	[JsonPropertyName("first_join")] public long? FirstJoin { get; set; }
+	[JsonPropertyName("personal_bank_upgrade")] public int? PersonalBankUpgrade { get; set; }
+	[JsonPropertyName("bank_account")] public double? BankAccount { get; set; }
+	[JsonPropertyName("cookie_buff_active")] public bool CookieBuffActive { get; set; }
 }
 
 public class MemberInventoriesResponse

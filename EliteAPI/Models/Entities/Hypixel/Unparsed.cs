@@ -13,4 +13,5 @@ public class UnparsedApiData
 	public RawAccessoryBagStorage AccessoryBagSettings { get; set; } = new();
 	public RawBestiaryResponse Bestiary { get; set; } = new();
 	public RawDungeonsResponse Dungeons {  get; set; } = new();
+	public Dictionary<string, int> Essence { get; set; } = new();
 }

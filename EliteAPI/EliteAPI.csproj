@@ -64,12 +64,11 @@
         <Folder Include="Data\Grafana\Dashboards\" />
         <Folder Include="Features\Events\Admin\Members\" />
         <Folder Include="Features\Guilds\Endpoints\" />
-        <Folder Include="Models\DTOs\Auth\" />
-        <Folder Include="Models\Entities\Accounts\" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="../HypixelAPI/HypixelAPI.csproj" />
+        <ProjectReference Include="../HypixelAPI.Networth/HypixelAPI.Networth.csproj" />
     </ItemGroup>
 
 </Project>

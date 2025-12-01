@@ -6,6 +6,8 @@
     "HypixelGuildMemberCooldown": 604800,
     "SkyblockProfileCooldown": 900,
     "SkyblockGardenCooldown": 3600,
+    "SkyblockMuseumCooldown": 604800,
+    "SkyblockMuseumShortCooldown": 3600,
     "MinecraftAccountCooldown": 43200,
     "DiscordGuildsCooldown": 21600,
     "DiscordGuildCooldown": 600,

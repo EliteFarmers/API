@@ -19,7 +19,17 @@ public interface IHypixelApi
 	[Get("/skyblock/profiles?uuid={uuid}")]
 	Task<ApiResponse<ProfilesResponse>> FetchProfilesAsync(string uuid, CancellationToken ct = default);
 
-
+	/// <summary>
+	/// Fetches the museum for a skyblock profile.
+	/// <a href="https://api.hypixel.net/#tag/SkyBlock/paths/~1v2~1skyblock~1museum/get">Hypixel API Documentation</a>
+	/// 
+	/// This endpoint requires an API key.
+	/// </summary>
+	/// <param name="uuid"></param>
+	/// <param name="ct">Cancellation Token</param>
+	[Get("/skyblock/museum?profile={uuid}")]
+	Task<ApiResponse<MuseumResponse>> FetchMuseumAsync(string uuid, CancellationToken ct = default);
+	
 	/// <summary>
 	/// Fetches the player data for the given UUID.
 	/// <a href="https://api.hypixel.net/#tag/Player-Data/paths/~1v2~1player/get">Hypixel API Documentation</a>

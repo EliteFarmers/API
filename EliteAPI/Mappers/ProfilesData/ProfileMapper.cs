@@ -38,7 +38,13 @@ public class ProfileMemberMapper : Profile
 			.ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api))
 			.ForMember(x => x.Meta, opt => opt.MapFrom(x => x.GetCosmeticsDto()))
 			.ForMember(x => x.Inventories, opt => opt.MapFrom(x => x.Inventories.Select(i => i.ToOverviewDto())))
-			.ForMember(x => x.Events, opt => opt.MapFrom(x => x.EventEntries));
+			.ForMember(x => x.Events, opt => opt.MapFrom(x => x.EventEntries))
+			.ForMember(x => x.Networth, opt => opt.MapFrom(x => new ProfileMemberNetworthDto {
+				Normal = x.Networth,
+				Liquid = x.LiquidNetworth,
+				Functional = x.FunctionalNetworth,
+				LiquidFunctional = x.LiquidFunctionalNetworth
+			}));
 
 		CreateMap<ProfileMember, MemberDetailsDto>()
 			.ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))

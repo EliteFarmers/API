@@ -103,6 +103,10 @@ public class ItemPetInfoDto
 	[JsonPropertyName("heldItem")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? HeldItem { get; set; }
+	
+	[JsonPropertyName("skin")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? Skin { get; set; }
 
 	[JsonExtensionData] public Dictionary<string, JsonElement>? ExtensionData { get; set; }
 }
@@ -196,4 +200,7 @@ public class ItemRodPartAttribute
 {
 	[JsonPropertyName("part"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Part { get; set; }
+	
+	[JsonPropertyName("donated_museum"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public bool Donated { get; set; }
 }

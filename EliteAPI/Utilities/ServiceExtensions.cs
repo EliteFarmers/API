@@ -1,18 +1,18 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Threading.RateLimiting;
 using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Textures.Services;
-using EliteAPI.RateLimiting;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints.Security;
+using HypixelAPI.Networth.Calculators;
+using HypixelAPI.Networth.Interfaces;
+using HypixelAPI.Networth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -44,6 +44,11 @@ public static class ServiceExtensions
 			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });
 
 		services.AddDbContext<DataContext>();
+
+		services.AddSingleton<PetNetworthCalculator>(sp => new PetNetworthCalculator());
+		services.AddSingleton<SkyBlockItemNetworthCalculator>(sp => new SkyBlockItemNetworthCalculator());
+		services.AddScoped<IPriceProvider, SkyHelperPriceProvider>();
+		services.AddScoped<NetworthService>();
 
 		// Not the best way to do this, but it works for now running on a single instance
 		services.AddDataProtection()
