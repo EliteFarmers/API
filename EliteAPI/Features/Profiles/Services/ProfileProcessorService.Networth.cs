@@ -51,7 +51,7 @@ public partial class ProfileProcessorService
 
 				category.Total += result.Price;
 				category.LiquidTotal += result.LiquidNetworth;
-				category.NonCosmeticTotal += result.FunctionalNetworth;
+				category.FunctionalTotal += result.FunctionalNetworth;
 				category.LiquidFunctionalTotal += result.LiquidFunctionalNetworth;
 				category.Items.Add(result);
 
@@ -69,7 +69,7 @@ public partial class ProfileProcessorService
 				var total = price * count;
 				sacksCategory.Total += total;
 				sacksCategory.LiquidTotal += total;
-				sacksCategory.NonCosmeticTotal += total;
+				sacksCategory.FunctionalTotal += total;
 				sacksCategory.LiquidFunctionalTotal += total;
 
 				sacksCategory.Items.Add(new NetworthResult {
@@ -87,7 +87,7 @@ public partial class ProfileProcessorService
 		breakdown.Categories["sacks"] = sacksCategory;
 		breakdown.Networth += sacksCategory.Total;
 		breakdown.LiquidNetworth += sacksCategory.LiquidTotal;
-		breakdown.FunctionalNetworth += sacksCategory.NonCosmeticTotal;
+		breakdown.FunctionalNetworth += sacksCategory.FunctionalTotal;
 		breakdown.LiquidFunctionalNetworth += sacksCategory.LiquidFunctionalTotal;
 
 		// Essence
@@ -99,7 +99,7 @@ public partial class ProfileProcessorService
 					var total = price * amount;
 					essenceCategory.Total += total;
 					essenceCategory.LiquidTotal += total;
-					essenceCategory.NonCosmeticTotal += total;
+					essenceCategory.FunctionalTotal += total;
 					essenceCategory.LiquidFunctionalTotal += total;
 
 					essenceCategory.Items.Add(new NetworthResult {
@@ -118,7 +118,7 @@ public partial class ProfileProcessorService
 		breakdown.Categories["essence"] = essenceCategory;
 		breakdown.Networth += essenceCategory.Total;
 		breakdown.LiquidNetworth += essenceCategory.LiquidTotal;
-		breakdown.FunctionalNetworth += essenceCategory.NonCosmeticTotal;
+		breakdown.FunctionalNetworth += essenceCategory.FunctionalTotal;
 		breakdown.LiquidFunctionalNetworth += essenceCategory.LiquidFunctionalTotal;
 
 		// Pets
@@ -140,7 +140,7 @@ public partial class ProfileProcessorService
 			var result = await _petNetworthCalculator.CalculateAsync(networthItem, prices);
 			petsCategory.Total += result.Price;
 			petsCategory.LiquidTotal += result.LiquidNetworth;
-			petsCategory.NonCosmeticTotal += result.FunctionalNetworth;
+			petsCategory.FunctionalTotal += result.FunctionalNetworth;
 			petsCategory.LiquidFunctionalTotal += result.LiquidFunctionalNetworth;
 			petsCategory.Items.Add(result);
 		}
@@ -148,7 +148,7 @@ public partial class ProfileProcessorService
 		breakdown.Categories["pets"] = petsCategory;
 		breakdown.Networth += petsCategory.Total;
 		breakdown.LiquidNetworth += petsCategory.LiquidTotal;
-		breakdown.FunctionalNetworth += petsCategory.NonCosmeticTotal;
+		breakdown.FunctionalNetworth += petsCategory.FunctionalTotal;
 		breakdown.LiquidFunctionalNetworth += petsCategory.LiquidFunctionalTotal;
 
 		return breakdown;

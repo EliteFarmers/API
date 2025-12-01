@@ -19,7 +19,7 @@ public class NetworthCategory
 {
 	public double Total { get; set; }
 	public double LiquidTotal { get; set; }
-	public double NonCosmeticTotal { get; set; }
+	public double FunctionalTotal { get; set; }
 	public double LiquidFunctionalTotal { get; set; }
 	public List<NetworthResult> Items { get; set; } = new();
 }
