@@ -4,6 +4,7 @@ using EliteFarmers.HypixelAPI;
 using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Refit;
+using ErrorOr;
 
 namespace EliteAPI.Services;
 
@@ -13,13 +14,10 @@ public class HypixelService(
 	: IHypixelService
 {
 	public static readonly string HttpClientName = "EliteDev";
-
-	private readonly string _hypixelApiKey = Environment.GetEnvironmentVariable("HYPIXEL_API_KEY")
-	                                         ?? throw new Exception("HYPIXEL_API_KEY env variable is not set.");
-
-	public async Task<ActionResult<ProfilesResponse>> FetchProfiles(string uuid) {
+	
+	public async Task<ActionResult<ProfilesResponse>> FetchProfiles(string uuid, CancellationToken cancellationToken = default) {
 		if (uuid.Length is not (32 or 36)) return new BadRequestResult();
-		var response = await hypixelApi.FetchProfilesAsync(uuid);
+		var response = await hypixelApi.FetchProfilesAsync(uuid, cancellationToken);
 
 		if (!response.IsSuccessStatusCode) {
 			LogRateLimitWarnings(response);
@@ -32,9 +30,9 @@ public class HypixelService(
 		return response.Content;
 	}
 
-	public async Task<ActionResult<PlayerResponse>> FetchPlayer(string uuid) {
+	public async Task<ActionResult<PlayerResponse>> FetchPlayer(string uuid, CancellationToken cancellationToken = default) {
 		if (uuid.Length is not (32 or 36)) return new BadRequestResult();
-		var response = await hypixelApi.FetchPlayerAsync(uuid);
+		var response = await hypixelApi.FetchPlayerAsync(uuid, cancellationToken);
 
 		if (!response.IsSuccessStatusCode) {
 			LogRateLimitWarnings(response);
@@ -47,9 +45,9 @@ public class HypixelService(
 		return response.Content;
 	}
 
-	public async Task<ActionResult<GardenResponse>> FetchGarden(string profileId) {
+	public async Task<ActionResult<GardenResponse>> FetchGarden(string profileId, CancellationToken cancellationToken = default) {
 		if (profileId.Length is not (32 or 36)) return new BadRequestResult();
-		var response = await hypixelApi.FetchGardenAsync(profileId);
+		var response = await hypixelApi.FetchGardenAsync(profileId, cancellationToken);
 
 		if (!response.IsSuccessStatusCode) {
 			if (response.StatusCode == HttpStatusCode.NotFound) return new NotFoundResult();
@@ -65,20 +63,20 @@ public class HypixelService(
 		return response.Content;
 	}
 
-	public async Task<ActionResult<MuseumResponse>> FetchMuseum(string profileId) {
-		if (profileId.Length is not (32 or 36)) return new BadRequestResult();
-		var response = await hypixelApi.FetchMuseumAsync(profileId);
+	public async Task<ErrorOr<MuseumResponse>> FetchMuseum(string profileId, CancellationToken cancellationToken = default) {
+		if (profileId.Length is not (32 or 36)) return Error.Validation("ProfileId", "Invalid ProfileId length");
+		var response = await hypixelApi.FetchMuseumAsync(profileId, cancellationToken);
 
 		if (!response.IsSuccessStatusCode) {
-			if (response.StatusCode == HttpStatusCode.NotFound) return new NotFoundResult();
+			if (response.StatusCode == HttpStatusCode.NotFound) return Error.NotFound("Museum", "Museum not found");
 			LogRateLimitWarnings(response);
 
 			logger.LogError("Failed to fetch museum for {ProfileId}, Error: {Error}", profileId, response.StatusCode);
 
-			return new BadRequestResult();
+			return Error.Failure("HypixelAPI", "Failed to fetch museum data");
 		}
 
-		if (response.Content is not { Success: true }) return new BadRequestResult();
+		if (response.Content is not { Success: true }) return Error.Failure("HypixelAPI", "Failed to fetch museum data");
 
 		return response.Content;
 	}

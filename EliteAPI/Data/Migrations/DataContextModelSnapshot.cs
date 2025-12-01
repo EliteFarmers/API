@@ -1646,8 +1646,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<Guid>("FiresaleId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("SlotId")
-                        .HasColumnType("integer");
+                    b.Property<string>("ItemId")
+                        .HasColumnType("text");
 
                     b.Property<int>("Amount")
                         .HasColumnType("integer");
@@ -1655,17 +1655,13 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("EndsAt")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("Price")
                         .HasColumnType("integer");
 
                     b.Property<long>("StartsAt")
                         .HasColumnType("bigint");
 
-                    b.HasKey("FiresaleId", "SlotId");
+                    b.HasKey("FiresaleId", "ItemId");
 
                     b.ToTable("SkyblockFiresaleItems", (string)null);
                 });
@@ -2406,12 +2402,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
-
-                    b.Property<double>("Networth")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("PersonalBank")
-                        .HasColumnType("double precision");
 
                     b.Property<List<Pet>>("Pets")
                         .IsRequired()

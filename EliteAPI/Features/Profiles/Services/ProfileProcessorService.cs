@@ -89,7 +89,8 @@ public partial class ProfileProcessorService(
 	AutoMapper.IMapper mapper,
 	SkyBlockItemNetworthCalculator networthCalculator,
 	PetNetworthCalculator petNetworthCalculator,
-	IPriceProvider priceProvider
+	IPriceProvider priceProvider,
+	IHttpContextAccessor httpContextAccessor
 ) : IProfileProcessorService
 {
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
@@ -290,9 +291,16 @@ public partial class ProfileProcessorService(
 
 		await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
 
-		if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown))
-			await UpdateGardenData(profileId);
-
+		if (httpContextAccessor.HttpContext is not null && !httpContextAccessor.HttpContext.IsKnownBot()) {
+			if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
+				await UpdateGardenData(profileId);
+			}
+		
+			if (existing is null || existing.MuseumLastUpdated.OlderThanSeconds(_coolDowns.SkyblockMuseumCooldown)) {
+				await new MuseumUpdateCommand { ProfileId = profileId }.QueueJobAsync();
+			}
+		}
+		
 		return (profile, members);
 	}
 

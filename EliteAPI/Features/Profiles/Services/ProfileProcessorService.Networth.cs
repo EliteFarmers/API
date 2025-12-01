@@ -39,6 +39,7 @@ public partial class ProfileProcessorService
 			var category = breakdown.Categories[categoryName];
 
 			foreach (var item in inventory.Items) {
+				if (categoryName == "museum" && item.Attributes?.Extra.ContainsKey("museum_borrowing") is true) continue;
 				var networthItem = item.ToNetworthItem();
 				var result = await _networthCalculator.CalculateAsync(networthItem, prices);
 

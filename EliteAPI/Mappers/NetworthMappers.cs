@@ -1,6 +1,8 @@
 using EliteAPI.Models.DTOs.Outgoing;
 using HypixelAPI.Networth.Models;
 using Riok.Mapperly.Abstractions;
+using SkyblockRepo;
+using SkyblockRepo.Models;
 
 namespace EliteAPI.Mappers;
 
@@ -8,7 +10,7 @@ namespace EliteAPI.Mappers;
 public static partial class NetworthMappers
 {
 	public static NetworthItem ToNetworthItem(this ItemDto item) {
-		return new NetworthItem {
+		var networthItem = new NetworthItem {
 			Id = item.Id,
 			Count = item.Count,
 			Damage = item.Damage,
@@ -20,11 +22,14 @@ public static partial class NetworthMappers
 			Attributes = item.Attributes != null ? ToNetworthItemAttributes(item.Attributes) : null,
 			ItemAttributes = item.ItemAttributes,
 			Gems = item.Gems,
+			GemstoneSlots = SkyblockRepoClient.Data.Items.TryGetValue(item.SkyblockId!, out var data) ? data?.Data?.GemstoneSlots.ToNetworthDto() : null,
 			PetInfo = item.PetInfo != null ? ToNetworthItemPetInfo(item.PetInfo) : null,
 			TextureId = item.TextureId,
 			IsSoulbound = item.Attributes?.Extra?.ContainsKey("coop_soulbound") == true ||
 			              item.Attributes?.Extra?.ContainsKey("donated_museum") == true
 		};
+
+		return networthItem;
 	}
 
 	private static NetworthItemAttributes ToNetworthItemAttributes(ItemAttributes attributes) {
@@ -48,7 +53,7 @@ public static partial class NetworthMappers
 			Extra = attributes.Extra ?? new Dictionary<string, object>()
 		};
 	}
-	
+
 	public static partial NetworthItemRodPartAttribute ToNetworthDto(this ItemRodPartAttribute rodPartAttribute);
 
 	private static NetworthItemPetInfo ToNetworthItemPetInfo(ItemPetInfoDto petInfo) {
@@ -60,7 +65,28 @@ public static partial class NetworthMappers
 			Tier = petInfo.Tier,
 			CandyUsed = petInfo.CandyUsed,
 			HeldItem = petInfo.HeldItem,
-			Skin = null // Skin property not available on ItemPetInfoDto
+			Skin = petInfo.Skin
 		};
+	}
+
+	private static List<NetworthItemGemstoneSlot> ToNetworthDto(this List<ItemGemstoneSlot>? slots) {
+		if (slots == null)
+		{
+			return [];
+		}
+		return slots.Select(s => new NetworthItemGemstoneSlot {
+			SlotType = s.SlotType ?? "UNKNOWN",
+			Costs = s.Costs?.Select(costDto => new NetworthItemCost {
+				Type = costDto.Type,
+				Coins = costDto.Coins,
+				ItemId = costDto.ItemId,
+				Amount = int.TryParse(costDto.ExtensionData?.ContainsKey("amount") is true
+						? costDto.ExtensionData.GetValueOrDefault("amount").ToString()
+						: "1",
+					out var amount)
+					? amount
+					: 1
+			}).ToList()
+		}).ToList();
 	}
 }
