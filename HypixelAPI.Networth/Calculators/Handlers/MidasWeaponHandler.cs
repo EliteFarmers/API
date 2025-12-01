@@ -7,7 +7,7 @@ namespace HypixelAPI.Networth.Calculators.Handlers;
 public class MidasWeaponHandler : IItemNetworthHandler
 {
 	public bool Applies(NetworthItem item) {
-		return item.SkyblockId != null && (item.SkyblockId == "MIDAS_SWORD" || item.SkyblockId == "MIDAS_STAFF" || item.SkyblockId == "STARRED_MIDAS_SWORD" || item.SkyblockId == "STARRED_MIDAS_STAFF");
+		return item.SkyblockId is "MIDAS_SWORD" or "MIDAS_STAFF" or "STARRED_MIDAS_SWORD" or "STARRED_MIDAS_STAFF";
 	}
 
 	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
@@ -15,16 +15,15 @@ public class MidasWeaponHandler : IItemNetworthHandler
 			return new NetworthCalculationData();
 		}
 
-		var winningBid = Convert.ToDouble(bidObj);
+		var winningBid = Convert.ToDouble(bidObj.ToString());
 		if (item.Attributes.Extra.TryGetValue("additional_coins", out var additionalCoinsObj)) {
-			winningBid += Convert.ToDouble(additionalCoinsObj);
+			winningBid += Convert.ToDouble(additionalCoinsObj.ToString());
 		}
 		var maxBid = item.SkyblockId == "MIDAS_SWORD" ? 50_000_000 : 100_000_000;
-		Console.WriteLine($"[DEBUG] Midas: Id={item.SkyblockId}, Bid={winningBid}, Max={maxBid}, Additional={item.Attributes.Extra.ContainsKey("additional_coins")}");
 
 		if (winningBid >= maxBid) {
 			var maxPriceId = $"{item.SkyblockId}_50M"; // or 100M
-			if (item.SkyblockId == "MIDAS_STAFF" || item.SkyblockId == "STARRED_MIDAS_STAFF") maxPriceId = $"{item.SkyblockId}_100M";
+			if (item.SkyblockId is "MIDAS_STAFF" or "STARRED_MIDAS_STAFF") maxPriceId = $"{item.SkyblockId}_100M";
 
 			if (prices.TryGetValue(maxPriceId, out var price)) {
 				item.Calculation ??= new List<NetworthCalculation>();

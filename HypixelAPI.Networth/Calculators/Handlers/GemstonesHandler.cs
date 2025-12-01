@@ -6,7 +6,7 @@ namespace HypixelAPI.Networth.Calculators.Handlers;
 public class GemstonesHandler : IItemNetworthHandler
 {
 	public bool Applies(NetworthItem item) {
-		return item.Gems != null && item.Gems.Count > 0 && item.GemstoneSlots != null && item.GemstoneSlots.Count > 0;
+		return item is { Gems: { Count: > 0 }, GemstoneSlots.Count: > 0 };
 	}
 
 	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {

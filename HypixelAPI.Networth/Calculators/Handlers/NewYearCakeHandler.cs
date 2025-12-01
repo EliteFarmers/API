@@ -8,12 +8,12 @@ public class NewYearCakeHandler : IItemNetworthHandler
 	public bool Applies(NetworthItem item) {
 		return item.SkyblockId == "NEW_YEAR_CAKE" &&
 		       item.Attributes?.Extra != null &&
-		       item.Attributes.Extra.TryGetValue("new_year_cake_year", out var year);
+		       item.Attributes.Extra.TryGetValue("new_years_cake", out var year);
 	}
 
 	public NetworthCalculationData Calculate(NetworthItem item, Dictionary<string, double> prices) {
 		if (item.Attributes?.Extra == null ||
-		    !item.Attributes.Extra.TryGetValue("new_year_cake_year", out var yearObj)) {
+		    !item.Attributes.Extra.TryGetValue("new_years_cake", out var yearObj)) {
 			return new NetworthCalculationData();
 		}
 

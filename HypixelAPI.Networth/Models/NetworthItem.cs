@@ -84,21 +84,33 @@ public class NetworthItemPetInfo
 	public decimal Exp { get; set; }
 	public int Level { get; set; }
 	public required string Tier { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int CandyUsed { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? HeldItem { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Skin { get; set; }
 }
 
 public class NetworthItemAttributes
 {
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public Dictionary<string, int>? Runes { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public List<NetworthItemEffectAttribute>? Effects { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public List<NetworthItemSoulAttribute>? NecromancerSouls { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public NetworthItemRodPartAttribute? Hook { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public NetworthItemRodPartAttribute? Line { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public NetworthItemRodPartAttribute? Sinker { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public List<string>? AbilityScrolls { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public Dictionary<string, NetworthItem?>? Inventory { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public Dictionary<string, object> Extra { get; set; } = new Dictionary<string, object>();
 
 	public string? this[string index] {

@@ -46,6 +46,7 @@ public class SkyBlockItemNetworthCalculator
 		new RuneHandler(),
 		new SoulboundPetSkinHandler(),
 		new SoulboundSkinHandler(),
+		new SkinHandler(),
 		new EnchantmentHandler(),
 		new ReforgeHandler()
 	}) { }
