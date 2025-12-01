@@ -575,6 +575,7 @@ public partial class ProfileProcessorService(
 			if (existing is not null) {
 				if (existing.Hash == hash && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) return;
 				context.HypixelInventory.Remove(existing);
+				member.Inventories.Remove(existing);
 			}
 
 			var items = new List<ItemDto>();
@@ -612,6 +613,7 @@ public partial class ProfileProcessorService(
 		if (existing is not null) {
 			if (existing.Hash == hash && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) return;
 			context.HypixelInventory.Remove(existing);
+			member.Inventories.Remove(existing);
 		}
 
 		var inventory = NbtParser.ParseInventory(name, data);

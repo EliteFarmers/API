@@ -64,6 +64,7 @@ public class HypixelGuildStatsService(
 				PlayerUuid = p.PlayerUuid,
 				Selected = p.IsSelected,
 				SkyblockXp = p.SkyblockXp,
+				Networth = p.Networth,
 				SkillsEnabled = p.Api.Skills,
 				SlayerXp = p.Slayers != null ? p.Slayers.Xp : 0,
 				CataXp = p.Unparsed.Dungeons.DungeonTypes != null ? p.Unparsed.Dungeons.DungeonTypes.Catacombs.Experience : 0,
@@ -85,6 +86,7 @@ public class HypixelGuildStatsService(
 					.Take(1)
 					.FirstOrDefault())
 				.Where(m => m > 0)
+				.DefaultIfEmpty()
 				.Average()
 			: 0;
 		newStats.SkyblockExperience.Total = memberStats
@@ -96,6 +98,7 @@ public class HypixelGuildStatsService(
 					.Take(1)
 					.FirstOrDefault())
 				.Where(m => m > 0)
+				.DefaultIfEmpty()
 				.Average()
 			: 0;
 		newStats.SkillLevel.Total = memberStats
@@ -107,6 +110,7 @@ public class HypixelGuildStatsService(
 					.Take(1)
 					.FirstOrDefault())
 				.Where(m => m > 0)
+				.DefaultIfEmpty()
 				.Average()
 			: 0;
 		newStats.CatacombsExperience.Total = memberStats
@@ -118,6 +122,7 @@ public class HypixelGuildStatsService(
 					.Take(1)
 					.FirstOrDefault())
 				.Where(m => m > 0)
+				.DefaultIfEmpty()
 				.Average()
 			: 0;
 		newStats.SlayerExperience.Total = memberStats
@@ -129,6 +134,19 @@ public class HypixelGuildStatsService(
 					.Take(1)
 					.FirstOrDefault())
 				.Where(m => m > 0)
+				.DefaultIfEmpty()
+				.Average()
+			: 0;
+		newStats.Networth.Total = memberStats
+			.Sum(m => m.Sum(p => p.Networth));
+		newStats.Networth.Average = memberStats.Count > 0 
+			? memberStats.Select(g => g.Where(m => m.Networth > 0)
+					.OrderByDescending(m => m.Networth)
+					.Select(m => m.Networth)
+					.Take(1)
+					.FirstOrDefault())
+				.Where(m => m > 0)
+				.DefaultIfEmpty()
 				.Average()
 			: 0;
 		

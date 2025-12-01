@@ -32,7 +32,7 @@ public class MasterStarsHandler : IItemNetworthHandler
 
 		if (level <= 5) return new NetworthCalculationData();
 
-		var masterStars = level - 5;
+		var masterStars = Math.Min(level - 5, NetworthConstants.MasterStars.Count);
 		var totalValue = 0.0;
 
 		item.Calculation ??= new List<NetworthCalculation>();

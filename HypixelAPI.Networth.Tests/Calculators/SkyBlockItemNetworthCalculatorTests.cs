@@ -85,14 +85,14 @@ public class SkyBlockItemNetworthCalculatorTests
 		var cake1 = new NetworthItem {
 			SkyblockId = "NEW_YEAR_CAKE",
 			Attributes = new NetworthItemAttributes
-				{ Extra = new Dictionary<string, object> { { "new_year_cake_year", 1 } } },
+				{ Extra = new Dictionary<string, object> { { "new_years_cake", 1 } } },
 			Count = 1
 		};
 
 		var cake2 = new NetworthItem {
 			SkyblockId = "NEW_YEAR_CAKE",
 			Attributes = new NetworthItemAttributes
-				{ Extra = new Dictionary<string, object> { { "new_year_cake_year", 2 } } },
+				{ Extra = new Dictionary<string, object> { { "new_years_cake", 2 } } },
 			Count = 1
 		};
 
