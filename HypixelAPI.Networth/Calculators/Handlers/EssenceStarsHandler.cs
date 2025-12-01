@@ -12,11 +12,12 @@ public class EssenceStarsHandler : IItemNetworthHandler
 			if (item.Attributes.Extra.TryGetValue("dungeon_item_level", out var levelObj)) {
 				return AttributeHelper.ToInt32(levelObj) > 0;
 			}
+
 			if (item.Attributes.Extra.TryGetValue("upgrade_level", out var upgradeLevelObj)) {
 				return AttributeHelper.ToInt32(upgradeLevelObj) > 0;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -29,11 +30,11 @@ public class EssenceStarsHandler : IItemNetworthHandler
 		if (item.Attributes?.Extra != null) {
 			if (item.Attributes.Extra.TryGetValue("dungeon_item_level", out var levelObj)) {
 				maxStars = AttributeHelper.ToInt32(levelObj);
-			} else if (item.Attributes.Extra.TryGetValue("upgrade_level", out var upgradeLevelObj)) {
+			}
+			else if (item.Attributes.Extra.TryGetValue("upgrade_level", out var upgradeLevelObj)) {
 				maxStars = AttributeHelper.ToInt32(upgradeLevelObj);
 			}
 		}
-		Console.WriteLine($"[DEBUG] EssenceStars: MaxStars={maxStars}, UpgradeCostsCount={item.UpgradeCosts.Count}");
 
 		var value = EssenceStarsHelper.StarCosts(prices, item.Calculation, item.UpgradeCosts, maxStars: maxStars);
 

@@ -8,7 +8,7 @@ public class AvariceCoinsCollectedHandler : IItemNetworthHandler
 		if (item.Attributes?.Extra == null) return false;
 
 		if (item.Attributes.Extra.TryGetValue("collected_coins", out var collectedCoinsObj)) {
-			return Convert.ToDouble(collectedCoinsObj) > 0;
+			return Convert.ToDouble(collectedCoinsObj.ToString()) > 0;
 		}
 
 		return false;
@@ -21,7 +21,7 @@ public class AvariceCoinsCollectedHandler : IItemNetworthHandler
 		var collectedCoins = 0.0;
 		if (item.Attributes?.Extra != null &&
 		    item.Attributes.Extra.TryGetValue("collected_coins", out var collectedCoinsObj)) {
-			collectedCoins = Convert.ToDouble(collectedCoinsObj);
+			collectedCoins = Convert.ToDouble(collectedCoinsObj.ToString());
 		}
 
 		var cappedCoins = Math.Min(collectedCoins, 1_000_000_000);

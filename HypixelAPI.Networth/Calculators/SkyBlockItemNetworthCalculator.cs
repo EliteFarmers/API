@@ -52,7 +52,16 @@ public class SkyBlockItemNetworthCalculator
 	}) { }
 
 	public async Task<NetworthResult> CalculateAsync(NetworthItem item, Dictionary<string, double> prices) {
-		var result = new NetworthResult { Item = item };
+		var result = new NetworthResult {
+			Item = new NetworthItemSimple {
+				SkyblockId = item.SkyblockId,
+				Name = item.Name,
+				Slot = item.Slot,
+				Count = item.Count,
+				Damage = item.Damage,
+				Uuid = item.Uuid
+			}
+		};
 
 		// Base price logic
 		if (item.SkyblockId != null && prices.TryGetValue(item.SkyblockId, out var price)) {
@@ -66,18 +75,18 @@ public class SkyBlockItemNetworthCalculator
 
 		item.BasePrice = result.BasePrice;
 		item.Price = result.Price;
-		item.Calculation ??= new List<NetworthCalculation>();
+		item.Calculation ??= [];
 
 		double totalHandlerValue = 0;
 		double cosmeticValue = 0;
-		double totalHandlerSoulboundValue = 0;
+		double totalHandlerIlliquidValue = 0;
 
 		// Apply handlers
 		foreach (var handler in _handlers) {
 			if (handler.Applies(item)) {
 				var data = handler.Calculate(item, prices);
 				totalHandlerValue += data.Value;
-				totalHandlerSoulboundValue += data.SoulboundValue;
+				totalHandlerIlliquidValue += data.IlliquidValue;
 				if (data.IsCosmetic) {
 					cosmeticValue += data.Value;
 				}
@@ -116,16 +125,16 @@ public class SkyBlockItemNetworthCalculator
 		// Calculate modes
 		result.CosmeticValue = cosmeticValue;
 		
-		// If the item is soulbound, the entire value is soulbound
-		if (item.IsSoulbound) {
-			result.SoulboundValue = result.Networth;
+		// If the item is soulbound or not tradable, the entire value is soulbound
+		if (item.IsSoulbound || !item.IsTradable) {
+			result.IlliquidValue = result.Networth;
 		} else {
-			result.SoulboundValue = totalHandlerSoulboundValue;
+			result.IlliquidValue = totalHandlerIlliquidValue;
 		}
 
-		result.LiquidNetworth = result.Networth - result.SoulboundValue;
-		result.NonCosmeticNetworth = result.Networth - result.CosmeticValue;
-		result.LiquidFunctionalNetworth = result.Networth - result.SoulboundValue - result.CosmeticValue;
+		result.LiquidNetworth = result.Networth - result.IlliquidValue;
+		result.FunctionalNetworth = result.Networth - result.CosmeticValue;
+		result.LiquidFunctionalNetworth = result.Networth - result.IlliquidValue - result.CosmeticValue;
 
 		return result;
 	}

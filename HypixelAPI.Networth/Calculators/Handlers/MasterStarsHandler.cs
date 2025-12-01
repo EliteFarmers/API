@@ -41,7 +41,6 @@ public class MasterStarsHandler : IItemNetworthHandler
 			var starItem = NetworthConstants.MasterStars[i - 1];
 			if (prices.TryGetValue(starItem, out var price)) {
 				var value = price * NetworthConstants.ApplicationWorth.MasterStar;
-				Console.WriteLine($"[DEBUG] MasterStar: Star={starItem}, Price={price}, Worth={NetworthConstants.ApplicationWorth.MasterStar}, Value={value}");
 				totalValue += value;
 
 				item.Calculation.Add(new NetworthCalculation {

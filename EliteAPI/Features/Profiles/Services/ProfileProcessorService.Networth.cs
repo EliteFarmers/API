@@ -15,18 +15,24 @@ public partial class ProfileProcessorService
 		// Bank and Purse
 		breakdown.Purse = member.Purse;
 		breakdown.Networth += breakdown.Purse;
-		breakdown.UnsoulboundNetworth += breakdown.Purse;
+		breakdown.LiquidNetworth += breakdown.Purse;
+		breakdown.FunctionalNetworth += breakdown.Purse;
+		breakdown.LiquidFunctionalNetworth += breakdown.Purse;
 
 		if (member.Profile?.BankBalance > 0) {
 			breakdown.Bank = member.Profile.BankBalance;
 			breakdown.Networth += breakdown.Bank;
-			breakdown.UnsoulboundNetworth += breakdown.Bank;
+			breakdown.LiquidNetworth += breakdown.Bank;
+			breakdown.FunctionalNetworth += breakdown.Bank;
+			breakdown.LiquidFunctionalNetworth += breakdown.Bank;
 		}
 
 		if (member.PersonalBank > 0) {
 			breakdown.PersonalBank = member.PersonalBank;
 			breakdown.Networth += breakdown.PersonalBank;
-			breakdown.UnsoulboundNetworth += breakdown.PersonalBank;
+			breakdown.LiquidNetworth += breakdown.PersonalBank;
+			breakdown.FunctionalNetworth += breakdown.PersonalBank;
+			breakdown.LiquidFunctionalNetworth += breakdown.PersonalBank;
 		}
 
 		// Inventories
@@ -44,10 +50,15 @@ public partial class ProfileProcessorService
 				var result = await _networthCalculator.CalculateAsync(networthItem, prices);
 
 				category.Total += result.Price;
+				category.LiquidTotal += result.LiquidNetworth;
+				category.NonCosmeticTotal += result.FunctionalNetworth;
+				category.LiquidFunctionalTotal += result.LiquidFunctionalNetworth;
 				category.Items.Add(result);
 
 				breakdown.Networth += result.Price;
-				breakdown.UnsoulboundNetworth += result.LiquidNetworth;
+				breakdown.LiquidNetworth += result.LiquidNetworth;
+				breakdown.FunctionalNetworth += result.FunctionalNetworth;
+				breakdown.LiquidFunctionalNetworth += result.LiquidFunctionalNetworth;
 			}
 		}
 
@@ -57,19 +68,27 @@ public partial class ProfileProcessorService
 			if (prices.TryGetValue(id, out var price)) {
 				var total = price * count;
 				sacksCategory.Total += total;
-				sacksCategory.UnsoulboundTotal += total;
+				sacksCategory.LiquidTotal += total;
+				sacksCategory.NonCosmeticTotal += total;
+				sacksCategory.LiquidFunctionalTotal += total;
 
 				sacksCategory.Items.Add(new NetworthResult {
 					Price = total,
 					BasePrice = price,
-					Item = new NetworthItem { SkyblockId = id, Count = (int)count, Name = id }
+					Item = new NetworthItemSimple { SkyblockId = id, Count = (int)count, Name = id },
+					Networth = total,
+					LiquidNetworth = total,
+					FunctionalNetworth = total,
+					LiquidFunctionalNetworth = total
 				});
 			}
 		}
 
 		breakdown.Categories["sacks"] = sacksCategory;
 		breakdown.Networth += sacksCategory.Total;
-		breakdown.UnsoulboundNetworth += sacksCategory.UnsoulboundTotal;
+		breakdown.LiquidNetworth += sacksCategory.LiquidTotal;
+		breakdown.FunctionalNetworth += sacksCategory.NonCosmeticTotal;
+		breakdown.LiquidFunctionalNetworth += sacksCategory.LiquidFunctionalTotal;
 
 		// Essence
 		var essenceCategory = new NetworthCategory();
@@ -79,12 +98,18 @@ public partial class ProfileProcessorService
 				if (prices.TryGetValue(essenceId, out var price)) {
 					var total = price * amount;
 					essenceCategory.Total += total;
-					essenceCategory.UnsoulboundTotal += total;
+					essenceCategory.LiquidTotal += total;
+					essenceCategory.NonCosmeticTotal += total;
+					essenceCategory.LiquidFunctionalTotal += total;
 
 					essenceCategory.Items.Add(new NetworthResult {
 						Price = total,
 						BasePrice = price,
-						Item = new NetworthItem { SkyblockId = essenceId, Count = amount, Name = type }
+						Item = new NetworthItemSimple { SkyblockId = essenceId, Count = amount, Name = type },
+						Networth = total,
+						LiquidNetworth = total,
+						FunctionalNetworth = total,
+						LiquidFunctionalNetworth = total
 					});
 				}
 			}
@@ -92,7 +117,9 @@ public partial class ProfileProcessorService
 
 		breakdown.Categories["essence"] = essenceCategory;
 		breakdown.Networth += essenceCategory.Total;
-		breakdown.UnsoulboundNetworth += essenceCategory.UnsoulboundTotal;
+		breakdown.LiquidNetworth += essenceCategory.LiquidTotal;
+		breakdown.FunctionalNetworth += essenceCategory.NonCosmeticTotal;
+		breakdown.LiquidFunctionalNetworth += essenceCategory.LiquidFunctionalTotal;
 
 		// Pets
 		var petsCategory = new NetworthCategory();
@@ -112,12 +139,17 @@ public partial class ProfileProcessorService
 
 			var result = await _petNetworthCalculator.CalculateAsync(networthItem, prices);
 			petsCategory.Total += result.Price;
+			petsCategory.LiquidTotal += result.LiquidNetworth;
+			petsCategory.NonCosmeticTotal += result.FunctionalNetworth;
+			petsCategory.LiquidFunctionalTotal += result.LiquidFunctionalNetworth;
 			petsCategory.Items.Add(result);
 		}
 
 		breakdown.Categories["pets"] = petsCategory;
 		breakdown.Networth += petsCategory.Total;
-		breakdown.UnsoulboundNetworth += petsCategory.Total;
+		breakdown.LiquidNetworth += petsCategory.LiquidTotal;
+		breakdown.FunctionalNetworth += petsCategory.NonCosmeticTotal;
+		breakdown.LiquidFunctionalNetworth += petsCategory.LiquidFunctionalTotal;
 
 		return breakdown;
 	}

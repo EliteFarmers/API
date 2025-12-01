@@ -37,6 +37,6 @@ public class RodPartsHandler : IItemNetworthHandler
 			}
 		}
 
-		return new NetworthCalculationData { Value = totalValue, SoulboundValue = soulboundValue };
+		return new NetworthCalculationData { Value = totalValue, IlliquidValue = soulboundValue };
 	}
 }

@@ -18,7 +18,16 @@ public class PetNetworthCalculator
 	}
 
 	public async Task<NetworthResult> CalculateAsync(NetworthItem item, Dictionary<string, double> prices) {
-		var result = new NetworthResult { Item = item };
+		var result = new NetworthResult {
+			Item = new NetworthItemSimple {
+				SkyblockId = item.SkyblockId,
+				Name = item.Name,
+				Slot = item.Slot,
+				Count = item.Count,
+				Damage = item.Damage,
+				Uuid = item.Uuid
+			}
+		};
 
 		if (item.PetInfo == null) {
 			return result;
@@ -59,15 +68,15 @@ public class PetNetworthCalculator
 		// Calculate modes
 		result.CosmeticValue = cosmeticValue;
 
-		if (item.IsSoulbound) {
-			result.SoulboundValue = result.Networth;
+		if (item.IsSoulbound || !item.IsTradable) {
+			result.IlliquidValue = result.Networth;
 		} else {
-			result.SoulboundValue = 0;
+			result.IlliquidValue = 0;
 		}
 
-		result.LiquidNetworth = result.Networth - result.SoulboundValue;
-		result.NonCosmeticNetworth = result.Networth - result.CosmeticValue;
-		result.LiquidFunctionalNetworth = result.Networth - result.SoulboundValue - result.CosmeticValue;
+		result.LiquidNetworth = result.Networth - result.IlliquidValue;
+		result.FunctionalNetworth = result.Networth - result.CosmeticValue;
+		result.LiquidFunctionalNetworth = result.Networth - result.IlliquidValue - result.CosmeticValue;
 
 		return result;
 	}

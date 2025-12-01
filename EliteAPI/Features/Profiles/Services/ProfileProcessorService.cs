@@ -276,6 +276,7 @@ public partial class ProfileProcessorService(
 				});
 				profile.GameMode = profileData.GameMode;
 			}
+
 			profile.ProfileName = profileData.CuteName;
 		}
 		else {
@@ -292,15 +293,16 @@ public partial class ProfileProcessorService(
 		await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
 
 		if (httpContextAccessor.HttpContext is not null && !httpContextAccessor.HttpContext.IsKnownBot()) {
-			if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
+			if (existing?.Garden is null ||
+			    existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
 				await UpdateGardenData(profileId);
 			}
-		
+
 			if (existing is null || existing.MuseumLastUpdated.OlderThanSeconds(_coolDowns.SkyblockMuseumCooldown)) {
 				await new MuseumUpdateCommand { ProfileId = profileId }.QueueJobAsync();
 			}
 		}
-		
+
 		return (profile, members);
 	}
 
@@ -511,6 +513,17 @@ public partial class ProfileProcessorService(
 		context.JacobData.Update(member.JacobData);
 		context.Profiles.Update(profile);
 
+		try {
+			var networth = await GetNetworthBreakdownAsync(member);
+			member.Networth = networth.Networth;
+			member.LiquidNetworth = networth.LiquidNetworth;
+			member.FunctionalNetworth = networth.FunctionalNetworth;
+			member.LiquidFunctionalNetworth = networth.LiquidFunctionalNetworth;
+		} catch (Exception e) {
+			logger.LogError(e, "Failed to calculate networth for {PlayerUuid} in {ProfileId}", member.PlayerUuid,
+				member.ProfileId);
+		}
+
 		await context.SaveChangesAsync();
 
 		// Runs on background service
@@ -547,7 +560,7 @@ public partial class ProfileProcessorService(
 		ParseInventory("fishing_bag", incomingData.Inventories?.BagContents?.FishingBag?.Data, member);
 		ParseInventory("sacks_bag", incomingData.Inventories?.BagContents?.SacksBag?.Data, member);
 		ParseInventory("quiver", incomingData.Inventories?.BagContents?.Quiver?.Data, member);
-		
+
 		if (incomingData.Inventories?.BackpackContents is not null) {
 			foreach (var (backpack, contents) in incomingData.Inventories.BackpackContents) {
 				ParseInventory($"backpack_{backpack}", contents.Data, member);
@@ -557,7 +570,7 @@ public partial class ProfileProcessorService(
 		if (incomingData.Inventories?.BackpackIcons is not null) {
 			var hash = HashUtility.ComputeSha256Hash(string.Join(",",
 				incomingData.Inventories.BackpackIcons.Select(i => i.Value.Data)));
-			
+
 			var existing = member.Inventories.FirstOrDefault(i => i.Name == "icons_backpack");
 			if (existing is not null) {
 				if (existing.Hash == hash && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) return;
@@ -593,17 +606,17 @@ public partial class ProfileProcessorService(
 	private void ParseInventory(string name, string? data, ProfileMember member,
 		Dictionary<string, string>? meta = null) {
 		var hash = HashUtility.ComputeSha256Hash(data ?? string.Empty);
-		
+
 		// Remove existing inventory if we have new data, or it hasn't been updated in a while
 		var existing = member.Inventories.FirstOrDefault(i => i.Name == name);
 		if (existing is not null) {
 			if (existing.Hash == hash && !existing.HypixelInventoryId.ExtractUnixSeconds().OlderThanDays(2)) return;
 			context.HypixelInventory.Remove(existing);
 		}
-		
+
 		var inventory = NbtParser.ParseInventory(name, data);
 		if (inventory is null) return;
-		
+
 		if (meta is not null) {
 			inventory.Metadata = meta;
 		}

@@ -17,7 +17,7 @@ public class ShensAuctionHandler : IItemNetworthHandler
 			return new NetworthCalculationData();
 		}
 
-		var pricePaid = Convert.ToDouble(priceObj) * NetworthConstants.ApplicationWorth.ShensAuctionPrice;
+		var pricePaid = Convert.ToDouble(priceObj.ToString()) * NetworthConstants.ApplicationWorth.ShensAuctionPrice;
 
 		if (pricePaid > item.BasePrice) {
 			var diff = pricePaid - item.BasePrice;

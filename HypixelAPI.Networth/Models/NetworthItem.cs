@@ -17,6 +17,9 @@ public class NetworthItem
 	public string? Name { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? Slot { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public List<string>? Lore { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -51,6 +54,7 @@ public class NetworthItem
 	public double Price { get; set; }
 	public double SoulboundPortion { get; set; }
 	public bool IsSoulbound { get; set; }
+	public bool IsTradable { get; set; }
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public List<NetworthCalculation>? Calculation { get; set; }

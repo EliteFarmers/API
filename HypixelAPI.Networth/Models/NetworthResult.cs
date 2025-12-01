@@ -2,7 +2,7 @@ namespace HypixelAPI.Networth.Models;
 
 public class NetworthResult
 {
-	public NetworthItem? Item { get; set; }
+	public NetworthItemSimple? Item { get; set; }
 	public double BasePrice { get; set; }
 	public double Price { get; set; }
 	public double Networth { get; set; }
@@ -10,10 +10,10 @@ public class NetworthResult
 	public bool Soulbound { get; set; }
 	public bool Cosmetic { get; set; }
 	public double LiquidNetworth { get; set; }
-	public double NonCosmeticNetworth { get; set; }
+	public double FunctionalNetworth { get; set; }
 	public double LiquidFunctionalNetworth { get; set; }
 	public double CosmeticValue { get; set; }
-	public double SoulboundValue { get; set; }
+	public double IlliquidValue { get; set; }
 }
 
 public class NetworthCalculation

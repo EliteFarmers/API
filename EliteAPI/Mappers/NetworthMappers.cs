@@ -10,6 +10,8 @@ namespace EliteAPI.Mappers;
 public static partial class NetworthMappers
 {
 	public static NetworthItem ToNetworthItem(this ItemDto item) {
+		var repoItem = SkyblockRepoClient.Data.Items.GetValueOrDefault(item.SkyblockId!);
+		
 		var networthItem = new NetworthItem {
 			Id = item.Id,
 			Count = item.Count,
@@ -17,16 +19,18 @@ public static partial class NetworthMappers
 			SkyblockId = item.SkyblockId,
 			Uuid = item.Uuid,
 			Name = item.Name,
+			Slot = item.Slot,
 			Lore = item.Lore,
 			Enchantments = item.Enchantments,
 			Attributes = item.Attributes != null ? ToNetworthItemAttributes(item.Attributes) : null,
 			ItemAttributes = item.ItemAttributes,
 			Gems = item.Gems,
-			GemstoneSlots = SkyblockRepoClient.Data.Items.TryGetValue(item.SkyblockId!, out var data) ? data?.Data?.GemstoneSlots.ToNetworthDto() : null,
+			GemstoneSlots = repoItem?.Data?.GemstoneSlots.ToNetworthDto(),
 			PetInfo = item.PetInfo != null ? ToNetworthItemPetInfo(item.PetInfo) : null,
 			TextureId = item.TextureId,
 			IsSoulbound = item.Attributes?.Extra?.ContainsKey("coop_soulbound") == true ||
-			              item.Attributes?.Extra?.ContainsKey("donated_museum") == true
+			              item.Attributes?.Extra?.ContainsKey("donated_museum") == true,
+			IsTradable = true // Evaluate this in the future: repoItem?.Flags is not { Tradable: false, Auctionable: false, Bazaarable: false }
 		};
 
 		return networthItem;
