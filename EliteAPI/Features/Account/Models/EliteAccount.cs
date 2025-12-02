@@ -31,9 +31,10 @@ public class EliteAccount
 
 	public string GetFormattedIgn(string? uuid = null) {
 		var primaryMinecraftAccount = MinecraftAccounts.FirstOrDefault(a => a.Selected);
-		if (uuid != primaryMinecraftAccount?.Id) {
+		if (uuid is not null && uuid != primaryMinecraftAccount?.Id) {
 			return MinecraftAccounts.FirstOrDefault(a => a.Id == uuid)?.Name ?? Username;
 		}
+		primaryMinecraftAccount ??= MinecraftAccounts.FirstOrDefault();
 		var prefix = UserSettings.Prefix ?? string.Empty;
 		var suffix = UserSettings.Suffix ?? string.Empty;
 		var ign = primaryMinecraftAccount?.Name ?? Username;
