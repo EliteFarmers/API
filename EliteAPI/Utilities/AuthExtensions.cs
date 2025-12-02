@@ -18,4 +18,9 @@ public static class AuthExtensions
 
 		return id;
 	}
+	
+	public static string? GetDiscordUsername(this ClaimsPrincipal user) {
+		if (user.Identity?.IsAuthenticated is not true) return null;
+		return user.FindFirstValue(ClaimNames.Name);
+	}
 }
