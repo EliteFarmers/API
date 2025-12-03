@@ -30,4 +30,11 @@ public class AuthResponseDto
 	[JsonPropertyName("pending_confirmation")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public ConfirmationDto? PendingConfirmation { get; set; }
+	
+	/// <summary>
+	/// If this is the user's first login
+	/// </summary>
+	[JsonPropertyName("first_login")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public bool FirstLogin { get; set; } = false;
 }

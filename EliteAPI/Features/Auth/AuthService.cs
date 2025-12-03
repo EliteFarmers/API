@@ -44,6 +44,7 @@ public partial class AuthService(
 		}
 
 		var account = await discordService.GetDiscordUser(login.AccessToken);
+		var firstLogin = false;
 
 		if (account is null) {
 			logger.LogWarning("Failed to fetch Discord user account for login!");
@@ -66,6 +67,8 @@ public partial class AuthService(
 				logger.LogError("User {UserId} was not found after registration!", account.Id);
 				return null; // Should not happen if registration succeeded
 			}
+			
+			firstLogin = true;
 		}
 		else {
 			// Update existing user if necessary
@@ -103,7 +106,8 @@ public partial class AuthService(
 				Content = pendingConfirmation.Content,
 				IsActive = pendingConfirmation.IsActive,
 				CreatedAt = pendingConfirmation.CreatedAt
-			}
+			},
+			FirstLogin = firstLogin
 		};
 	}
 
