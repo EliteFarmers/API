@@ -56,8 +56,7 @@ public class MinecraftRendererProvider
 
 			Options = MinecraftBlockRenderer.BlockRenderOptions.Default with {
 				Size = 128,
-				SkullTextureResolver = SkullTextureResolver,
-				PackIds = ["hypixelplus"]
+				SkullTextureResolver = SkullTextureResolver
 			};
 
 			NbtParser.SetRenderer(renderer);
