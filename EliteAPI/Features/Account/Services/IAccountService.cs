@@ -1,5 +1,7 @@
-﻿using EliteAPI.Features.Account.DTOs;
+﻿using System.Security.Claims;
+using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Auth.Models;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,4 +28,7 @@ public interface IAccountService
 	
 	Task<AccountMetaDto?> GetAccountMeta(string uuid);
 	Task<Dictionary<string, AccountMetaDto?>> GetAccountMeta(List<string> uuids);
+
+	Task<bool> OwnsMinecraftAccount(ClaimsPrincipal user, string playerUuidOrIgn,
+		string roleOverride = ApiUserPolicies.Admin);
 }

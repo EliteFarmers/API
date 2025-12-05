@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
+using System.Security.Claims;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Services.Interfaces;
@@ -361,5 +363,17 @@ public class AccountService(
 			});
 
 		return concurrentDict.ToDictionary(account => account.Key, account => account.Value);
+	}
+
+	public async Task<bool> OwnsMinecraftAccount(ClaimsPrincipal user, string playerUuidOrIgn, string roleOverride = ApiUserPolicies.Admin) {
+		if (user.IsInRole(roleOverride) || user.IsInRole(ApiUserPolicies.Admin)) return true;
+		
+		var discordId = user.GetDiscordId();
+		if (discordId is null) return false;
+		
+		return await context.MinecraftAccounts
+			.AnyAsync(mc =>
+				mc.AccountId == discordId &&
+				(mc.Id.Equals(playerUuidOrIgn) || mc.Name.ToLower().Equals(playerUuidOrIgn.ToLower())));
 	}
 }
