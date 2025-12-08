@@ -19,8 +19,6 @@ public class GenerateGlobalStatsHandler(
         var recapService = scope.ServiceProvider.GetRequiredService<IYearlyRecapService>();
         var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
         
-        // Use hybrid cache to prevent race conditions causing this to update twice in a short period
-        // The cache key ensures that if multiple commands are queued, only one effectively runs the logic while others wait or return cached 'true'
         var cacheKey = $"GlobalRecapGeneration_{command.Year}";
         
         await cache.GetOrCreateAsync(cacheKey, async (c) => {
@@ -34,10 +32,10 @@ public class GenerateGlobalStatsHandler(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to generate global stats for {Year}", command.Year);
-                throw; // Throwing will clean up the cache entry so it can be retried
+                throw;
             }
         }, new HybridCacheEntryOptions() {
-            LocalCacheExpiration = TimeSpan.FromMinutes(5), // Keep the "Processing/Done" flag for a bit
+            LocalCacheExpiration = TimeSpan.FromMinutes(30),
         }, cancellationToken: ct);
     }
 }

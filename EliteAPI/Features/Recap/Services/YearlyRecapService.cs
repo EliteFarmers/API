@@ -55,11 +55,8 @@ public class YearlyRecapService(DataContext context, ILbService lbService, IMemb
 		var globalStats = await context.YearlyRecapSnapshots.FindAsync(year);
 
 		if (globalStats == null) {
-			// Fire and forget global stats generation
-			// The handler manages its own scope, so this is safe.
-			await new GenerateGlobalStatsCommand { Year = year }.ExecuteAsync(CancellationToken.None);
-
-			// Return "Not Ready" error
+			await new GenerateGlobalStatsCommand { Year = year }.QueueJobAsync();
+			
 			throw new InvalidOperationException(
 				$"Global stats for {year} are being generated. Please try again in few minutes.");
 		}
