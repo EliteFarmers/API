@@ -32,10 +32,16 @@ public class MuseumService(
 		
 		var members = museumData.Value.Members;
 		
-		var memberIds = await context.ProfileMembers
+		var idLookupList = await context.ProfileMembers
 			.Where(pm => pm.ProfileId == profileId)
 			.Select(pm => new { pm.Id, pm.PlayerUuid })
-			.ToDictionaryAsync(pm => pm.PlayerUuid, pm => pm.Id, cancellationToken: ct);
+			.ToListAsync(ct);
+
+		var memberIds = new Dictionary<string, Guid>();
+		
+		foreach (var item in idLookupList) {
+			memberIds.TryAdd(item.PlayerUuid, item.Id);
+		}
 
 		var memberIdList = memberIds.Values.ToList();
 		var validIds = new List<Guid>();
