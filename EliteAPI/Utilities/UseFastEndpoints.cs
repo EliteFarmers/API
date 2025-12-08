@@ -1,5 +1,6 @@
 using System.Text.Json;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Recap.Commands;
 using EliteAPI.Services;
 using ErrorOr;
 using FastEndpoints;
@@ -8,7 +9,6 @@ namespace EliteAPI.Utilities;
 
 public static class UseFastEndpoints
 {
-
 	public static WebApplicationBuilder AddEliteFastEndpoints(this WebApplicationBuilder builder) {
 		builder.Services.AddFastEndpoints(o => { o.SourceGeneratorDiscoveredTypes = DiscoveredTypes.All; });
 		builder.Services.AddJobQueues<JobRecord, JobStorageProvider>();
@@ -60,6 +60,10 @@ public static class UseFastEndpoints
 		app.UseJobQueues(o => {
 			o.MaxConcurrency = 4;
 			o.ExecutionTimeLimit = TimeSpan.FromMinutes(1);
+
+			o.LimitsFor<GenerateGlobalStatsCommand>(
+				maxConcurrency: 4,
+				timeLimit: TimeSpan.FromHours(2));
 		});
 
 		return app;

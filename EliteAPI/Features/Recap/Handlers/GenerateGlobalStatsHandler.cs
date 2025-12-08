@@ -2,8 +2,6 @@ using EliteAPI.Features.Recap.Commands;
 using EliteAPI.Features.Recap.Services;
 using FastEndpoints;
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace EliteAPI.Features.Recap.Handlers;
 
