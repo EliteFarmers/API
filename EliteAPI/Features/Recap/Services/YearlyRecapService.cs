@@ -89,6 +89,8 @@ public class YearlyRecapService(DataContext context, ILbService lbService, IMemb
 	}
 
 	public async Task<YearlyRecapSnapshot?> GenerateGlobalStatsAsync(int year) {
+		context.Database.SetCommandTimeout(TimeSpan.FromMinutes(30));
+
 		var startDate = new DateTimeOffset(new DateTime(year - 1, 12, 7, 0, 0, 0, DateTimeKind.Utc));
 		var endDate = new DateTimeOffset(new DateTime(year, 12, 7, 0, 0, 0, DateTimeKind.Utc));
 		var startTs = startDate.ToUnixTimeSeconds();
