@@ -8,6 +8,7 @@ using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Features.Recap.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Firesales.Models;
 using EliteAPI.Features.Resources.Items.Models;
@@ -172,4 +173,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<HypixelGuildMember> HypixelGuildMembers { get; set; } = null!;
 	public DbSet<HypixelGuildMemberExp> HypixelGuildMemberExps { get; set; } = null!;
 	public DbSet<HypixelGuildStats> HypixelGuildStats { get; set; } = null!;
+	
+	// Yearly Recap
+	public DbSet<YearlyRecap> YearlyRecaps { get; set; } = null!;
+	public DbSet<YearlyRecapSnapshot> YearlyRecapSnapshots { get; set; } = null!;
 }
