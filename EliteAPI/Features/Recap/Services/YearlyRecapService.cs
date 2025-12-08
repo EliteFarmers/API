@@ -162,6 +162,7 @@ public class YearlyRecapService(DataContext context, ILbService lbService, IMemb
 
 		await using var command = connection.CreateCommand();
 		command.CommandText = sql;
+		command.CommandTimeout = 1800;
 
 		await using var reader = await command.ExecuteReaderAsync();
 		if (!await reader.ReadAsync()) return dict;
