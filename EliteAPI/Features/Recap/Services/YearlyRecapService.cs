@@ -96,7 +96,8 @@ public class YearlyRecapService(DataContext context, ILbService lbService, IMemb
 		var trackedPlayers = await context.ProfileMembers.Select(pm => pm.PlayerUuid).Distinct().CountAsync();
 
 		var bannedWiped = await context.ProfileMembers
-			.Where(pm => pm.WasRemoved && pm.LastUpdated >= startTs && pm.LastUpdated <= endTs)
+			.Include(pm => pm.Profile)
+			.Where(pm => pm.WasRemoved && pm.LastUpdated >= startTs && pm.LastUpdated <= endTs && pm.Profile.GameMode != "bingo")
 			.CountAsync();
 
 		var ironmanToNormal = await context.GameModeHistories
@@ -319,15 +320,13 @@ public class YearlyRecapService(DataContext context, ILbService lbService, IMemb
 
 		data.Contests.HighestPlacements = contests
 			.Where(x => x.Position > -1 && x.MedalEarned != ContestMedal.Unclaimable)
-			.GroupBy(c => c.JacobContest.Crop)
-			.Select(g => {
-				var best = g.OrderBy(x => x.Position).First();
-				return new ContestPlacementRecap {
-					Crop = g.Key.ToString(),
-					Rank = best.Position,
-					Medal = best.MedalEarned.ToString()
-				};
-			})
+			.OrderBy(x => x.Position)
+			.ThenByDescending(x => x.Collected)
+			.Select(g => new ContestPlacementRecap {
+					Crop = g.JacobContest.Crop.ToString(),
+					Rank = g.Position,
+					Medal = g.MedalEarned.ToString()
+				})
 			.ToList();
 
 		// Streak Calculation
