@@ -66,6 +66,10 @@ public partial class ItemTextureResolver(
 			? LegacyItemMappings.MapBukkitIdOrDefault(item.Data.Material, (short)item.Data.Durability)
 			: null;
 
+		if (mappedId is null && skyblockId.StartsWith("ENCHANTMENT_")) {
+			mappedId = LegacyItemMappings.MapBukkitIdOrDefault("ENCHANTED_BOOK");
+		}
+
 		SkyblockPetData? pet = null;
 		if (canBePet && (SkyblockRepoClient.Data.Pets.TryGetValue(skyblockId, out pet) || item is null)) {
 			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3); // Player head
