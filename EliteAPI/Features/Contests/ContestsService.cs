@@ -217,11 +217,13 @@ public class ContestsService(
 				}) ?? new Dictionary<string, ContestBracketsDto>();
 
 			// Add missing crops to the dictionary
-			if (dto.Count < 9)
+			if (dto.Count < Enum.GetValues<Crop>().Length - 1) {
 				foreach (var crop in Enum.GetValues<Crop>()) {
 					var name = crop.SimpleName();
+					if (name == "seeds") continue;
 					dto.TryAdd(name, new ContestBracketsDto());
 				}
+			}
 
 			return dto;
 		}
