@@ -203,6 +203,12 @@ public static class FarmingWeightParser
 			          weights[Crop.Pumpkin];
 			result += Math.Max(crops.Wheat - PestParser.CalcUncountedCrops(Pest.Fly, crops.Fly), 0) /
 			          weights[Crop.Wheat];
+			result += Math.Max(crops.Sunflower - PestParser.CalcUncountedCrops(Pest.Dragonfly, crops.Dragonfly), 0) /
+			          weights[Crop.Sunflower];
+			result += Math.Max(crops.Moonflower - PestParser.CalcUncountedCrops(Pest.Firefly, crops.Firefly), 0) /
+			          weights[Crop.Moonflower];
+			result += Math.Max(crops.WildRose - PestParser.CalcUncountedCrops(Pest.Mantis, crops.Mantis), 0) /
+			          weights[Crop.WildRose];
 
 			// Assign weights for mushroom and the double-break crops for special mushroom calculation
 			var mushroom = Math.Max(crops.Mushroom - PestParser.CalcUncountedCrops(Pest.Slug, crops.Slug), 0) /

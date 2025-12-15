@@ -44,6 +44,9 @@ public static class GardenParser
 		upgrades.Pumpkin = incoming.TryGetValue(CropId.Pumpkin, out var pumpkin) ? pumpkin : upgrades.Pumpkin;
 		upgrades.SugarCane = incoming.TryGetValue(CropId.SugarCane, out var sugarCane) ? sugarCane : upgrades.SugarCane;
 		upgrades.Wheat = incoming.TryGetValue(CropId.Wheat, out var wheat) ? wheat : upgrades.Wheat;
+		upgrades.Sunflower = incoming.TryGetValue(CropId.Sunflower, out var sunflower) ? sunflower : upgrades.Sunflower;
+		upgrades.Moonflower = incoming.TryGetValue(CropId.Moonflower, out var moonflower) ? moonflower : upgrades.Moonflower;
+		upgrades.WildRose = incoming.TryGetValue(CropId.WildRose, out var wildRose) ? wildRose : upgrades.WildRose;
 	}
 
 	public static void PopulateCropMilestones(this Garden garden, GardenResponseData data) {
@@ -62,5 +65,8 @@ public static class GardenParser
 		upgrades.Pumpkin = incoming.TryGetValue(CropId.Pumpkin, out var pumpkin) ? pumpkin : upgrades.Pumpkin;
 		upgrades.SugarCane = incoming.TryGetValue(CropId.SugarCane, out var sugarCane) ? sugarCane : upgrades.SugarCane;
 		upgrades.Wheat = incoming.TryGetValue(CropId.Wheat, out var wheat) ? wheat : upgrades.Wheat;
+		upgrades.Sunflower = incoming.TryGetValue(CropId.Sunflower, out var sunflower) ? sunflower : upgrades.Sunflower;
+		upgrades.Moonflower = incoming.TryGetValue(CropId.Moonflower, out var moonflower) ? moonflower : upgrades.Moonflower;
+		upgrades.WildRose = incoming.TryGetValue(CropId.WildRose, out var wildRose) ? wildRose : upgrades.WildRose;
 	}
 }

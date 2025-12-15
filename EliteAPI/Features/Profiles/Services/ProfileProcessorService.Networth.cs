@@ -9,7 +9,7 @@ namespace EliteAPI.Features.Profiles.Services;
 public partial class ProfileProcessorService
 {
 	public async Task<NetworthBreakdown> GetNetworthBreakdownAsync(ProfileMember member) {
-		var prices = await _priceProvider.GetPricesAsync();
+		var prices = await priceProvider.GetPricesAsync();
 		var breakdown = new NetworthBreakdown();
 
 		// Bank and Purse
@@ -47,7 +47,7 @@ public partial class ProfileProcessorService
 			foreach (var item in inventory.Items) {
 				if (categoryName == "museum" && item.Attributes?.Extra.ContainsKey("museum_borrowing") is true) continue;
 				var networthItem = item.ToNetworthItem();
-				var result = await _networthCalculator.CalculateAsync(networthItem, prices);
+				var result = await networthCalculator.CalculateAsync(networthItem, prices);
 
 				category.Total += result.Price;
 				category.LiquidTotal += result.LiquidNetworth;
@@ -137,7 +137,7 @@ public partial class ProfileProcessorService
 				}
 			};
 
-			var result = await _petNetworthCalculator.CalculateAsync(networthItem, prices);
+			var result = await petNetworthCalculator.CalculateAsync(networthItem, prices);
 			petsCategory.Total += result.Price;
 			petsCategory.LiquidTotal += result.LiquidNetworth;
 			petsCategory.FunctionalTotal += result.FunctionalNetworth;

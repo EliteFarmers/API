@@ -86,6 +86,9 @@ public class MilestoneCrops
 	public long Cactus { get; set; }
 	public long SugarCane { get; set; }
 	public long NetherWart { get; set; }
+	public long Sunflower { get; set; }
+	public long Moonflower { get; set; }
+	public long WildRose { get; set; }
 }
 
 [Owned]
@@ -101,6 +104,9 @@ public class CropUpgrades
 	public short Cactus { get; set; }
 	public short SugarCane { get; set; }
 	public short NetherWart { get; set; }
+	public short Sunflower { get; set; }
+	public short Moonflower { get; set; }
+	public short WildRose { get; set; }
 }
 
 public class VisitorData

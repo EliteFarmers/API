@@ -2,14 +2,20 @@
   "Farming": {
     "FarmingToolIds": {
       "CACTUS_KNIFE": 0,
+      "CACTUS_KNIFE_2": 0,
+      "CACTUS_KNIFE_3": 0,
       "THEORETICAL_HOE_CARROT_1": 1,
       "THEORETICAL_HOE_CARROT_2": 1,
       "THEORETICAL_HOE_CARROT_3": 1,
       "COCO_CHOPPER": 2,
+      "COCO_CHOPPER_2": 2,
+      "COCO_CHOPPER_3": 2,
       "MELON_DICER": 3,
       "MELON_DICER_2": 3,
       "MELON_DICER_3": 3,
       "FUNGI_CUTTER": 4,
+      "FUNGI_CUTTER_2": 4,
+      "FUNGI_CUTTER_3": 4,
       "THEORETICAL_HOE_WARTS_1": 5,
       "THEORETICAL_HOE_WARTS_2": 5,
       "THEORETICAL_HOE_WARTS_3": 5,
@@ -25,7 +31,13 @@
       "THEORETICAL_HOE_WHEAT_1": 9,
       "THEORETICAL_HOE_WHEAT_2": 9,
       "THEORETICAL_HOE_WHEAT_3": 9,
-      "HOE_OF_NO_TILLING": 10
+      "HOE_OF_NO_TILLING": 10,
+      "THEORETICAL_HOE_SUNFLOWER_1": 11,
+      "THEORETICAL_HOE_SUNFLOWER_2": 11,
+      "THEORETICAL_HOE_SUNFLOWER_3": 11,
+      "THEORETICAL_HOE_WILD_ROSE_1": 13,
+      "THEORETICAL_HOE_WILD_ROSE_2": 13,
+      "THEORETICAL_HOE_WILD_ROSE_3": 13
     },
     "FarmingEquipmentIds": {
       "LOTUS_BELT": -1,
@@ -37,7 +49,11 @@
       "PESTHUNTERS_GLOVES": -1,
       "PESTHUNTERS_BELT": -1,
       "PESTHUNTERS_CLOAK": -1,
-      "PESTHUNTERS_NECKLACE": -1
+      "PESTHUNTERS_NECKLACE": -1,
+      "BLOSSOM_BRACELET": -1,
+      "BLOSSOM_BELT": -1,
+      "BLOSSOM_CLOAK": -1,
+      "BLOSSOM_NECKLACE": -1
     },
     "FarmingArmorIds": {
       "FARMER_BOOTS": -1,
@@ -66,13 +82,19 @@
       "FERMENTO_HELMET": -1,
       "FERMENTO_CHESTPLATE": -1,
       "FERMENTO_LEGGINGS": -1,
-      "FERMENTO_BOOTS": -1
+      "FERMENTO_BOOTS": -1,
+      "HELIANTHUS_HELMET": -1,
+      "HELIANTHUS_CHESTPLATE": -1,
+      "HELIANTHUS_LEGGINGS": -1,
+      "HELIANTHUS_BOOTS": -1
     },
     "FarmingAccessoryIds": {
       "FERMENTO_ARTIFACT": -1,
       "SQUASH_RING": -1,
       "CROPIE_TALISMAN": -1,
-      "POWER_RELIC": -1
+      "POWER_RELIC": -1,
+      "MAGIC_8_BALL": -1,
+      "ATMOSPHERIC_FILTER": -1
     },
     "ShardIds": [
       "SHARD_WARTYBUG",

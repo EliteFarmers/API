@@ -69,7 +69,10 @@ public static class CropCollectionParser
 			{ "pumpkin", cropCollection.Pumpkin },
 			{ "cane", cropCollection.SugarCane },
 			{ "wheat", cropCollection.Wheat },
-			{ "seeds", cropCollection.Seeds }
+			{ "seeds", cropCollection.Seeds },
+			{ "sunflower", cropCollection.Sunflower },
+			{ "moonflower", cropCollection.Moonflower },
+			{ "wildrose", cropCollection.WildRose }
 		};
 	}
 
@@ -85,7 +88,10 @@ public static class CropCollectionParser
 			{ "rat", cropCollection.Rat },
 			{ "mosquito", cropCollection.Mosquito },
 			{ "fly", cropCollection.Fly },
-			{ "mouse", cropCollection.Mouse }
+			{ "mouse", cropCollection.Mouse },
+			{ "dragonfly", cropCollection.Dragonfly },
+			{ "firefly", cropCollection.Firefly },
+			{ "mantis", cropCollection.Mantis }
 		};
 	}
 }

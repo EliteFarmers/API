@@ -77,6 +77,9 @@ public static class FormatUtils
 			Crop.Pumpkin => "Pumpkin",
 			Crop.SugarCane => "Sugar Cane",
 			Crop.Wheat => "Wheat",
+			Crop.Sunflower => "Sunflower",
+			Crop.Moonflower => "Moonflower",
+			Crop.WildRose => "Wild Rose",
 			_ => "Invalid Crop"
 		};
 	}
@@ -93,6 +96,9 @@ public static class FormatUtils
 			"Pumpkin" => Crop.Pumpkin,
 			"Sugar Cane" => Crop.SugarCane,
 			"Wheat" => Crop.Wheat,
+			"Sunflower" => Crop.Sunflower,
+			"Moonflower" => Crop.Moonflower,
+			"Wild Rose" => Crop.WildRose,
 			_ => null
 		};
 	}

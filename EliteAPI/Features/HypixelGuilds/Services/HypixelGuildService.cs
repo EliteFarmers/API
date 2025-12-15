@@ -91,7 +91,37 @@ public class HypixelGuildService(
 			var guildResponse = await hypixelApi.FetchGuildByIdAsync(guildId, ct);
 			var guild = guildResponse.Content?.Guild;
 		
-			if (!guildResponse.IsSuccessful || guild is null) {
+			if (!guildResponse.IsSuccessful) {
+				logger.LogWarning("Failed to fetch guild {GuildId}", guildId);
+				return true;
+			}
+			
+			if (guildResponse.Content.Success && guild is null) {
+				// Guild deleted
+				var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+				
+				// Uncomment after confirming no issues with this detection
+				// await context.HypixelGuildMembers
+				// 	.Where(m => m.GuildId == guildId && m.Active)
+				// 	.ExecuteUpdateAsync(s => s
+				// 			.SetProperty(e => e.Active, false)
+				// 			.SetProperty(e => e.LeftAt, now),
+				// 		cancellationToken: ct);
+				
+				var existingGuild = await context.HypixelGuilds
+					.FirstOrDefaultAsync(g => g.Id == guildId, ct);
+				
+				if (existingGuild is not null) {
+					// existingGuild.MemberCount = 0;
+					existingGuild.LastUpdated = now;
+					existingGuild.Deleted = true;
+					await context.SaveChangesAsync(ct);
+				}
+				
+				return true;
+			}
+			
+			if (guild is null) {
 				logger.LogWarning("Failed to fetch guild {GuildId}", guildId);
 				return true;
 			}
@@ -144,7 +174,8 @@ public class HypixelGuildService(
 		existing.GameExp = guild.GuildExpByGameType;
 		existing.Ranks = guild.Ranks;
 		existing.LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
+		existing.Deleted = false;
+		
 		// Changes are saved in UpdateGuildMembers
 		await UpdateGuildMembers(existing, guild.Members, c);
 	}

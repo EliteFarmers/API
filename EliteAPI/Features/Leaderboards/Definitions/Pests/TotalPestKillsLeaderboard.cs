@@ -27,6 +27,9 @@ public class TotalPestKillsLeaderboard : IMemberLeaderboardDefinition
 		       + member.Farming.Pests.Mouse
 		       + member.Farming.Pests.Rat
 		       + member.Farming.Pests.Slug
-		       + member.Farming.Pests.Earthworm;
+		       + member.Farming.Pests.Earthworm
+		       + member.Farming.Pests.Dragonfly
+		       + member.Farming.Pests.Firefly
+		       + member.Farming.Pests.Mantis;
 	}
 }

@@ -1,7 +1,9 @@
 {
   "Pets": {
     "MaxLevels": {
-      "GOLDEN_DRAGON": 200
+      "GOLDEN_DRAGON": 200,
+      "JADE_DRAGON": 200,
+      "ROSE_DRAGON": 200
     },
     "RarityOffsets": {
       "COMMON": 0,

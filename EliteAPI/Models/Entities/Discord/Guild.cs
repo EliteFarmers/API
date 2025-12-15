@@ -152,6 +152,9 @@ public class CropSettings<T>
 	public T? CocoaBeans { get; set; }
 	public T? SugarCane { get; set; }
 	public T? NetherWart { get; set; }
+	public T? Sunflower { get; set; }
+	public T? Moonflower { get; set; }
+	public T? WildRose { get; set; }
 }
 
 public class CropRecords
@@ -166,6 +169,9 @@ public class CropRecords
 	public List<GuildJacobLeaderboardEntry> CocoaBeans { get; set; } = new();
 	public List<GuildJacobLeaderboardEntry> SugarCane { get; set; } = new();
 	public List<GuildJacobLeaderboardEntry> NetherWart { get; set; } = new();
+	public List<GuildJacobLeaderboardEntry> Sunflower { get; set; } = new();
+	public List<GuildJacobLeaderboardEntry> Moonflower { get; set; } = new();
+	public List<GuildJacobLeaderboardEntry> WildRose { get; set; } = new();
 }
 
 public class GuildJacobLeaderboardEntry

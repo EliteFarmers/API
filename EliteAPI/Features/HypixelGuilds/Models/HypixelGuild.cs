@@ -43,6 +43,8 @@ public class HypixelGuild
 	public int MemberCount { get; set; }
 	public long LastUpdated { get; set; }
 	
+	public bool Deleted { get; set; }
+	
 	public List<HypixelGuildStats> Stats { get; set; } = [];
 }
 

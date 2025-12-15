@@ -24,6 +24,9 @@ public class CropCollection : ITimeScale
 	public long SugarCane { get; set; }
 	public long NetherWart { get; set; }
 	public long Seeds { get; set; }
+	public long Sunflower { get; set; }
+	public long Moonflower { get; set; }
+	public long WildRose { get; set; }
 
 	public int Beetle { get; set; } = 0;
 	public int Cricket { get; set; } = 0;
@@ -36,4 +39,7 @@ public class CropCollection : ITimeScale
 	public int Slug { get; set; } = 0;
 	public int Earthworm { get; set; } = 0;
 	public int Mouse { get; set; } = 0;
+	public int Dragonfly { get; set; } = 0;
+	public int Firefly { get; set; } = 0;
+	public int Mantis { get; set; } = 0;
 }

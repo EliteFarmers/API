@@ -112,7 +112,10 @@ public enum Crop
 	Pumpkin = 7,
 	SugarCane = 8,
 	Wheat = 9,
-	Seeds = 10 // Only used in some scenarios 
+	Seeds = 10, // Only used in some scenarios
+	Sunflower = 11,
+	Moonflower = 12,
+	WildRose = 13
 }
 
 public enum Pest
@@ -127,7 +130,10 @@ public enum Pest
 	Rat = 7,
 	Mosquito = 8,
 	Fly = 9,
-	Mouse = 10
+	Mouse = 10,
+	Dragonfly = 11,
+	Firefly = 12,
+	Mantis = 13
 }
 
 public enum ContestMedal

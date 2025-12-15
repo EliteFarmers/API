@@ -21,7 +21,7 @@ internal sealed class GetLeaderboardsEndpoint(
 		Summary(s => { s.Summary = "Get Leaderboards"; });
 
 		Description(d => d.AutoTagOverride("Leaderboard"));
-		Options(opt => opt.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(30)).Tag("leaderboards")));
+		Options(opt => opt.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(10)).Tag("leaderboards")));
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {

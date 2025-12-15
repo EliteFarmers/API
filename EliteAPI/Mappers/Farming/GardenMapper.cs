@@ -25,7 +25,10 @@ public class GardenMapper : Profile
 			.ForMember(c => c.Pumpkin, o => o.MapFrom(c => c.Pumpkin.ToString()))
 			.ForMember(c => c.Mushroom, o => o.MapFrom(c => c.Mushroom.ToString()))
 			.ForMember(c => c.SugarCane, o => o.MapFrom(c => c.SugarCane.ToString()))
-			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()));
+			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()))
+			.ForMember(c => c.Sunflower, o => o.MapFrom(c => c.Sunflower.ToString()))
+			.ForMember(c => c.Moonflower, o => o.MapFrom(c => c.Moonflower.ToString()))
+			.ForMember(c => c.WildRose, o => o.MapFrom(c => c.WildRose.ToString()));
 
 		CreateMap<MilestoneCrops, CropSettings<string>>()
 			.ForMember(c => c.Cactus, o => o.MapFrom(c => c.Cactus.ToString()))
@@ -37,7 +40,10 @@ public class GardenMapper : Profile
 			.ForMember(c => c.Pumpkin, o => o.MapFrom(c => c.Pumpkin.ToString()))
 			.ForMember(c => c.Mushroom, o => o.MapFrom(c => c.Mushroom.ToString()))
 			.ForMember(c => c.SugarCane, o => o.MapFrom(c => c.SugarCane.ToString()))
-			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()));
+			.ForMember(c => c.NetherWart, o => o.MapFrom(c => c.NetherWart.ToString()))
+			.ForMember(c => c.Sunflower, o => o.MapFrom(c => c.Sunflower.ToString()))
+			.ForMember(c => c.Moonflower, o => o.MapFrom(c => c.Moonflower.ToString()))
+			.ForMember(c => c.WildRose, o => o.MapFrom(c => c.WildRose.ToString()));
 
 		CreateMap<CropUpgrades, CropSettings<int>>();
 

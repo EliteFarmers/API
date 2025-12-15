@@ -96,9 +96,6 @@ public partial class ProfileProcessorService(
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
-	private readonly SkyBlockItemNetworthCalculator _networthCalculator = networthCalculator;
-	private readonly PetNetworthCalculator _petNetworthCalculator = petNetworthCalculator;
-	private readonly IPriceProvider _priceProvider = priceProvider;
 
 	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData =
 		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>
@@ -645,6 +642,9 @@ public partial class ProfileProcessorService(
 				SugarCane = member.Collections.GetValueOrDefault(CropId.SugarCane),
 				Wheat = member.Collections.GetValueOrDefault(CropId.Wheat),
 				Seeds = member.Collections.GetValueOrDefault(CropId.Seeds),
+				Sunflower = member.Collections.GetValueOrDefault(CropId.Sunflower),
+				Moonflower = member.Collections.GetValueOrDefault(CropId.Moonflower),
+				WildRose =  member.Collections.GetValueOrDefault(CropId.WildRose),
 
 				Beetle = member.Farming.Pests.Beetle,
 				Cricket = member.Farming.Pests.Cricket,
@@ -656,7 +656,10 @@ public partial class ProfileProcessorService(
 				Rat = member.Farming.Pests.Rat,
 				Slug = member.Farming.Pests.Slug,
 				Earthworm = member.Farming.Pests.Earthworm,
-				Mouse = member.Farming.Pests.Mouse
+				Mouse = member.Farming.Pests.Mouse,
+				Dragonfly = member.Farming.Pests.Dragonfly,
+				Firefly = member.Farming.Pests.Firefly,
+				Mantis = member.Farming.Pests.Mantis
 			};
 
 			await context.BulkInsertAsync([cropCollection]);

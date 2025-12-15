@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
@@ -23,6 +22,9 @@ public static class PestParser
 		uncountedCrops[Pest.Rat.GetCrop()] = CalcUncountedCrops(Pest.Rat, pests.Rat);
 		uncountedCrops[Pest.Mosquito.GetCrop()] = CalcUncountedCrops(Pest.Mosquito, pests.Mosquito);
 		uncountedCrops[Pest.Fly.GetCrop()] = CalcUncountedCrops(Pest.Fly, pests.Fly);
+		uncountedCrops[Pest.Dragonfly.GetCrop()] = CalcUncountedCrops(Pest.Dragonfly, pests.Dragonfly);
+		uncountedCrops[Pest.Firefly.GetCrop()] = CalcUncountedCrops(Pest.Firefly, pests.Firefly);
+		uncountedCrops[Pest.Mantis.GetCrop()] = CalcUncountedCrops(Pest.Mantis, pests.Mantis);
 	}
 
 	public static Dictionary<Crop, long> CalcUncountedCrops(this CropCollection cropCollection) {
@@ -36,7 +38,10 @@ public static class PestParser
 			[Pest.Locust.GetCrop()] = CalcUncountedCrops(Pest.Locust, cropCollection.Locust),
 			[Pest.Rat.GetCrop()] = CalcUncountedCrops(Pest.Rat, cropCollection.Rat),
 			[Pest.Mosquito.GetCrop()] = CalcUncountedCrops(Pest.Mosquito, cropCollection.Mosquito),
-			[Pest.Fly.GetCrop()] = CalcUncountedCrops(Pest.Fly, cropCollection.Fly)
+			[Pest.Fly.GetCrop()] = CalcUncountedCrops(Pest.Fly, cropCollection.Fly),
+			[Pest.Dragonfly.GetCrop()] = CalcUncountedCrops(Pest.Dragonfly, cropCollection.Dragonfly),
+			[Pest.Firefly.GetCrop()] = CalcUncountedCrops(Pest.Firefly, cropCollection.Firefly),
+			[Pest.Mantis.GetCrop()] = CalcUncountedCrops(Pest.Mantis, cropCollection.Mantis)
 		};
 	}
 
@@ -89,21 +94,24 @@ public static class PestParser
 	}
 
 	public static void ParsePests(this ProfileMember member, ProfileMemberResponse memberData) {
-	var kills = memberData.Bestiary?.Kills?.MobKills;
+		var kills = memberData.Bestiary?.Kills?.MobKills;
 		if (kills is null) return;
 
 		var pests = member.Farming.Pests;
-	pests.Beetle    = kills.TryGetValue("pest_beetle_1", out var v0) ? v0 : 0;
-		pests.Cricket   = kills.TryGetValue("pest_cricket_1", out var v1) ? v1 : 0;
-		pests.Fly       = kills.TryGetValue("pest_fly_1", out var v2) ? v2 : 0;
-		pests.Locust    = kills.TryGetValue("pest_locust_1", out var v3) ? v3 : 0;
-		pests.Mite      = kills.TryGetValue("pest_mite_1", out var v4) ? v4 : 0;
-		pests.Mosquito  = kills.TryGetValue("pest_mosquito_1", out var v5) ? v5 : 0;
-		pests.Moth      = kills.TryGetValue("pest_moth_1", out var v6) ? v6 : 0;
-		pests.Rat       = kills.TryGetValue("pest_rat_1", out var v7) ? v7 : 0;
-		pests.Slug      = kills.TryGetValue("pest_slug_1", out var v8) ? v8 : 0;
+		pests.Beetle = kills.TryGetValue("pest_beetle_1", out var v0) ? v0 : 0;
+		pests.Cricket = kills.TryGetValue("pest_cricket_1", out var v1) ? v1 : 0;
+		pests.Fly = kills.TryGetValue("pest_fly_1", out var v2) ? v2 : 0;
+		pests.Locust = kills.TryGetValue("pest_locust_1", out var v3) ? v3 : 0;
+		pests.Mite = kills.TryGetValue("pest_mite_1", out var v4) ? v4 : 0;
+		pests.Mosquito = kills.TryGetValue("pest_mosquito_1", out var v5) ? v5 : 0;
+		pests.Moth = kills.TryGetValue("pest_moth_1", out var v6) ? v6 : 0;
+		pests.Rat = kills.TryGetValue("pest_rat_1", out var v7) ? v7 : 0;
+		pests.Slug = kills.TryGetValue("pest_slug_1", out var v8) ? v8 : 0;
 		pests.Earthworm = kills.TryGetValue("pest_worm_1", out var v9) ? v9 : 0;
-		pests.Mouse     = kills.TryGetValue("pest_mouse_1", out var v10) ? v10 : 0;
+		pests.Mouse = kills.TryGetValue("pest_mouse_1", out var v10) ? v10 : 0;
+		pests.Dragonfly = kills.TryGetValue("pest_dragonfly_1", out var v11) ? v11 : 0;
+		pests.Firefly = kills.TryGetValue("pest_firefly_1", out var v12) ? v12 : 0;
+		pests.Mantis = kills.TryGetValue("pest_mantis_1", out var v13) ? v13 : 0;
 
 		member.Farming.ParsePestCropCollectionNumbers();
 	}
@@ -130,5 +138,8 @@ public static class PestParser
 		[JsonPropertyName("pest_mosquito_1")] public int Mosquito { get; set; } = 0;
 		[JsonPropertyName("pest_fly_1")] public int Fly { get; set; } = 0;
 		[JsonPropertyName("pest_mouse_1")] public int Mouse { get; set; } = 0;
+		[JsonPropertyName("pest_dragonfly_1")] public int Dragonfly { get; set; } = 0;
+		[JsonPropertyName("pest_firefly_1")] public int Firefly { get; set; } = 0;
+		[JsonPropertyName("pest_mantis_1")] public int Mantis { get; set; } = 0;
 	}
 }

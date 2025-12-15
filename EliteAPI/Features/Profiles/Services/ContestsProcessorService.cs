@@ -62,7 +62,10 @@ public class ContestsProcessorService(
 					return false; // Contests with less than 100 crops collected aren't counted in game
 
 				var timestamp = FormatUtils.GetTimeFromContestKey(c.Key);
-				var actualKey = timestamp + (int)(FormatUtils.GetCropFromContestKey(c.Key) ?? 0);
+				var crop = FormatUtils.GetCropFromContestKey(c.Key);
+				if (crop is null) return false;
+
+				var actualKey = timestamp + (int)crop;
 				if (c.Value.Position is not null) {
 					claimedDictionary[timestamp] = true;
 				}
@@ -110,7 +113,8 @@ public class ContestsProcessorService(
 
 			// If this participation has no medal, and we already have a claimed contest at this timestamp
 			// Set the medal to unclaimable (this is a duplicate contest)
-			if (medal == ContestMedal.None && contest.Position is null && claimedDictionary.TryGetValue(timestamp, out var claimed) && claimed) {
+			if (medal == ContestMedal.None && contest.Position is null &&
+			    claimedDictionary.TryGetValue(timestamp, out var claimed) && claimed) {
 				medal = ContestMedal.Unclaimable;
 			}
 
@@ -209,7 +213,10 @@ public class ContestsProcessorService(
 			{ Crop.Potato, new JacobCropStats() },
 			{ Crop.Pumpkin, new JacobCropStats() },
 			{ Crop.SugarCane, new JacobCropStats() },
-			{ Crop.Wheat, new JacobCropStats() }
+			{ Crop.Wheat, new JacobCropStats() },
+			{ Crop.Sunflower, new JacobCropStats() },
+			{ Crop.Moonflower, new JacobCropStats() },
+			{ Crop.WildRose, new JacobCropStats() }
 		};
 
 		foreach (var contest in jacob.Contests) {

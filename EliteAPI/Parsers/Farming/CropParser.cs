@@ -18,6 +18,9 @@ public static class CropParser
 			Crop.SugarCane => "cane",
 			Crop.Wheat => "wheat",
 			Crop.Seeds => "seeds",
+			Crop.Sunflower => "sunflower",
+			Crop.Moonflower => "moonflower",
+			Crop.WildRose => "wildrose",
 			_ => throw new ArgumentOutOfRangeException(nameof(crop), crop, null)
 		};
 	}
@@ -38,6 +41,9 @@ public static class CropParser
 			CropId.SugarCane => Crop.SugarCane,
 			CropId.Wheat => Crop.Wheat,
 			CropId.Seeds => Crop.Seeds,
+			CropId.Sunflower => Crop.Sunflower,
+			CropId.Moonflower => Crop.Moonflower,
+			CropId.WildRose => Crop.WildRose,
 			CropId.CocoaBeans or CropId.CocoaBeansAlt or CropId.CocoaBeansAlt2 => Crop.CocoaBeans,
 			_ => null
 		};
@@ -76,4 +82,7 @@ public static class CropId
 	public const string SugarCane = "SUGAR_CANE";
 	public const string Wheat = "WHEAT";
 	public const string Seeds = "SEEDS";
+	public const string Sunflower = "DOUBLE_PLANT";
+	public const string Moonflower = "MOONFLOWER";
+	public const string WildRose = "WILD_ROSE";
 }

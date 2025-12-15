@@ -1,0 +1,21 @@
+using EliteAPI.Features.Leaderboards.Models;
+using EliteAPI.Models.Entities.Hypixel;
+
+namespace EliteAPI.Features.Leaderboards.Definitions;
+
+public class PestMantisLeaderboard : IMemberLeaderboardDefinition
+{
+	public LeaderboardInfo Info { get; } = new() {
+		Title = "Praying Mantis Kills",
+		ShortTitle = "Praying Mantis",
+		Slug = "mantis",
+		Category = "Pests",
+		MinimumScore = 100,
+		IntervalType = [LeaderboardType.Current, LeaderboardType.Monthly],
+		ScoreDataType = LeaderboardScoreDataType.Long
+	};
+
+	public decimal GetScoreFromMember(ProfileMember member, LeaderboardType type) {
+		return member.Farming.Pests.Mantis;
+	}
+}

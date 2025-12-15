@@ -45,6 +45,9 @@ public class Pests
 	public int Slug { get; set; } = 0;
 	public int Earthworm { get; set; } = 0;
 	public int Mouse { get; set; } = 0;
+	public int Dragonfly { get; set; } = 0;
+	public int Firefly { get; set; } = 0;
+	public int Mantis { get; set; } = 0;
 }
 
 public class FarmingFortune

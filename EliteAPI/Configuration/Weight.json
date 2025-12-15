@@ -10,7 +10,10 @@
       "POTATO_ITEM",
       "PUMPKIN",
       "SUGAR_CANE",
-      "WHEAT"
+      "WHEAT",
+      "DOUBLE_PLANT",
+      "MOONFLOWER",
+      "WILD_ROSE"
     ],
     "CropsPerOneWeight": {
       "CACTUS": "178730.65",
@@ -22,7 +25,10 @@
       "POTATO_ITEM": "298328.17",
       "PUMPKIN": "99236.12",
       "SUGAR_CANE": "198885.45",
-      "WHEAT": "100000"
+      "WHEAT": "100000",
+      "DOUBLE_PLANT": "200000",
+      "MOONFLOWER": "200000",
+      "WILD_ROSE": "200000"
     },
     "EventCropsPerOneWeight": {
       "CACTUS": "178730.65",
@@ -34,7 +40,10 @@
       "POTATO_ITEM": "298328.17",
       "PUMPKIN": "91037.15",
       "SUGAR_CANE": "198885.45",
-      "WHEAT": "100000"
+      "WHEAT": "100000",
+      "DOUBLE_PLANT": "200000",
+      "MOONFLOWER": "200000",
+      "WILD_ROSE": "200000"
     },
     "MinimumWeightForTracking": 1000,
     "Farming60Bonus": 250,
@@ -69,7 +78,10 @@
       "7": "pest_rat_1",
       "8": "pest_mosquito_1",
       "9": "pest_fly_1",
-      "10": "pest_mouse_1"
+      "10": "pest_mouse_1",
+      "11": "pest_dragonfly_1",
+      "12": "pest_firefly_1",
+      "13": "pest_mantis_1"
     },
     "PestDropBrackets": {
       "0": 0,
@@ -203,6 +215,42 @@
         "rare": [
           {
             "drops": 76800,
+            "chance": 0.005
+          }
+        ]
+      },
+      "11": {
+        "crop": 11,
+        "items": 2,
+        "base": 160,
+        "scaling": 35,
+        "rare": [
+          {
+            "drops": 153600,
+            "chance": 0.005
+          }
+        ]
+      },
+      "12": {
+        "crop": 12,
+        "items": 2,
+        "base": 160,
+        "scaling": 35,
+        "rare": [
+          {
+            "drops": 153600,
+            "chance": 0.005
+          }
+        ]
+      },
+      "13": {
+        "crop": 13,
+        "items": 2,
+        "base": 160,
+        "scaling": 35,
+        "rare": [
+          {
+            "drops": 153600,
             "chance": 0.005
           }
         ]

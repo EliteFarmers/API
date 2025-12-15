@@ -163,7 +163,6 @@ public static class ServiceExtensions
 		configurationBuilder.Sources.AddRange(new List<JsonConfigurationSource> {
 			new() { Path = $"{directoryPath}/Weight.json", ReloadOnChange = true, Optional = false },
 			new() { Path = $"{directoryPath}/Cooldown.json", ReloadOnChange = true, Optional = false },
-			new() { Path = $"{directoryPath}/Leaderboards.json", ReloadOnChange = true, Optional = false },
 			new() { Path = $"{directoryPath}/Farming.json", ReloadOnChange = true, Optional = false },
 			new() { Path = $"{directoryPath}/ChocolateFactory.json", ReloadOnChange = true, Optional = false },
 			new() { Path = $"{directoryPath}/Events.json", ReloadOnChange = true, Optional = false },
@@ -179,7 +178,6 @@ public static class ServiceExtensions
 
 		builder.Services.Configure<ConfigFarmingWeightSettings>(builder.Configuration.GetSection("FarmingWeight"));
 		builder.Services.Configure<ConfigCooldownSettings>(builder.Configuration.GetSection("CooldownSeconds"));
-		builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("LeaderboardSettings"));
 		builder.Services.Configure<FarmingItemsSettings>(builder.Configuration.GetSection("Farming"));
 		builder.Services.Configure<ChocolateFactorySettings>(builder.Configuration.GetSection("ChocolateFactory"));
 		builder.Services.Configure<MessagingSettings>(builder.Configuration.GetSection("Messaging"));

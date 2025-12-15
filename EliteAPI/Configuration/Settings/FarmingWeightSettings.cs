@@ -75,9 +75,8 @@ public class ConfigFarmingWeightSettings
 		var weights = weightConfig?.CropWeights ?? FarmingWeightConfig.Settings.CropWeights;
 
 		foreach (var fortune in PestDropBrackets.Values) {
-			var minimum = PestCropDropChances.Values
-				.Select(chance => chance.GetCropDrops(fortune) / weights[chance.Crop])
-				.Min();
+			var chance = PestCropDropChances[Pest.Fly];
+			var minimum = chance.GetCropDrops(fortune) / weights[chance.Crop];
 
 			targets[fortune] = minimum;
 		}
@@ -118,7 +117,12 @@ public class PestDropChance
 		}
 
 		var total = GetCropDrops(fortune);
-		var toSubtract = total - total / (total / cropWeights[Crop]) * targetWeights[fortune];
+		var divisor = total / cropWeights[Crop];
+		var target = targetWeights[fortune];
+		var toSubtract = total - total / (divisor) * target;
+		
+		// Round toSubtract to 5 decimal places to avoid floating point precision issues
+		toSubtract = Math.Round(toSubtract, 5);
 
 		if (!usePrecomputed) return toSubtract;
 
