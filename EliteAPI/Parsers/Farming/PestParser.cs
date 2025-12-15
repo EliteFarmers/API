@@ -111,7 +111,7 @@ public static class PestParser
 		pests.Mouse = kills.TryGetValue("pest_mouse_1", out var v10) ? v10 : 0;
 		pests.Dragonfly = kills.TryGetValue("pest_dragonfly_1", out var v11) ? v11 : 0;
 		pests.Firefly = kills.TryGetValue("pest_firefly_1", out var v12) ? v12 : 0;
-		pests.Mantis = kills.TryGetValue("pest_mantis_1", out var v13) ? v13 : 0;
+		pests.Mantis = kills.TryGetValue("pest_praying_mantis_1", out var v13) ? v13 : 0;
 
 		member.Farming.ParsePestCropCollectionNumbers();
 	}
@@ -140,6 +140,6 @@ public static class PestParser
 		[JsonPropertyName("pest_mouse_1")] public int Mouse { get; set; } = 0;
 		[JsonPropertyName("pest_dragonfly_1")] public int Dragonfly { get; set; } = 0;
 		[JsonPropertyName("pest_firefly_1")] public int Firefly { get; set; } = 0;
-		[JsonPropertyName("pest_mantis_1")] public int Mantis { get; set; } = 0;
+		[JsonPropertyName("pest_praying_mantis_1")] public int Mantis { get; set; } = 0;
 	}
 }
