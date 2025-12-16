@@ -90,6 +90,7 @@ public static class FormatUtils
 			"Carrot" => Crop.Carrot,
 			"Cocoa Beans" => Crop.CocoaBeans,
 			"Melon" => Crop.Melon,
+			"Melon Slice" => Crop.Melon,
 			"Mushroom" => Crop.Mushroom,
 			"Nether Wart" => Crop.NetherWart,
 			"Potato" => Crop.Potato,
