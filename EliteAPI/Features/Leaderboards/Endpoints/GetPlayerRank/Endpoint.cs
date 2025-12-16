@@ -23,7 +23,7 @@ internal sealed class GetPlayerRankEndpoint(
 			Amount = 0,
 			MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard),
 			UpcomingRank = 10_000,
-			UpcomingPlayers = null
+			UpcomingPlayers = []
 		}, c);
 
 		return;
