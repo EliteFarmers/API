@@ -223,7 +223,7 @@
         "crop": 11,
         "items": 2,
         "base": 160,
-        "scaling": 35,
+        "scaling": 17.5,
         "rare": [
           {
             "drops": 153600,
@@ -235,7 +235,7 @@
         "crop": 12,
         "items": 2,
         "base": 160,
-        "scaling": 35,
+        "scaling": 17.5,
         "rare": [
           {
             "drops": 153600,
@@ -247,7 +247,7 @@
         "crop": 13,
         "items": 2,
         "base": 160,
-        "scaling": 35,
+        "scaling": 17.5,
         "rare": [
           {
             "drops": 153600,
