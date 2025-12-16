@@ -135,6 +135,7 @@ public class ItemGemstoneSlot
 {
 	[JsonPropertyName("slot_type")] public string? SlotType { get; set; }
 	[JsonPropertyName("costs")] public List<ItemGemstoneSlotCosts> Costs { get; set; } = [];
+	[JsonPropertyName("requirements")] public List<ItemRequirement> Requirements { get; set; } = [];
 }
 
 public class ItemGemstoneSlotCosts
@@ -160,6 +161,18 @@ public class ItemRequirement
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Skill { get; set; }
 
+	[JsonPropertyName("data_key")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? DataKey { get; set; }
+	
+	[JsonPropertyName("value")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? Value { get; set; }
+	
+	[JsonPropertyName("operator")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? Operator { get; set; }
+	
 	[JsonPropertyName("level")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public int Level { get; set; }
