@@ -62,7 +62,7 @@ internal sealed class GetWeightForProfilesEndpoint(
 				return mapped;
 			}).ToList()
 		};
-
+		
 		return TypedResults.Ok(dto);
 	}
 }

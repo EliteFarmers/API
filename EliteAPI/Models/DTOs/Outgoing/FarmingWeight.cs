@@ -67,10 +67,7 @@ public class PestsDto
 	public int Rat { get; set; } = 0;
 	public int Slug { get; set; } = 0;
 	public int Earthworm { get; set; } = 0;
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public int? Mouse { get; set; } = 0;
-	
+	public int Mouse { get; set; } = 0;
 	public int Dragonfly { get; set; } = 0;
 	public int Firefly { get; set; } = 0;
 	public int Mantis { get; set; } = 0;

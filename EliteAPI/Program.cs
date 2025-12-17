@@ -158,6 +158,7 @@ app.Use(async (context, next) => {
 				metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniMcVersion, mcVersion));
 			}
 
+			context.Items["skyhanni_version"] = version;
 			metricTags.Tags.Add(new KeyValuePair<string, object?>(skyHanniVersion, version));
 		}
 
