@@ -70,6 +70,10 @@ public class PestsDto
 
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Mouse { get; set; } = 0;
+	
+	public int Dragonfly { get; set; } = 0;
+	public int Firefly { get; set; } = 0;
+	public int Mantis { get; set; } = 0;
 }
 
 public class WeightsDto
