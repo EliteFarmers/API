@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using EliteAPI.Data;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Parsers.Farming;
 using FastEndpoints;
 using EliteAPI.Utilities;
@@ -37,6 +38,7 @@ internal sealed class UploadCurrentContestsEndpoint(
 	}
 
 	public override async Task HandleAsync(Dictionary<long, List<string>> request, CancellationToken ct) {
+		var adminOverride = User.GetDiscordId() is not null && User.IsInRole(ApiUserPolicies.Admin);
 		var currentDate = new SkyblockDate(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 		var currentYear = currentDate.Year;
 
@@ -73,6 +75,19 @@ internal sealed class UploadCurrentContestsEndpoint(
 			    crops.Distinct().Count() != 3 ||
 			    crops.Exists(crop => FormatUtils.FormattedCropNameToCrop(crop) is null)))
 			ThrowError("Invalid contest(s)! All crops must be valid without duplicates in the same contest!");
+		
+		// Normalize crop names to proper casing/format expected by the system
+		foreach (var key in bodyKeys) {
+			var crops = body[key];
+			var normalizedCrops = crops
+				.Select(crop => {
+					var c = FormatUtils.FormattedCropNameToCrop(crop);
+					if (c is null) ThrowError("Invalid crop name: " + crop);
+					return FormatUtils.GetFormattedCropName(c.Value);
+				})
+				.ToList();
+			body[key] = normalizedCrops;
+		}
 
 		var lastYearKey = $"last-contests:{currentYear - 1}";
 		if (!await db.KeyExistsAsync(lastYearKey)) {
@@ -139,27 +154,31 @@ internal sealed class UploadCurrentContestsEndpoint(
 
 		var existingData = await db.StringGetAsync(addressKey);
 
-		// Check if IP has already submitted a response
-		if (!string.IsNullOrEmpty(existingData)) ThrowError("Already submitted a response");
+		if (!adminOverride) {
+			// Check if IP has already submitted a response
+			if (!string.IsNullOrEmpty(existingData)) ThrowError("Already submitted a response");
 
-		// Store that the IP has submitted a response
-		await db.StringSetAsync(addressKey, "1", TimeSpan.FromHours(1));
+			// Store that the IP has submitted a response
+			await db.StringSetAsync(addressKey, "1", TimeSpan.FromHours(1));
+		}
 
 		// Serialize the body to a JSON string
 		var serializedData = JsonSerializer.Serialize(body);
 		var hash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(serializedData)));
 
-		// Increment the number of this particular response
-		var hashKey = $"contestsHash:{hash}";
-		await db.StringIncrementAsync(hashKey);
-		await db.StringGetSetExpiryAsync(hashKey, TimeSpan.FromHours(5));
+		if (!adminOverride) {
+			// Increment the number of this particular response
+			var hashKey = $"contestsHash:{hash}";
+			await db.StringIncrementAsync(hashKey);
+			await db.StringGetSetExpiryAsync(hashKey, TimeSpan.FromHours(5));
 
-		// Get the current number of this particular response
-		var identicalResponses = await db.StringGetAsync(hashKey);
+			// Get the current number of this particular response
+			var identicalResponses = await db.StringGetAsync(hashKey);
 
-		if (!identicalResponses.TryParse(out long val) || val < RequiredIdenticalContestSubmissions) {
-			await Send.NoContentAsync(ct);
-			return;
+			if (!identicalResponses.TryParse(out long val) || val < RequiredIdenticalContestSubmissions) {
+				await Send.NoContentAsync(ct);
+				return;
+			}
 		}
 
 		var secondsUntilNextYear = FormatUtils.GetTimeFromSkyblockDate(currentYear + 1, 0, 0) -
