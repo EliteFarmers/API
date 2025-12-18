@@ -16,6 +16,8 @@ public class UnparsedApiDataDto
 {
 	public int Copper { get; set; } = 0;
 	public Dictionary<string, int> Consumed { get; set; } = new();
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, bool>? ExportedCrops { get; set; }
 	public Dictionary<string, int> LevelCaps { get; set; } = new();
 	public Dictionary<string, int>? Perks { get; set; }
 	public List<TempStatBuffResponse>? TempStatBuffs { get; set; }

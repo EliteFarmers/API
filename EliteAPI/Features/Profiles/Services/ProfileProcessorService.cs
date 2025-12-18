@@ -442,6 +442,7 @@ public partial class ProfileProcessorService(
 				{ "farming", incomingData.Jacob?.Perks?.FarmingLevelCap ?? 0 },
 				{ "taming", incomingData.PetsData?.PetCare?.PetTypesSacrificed.Count ?? 0 }
 			},
+			ExportedCrops = incomingData.GetExportedCrops(),
 			Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
 			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),

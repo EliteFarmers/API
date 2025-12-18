@@ -1,5 +1,6 @@
 ﻿using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
+using EliteFarmers.HypixelAPI.DTOs;
 
 namespace EliteAPI.Parsers.Farming;
 
@@ -55,6 +56,37 @@ public static class CropParser
 
 		crop = default;
 		return false;
+	}
+
+	public static readonly Dictionary<string, string> CarrolynMappings = new Dictionary<string, string>() {
+		// { CropId.Cactus, "CARROLYN_EXPORT_CROP_" },
+		{ CropId.Carrot, "CARROLYN_EXPORT_CROP_EXPORTABLE_CARROTS" },
+		{ CropId.CocoaBeans, "CARROLYN_EXPORT_CROP_SUPREME_CHOCOLATE_BAR" },
+		// { CropId.Melon, "CARROLYN_EXPORT_CROP_" },
+		{ CropId.Mushroom, "CARROLYN_EXPORT_CROP_HALF_EATEN_MUSHROOM" },
+		{ CropId.NetherWart, "CARROLYN_EXPORT_CROP_WARTY" },
+		// { CropId.Potato, "CARROLYN_EXPORT_CROP_" },
+		{ CropId.Pumpkin, "CARROLYN_EXPORT_CROP_EXPIRED_PUMPKIN" },
+		// { CropId.SugarCane, "CARROLYN_EXPORT_CROP_" },
+		{ CropId.Wheat, "CARROLYN_EXPORT_CROP_FINE_FLOUR" },
+		// { CropId.Sunflower, "CARROLYN_EXPORT_CROP_" },
+		// { CropId.Moonflower, "CARROLYN_EXPORT_CROP_" },
+		{ CropId.WildRose, "CARROLYN_EXPORT_CROP_PRICKLY_KISS" }
+	};
+
+	public static Dictionary<string, bool>? GetExportedCrops(this ProfileMemberResponse member) {
+		var completedTasks = member.Leveling?.CompletedTasks;
+		if (completedTasks is null) return null;
+		
+		var exportedCrops = new Dictionary<string, bool>();
+		
+		foreach (var mapping in CarrolynMappings) {
+			var isExported = completedTasks.Contains(mapping.Value);
+			if (!isExported) continue;
+			exportedCrops.TryAdd(mapping.Key, isExported);
+		}
+		
+		return exportedCrops;
 	}
 }
 

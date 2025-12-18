@@ -38,7 +38,10 @@ internal sealed class GetRecordsInYearEndpoint(
 				{ "cocoa", await contestsService.FetchRecords(Crop.CocoaBeans, startTime, endTime) },
 				{ "cane", await contestsService.FetchRecords(Crop.SugarCane, startTime, endTime) },
 				{ "wart", await contestsService.FetchRecords(Crop.NetherWart, startTime, endTime) },
-				{ "wheat", await contestsService.FetchRecords(Crop.Wheat, startTime, endTime) }
+				{ "wheat", await contestsService.FetchRecords(Crop.Wheat, startTime, endTime) },
+				{ "moonflower", await contestsService.FetchRecords(Crop.Moonflower, startTime, endTime) },
+				{ "sunflower", await contestsService.FetchRecords(Crop.Sunflower, startTime, endTime) },
+				{ "wildrose", await contestsService.FetchRecords(Crop.WildRose, startTime, endTime) },
 			}
 		};
 
