@@ -30,6 +30,25 @@ internal sealed class GetCurrentContestsEndpoint(
 			};
 
 		var result = await contestsService.GetContestsFromYear(SkyblockDate.Now.Year + 1, true);
+		
+		if (HttpContext.GetSkyHanniVersion() is {} version && version < new Version("5.5.0"))
+		{
+			// Replace "Sunflower", "Moonflower" and "Wild Rose" contests with a different crop that isn't already present
+			// While this will give wrong data to old skyhanni versions, it's better than spamming their chat with errors
+			List<string> replacements = [ "Wheat", "Carrot", "Potato", "Pumpkin", "Melon" ];
+			foreach (var timestamp in result.Contests.Keys) {
+				var cropList = result.Contests[timestamp];
+				foreach (var crop in cropList.ToList()) {
+					if (crop is "Sunflower" or "Moonflower" or "Wild Rose")
+					{
+						var replacementCrop = replacements.First(r => !cropList.Contains(r));
+						cropList.Remove(crop);
+						cropList.Add(replacementCrop);
+					}
+				}
+				result.Contests[timestamp] = cropList;
+			}
+		}
 
 		await Send.OkAsync(result, ct);
 	}

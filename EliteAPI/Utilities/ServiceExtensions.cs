@@ -232,7 +232,7 @@ public static class ServiceExtensions
 		if (context is null) return null;
 		if (!context.Items.TryGetValue("skyhanni_version", out var skyhanni)) return null;
 		try {
-			return new Version(skyhanni?.ToString()!);
+			return new Version(skyhanni?.ToString()?.Replace(".Beta", "")!);
 		} catch {
 			return null;
 		}
