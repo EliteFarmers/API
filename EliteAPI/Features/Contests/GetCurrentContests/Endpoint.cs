@@ -48,6 +48,13 @@ internal sealed class GetCurrentContestsEndpoint(
 				}
 				result.Contests[timestamp] = cropList;
 			}
+			
+			// Don't cache this response
+			HttpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue {
+				Public = false,
+				NoCache = true,
+				NoStore = true
+			};
 		}
 
 		await Send.OkAsync(result, ct);
