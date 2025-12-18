@@ -26,7 +26,7 @@ public class MemberFortuneSettingsDto
 	public Dictionary<string, int> Attributes { get; set; } = new();
 
 	/// <summary>
-	/// Exported crops
+	/// Garden chips
 	/// </summary>
-	public Dictionary<string, bool> Exported { get; set; } = new();
+	public Dictionary<string, int> Chips { get; set; } = new();
 }

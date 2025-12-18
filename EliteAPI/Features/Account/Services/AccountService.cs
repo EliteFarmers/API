@@ -313,9 +313,10 @@ public class AccountService(
 			return Error.Validation(
 				description: "Attribute values must be between 0 and 500 and must be valid shards.");
 
-		if (settings.Exported.Any(kvp => FormatUtils.GetCropFromItemId(kvp.Key) is null))
-			// Ensure all exported crops are valid crop IDs
-			return Error.Validation(description: "Exported crops must be valid crop IDs.");
+		if (settings.Chips.Any(kvp =>
+			    kvp.Value < 0 || kvp.Value > 20 || !_farmingItems.ChipIds.Contains(kvp.Key)))
+			return Error.Validation(
+				description: "Chip values must be between 0 and 20 and must be valid chips.");
 
 		existing.Accounts[playerUuid][profileUuid] = settings;
 		account.UserSettings.Fortune = existing;

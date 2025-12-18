@@ -14,4 +14,5 @@ public class FarmingItemsSettings
 	public Dictionary<string, short> FarmingArmorIds { get; set; } = new();
 	public Dictionary<string, short> FarmingAccessoryIds { get; set; } = new();
 	public List<string> ShardIds { get; set; } = [];
+	public List<string> ChipIds { get; set; } = [];
 }
