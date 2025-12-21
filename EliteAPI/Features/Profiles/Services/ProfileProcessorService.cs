@@ -1,4 +1,3 @@
-using EFCore.BulkExtensions;
 using EliteAPI.Background.Profiles;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
@@ -663,7 +662,10 @@ public partial class ProfileProcessorService(
 				Mantis = member.Farming.Pests.Mantis
 			};
 
-			await context.BulkInsertAsync([cropCollection]);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// These are keyless entities, so we can't use normal EF Core change-tracking inserts.
+			// await context.BulkInsertAsync([cropCollection]);
+			await InsertCropCollectionAsync(cropCollection);
 		}
 
 		if (member.Api.Skills) {
@@ -686,7 +688,42 @@ public partial class ProfileProcessorService(
 				ProfileMember = member
 			};
 
-			await context.BulkInsertAsync([skillExp]);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// These are keyless entities, so we can't use normal EF Core change-tracking inserts.
+			// await context.BulkInsertAsync([skillExp]);
+			await InsertSkillExperienceAsync(skillExp);
 		}
+	}
+
+	private Task InsertCropCollectionAsync(CropCollection cropCollection, CancellationToken c = default) {
+		// Keep the insert explicit and parameterized. Table/column names match the EF model snapshot.
+		return context.Database.ExecuteSqlInterpolatedAsync($"""
+INSERT INTO "CropCollections" (
+	"Time",
+	"ProfileMemberId",
+	"Wheat", "Carrot", "Potato", "Pumpkin", "Melon", "Mushroom", "CocoaBeans", "Cactus", "SugarCane", "NetherWart", "Seeds", "Sunflower", "Moonflower", "WildRose",
+	"Beetle", "Cricket", "Fly", "Locust", "Mite", "Mosquito", "Moth", "Rat", "Slug", "Earthworm", "Mouse", "Dragonfly", "Firefly", "Mantis"
+) VALUES (
+	{cropCollection.Time},
+	{cropCollection.ProfileMemberId},
+	{cropCollection.Wheat}, {cropCollection.Carrot}, {cropCollection.Potato}, {cropCollection.Pumpkin}, {cropCollection.Melon}, {cropCollection.Mushroom}, {cropCollection.CocoaBeans}, {cropCollection.Cactus}, {cropCollection.SugarCane}, {cropCollection.NetherWart}, {cropCollection.Seeds}, {cropCollection.Sunflower}, {cropCollection.Moonflower}, {cropCollection.WildRose},
+	{cropCollection.Beetle}, {cropCollection.Cricket}, {cropCollection.Fly}, {cropCollection.Locust}, {cropCollection.Mite}, {cropCollection.Mosquito}, {cropCollection.Moth}, {cropCollection.Rat}, {cropCollection.Slug}, {cropCollection.Earthworm}, {cropCollection.Mouse}, {cropCollection.Dragonfly}, {cropCollection.Firefly}, {cropCollection.Mantis}
+);
+""", c);
+	}
+
+	private Task InsertSkillExperienceAsync(SkillExperience skillExperience, CancellationToken c = default) {
+		// Keep the insert explicit and parameterized. Table/column names match the EF model snapshot.
+		return context.Database.ExecuteSqlInterpolatedAsync($"""
+INSERT INTO "SkillExperiences" (
+	"Combat", "Mining", "Foraging", "Fishing", "Enchanting", "Alchemy", "Carpentry", "Runecrafting", "Social", "Taming", "Farming",
+	"Time",
+	"ProfileMemberId"
+) VALUES (
+	{skillExperience.Combat}, {skillExperience.Mining}, {skillExperience.Foraging}, {skillExperience.Fishing}, {skillExperience.Enchanting}, {skillExperience.Alchemy}, {skillExperience.Carpentry}, {skillExperience.Runecrafting}, {skillExperience.Social}, {skillExperience.Taming}, {skillExperience.Farming},
+	{skillExperience.Time},
+	{skillExperience.ProfileMemberId}
+);
+""", c);
 	}
 }

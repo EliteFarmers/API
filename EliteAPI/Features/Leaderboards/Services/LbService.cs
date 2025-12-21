@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using EFCore.BulkExtensions;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Profiles.Services;
@@ -258,7 +257,12 @@ public class LbService(
 
 		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
 		if (failed is { Count: > 0 }) {
-			await context.BulkDeleteAsync(failed, cancellationToken: c);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// await context.BulkDeleteAsync(failed, cancellationToken: c);
+			var duplicateIds = failed.Select(e => e.LeaderboardEntryId).ToList();
+			await context.LeaderboardEntries
+				.Where(e => duplicateIds.Contains(e.LeaderboardEntryId))
+				.ExecuteDeleteAsync(c);
 			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Player}", failed.Count,
 				member.PlayerUuid);
 		}
@@ -335,23 +339,20 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			var options = new BulkConfig {
-				PropertiesToIncludeOnUpdate = [
-					nameof(Models.LeaderboardEntry.Score),
-					nameof(Models.LeaderboardEntry.InitialScore),
-					nameof(Models.LeaderboardEntry.IsRemoved),
-					nameof(Models.LeaderboardEntry.ProfileType)
-				]
-			};
-			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// var options = new BulkConfig { PropertiesToIncludeOnUpdate = [...] };
+			// await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
+			context.LeaderboardEntries.UpdateRange(updatedEntries);
+			await context.SaveChangesAsync(c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 
 		if (newEntries.Count != 0) {
-			var options = new BulkConfig {
-				ConflictOption = ConflictOption.Ignore
-			};
-			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// var options = new BulkConfig { ConflictOption = ConflictOption.Ignore };
+			// await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			await context.LeaderboardEntries.AddRangeAsync(newEntries, c);
+			await context.SaveChangesAsync(c);
 			logger.LogInformation("Inserted {Count} new leaderboard entries", newEntries.Count);
 		}
 
@@ -400,7 +401,12 @@ public class LbService(
 
 		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
 		if (failed is { Count: > 0 }) {
-			await context.BulkDeleteAsync(failed, cancellationToken: c);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// await context.BulkDeleteAsync(failed, cancellationToken: c);
+			var duplicateIds = failed.Select(e => e.LeaderboardEntryId).ToList();
+			await context.LeaderboardEntries
+				.Where(e => duplicateIds.Contains(e.LeaderboardEntryId))
+				.ExecuteDeleteAsync(c);
 			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Profile}", failed.Count,
 				profile.ProfileId);
 		}
@@ -484,23 +490,20 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			var options = new BulkConfig {
-				PropertiesToIncludeOnUpdate = [
-					nameof(Models.LeaderboardEntry.Score),
-					nameof(Models.LeaderboardEntry.InitialScore),
-					nameof(Models.LeaderboardEntry.IsRemoved),
-					nameof(Models.LeaderboardEntry.ProfileType)
-				]
-			};
-			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// var options = new BulkConfig { PropertiesToIncludeOnUpdate = [...] };
+			// await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
+			context.LeaderboardEntries.UpdateRange(updatedEntries);
+			await context.SaveChangesAsync(c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 
 		if (newEntries.Count != 0) {
-			var options = new BulkConfig {
-				ConflictOption = ConflictOption.Ignore
-			};
-			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
+			// var options = new BulkConfig { ConflictOption = ConflictOption.Ignore };
+			// await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			await context.LeaderboardEntries.AddRangeAsync(newEntries, c);
+			await context.SaveChangesAsync(c);
 			logger.LogInformation("Inserted {Count} new leaderboard entries", newEntries.Count);
 		}
 
