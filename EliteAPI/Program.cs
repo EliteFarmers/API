@@ -2,13 +2,11 @@ global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Fe
 using FastEndpoints;
 using System.Net;
 using System.Runtime.CompilerServices;
-using EliteAPI;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
-using EliteAPI.Features.Textures.Services;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI;
 using Microsoft.AspNetCore.Http.Features;
@@ -18,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using SkyblockRepo;
-using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
+using IPNetwork = System.Net.IPNetwork;
 
 [assembly: InternalsVisibleTo("Tests")]
 
@@ -84,8 +82,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(opt => {
 	opt.ForwardedForHeaderName = "CF-Connecting-IP";
 	opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
 	// Safe because we only allow Cloudflare to connect to the API through the firewall
-	opt.KnownNetworks.Add(new IPNetwork(IPAddress.Any, 0));
-	opt.KnownNetworks.Add(new IPNetwork(IPAddress.IPv6Any, 0));
+	opt.KnownIPNetworks.Add(new IPNetwork(IPAddress.Any, 0));
+	opt.KnownIPNetworks.Add(new IPNetwork(IPAddress.IPv6Any, 0));
 });
 
 builder.AddEliteFastEndpoints();
@@ -192,6 +190,7 @@ using (var scope = app.Services.CreateScope()) {
 
 	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
 	try {
+		await db.Database.EnsureCreatedAsync();
 		await db.Database.MigrateAsync();
 	}
 	catch (Exception e) {

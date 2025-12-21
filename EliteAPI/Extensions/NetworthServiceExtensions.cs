@@ -1,6 +1,5 @@
 using HypixelAPI.Networth.Calculators;
 using HypixelAPI.Networth.Calculators.Handlers;
-using HypixelAPI.Networth.Interfaces;
 
 namespace EliteAPI.Extensions;
 

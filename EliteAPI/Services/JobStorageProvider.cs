@@ -48,13 +48,13 @@ public class JobStorageProvider(IConnectionMultiplexer redis, ILogger<JobStorage
           if (!value.HasValue) continue;
           
           try {
-             var record = System.Text.Json.JsonSerializer.Deserialize<JobRecord>(value!);
+             var record = System.Text.Json.JsonSerializer.Deserialize<JobRecord>(value.ToString());
              if (record != null && matchFunc(record)) {
                 // Find the type from the stored type name.
                 var commandType = Type.GetType(record.CommandTypeName);
 
                 if (commandType is null) {
-                    logger.LogWarning("Could not find command type '{TypeName}' for job {TrackingID}. Skipping.", record.CommandTypeName, record.TrackingID);
+                    logger.LogWarning("Could not find command type '{TypeName}' for job {TrackingID}. Skipping", record.CommandTypeName, record.TrackingID);
                     continue;
                 }
 
@@ -64,7 +64,7 @@ public class JobStorageProvider(IConnectionMultiplexer redis, ILogger<JobStorage
              }
           }
           catch (Exception ex) {
-             logger.LogError(ex, "Failed to deserialize job from key {Key}. The key will be deleted.", key);
+             logger.LogError(ex, "Failed to deserialize job from key {Key}. The key will be deleted", key);
              db.KeyDelete(key); // Delete corrupted/invalid keys
           }
        }

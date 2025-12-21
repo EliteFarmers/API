@@ -7,10 +7,8 @@ services:
       dockerfile: EliteAPI/Dockerfile
     env_file:
       - ./EliteAPI/.env
-    environment:
-      - POSTGRES_CONNECTION="Server=database;Port=5432;Database=${POSTGRES_DB:-eliteapi};Username=${POSTGRES_USER:-user};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD env variable is required};Include Error Detail=true"
     depends_on:
-      - database
+      - pgbouncer
       - cache
       - logging
       - prometheus
@@ -23,23 +21,30 @@ services:
     networks:
       - eliteapi-network
   database:
-    image: timescale/timescaledb:latest-pg15
+    image: postgres:18-alpine
     shm_size: 1gb
     restart: always
     env_file:
       - ./EliteAPI/.env
-    command: -c 'max_connections=${POSTGRES_MAX_CONNECTIONS:-100}'
-    ports:
-      - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432'
-    expose:
-      - '${POSTGRES_PORT:?POSTGRES_PORT env variable is required}'
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-eliteapi}
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD env variable is required}
+      - POSTGRES_DB=${POSTGRES_DB:-eliteapi}
+    command: >
+      postgres
+      -c shared_buffers=4GB
+      -c io_method=io_uring
+      -c max_connections=${POSTGRES_MAX_CONNECTIONS:-100}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
       - ./EliteAPI/Data/setup.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - eliteapi-network
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-U', '${POSTGRES_USER:-user}', '-d', '${POSTGRES_DB:-eliteapi}' ]
   cache:
-    image: redis:7.4.1
+    image: redis:8.4-alpine
     restart: always
     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
     ports:
@@ -78,6 +83,33 @@ services:
       - prometheus-data:/data
     networks:
       - eliteapi-network
+  pgbouncer:
+    container_name: pgbouncer
+    image: edoburu/pgbouncer:latest
+    restart: unless-stopped
+    environment:
+      - DB_USER=${POSTGRES_USER:-user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD env variable is required}
+      - DB_HOST=database
+      - DB_NAME=${POSTGRES_DB:-eliteapi}
+      - AUTH_TYPE=scram-sha-256
+      - POOL_MODE=transaction
+      - ADMIN_USERS=${POSTGRES_USER:-user}
+      - MAX_CLIENT_CONN=1000
+      - LOGFILE=/var/log/pgbouncer/pgbouncer.log
+      - VERBOSE=0
+      - EXTRA_CONFIG=ignore_startup_parameters=extra_float_digits,timezone,client_encoding
+    volumes:
+      - ./logs:/var/log/pgbouncer
+    ports:
+      - "${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432"
+    depends_on:
+      - database
+    networks:
+      - eliteapi-network
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-h', 'localhost', '-p', '5432', '-U', '${POSTGRES_USER:-user}', '-d', '${POSTGRES_DB:-eliteapi}' ]
+
 
 networks:
   eliteapi-network:

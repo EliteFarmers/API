@@ -3,7 +3,6 @@ using EliteAPI.Data;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Parsers.Farming;
-using EliteAPI.Parsers.Profiles;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -139,7 +138,7 @@ public class ContestsService(
 			var data = await db.StringGetAsync($"contests:{currentDate.Year}");
 			if (data.HasValue)
 				try {
-					var sourcedContests = JsonSerializer.Deserialize<Dictionary<long, List<string>>>(data!);
+					var sourcedContests = JsonSerializer.Deserialize<Dictionary<long, List<string>>>(data.ToString());
 
 					return new YearlyContestsDto {
 						Year = currentDate.Year + 1,

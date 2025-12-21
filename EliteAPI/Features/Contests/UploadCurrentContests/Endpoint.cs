@@ -109,7 +109,7 @@ internal sealed class UploadCurrentContestsEndpoint(
 
 		try {
 			var lastYearContests = await db.StringGetAsync(lastYearKey);
-			var lastYearContestsParsed = JsonSerializer.Deserialize<Dictionary<long, List<string>>>(lastYearContests!);
+			var lastYearContestsParsed = JsonSerializer.Deserialize<Dictionary<long, List<string>>>(lastYearContests.ToString());
 
 			if (lastYearContestsParsed is not null && lastYearContestsParsed.Count > 0) {
 				// Check to make sure that the contests are NOT the same as last year
