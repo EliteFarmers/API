@@ -482,9 +482,9 @@ public partial class ProfileProcessorService(
 
 		ParseMemberInventories(member, incomingData);
 
-		await AddTimeScaleRecords(member);
-
 		await member.ParseFarmingWeight(profile.CraftedMinions, incomingData);
+
+		await AddTimeScaleRecords(member);
 
 		// Load progress for all active events (if any)
 		if (member.EventEntries is { Count: > 0 })

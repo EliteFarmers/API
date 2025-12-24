@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using EliteAPI.Configuration.Settings;
+﻿using EliteAPI.Configuration.Settings;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
 using EliteAPI.Utilities;
@@ -57,41 +56,43 @@ public static class CropCollectionParser
 		return cropIncreases;
 	}
 
-	public static Dictionary<string, long> ExtractReadableCropCollections(this CropCollection cropCollection) {
-		return new Dictionary<string, long> {
-			{ "cactus", cropCollection.Cactus },
-			{ "carrot", cropCollection.Carrot },
-			{ "cocoa", cropCollection.CocoaBeans },
-			{ "melon", cropCollection.Melon },
-			{ "mushroom", cropCollection.Mushroom },
-			{ "wart", cropCollection.NetherWart },
-			{ "potato", cropCollection.Potato },
-			{ "pumpkin", cropCollection.Pumpkin },
-			{ "cane", cropCollection.SugarCane },
-			{ "wheat", cropCollection.Wheat },
-			{ "seeds", cropCollection.Seeds },
-			{ "sunflower", cropCollection.Sunflower },
-			{ "moonflower", cropCollection.Moonflower },
-			{ "wildrose", cropCollection.WildRose }
-		};
-	}
+	extension(CropCollection cropCollection) {
+		public Dictionary<string, long> ExtractReadableCropCollections() {
+			return new Dictionary<string, long> {
+				{ "cactus", cropCollection.Cactus },
+				{ "carrot", cropCollection.Carrot },
+				{ "cocoa", cropCollection.CocoaBeans },
+				{ "melon", cropCollection.Melon },
+				{ "mushroom", cropCollection.Mushroom },
+				{ "wart", cropCollection.NetherWart },
+				{ "potato", cropCollection.Potato },
+				{ "pumpkin", cropCollection.Pumpkin },
+				{ "cane", cropCollection.SugarCane },
+				{ "wheat", cropCollection.Wheat },
+				{ "seeds", cropCollection.Seeds },
+				{ "sunflower", cropCollection.Sunflower },
+				{ "moonflower", cropCollection.Moonflower },
+				{ "wildrose", cropCollection.WildRose }
+			};
+		}
 
-	public static Dictionary<string, int> ExtractPestKills(this CropCollection cropCollection) {
-		return new Dictionary<string, int> {
-			{ "mite", cropCollection.Mite },
-			{ "cricket", cropCollection.Cricket },
-			{ "moth", cropCollection.Moth },
-			{ "worm", cropCollection.Earthworm },
-			{ "slug", cropCollection.Slug },
-			{ "beetle", cropCollection.Beetle },
-			{ "locust", cropCollection.Locust },
-			{ "rat", cropCollection.Rat },
-			{ "mosquito", cropCollection.Mosquito },
-			{ "fly", cropCollection.Fly },
-			{ "mouse", cropCollection.Mouse },
-			{ "dragonfly", cropCollection.Dragonfly },
-			{ "firefly", cropCollection.Firefly },
-			{ "mantis", cropCollection.Mantis }
-		};
+		public Dictionary<string, int> ExtractPestKills() {
+			return new Dictionary<string, int> {
+				{ "mite", cropCollection.Mite },
+				{ "cricket", cropCollection.Cricket },
+				{ "moth", cropCollection.Moth },
+				{ "worm", cropCollection.Earthworm },
+				{ "slug", cropCollection.Slug },
+				{ "beetle", cropCollection.Beetle },
+				{ "locust", cropCollection.Locust },
+				{ "rat", cropCollection.Rat },
+				{ "mosquito", cropCollection.Mosquito },
+				{ "fly", cropCollection.Fly },
+				{ "mouse", cropCollection.Mouse },
+				{ "dragonfly", cropCollection.Dragonfly },
+				{ "firefly", cropCollection.Firefly },
+				{ "mantis", cropCollection.Mantis }
+			};
+		}
 	}
 }
