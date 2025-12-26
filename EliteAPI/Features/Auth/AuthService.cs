@@ -71,6 +71,10 @@ public partial class AuthService(
 			firstLogin = true;
 		}
 		else {
+			if (!await userManager.IsInRoleAsync(user, ApiUserPolicies.User)) {
+				await userManager.AddToRoleAsync(user, ApiUserPolicies.User);
+			}
+
 			// Update existing user if necessary
 			if (user.UserName != account.Username) {
 				await ObtainUserName(account.Username);
@@ -276,7 +280,13 @@ public partial class AuthService(
 
 		var result = await userManager.CreateAsync(user);
 
-		if (result.Succeeded) await userManager.AddToRoleAsync(user, "User");
+		if (result.Succeeded) {
+			var roleResult = await userManager.AddToRoleAsync(user, ApiUserPolicies.User);
+			if (!roleResult.Succeeded) {
+				await userManager.DeleteAsync(user);
+				return roleResult.Errors;
+			}
+		}
 
 		return result.Errors;
 	}
