@@ -442,6 +442,7 @@ public partial class ProfileProcessorService(
 				{ "taming", incomingData.PetsData?.PetCare?.PetTypesSacrificed.Count ?? 0 }
 			},
 			ExportedCrops = incomingData.GetExportedCrops(),
+			DnaMilestone = incomingData.GetDnaMilestone(),
 			Perks = incomingData.PlayerData?.Perks ?? new Dictionary<string, int>(),
 			TempStatBuffs = incomingData.PlayerData?.TempStatBuffs ?? [],
 			AccessoryBagSettings = incomingData.AccessoryBagSettings ?? new RawAccessoryBagStorage(),

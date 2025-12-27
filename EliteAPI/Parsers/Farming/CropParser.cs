@@ -88,6 +88,22 @@ public static class CropParser
 		
 		return exportedCrops;
 	}
+
+	public static int GetDnaMilestone(this ProfileMemberResponse member) {
+		var completedTasks = member.Objectives?.Tutorial;
+		if (completedTasks is null) return 0;
+		
+		var level = 0;
+		foreach (var task in completedTasks) {
+			if (!task.StartsWith("dna_analysis_rewardfarming_fortune_")) continue;
+			var number = task.Replace("dna_analysis_rewardfarming_fortune_", "");
+			if (int.TryParse(number, out var parsedNumber)) {
+				level = Math.Max(level, parsedNumber);
+			}
+		}
+		
+		return level;
+	}
 }
 
 public static class CropId

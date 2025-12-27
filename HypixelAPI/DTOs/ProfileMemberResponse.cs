@@ -48,6 +48,14 @@ public class ProfileMemberResponse
 	[JsonPropertyName("abiphone")] public MemberAbiphoneResponse? Abiphone { get; set; }
 
 	[JsonPropertyName("rift")] public MemberRiftResponse? Rift { get; set; }
+
+	[JsonPropertyName("objectives")] public MemberObjectivesResponse? Objectives { get; set; }
+}
+
+public class MemberObjectivesResponse
+{
+	[JsonPropertyName("tutorial")]
+	public List<string> Tutorial { get; set; } = [];
 }
 
 public class GardenPlayerDataResponse

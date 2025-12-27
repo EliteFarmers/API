@@ -8,6 +8,7 @@ public class UnparsedApiData
 	public int Copper { get; set; } = 0;
 	public Dictionary<string, int> Consumed { get; set; } = new();
 	public Dictionary<string, bool>? ExportedCrops { get; set; }
+	public int DnaMilestone { get; set; } = 0;
 	public Dictionary<string, int> LevelCaps { get; set; } = new();
 	public Dictionary<string, int> Perks { get; set; } = new();
 	public List<TempStatBuffResponse> TempStatBuffs { get; set; } = new();
