@@ -21,6 +21,11 @@ public class MemberFortuneSettingsDto
 	public int CommunityCenter { get; set; } = 0;
 
 	/// <summary>
+	/// Consumed Filled Rosewater Flasks
+	/// </summary>
+	public int RosewaterFlasks { get; set; } = 0;
+
+	/// <summary>
 	/// Attribute shards
 	/// </summary>
 	public Dictionary<string, int> Attributes { get; set; } = new();

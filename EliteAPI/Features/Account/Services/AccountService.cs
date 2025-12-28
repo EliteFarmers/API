@@ -305,6 +305,9 @@ public class AccountService(
 		if (settings.CommunityCenter is < 0 or > 10)
 			return Error.Validation(description: "Community Center level must be between 0 and 10.");
 
+		if (settings.RosewaterFlasks is < 0 or > 5)
+			return Error.Validation(description: "Rosewater Flasks level must be between 0 and 5.");
+
 		if (settings.Strength is < 0 or > 5000)
 			return Error.Validation(description: "Strength must be between 0 and 5000.");
 
