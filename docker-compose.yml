@@ -12,6 +12,7 @@ services:
       - cache
       - logging
       - prometheus
+      - pyroscope
     ports:
       - "7008:7008"
       - "9102:9102"
@@ -34,7 +35,7 @@ services:
     command: >
       postgres
       -c shared_buffers=4GB
-      -c io_method=io_uring
+      -c io_method=${POSTGRES_IO_METHOD:-io_uring}
       -c max_connections=${POSTGRES_MAX_CONNECTIONS:-100}
     volumes:
       - db-data:/var/lib/postgresql
@@ -83,6 +84,15 @@ services:
       - prometheus-data:/data
     networks:
       - eliteapi-network
+  pyroscope:
+    image: grafana/pyroscope:latest
+    restart: unless-stopped
+    ports:
+      - '4040:4040'
+    volumes:
+      - pyroscope-data:/data
+    networks:
+      - eliteapi-network
   pgbouncer:
     container_name: pgbouncer
     image: edoburu/pgbouncer:latest
@@ -120,4 +130,5 @@ volumes:
   db-data: { }
   grafana-data: { }
   prometheus-data: { }
+  pyroscope-data: { }
   redis-data: { }

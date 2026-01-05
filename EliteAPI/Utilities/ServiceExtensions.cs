@@ -116,14 +116,11 @@ public static class ServiceExtensions
 		return services;
 	}
 
-	public static IServiceCollection AddEliteRedisCache(this IServiceCollection services) {
-		var redisConnection = Environment.GetEnvironmentVariable("REDIS_CONNECTION") ?? "localhost:6380";
-		var config = new ConfigurationOptions {
-			EndPoints = { redisConnection },
-			Password = Environment.GetEnvironmentVariable("REDIS_PASSWORD"),
-			AbortOnConnectFail = false,
-			ConnectRetry = 5
-		};
+	public static IServiceCollection AddEliteRedisCache(this IServiceCollection services, IConfiguration configuration) {
+		var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6380";
+		var config = ConfigurationOptions.Parse(redisConnectionString);
+		config.AbortOnConnectFail = false;
+		config.ConnectRetry = 5;
 		var multiplexer = ConnectionMultiplexer.Connect(config);
 		
 		services.AddHybridCache(options =>

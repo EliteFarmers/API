@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using Pyroscope.OpenTelemetry;
 using SkyblockRepo;
 using IPNetwork = System.Net.IPNetwork;
 
@@ -27,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.RegisterEliteConfigFiles();
 builder.Services.AddEliteAuthentication(builder.Configuration);
 
-builder.Services.AddEliteRedisCache();
+builder.Services.AddEliteRedisCache(builder.Configuration);
 builder.Services.AddIdempotency();
 builder.Services.AddResponseCaching();
 
@@ -75,6 +77,10 @@ builder.Services.AddOpenTelemetry()
 			});
 
 		x.AddMeter("hypixel.api");
+	})
+	.WithTracing(x => {
+		x.AddSource("EliteAPI");
+		x.AddProcessor(new PyroscopeSpanProcessor());
 	});
 
 // Use Cloudflare IP address as the client remote IP address

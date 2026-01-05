@@ -1,5 +1,8 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
+# Pyroscope native profiler libraries
+FROM pyroscope/pyroscope-dotnet:0.13.0-glibc AS pyroscope
+
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 80
@@ -20,4 +23,9 @@ RUN dotnet publish "EliteAPI.csproj" -c Release -o /app/publish /p:UseAppHost=fa
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Copy Pyroscope native profiler libraries
+COPY --from=pyroscope /Pyroscope.Profiler.Native.so ./Pyroscope.Profiler.Native.so
+COPY --from=pyroscope /Pyroscope.Linux.ApiWrapper.x64.so ./Pyroscope.Linux.ApiWrapper.x64.so
+
 ENTRYPOINT ["dotnet", "EliteAPI.dll"]

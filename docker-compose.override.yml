@@ -3,6 +3,18 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ASPNETCORE_URLS=http://+:7008;http://+:9102
+      # Pyroscope profiler configuration
+      - PYROSCOPE_SERVER_ADDRESS=http://pyroscope:4040
+      - PYROSCOPE_APPLICATION_NAME=eliteapi
+      - PYROSCOPE_PROFILING_ENABLED=1
+      - CORECLR_ENABLE_PROFILING=1
+      - CORECLR_PROFILER={BD1A650D-AC5D-4896-B64F-D6FA25D6B26A}
+      - CORECLR_PROFILER_PATH=/app/Pyroscope.Profiler.Native.so
+      - LD_PRELOAD=/app/Pyroscope.Linux.ApiWrapper.x64.so
+      - PYROSCOPE_PROFILING_CPU_ENABLED=1
+      - PYROSCOPE_PROFILING_ALLOCATION_ENABLED=1
+      - PYROSCOPE_PROFILING_LOCK_CONTENTION_ENABLED=1
+      - PYROSCOPE_PROFILING_EXCEPTIONS_ENABLED=1
     ports:
       - "7008"
       - "9102"

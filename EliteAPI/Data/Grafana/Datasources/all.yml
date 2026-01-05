@@ -6,6 +6,10 @@ datasources:
     type: 'prometheus'
     access: 'proxy'
     url: 'http://prometheus:9090'
+  - name: 'pyroscope'
+    type: 'grafana-pyroscope-datasource'
+    access: 'proxy'
+    url: 'http://pyroscope:4040'
 
 providers:
   - name: 'default'
