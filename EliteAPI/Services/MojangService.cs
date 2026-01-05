@@ -82,12 +82,12 @@ public partial class MojangService(
 		if (account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown)) {
 			// Account exists but is stale, queue background refresh
 			await new RefreshMinecraftAccountCommand { Uuid = uuid }.QueueJobAsync();
+		} else {
+			// Get the expiry time for the cache with the last updated time in mind
+			var expiry = TimeSpan.FromSeconds(_coolDowns.MinecraftAccountCooldown -
+			                                  (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - account.LastUpdated));
+			cacheService.SetUsernameUuidCombo(account.Name, account.Id, expiry);
 		}
-
-		// Get the expiry time for the cache with the last updated time in mind
-		var expiry = TimeSpan.FromSeconds(_coolDowns.MinecraftAccountCooldown -
-		                                  (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - account.LastUpdated));
-		cacheService.SetUsernameUuidCombo(account.Name, account.Id, expiry);
 
 		context.Entry(account).State = EntityState.Detached;
 
