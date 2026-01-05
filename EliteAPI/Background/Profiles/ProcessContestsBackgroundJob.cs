@@ -24,7 +24,7 @@ public class ProcessContestsBackgroundJob(
 		if (executionContext.RefireCount > 1) {
 			messageService.SendErrorMessage("Process Contests Background Job",
 				"Failed to process Jacob contests. Refire count exceeded.\n" +
-				$"AccountId: `{accountId}`\nProfileId: {profileId}\n[Profile](<https://elitebot.dev/@{accountId}/{profileId}>)");
+				$"AccountId: {accountId}\nProfileId: {profileId}\n[Profile](<https://elitebot.dev/@{accountId}/{profileId}>)");
 			return;
 		}
 
@@ -34,7 +34,7 @@ public class ProcessContestsBackgroundJob(
 		catch (Exception e) {
 			messageService.SendErrorMessage(
 				"Failed Process Jacob Contests",
-				$"AccountId: `{accountId}`\nProfileId: {profileId}\n[Profile](<https://elitebot.dev/@{accountId}/{profileId}>)\n" +
+				$"AccountId: {accountId}\nProfileId: {profileId}\n[Profile](<https://elitebot.dev/@{accountId}/{profileId}>)\n" +
 				e.Message);
 			throw new JobExecutionException("", refireImmediately: true, cause: e);
 		}

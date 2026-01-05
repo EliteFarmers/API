@@ -3,6 +3,7 @@ using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Features.Profiles.Commands;
 using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Models.DTOs.Outgoing;
@@ -41,14 +42,6 @@ public interface IProfileProcessorService
 	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
 	/// <returns></returns>
 	Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid);
-
-	/// <summary>
-	/// Processes profile members from the Hypixel API, for all but one player
-	/// </summary>
-	/// <param name="data">Hypixel API Response</param>
-	/// <param name="excludedPlayerUuid">The player uuid that will be skipped</param>
-	/// <returns></returns>
-	Task ProcessRemainingMembers(ProfilesResponse data, string excludedPlayerUuid);
 
 	/// <summary>
 	/// Processes a profile from the Hypixel API
@@ -188,50 +181,26 @@ public partial class ProfileProcessorService(
 			var (profile, members) = await ProcessProfileData(profileData, requestedPlayerUuid);
 			if (profile is null) continue;
 
-			if (!members.TryGetValue(requestedPlayerUuid, out var member)) continue;
-
-			await ProcessMemberData(profile, member, requestedPlayerUuid, requestedPlayerUuid, profileData);
-		}
-
-		await context.SaveChangesAsync();
-
-		// Send remaining members to background job
-		var jobData = new JobDataMap {
-			{ "playerUuid", requestedPlayerUuid },
-			{ "data", data }
-		};
-
-		var scheduler = await schedulerFactory.GetScheduler();
-		await scheduler.TriggerJob(ProcessRemainingMembersBackgroundJob.Key, jobData);
-	}
-
-	public async Task ProcessRemainingMembers(ProfilesResponse data, string excludedPlayerUuid) {
-		var profiles = data.Profiles?.ToList();
-		if (profiles is null || profiles.Count == 0) return;
-
-		foreach (var profileData in profiles) {
-			var members = profileData.Members.ToDictionary(
-				pair => pair.Key.Replace("-", ""), // Strip hyphens from UUIDs
-				pair => pair.Value);
-			if (members.Count == 0) continue;
-
 			var profileId = profileData.ProfileId.Replace("-", "");
-			var profile = await context.Profiles
-				.Include(p => p.Garden)
-				.FirstOrDefaultAsync(p => p.ProfileId == profileId);
 
-			if (profile is null) {
-				logger.LogWarning("Profile {ProfileId} was not found when processing remaining members!", profileId);
-				continue;
-			}
+			foreach (var (playerUuid, memberData) in members) {
+				var command = new ProcessMemberDataCommand {
+					ProfileId = profileId,
+					PlayerUuid = playerUuid,
+					RequestedPlayerUuid = requestedPlayerUuid,
+					MemberData = memberData,
+					ProfileData = profileData
+				};
 
-			foreach (var (playerUuid, member) in members) {
-				if (playerUuid == excludedPlayerUuid) continue;
-				await ProcessMemberData(profile, member, playerUuid, excludedPlayerUuid, profileData);
+				if (playerUuid == requestedPlayerUuid) {
+					// Process current member synchronously
+					await command.ExecuteAsync();
+				} else {
+					// Queue remaining members
+					await command.QueueJobAsync();
+				}
 			}
 		}
-
-		await context.SaveChangesAsync();
 	}
 
 	public async Task<(Profile? profile, Dictionary<string, ProfileMemberResponse> members)> ProcessProfileData(

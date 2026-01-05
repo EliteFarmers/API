@@ -1,7 +1,8 @@
 ﻿using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
-using EliteAPI.Features.HypixelGuilds.Services;
+using EliteAPI.Features.HypixelGuilds.Commands;
+using EliteAPI.Features.Profiles.Commands;
 using EliteAPI.Models.Entities.Events;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.Interfaces;
@@ -34,7 +35,6 @@ public class MemberService(
 	IServiceScopeFactory provider,
 	IMojangService mojangService,
 	IOptions<ConfigCooldownSettings> coolDowns,
-	IHypixelGuildService hypixelGuildService,
 	IConnectionMultiplexer redis)
 	: IMemberService
 {
@@ -109,7 +109,9 @@ public class MemberService(
 			Profiles = account.ProfilesLastUpdated,
 		};
 
-		await hypixelGuildService.UpdateGuildIfNeeded(account);
+		// Background guild update - not critical for profile response
+		await new UpdateGuildCommand { PlayerUuid = account.Id }.QueueJobAsync();
+		
 		await RefreshNeededData(lastUpdated, account, cooldownMultiplier);
 	}
 
@@ -158,7 +160,10 @@ public class MemberService(
 
 		if (updateProfiles) await RefreshProfiles(playerUuid);
 
-		if (updatePlayer) await RefreshPlayerData(playerUuid, account);
+		// Background player data refresh
+		if (updatePlayer) {
+			await new RefreshPlayerDataCommand { PlayerUuid = playerUuid }.QueueJobAsync();
+		}
 	}
 
 	public async Task RefreshProfiles(string playerUuid) {

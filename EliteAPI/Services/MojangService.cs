@@ -6,8 +6,10 @@ using System.Text.RegularExpressions;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
+using EliteAPI.Services.Commands;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
@@ -72,9 +74,14 @@ public partial class MojangService(
 			.AsNoTracking()
 			.FirstOrDefaultAsync();
 
-		if (account is null || account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown)) {
-			var fetched = await FetchMinecraftAccountByUuid(uuid);
-			return fetched ?? account;
+		if (account is null) {
+			// No existing account, must fetch synchronously
+			return await FetchMinecraftAccountByUuid(uuid);
+		}
+
+		if (account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown)) {
+			// Account exists but is stale, queue background refresh
+			await new RefreshMinecraftAccountCommand { Uuid = uuid }.QueueJobAsync();
 		}
 
 		// Get the expiry time for the cache with the last updated time in mind
@@ -85,6 +92,10 @@ public partial class MojangService(
 		context.Entry(account).State = EntityState.Detached;
 
 		return account;
+	}
+
+	public async Task RefreshMinecraftAccount(string uuid) {
+		await FetchMinecraftAccountByUuid(uuid);
 	}
 
 	private readonly string[] _mojangProfileUris = [
