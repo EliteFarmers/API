@@ -380,42 +380,43 @@ public class LbService(
 		await CreateMissingIntervalEntries(profileMemberId, monthlyInterval!, LeaderboardType.Monthly, c);
 	}
 
-	private async Task CreateMissingIntervalEntries(Guid profileMemberId, string intervalIdentifier, LeaderboardType type, CancellationToken c) {
+	private async Task CreateMissingIntervalEntries(Guid profileMemberId, string intervalIdentifier,
+		LeaderboardType type, CancellationToken c) {
 		var sql = """
-			INSERT INTO "LeaderboardEntries" (
-				"LeaderboardId", "IntervalIdentifier", "ProfileMemberId", 
-				"InitialScore", "Score", "IsRemoved", "ProfileType"
-			)
-			SELECT 
-				latest."LeaderboardId",
-				@intervalIdentifier,
-				latest."ProfileMemberId",
-				(latest."Score" + latest."InitialScore"),
-				0,
-				latest."IsRemoved",
-				latest."ProfileType"
-			FROM (
-				SELECT DISTINCT ON ("LeaderboardId") *
-				FROM "LeaderboardEntries"
-				WHERE "ProfileMemberId" = @profileMemberId
-				ORDER BY "LeaderboardId", "IntervalIdentifier" DESC
-			) latest
-			INNER JOIN "Leaderboards" lb ON lb."LeaderboardId" = latest."LeaderboardId"
-			WHERE lb."IntervalType" = @type
-			  AND NOT EXISTS (
-				  SELECT 1 FROM "LeaderboardEntries" existing
-				  WHERE existing."ProfileMemberId" = @profileMemberId
-					AND existing."LeaderboardId" = latest."LeaderboardId"
-					AND existing."IntervalIdentifier" = @intervalIdentifier
-			  )
-			""";
+		          INSERT INTO "LeaderboardEntries" (
+		          	"LeaderboardId", "IntervalIdentifier", "ProfileMemberId", 
+		          	"InitialScore", "Score", "IsRemoved", "ProfileType"
+		          )
+		          SELECT 
+		          	latest."LeaderboardId",
+		          	@intervalIdentifier,
+		          	latest."ProfileMemberId",
+		          	(latest."Score" + latest."InitialScore"),
+		          	0,
+		          	latest."IsRemoved",
+		          	latest."ProfileType"
+		          FROM (
+		          	SELECT DISTINCT ON ("LeaderboardId") *
+		          	FROM "LeaderboardEntries"
+		          	WHERE "ProfileMemberId" = @profileMemberId
+		          	ORDER BY "LeaderboardId", "IntervalIdentifier" DESC
+		          ) latest
+		          INNER JOIN "Leaderboards" lb ON lb."LeaderboardId" = latest."LeaderboardId"
+		          WHERE lb."IntervalType" = @type
+		            AND NOT EXISTS (
+		          	  SELECT 1 FROM "LeaderboardEntries" existing
+		          	  WHERE existing."ProfileMemberId" = @profileMemberId
+		          		AND existing."LeaderboardId" = latest."LeaderboardId"
+		          		AND existing."IntervalIdentifier" = @intervalIdentifier
+		            )
+		          """;
 
 		await context.Database.ExecuteSqlRawAsync(sql,
-			[
-				new Npgsql.NpgsqlParameter("profileMemberId", profileMemberId),
-				new Npgsql.NpgsqlParameter("intervalIdentifier", intervalIdentifier),
-				new Npgsql.NpgsqlParameter("type", type.ToString())
-			], c);
+		[
+			new Npgsql.NpgsqlParameter("profileMemberId", profileMemberId),
+			new Npgsql.NpgsqlParameter("intervalIdentifier", intervalIdentifier),
+			new Npgsql.NpgsqlParameter("type", type.ToString())
+		], c);
 	}
 
 	public async Task UpdateProfileLeaderboardsAsync(Profile profile,
@@ -483,12 +484,13 @@ public class LbService(
 					var valid = IsWithinInterval(type, profile.Garden.LastUpdated);
 					if (!valid) continue;
 				}
+
 				score = profileLb.GetScoreFromGarden(profile.Garden, type);
 			}
 
 			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
 				var changed = false;
-				
+
 				if (entry.IsRemoved != profile.IsDeleted) {
 					entry.IsRemoved = profile.IsDeleted;
 					changed = true;
@@ -498,7 +500,7 @@ public class LbService(
 						ranRestore = true;
 					}
 				}
-				
+
 				if (profile.GameMode != entry.ProfileType) {
 					entry.ProfileType = profile?.GameMode;
 					changed = true;
@@ -605,9 +607,9 @@ public class LbService(
 		var rank = entry.IsRemoved
 			? -1
 			: await GetRankForEntryAsync(
-				entry.LeaderboardId, 
+				entry.LeaderboardId,
 				identifier,
-				entry.Score, 
+				entry.Score,
 				entry.LeaderboardEntryId
 			);
 
@@ -623,34 +625,34 @@ public class LbService(
 			Type = entry.Leaderboard.ScoreDataType
 		};
 	}
-	
+
 	public async Task<int> GetRankForEntryAsync(
 		int leaderboardId,
 		string? intervalIdentifier,
 		decimal score,
-		int leaderboardEntryId)
-	{
+		int leaderboardEntryId) {
 		var sql = """
-			SELECT COUNT(*) + 1
-			FROM "LeaderboardEntries" AS o
-			WHERE o."IsRemoved" = false
-			  AND o."LeaderboardId" = @leaderboardId
-			  AND (o."Score", o."LeaderboardEntryId") > (@score, @leaderboardEntryId)
-			""";
+		          SELECT COUNT(*) + 1
+		          FROM "LeaderboardEntries" AS o
+		          WHERE o."IsRemoved" = false
+		            AND o."LeaderboardId" = @leaderboardId
+		            AND (o."Score", o."LeaderboardEntryId") > (@score, @leaderboardEntryId)
+		          """;
 
 		if (intervalIdentifier != null) {
 			sql += """ AND o."IntervalIdentifier" = @intervalIdentifier""";
-		} else {
+		}
+		else {
 			sql += """ AND o."IntervalIdentifier" IS NULL""";
 		}
-		
+
 		var parameters = new[] {
 			new Npgsql.NpgsqlParameter("leaderboardId", leaderboardId),
 			new Npgsql.NpgsqlParameter("score", score),
 			new Npgsql.NpgsqlParameter("leaderboardEntryId", leaderboardEntryId),
 			new Npgsql.NpgsqlParameter("intervalIdentifier", (object?)intervalIdentifier ?? DBNull.Value)
 		};
-		
+
 		var connection = context.Database.GetDbConnection();
 		await connection.OpenAsync();
 		await using var command = connection.CreateCommand();
@@ -659,7 +661,7 @@ public class LbService(
 
 		var rank = (long?)await command.ExecuteScalarAsync() ?? -1;
 		await connection.CloseAsync();
-    
+
 		return (int)rank;
 	}
 
@@ -715,14 +717,19 @@ public class LbService(
 			// Set the memberId to the profile member ID if the leaderboard is not a profile leaderboard
 			var member = await context.ProfileMembers
 				.Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
-				.Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid })
+				.Select(p => new { p.Id, p.LastUpdated, p.PlayerUuid, SkillsApiEnabled = p.Api.Skills })
 				.FirstOrDefaultAsync(c ?? CancellationToken.None);
 
 			if (member is null || member.Id == Guid.Empty) {
 				memberId = null;
 			}
 			else {
-				if (!skipUpdate) await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 10);
+				if (!skipUpdate) {
+					var isActive = member.SkillsApiEnabled && await memberService.IsPlayerActiveAsync(member.Id);
+					if (isActive) {
+						await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 10);
+					}
+				}
 
 				memberId = member.Id.ToString();
 			}
@@ -889,7 +896,7 @@ public class LbService(
 	public (long start, long end) GetCurrentTimeRange(LeaderboardType type) {
 		return GetIntervalTimeRange(type, DateTimeOffset.UtcNow);
 	}
-	
+
 	public (long start, long end) GetIntervalTimeRange(LeaderboardType type, DateTimeOffset now) {
 		switch (type) {
 			case LeaderboardType.Current:
@@ -900,7 +907,7 @@ public class LbService(
 				var isoWeekNumber = ISOWeek.GetWeekOfYear(nowUtc);
 
 				var startOfWeekUtc = ISOWeek.ToDateTime(isoYear, isoWeekNumber, DayOfWeek.Monday).ToUniversalTime();
-				var endOfWeekUtc = isoWeekNumber == ISOWeek.GetWeeksInYear(isoYear) 
+				var endOfWeekUtc = isoWeekNumber == ISOWeek.GetWeeksInYear(isoYear)
 					? ISOWeek.ToDateTime(isoYear + 1, 1, DayOfWeek.Monday).ToUniversalTime()
 					: ISOWeek.ToDateTime(isoYear, isoWeekNumber + 1, DayOfWeek.Monday).ToUniversalTime();
 
@@ -928,14 +935,16 @@ public class LbService(
 			if (int.TryParse(split[0], out var year) && int.TryParse(split[1], out var week)) {
 				return GetIntervalTimeRange(LeaderboardType.Weekly, ISOWeek.ToDateTime(year, week, DayOfWeek.Monday));
 			}
+
 			return (0, 0);
 		}
 
 		var monthSplit = interval.Split("-");
 		if (int.TryParse(monthSplit[0], out var monthlyYear) && int.TryParse(monthSplit[1], out var month)) {
-			return GetIntervalTimeRange(LeaderboardType.Monthly, new DateTimeOffset(monthlyYear, month, 1, 0, 0, 0, DateTimeOffset.UtcNow.Offset));
+			return GetIntervalTimeRange(LeaderboardType.Monthly,
+				new DateTimeOffset(monthlyYear, month, 1, 0, 0, 0, DateTimeOffset.UtcNow.Offset));
 		}
-		
+
 		return (0, 0);
 	}
 
@@ -1036,7 +1045,8 @@ public class LbService(
 		}).ToList();
 	}
 
-	public async Task<List<LeaderboardEntryDto>> GetGuildMembersLeaderboardEntriesAsync(string guildId, string leaderboardSlug,
+	public async Task<List<LeaderboardEntryDto>> GetGuildMembersLeaderboardEntriesAsync(string guildId,
+		string leaderboardSlug,
 		string? identifier = null, string? gameMode = null) {
 		// Resolve leaderboard definition and leaderboard
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardSlug, out var definition)) return [];
@@ -1064,9 +1074,9 @@ public class LbService(
 
 		var memberIds = profileMembers.Select(pm => pm.Id).ToList();
 		var profileIds = profileMembers.Select(pm => pm.ProfileId).Distinct().ToList();
-		
+
 		if (memberIds.Count == 0) return [];
-		
+
 		// Make a nullable list to match the ProfileMemberId nullable type on LeaderboardEntry
 		var memberIdsNullable = memberIds.Select(g => (Guid?)g).ToList();
 
@@ -1082,7 +1092,7 @@ public class LbService(
 				.MapToMemberLeaderboardEntries(true)
 				.ToListAsync();
 		}
-		
+
 		return await context.LeaderboardEntries.AsNoTracking()
 			.FromLeaderboard(lb.LeaderboardId, false)
 			.EntryFilter(identifier, RemovedFilter.NotRemoved, gameMode)

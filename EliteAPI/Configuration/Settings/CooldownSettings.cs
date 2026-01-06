@@ -20,4 +20,7 @@ public class ConfigCooldownSettings
 	public int EntitlementsRefreshCooldown { get; set; }
 	public int BazaarRefreshInterval { get; set; }
 	public int ItemsRefreshInterval { get; set; }
+	
+	public int ActivityStaleThresholdHours { get; set; }
+	public double ActivityMinXpGain { get; set; }
 }

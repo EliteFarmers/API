@@ -17,6 +17,8 @@
     "ManualEntitlementsRefreshCooldown": 60,
     "EntitlementsRefreshCooldown": 43200,
     "BazaarRefreshInterval": 180,
-    "ItemsRefreshInterval": 14400
+    "ItemsRefreshInterval": 14400,
+    "ActivityStaleThresholdHours": 18,
+    "ActivityMinXpGain": 1000
   }
 }

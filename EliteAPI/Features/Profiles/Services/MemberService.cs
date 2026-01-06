@@ -26,6 +26,7 @@ public interface IMemberService
 
 	Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null);
 	Task RefreshProfiles(string playerUuid);
+	Task<bool> IsPlayerActiveAsync(Guid profileMemberId);
 }
 
 [RegisterService<IMemberService>(LifeTime.Scoped)]
@@ -233,6 +234,42 @@ public class MemberService(
 		}
 
 		await dataContext.SaveChangesAsync();
+	}
+
+	/// <summary>
+	/// Checks if a player is considered active based on their skill experience gains.
+	/// </summary>
+	/// <param name="profileMemberId"></param>
+	/// <returns></returns>
+	public async Task<bool> IsPlayerActiveAsync(Guid profileMemberId) {
+		var entries = await context.SkillExperiences
+			.Where(s => s.ProfileMemberId == profileMemberId)
+			.OrderByDescending(s => s.Time)
+			.Take(2)
+			.ToListAsync();
+		
+		if (entries.Count < 2) return true;
+		
+		var latest = entries[0];
+		var previous = entries[1];
+		
+		if (latest.Time < DateTimeOffset.UtcNow.AddHours(-_coolDowns.ActivityStaleThresholdHours)) {
+			return true;
+		}
+		
+		var xpGain = (latest.Farming - previous.Farming)
+		           + (latest.Combat - previous.Combat)
+		           + (latest.Mining - previous.Mining)
+		           + (latest.Foraging - previous.Foraging)
+		           + (latest.Fishing - previous.Fishing)
+		           + (latest.Enchanting - previous.Enchanting)
+		           + (latest.Alchemy - previous.Alchemy)
+		           + (latest.Carpentry - previous.Carpentry)
+		           + (latest.Runecrafting - previous.Runecrafting)
+		           + (latest.Social - previous.Social)
+		           + (latest.Taming - previous.Taming);
+		
+		return xpGain >= _coolDowns.ActivityMinXpGain;
 	}
 }
 
