@@ -6,6 +6,7 @@ using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Features.Profiles.Commands;
 using EliteAPI.Features.Profiles.Mappers;
 using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Features.Profiles.Utilities;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Models.Entities.Timescale;
@@ -50,8 +51,6 @@ public interface IProfileProcessorService
 	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
 	Task<(Profile? profile, Dictionary<string, ProfileMemberResponse> members)> ProcessProfileData(
 		ProfileResponse profileData, string? requestedPlayerUuid);
-
-	Task UpdateGardenData(string profileId);
 
 	/// <summary>
 	/// Processes a member from the Hypixel API
@@ -195,7 +194,8 @@ public partial class ProfileProcessorService(
 				if (playerUuid == requestedPlayerUuid) {
 					// Process current member synchronously
 					await command.ExecuteAsync();
-				} else {
+				}
+				else {
 					// Queue remaining members
 					await command.QueueJobAsync();
 				}
@@ -258,12 +258,21 @@ public partial class ProfileProcessorService(
 		await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
 
 		if (httpContextAccessor.HttpContext is not null && !httpContextAccessor.HttpContext.IsKnownBot()) {
+			var profileResponseHash = MemberDataHasher.ComputeHash(profileData);
 			var gardenCooldown = profileData.Selected is true
 				? _coolDowns.SkyblockGardenCooldown
 				: _coolDowns.SkyblockGardenNonSelectedCooldown;
-			
-			if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(gardenCooldown)) {
-				await UpdateGardenData(profileId);
+
+			var hashChanged = existing?.Garden is null
+			                  || existing.Garden.ProfileResponseHash != profileResponseHash
+			                  || existing.Garden.ProfileResponseHash == 0;
+
+			if (hashChanged &&
+			    (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(gardenCooldown))) {
+				await new RefreshGardenCommand {
+					ProfileId = profileId,
+					ProfileResponseHash = profileResponseHash
+				}.QueueJobAsync();
 			}
 
 			if (existing is null || existing.MuseumLastUpdated.OlderThanSeconds(_coolDowns.SkyblockMuseumCooldown)) {
@@ -272,15 +281,6 @@ public partial class ProfileProcessorService(
 		}
 
 		return (profile, members);
-	}
-
-	public async Task UpdateGardenData(string profileId) {
-		var data = new JobDataMap {
-			{ "ProfileId", profileId }
-		};
-
-		var scheduler = await schedulerFactory.GetScheduler();
-		await scheduler.TriggerJob(RefreshGardenBackgroundJob.Key, data);
 	}
 
 	public async Task ProcessMemberData(Profile profile, ProfileMemberResponse memberData, string playerUuid,
@@ -489,7 +489,8 @@ public partial class ProfileProcessorService(
 			member.LiquidNetworth = networth.LiquidNetworth;
 			member.FunctionalNetworth = networth.FunctionalNetworth;
 			member.LiquidFunctionalNetworth = networth.LiquidFunctionalNetworth;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			logger.LogError(e, "Failed to calculate networth for {PlayerUuid} in {ProfileId}", member.PlayerUuid,
 				member.ProfileId);
 		}
@@ -617,7 +618,7 @@ public partial class ProfileProcessorService(
 				Seeds = member.Collections.GetValueOrDefault(CropId.Seeds),
 				Sunflower = member.Collections.GetValueOrDefault(CropId.Sunflower),
 				Moonflower = member.Collections.GetValueOrDefault(CropId.Moonflower),
-				WildRose =  member.Collections.GetValueOrDefault(CropId.WildRose),
+				WildRose = member.Collections.GetValueOrDefault(CropId.WildRose),
 
 				Beetle = member.Farming.Pests.Beetle,
 				Cricket = member.Farming.Pests.Cricket,
@@ -671,32 +672,32 @@ public partial class ProfileProcessorService(
 	private Task InsertCropCollectionAsync(CropCollection cropCollection, CancellationToken c = default) {
 		// Keep the insert explicit and parameterized. Table/column names match the EF model snapshot.
 		return context.Database.ExecuteSqlInterpolatedAsync($"""
-INSERT INTO "CropCollections" (
-	"Time",
-	"ProfileMemberId",
-	"Wheat", "Carrot", "Potato", "Pumpkin", "Melon", "Mushroom", "CocoaBeans", "Cactus", "SugarCane", "NetherWart", "Seeds", "Sunflower", "Moonflower", "WildRose",
-	"Beetle", "Cricket", "Fly", "Locust", "Mite", "Mosquito", "Moth", "Rat", "Slug", "Earthworm", "Mouse", "Dragonfly", "Firefly", "Mantis"
-) VALUES (
-	{cropCollection.Time},
-	{cropCollection.ProfileMemberId},
-	{cropCollection.Wheat}, {cropCollection.Carrot}, {cropCollection.Potato}, {cropCollection.Pumpkin}, {cropCollection.Melon}, {cropCollection.Mushroom}, {cropCollection.CocoaBeans}, {cropCollection.Cactus}, {cropCollection.SugarCane}, {cropCollection.NetherWart}, {cropCollection.Seeds}, {cropCollection.Sunflower}, {cropCollection.Moonflower}, {cropCollection.WildRose},
-	{cropCollection.Beetle}, {cropCollection.Cricket}, {cropCollection.Fly}, {cropCollection.Locust}, {cropCollection.Mite}, {cropCollection.Mosquito}, {cropCollection.Moth}, {cropCollection.Rat}, {cropCollection.Slug}, {cropCollection.Earthworm}, {cropCollection.Mouse}, {cropCollection.Dragonfly}, {cropCollection.Firefly}, {cropCollection.Mantis}
-);
-""", c);
+		                                                     INSERT INTO "CropCollections" (
+		                                                     	"Time",
+		                                                     	"ProfileMemberId",
+		                                                     	"Wheat", "Carrot", "Potato", "Pumpkin", "Melon", "Mushroom", "CocoaBeans", "Cactus", "SugarCane", "NetherWart", "Seeds", "Sunflower", "Moonflower", "WildRose",
+		                                                     	"Beetle", "Cricket", "Fly", "Locust", "Mite", "Mosquito", "Moth", "Rat", "Slug", "Earthworm", "Mouse", "Dragonfly", "Firefly", "Mantis"
+		                                                     ) VALUES (
+		                                                     	{cropCollection.Time},
+		                                                     	{cropCollection.ProfileMemberId},
+		                                                     	{cropCollection.Wheat}, {cropCollection.Carrot}, {cropCollection.Potato}, {cropCollection.Pumpkin}, {cropCollection.Melon}, {cropCollection.Mushroom}, {cropCollection.CocoaBeans}, {cropCollection.Cactus}, {cropCollection.SugarCane}, {cropCollection.NetherWart}, {cropCollection.Seeds}, {cropCollection.Sunflower}, {cropCollection.Moonflower}, {cropCollection.WildRose},
+		                                                     	{cropCollection.Beetle}, {cropCollection.Cricket}, {cropCollection.Fly}, {cropCollection.Locust}, {cropCollection.Mite}, {cropCollection.Mosquito}, {cropCollection.Moth}, {cropCollection.Rat}, {cropCollection.Slug}, {cropCollection.Earthworm}, {cropCollection.Mouse}, {cropCollection.Dragonfly}, {cropCollection.Firefly}, {cropCollection.Mantis}
+		                                                     );
+		                                                     """, c);
 	}
 
 	private Task InsertSkillExperienceAsync(SkillExperience skillExperience, CancellationToken c = default) {
 		// Keep the insert explicit and parameterized. Table/column names match the EF model snapshot.
 		return context.Database.ExecuteSqlInterpolatedAsync($"""
-INSERT INTO "SkillExperiences" (
-	"Combat", "Mining", "Foraging", "Fishing", "Enchanting", "Alchemy", "Carpentry", "Runecrafting", "Social", "Taming", "Farming",
-	"Time",
-	"ProfileMemberId"
-) VALUES (
-	{skillExperience.Combat}, {skillExperience.Mining}, {skillExperience.Foraging}, {skillExperience.Fishing}, {skillExperience.Enchanting}, {skillExperience.Alchemy}, {skillExperience.Carpentry}, {skillExperience.Runecrafting}, {skillExperience.Social}, {skillExperience.Taming}, {skillExperience.Farming},
-	{skillExperience.Time},
-	{skillExperience.ProfileMemberId}
-);
-""", c);
+		                                                     INSERT INTO "SkillExperiences" (
+		                                                     	"Combat", "Mining", "Foraging", "Fishing", "Enchanting", "Alchemy", "Carpentry", "Runecrafting", "Social", "Taming", "Farming",
+		                                                     	"Time",
+		                                                     	"ProfileMemberId"
+		                                                     ) VALUES (
+		                                                     	{skillExperience.Combat}, {skillExperience.Mining}, {skillExperience.Foraging}, {skillExperience.Fishing}, {skillExperience.Enchanting}, {skillExperience.Alchemy}, {skillExperience.Carpentry}, {skillExperience.Runecrafting}, {skillExperience.Social}, {skillExperience.Taming}, {skillExperience.Farming},
+		                                                     	{skillExperience.Time},
+		                                                     	{skillExperience.ProfileMemberId}
+		                                                     );
+		                                                     """, c);
 	}
 }

@@ -71,6 +71,8 @@ public class Garden
 	[Column(TypeName = "jsonb")] public Dictionary<string, VisitorData> Visitors { get; set; } = new();
 
 	public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
+	
+	public long ProfileResponseHash { get; set; }
 }
 
 [Owned]
