@@ -4,7 +4,7 @@ namespace EliteFarmers.HypixelAPI.Metrics;
 
 public interface IHypixelKeyUsageCounter
 {
-	void Increment(int value = 1);
+	void Increment(string endpoint, int value = 1);
 }
 
 public class HypixelKeyUsageCounter : IHypixelKeyUsageCounter
@@ -17,7 +17,7 @@ public class HypixelKeyUsageCounter : IHypixelKeyUsageCounter
 			meter.CreateCounter<int>("hypixel.api.key_usage", description: "The number of requests used.");
 	}
 
-	public void Increment(int value = 1) {
-		_keyUsageCounter.Add(value);
+	public void Increment(string endpoint, int value = 1) {
+		_keyUsageCounter.Add(value, new KeyValuePair<string, object?>("endpoint", endpoint));
 	}
 }

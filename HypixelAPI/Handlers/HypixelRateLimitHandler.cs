@@ -37,7 +37,8 @@ public class HypixelRateLimitHandler(
 			return limitedResponse;
 		}
 
-		keyUsageCounter.Increment();
+		var endpoint = ExtractEndpoint(request.RequestUri);
+		keyUsageCounter.Increment(endpoint);
 		var response = await base.SendAsync(request, cancellationToken);
 
 		if (response.Headers.TryGetValues(RateLimitLimit, out var limitValues) &&
@@ -48,5 +49,19 @@ public class HypixelRateLimitHandler(
 				limiter.Sync(limitInt, remainingInt);
 
 		return response;
+	}
+
+	private static string ExtractEndpoint(Uri? uri) {
+		if (uri is null) return "unknown";
+		
+		// Extract the path segment after /v2/ (ex: "skyblock/profiles", "player", "skyblock/garden")
+		var path = uri.AbsolutePath;
+		const string prefix = "/v2/";
+		
+		if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) {
+			return path[prefix.Length..];
+		}
+		
+		return path.TrimStart('/');
 	}
 }

@@ -125,6 +125,7 @@ public partial class ProfileProcessorService
 		var petsCategory = new NetworthCategory();
 		foreach (var pet in member.Pets) {
 			var networthItem = new NetworthItem {
+				Count = 1,
 				PetInfo = new NetworthItemPetInfo {
 					Type = pet.Type ?? "UNKNOWN",
 					Tier = pet.Tier ?? "COMMON",
