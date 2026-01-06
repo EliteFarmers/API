@@ -765,44 +765,105 @@ public class LbService(
 		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
 
-		var entry = await GetLeaderboardEntryAsync(leaderboardId, resourceId, gameMode, removedFilter, identifier);
+		identifier ??= GetCurrentIdentifier(GetTypeFromSlug(leaderboardId));
+		var cancellationToken = c ?? CancellationToken.None;
 
-		var position = entry?.Rank ?? -1;
-		List<LeaderboardEntryDto>? upcomingPlayers = null;
-		List<LeaderboardEntryDto>? previousPlayers = null;
+		var leaderboard = await context.Leaderboards
+			.AsNoTracking()
+			.FirstOrDefaultAsync(lb => lb.Slug == leaderboardId, cancellationToken);
+		if (leaderboard is null) return null;
 
-		var rank = atRank is -1 or null ? position : Math.Max(1, atRank.Value);
-		rank = position != -1 ? Math.Min(position, rank) : rank;
-
-		var sliceOffset = upcoming.HasValue ? Math.Max(rank - upcoming.Value - 1, 0) : 0;
-		var sliceLimit = upcoming.HasValue ? Math.Min(rank - 1, upcoming.Value) : 0;
-
-		if (upcoming > 0 && rank > 1)
-			upcomingPlayers = await GetLeaderboardSlice(leaderboardId, sliceOffset, sliceLimit, gameMode, removedFilter,
-				identifier);
-
-		if (previous > 0 && position != -1) {
-			var willHavePlayer = position > rank && previous.Value + rank > position;
-			var limit = willHavePlayer ? previous.Value + 1 : previous.Value;
-
-			previousPlayers =
-				await GetLeaderboardSlice(leaderboardId, rank, limit, gameMode, removedFilter, identifier);
-
-			if (willHavePlayer)
-				// Remove the player from the previous players list if they are included
-				previousPlayers.RemoveAt(position - rank - 1);
+		Guid? memberId = null;
+		if (definition.IsMemberLeaderboard()) {
+			if (!Guid.TryParse(resourceId, out var parsedMemberId)) return null;
+			memberId = parsedMemberId;
 		}
 
-		// Reverse the list of upcoming players to show the closest upcoming player first
-		upcomingPlayers?.Reverse();
+		var baseQuery = context.LeaderboardEntries
+			.AsNoTracking()
+			.FromLeaderboard(leaderboard.LeaderboardId, definition.IsMemberLeaderboard())
+			.EntryFilter(identifier, removedFilter, gameMode);
+
+		var userEntry = await (definition.IsMemberLeaderboard()
+				? baseQuery.Where(e => e.ProfileMemberId == memberId)
+				: baseQuery.Where(e => e.ProfileId == resourceId))
+			.Select(e => new {
+				e.LeaderboardEntryId,
+				e.Score,
+				e.InitialScore,
+				e.IsRemoved,
+				e.ProfileType
+			})
+			.FirstOrDefaultAsync(cancellationToken);
+
+		if (userEntry is null) return null;
+
+		var userScore = userEntry.Score;
+		var userId = userEntry.LeaderboardEntryId;
+
+		var rankCount = userEntry.IsRemoved
+			? -1
+			: await baseQuery.CountAsync(
+				e => e.Score > userScore || (e.Score == userScore && e.LeaderboardEntryId > userId),
+				cancellationToken);
+
+		// Anchor window start
+		var anchorScore = userScore;
+		var anchorId = userId;
+		var anchorRank = rankCount == -1 ? -1 : rankCount + 1;
+
+		if (atRank is > 0) {
+			var anchor = await baseQuery
+				.OrderByDescending(e => e.Score)
+				.ThenByDescending(e => e.LeaderboardEntryId)
+				.Skip(atRank.Value - 1)
+				.Select(e => new { e.Score, e.LeaderboardEntryId })
+				.FirstOrDefaultAsync(cancellationToken);
+
+			if (anchor is not null) {
+				anchorScore = anchor.Score;
+				anchorId = anchor.LeaderboardEntryId;
+				anchorRank = atRank.Value;
+			}
+		}
+
+		var upcomingPlayers = new List<LeaderboardEntryDto>();
+		var previousPlayers = new List<LeaderboardEntryDto>();
+
+		if (upcoming > 0 && !userEntry.IsRemoved) {
+			var upcomingQuery = baseQuery
+				.Where(e => e.Score > anchorScore || (e.Score == anchorScore && e.LeaderboardEntryId > anchorId))
+				.OrderBy(e => e.Score)
+				.ThenBy(e => e.LeaderboardEntryId)
+				.Take(upcoming.Value);
+
+			upcomingPlayers = definition.IsMemberLeaderboard()
+				? await upcomingQuery.MapToMemberLeaderboardEntries(upcoming.Value <= 20).ToListAsync(cancellationToken)
+				: await upcomingQuery.MapToProfileLeaderboardEntries(removedFilter).ToListAsync(cancellationToken);
+		}
+
+		if (previous > 0 && !userEntry.IsRemoved) {
+			var previousQuery = baseQuery
+				.Where(e => e.Score < anchorScore || (e.Score == anchorScore && e.LeaderboardEntryId < anchorId))
+				.OrderByDescending(e => e.Score)
+				.ThenByDescending(e => e.LeaderboardEntryId)
+				.Take(previous.Value);
+
+			previousPlayers = definition.IsMemberLeaderboard()
+				? await previousQuery.MapToMemberLeaderboardEntries(previous.Value <= 20).ToListAsync(cancellationToken)
+				: await previousQuery.MapToProfileLeaderboardEntries(removedFilter).ToListAsync(cancellationToken);
+		}
+
+		var position = rankCount == -1 ? -1 : rankCount + 1;
+		var windowRank = anchorRank > 0 ? anchorRank : position;
 
 		var result = new LeaderboardPositionDto {
 			Rank = position,
-			Amount = entry?.Amount ?? 0,
-			InitialAmount = entry?.InitialAmount ?? 0,
+			Amount = (double)userEntry.Score,
+			InitialAmount = (double)userEntry.InitialScore,
 			MinAmount = (double)definition.Info.MinimumScore,
-			UpcomingRank = rank == -1 ? -1 : rank - 1,
-			UpcomingPlayers = upcomingPlayers ?? [],
+			UpcomingRank = windowRank == -1 ? -1 : windowRank - 1,
+			UpcomingPlayers = upcomingPlayers,
 			Previous = previousPlayers
 		};
 

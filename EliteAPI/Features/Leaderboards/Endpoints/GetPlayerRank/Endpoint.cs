@@ -18,17 +18,6 @@ internal sealed class GetPlayerRankEndpoint(
 	}
 
 	public override async Task HandleAsync(GetPlayerRankRequest request, CancellationToken c) {
-		await Send.OkAsync(new LeaderboardPositionDto {
-			Rank = -1,
-			Amount = 0,
-			MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard),
-			UpcomingRank = 10_000,
-			UpcomingPlayers = []
-		}, c);
-
-		return;
-
-		/*
 #pragma warning disable CS0618 // Type or member is obsolete
 		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) request.Upcoming = 10;
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -47,6 +36,5 @@ internal sealed class GetPlayerRankEndpoint(
 		);
 
 		await Send.OkAsync(result, c);
-		*/
 	}
 }
