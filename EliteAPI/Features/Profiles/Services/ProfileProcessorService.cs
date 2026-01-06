@@ -258,8 +258,11 @@ public partial class ProfileProcessorService(
 		await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
 
 		if (httpContextAccessor.HttpContext is not null && !httpContextAccessor.HttpContext.IsKnownBot()) {
-			if (existing?.Garden is null ||
-			    existing.Garden.LastUpdated.OlderThanSeconds(_coolDowns.SkyblockGardenCooldown)) {
+			var gardenCooldown = profileData.Selected is true
+				? _coolDowns.SkyblockGardenCooldown
+				: _coolDowns.SkyblockGardenNonSelectedCooldown;
+			
+			if (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(gardenCooldown)) {
 				await UpdateGardenData(profileId);
 			}
 
