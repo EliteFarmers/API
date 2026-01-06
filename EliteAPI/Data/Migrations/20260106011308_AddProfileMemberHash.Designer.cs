@@ -6,6 +6,7 @@ using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Profiles.Models;
+using EliteAPI.Features.Recap.Models;
 using EliteAPI.Features.Resources.Bazaar;
 using EliteAPI.Models.DTOs.Outgoing;
 using EliteAPI.Models.Entities.Discord;
@@ -25,8 +26,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251114010413_AddSlayersAndGuildStats")]
-    partial class AddSlayersAndGuildStats
+    [Migration("20260106011308_AddProfileMemberHash")]
+    partial class AddProfileMemberHash
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +35,7 @@ namespace EliteAPI.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -135,9 +136,6 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("GuildLastUpdated")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("GuildMemberId")
-                        .HasColumnType("bigint");
-
                     b.Property<byte[]>("Hat")
                         .HasColumnType("bytea");
 
@@ -165,8 +163,6 @@ namespace EliteAPI.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("GuildMemberId");
 
                     b.HasIndex(new[] { "Name" }, "idx_minecraft_accounts_name");
 
@@ -483,6 +479,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("CreatedAt")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -508,7 +507,7 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<List<string>>("PreferredGames")
+                    b.PrimitiveCollection<string>("PreferredGames")
                         .HasColumnType("jsonb");
 
                     b.Property<bool>("Public")
@@ -534,6 +533,39 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("NameLower");
 
                     b.ToTable("HypixelGuilds");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildLeaderboardResult", b =>
+                {
+                    b.Property<double>("Amount")
+                        .HasColumnType("double precision");
+
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<long>("LastUpdated")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("MemberCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tag")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TagColor")
+                        .HasColumnType("text");
+
+                    b.ToTable("HypixelGuildLeaderboardResult", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", b =>
@@ -610,6 +642,10 @@ namespace EliteAPI.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<Dictionary<string, long>>("Collections")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<string>("GuildId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -620,6 +656,10 @@ namespace EliteAPI.Data.Migrations
                     b.Property<DateTimeOffset>("RecordedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Dictionary<string, long>>("Skills")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GuildId");
@@ -627,6 +667,31 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("RecordedAt");
 
                     b.ToTable("HypixelGuildStats");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Services.GuildIdResult", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.ToTable("GuildIdResult", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Services.GuildRankResult", b =>
+                {
+                    b.Property<double>("Amount")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("integer");
+
+                    b.ToTable("GuildRankResult", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Images.Models.Image", b =>
@@ -956,7 +1021,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<decimal>("ProductId")
                         .HasColumnType("numeric(20,0)")
-                        .HasAnnotation("Relational:JsonPropertyName", "sku_id");
+                        .HasJsonPropertyName("sku_id");
 
                     b.Property<DateTimeOffset?>("StartDate")
                         .HasColumnType("timestamp with time zone");
@@ -1231,6 +1296,135 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("HypixelItems");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Recap.Models.YearlyRecap", b =>
+                {
+                    b.Property<Guid>("ProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.Property<YearlyRecapData>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("Passkey")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Public")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Views")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProfileMemberId", "Year");
+
+                    b.ToTable("YearlyRecaps");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Recap.Models.YearlyRecapSnapshot", b =>
+                {
+                    b.Property<int>("Year")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Year"));
+
+                    b.Property<GlobalRecap>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("Year");
+
+                    b.ToTable("YearlyRecapSnapshots");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.Auction", b =>
+                {
+                    b.Property<Guid>("AuctionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Bin")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("BuyerProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BuyerProfileUuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BuyerUuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<short>("Count")
+                        .HasColumnType("smallint");
+
+                    b.Property<long>("End")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("HighestBid")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte[]>("Item")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid?>("ItemUuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("SellerProfileMemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SellerProfileUuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SellerUuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SkyblockId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<long>("SoldAt")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Start")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StartingBid")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("VariantKey")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasDefaultValue("");
+
+                    b.HasKey("AuctionId");
+
+                    b.HasIndex("BuyerProfileMemberId");
+
+                    b.HasIndex("Price");
+
+                    b.HasIndex("SellerProfileMemberId");
+
+                    b.HasIndex("SoldAt");
+
+                    b.HasIndex("SkyblockId", "SoldAt");
+
+                    b.HasIndex("SkyblockId", "VariantKey", "SoldAt");
+
+                    b.ToTable("EndedAuctions");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionBinPrice", b =>
                 {
                     b.Property<long>("Id")
@@ -1394,77 +1588,6 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("AuctionSubscription");
                 });
 
-            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.EndedAuction", b =>
-                {
-                    b.Property<Guid>("AuctionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Bin")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid?>("BuyerProfileMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BuyerProfileUuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BuyerUuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<short>("Count")
-                        .HasColumnType("smallint");
-
-                    b.Property<byte[]>("Item")
-                        .IsRequired()
-                        .HasColumnType("bytea");
-
-                    b.Property<Guid?>("ItemUuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("Price")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("SellerProfileMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SellerProfileUuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SellerUuid")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SkyblockId")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<long>("Timestamp")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("VariantKey")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasDefaultValue("");
-
-                    b.HasKey("AuctionId");
-
-                    b.HasIndex("BuyerProfileMemberId");
-
-                    b.HasIndex("Price");
-
-                    b.HasIndex("SellerProfileMemberId");
-
-                    b.HasIndex("Timestamp");
-
-                    b.HasIndex("SkyblockId", "Timestamp");
-
-                    b.HasIndex("SkyblockId", "VariantKey", "Timestamp");
-
-                    b.ToTable("EndedAuctions");
-                });
-
             modelBuilder.Entity("EliteAPI.Features.Resources.Bazaar.BazaarProductSnapshot", b =>
                 {
                     b.Property<long>("Id")
@@ -1573,8 +1696,8 @@ namespace EliteAPI.Data.Migrations
                     b.Property<Guid>("FiresaleId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ItemId")
-                        .HasColumnType("text");
+                    b.Property<int>("SlotId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Amount")
                         .HasColumnType("integer");
@@ -1582,13 +1705,17 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("EndsAt")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ItemId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("Price")
                         .HasColumnType("integer");
 
                     b.Property<long>("StartsAt")
                         .HasColumnType("bigint");
 
-                    b.HasKey("FiresaleId", "ItemId");
+                    b.HasKey("FiresaleId", "SlotId");
 
                     b.ToTable("SkyblockFiresaleItems");
                 });
@@ -1648,7 +1775,7 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
 
-                    b.Property<List<string>>("DiscordFeatures")
+                    b.PrimitiveCollection<string>("DiscordFeatures")
                         .IsRequired()
                         .HasColumnType("jsonb");
 
@@ -2298,6 +2425,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("MuseumLastUpdated")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("ProfileName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -2324,11 +2454,29 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<double>("FunctionalNetworth")
+                        .HasColumnType("double precision");
+
                     b.Property<bool>("IsSelected")
                         .HasColumnType("boolean");
 
+                    b.Property<long>("LastDataChanged")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
+
+                    b.Property<double>("LiquidFunctionalNetworth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("LiquidNetworth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Networth")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("PersonalBank")
+                        .HasColumnType("double precision");
 
                     b.Property<List<Pet>>("Pets")
                         .IsRequired()
@@ -2347,6 +2495,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<double>("Purse")
                         .HasColumnType("double precision");
+
+                    b.Property<long>("ResponseHash")
+                        .HasColumnType("bigint");
 
                     b.Property<Dictionary<string, long>>("Sacks")
                         .IsRequired()
@@ -2402,6 +2553,10 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<double>("Foraging")
                         .HasColumnType("double precision");
+
+                    b.Property<Dictionary<string, int>>("LevelCaps")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<double>("Mining")
                         .HasColumnType("double precision");
@@ -2713,7 +2868,13 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Cricket")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Dragonfly")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Earthworm")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Firefly")
                         .HasColumnType("integer");
 
                     b.Property<int>("Fly")
@@ -2722,11 +2883,17 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int>("Locust")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Mantis")
+                        .HasColumnType("integer");
+
                     b.Property<long>("Melon")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Mite")
                         .HasColumnType("integer");
+
+                    b.Property<long>("Moonflower")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Mosquito")
                         .HasColumnType("integer");
@@ -2764,10 +2931,16 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("SugarCane")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Sunflower")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("Time")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("Wheat")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WildRose")
                         .HasColumnType("bigint");
 
                     b.HasIndex("ProfileMemberId");
@@ -2850,37 +3023,37 @@ namespace EliteAPI.Data.Migrations
                         new
                         {
                             Id = "8270a1b1-5809-436a-ba1c-b712f4f55f67",
+                            ConcurrencyStamp = "11d759b6-025f-4334-b8fc-3b26a72cda87",
                             Name = "Admin",
-                            NormalizedName = "ADMIN",
-                            ConcurrencyStamp = "11d759b6-025f-4334-b8fc-3b26a72cda87"
+                            NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "3384aba1-5453-4787-81d9-0b7222225d81",
+                            ConcurrencyStamp = "34eb8585-7920-4f4c-857a-e5d131a835ef",
                             Name = "Moderator",
-                            NormalizedName = "MODERATOR",
-                            ConcurrencyStamp = "34eb8585-7920-4f4c-857a-e5d131a835ef"
+                            NormalizedName = "MODERATOR"
                         },
                         new
                         {
                             Id = "d8c803c1-63a0-4594-8d68-aad7bd59df7d",
+                            ConcurrencyStamp = "e0e6b08b-7cd1-4f8c-b827-cab959ebc9be",
                             Name = "Support",
-                            NormalizedName = "SUPPORT",
-                            ConcurrencyStamp = "e0e6b08b-7cd1-4f8c-b827-cab959ebc9be"
+                            NormalizedName = "SUPPORT"
                         },
                         new
                         {
                             Id = "ff4f5319-644e-4332-8bd5-2ec989ba5e7f",
+                            ConcurrencyStamp = "e4ec974b-71af-4307-8bf0-3feb9f380566",
                             Name = "Wiki",
-                            NormalizedName = "WIKI",
-                            ConcurrencyStamp = "e4ec974b-71af-4307-8bf0-3feb9f380566"
+                            NormalizedName = "WIKI"
                         },
                         new
                         {
                             Id = "e99efab5-3fd2-416e-b8f5-93b0370892ac",
+                            ConcurrencyStamp = "c9ad7f78-129a-4507-ace1-5a71c221a901",
                             Name = "User",
-                            NormalizedName = "USER",
-                            ConcurrencyStamp = "c9ad7f78-129a-4507-ace1-5a71c221a901"
+                            NormalizedName = "USER"
                         });
                 });
 
@@ -3143,13 +3316,7 @@ namespace EliteAPI.Data.Migrations
                         .WithMany("MinecraftAccounts")
                         .HasForeignKey("AccountId");
 
-                    b.HasOne("EliteAPI.Features.HypixelGuilds.Models.HypixelGuildMember", "GuildMember")
-                        .WithMany()
-                        .HasForeignKey("GuildMemberId");
-
                     b.Navigation("EliteAccount");
-
-                    b.Navigation("GuildMember");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Account.Models.UserBadge", b =>
@@ -3259,7 +3426,7 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("EliteAPI.Features.Account.Models.MinecraftAccount", "MinecraftAccount")
-                        .WithMany()
+                        .WithMany("GuildMembers")
                         .HasForeignKey("PlayerUuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3525,16 +3692,13 @@ namespace EliteAPI.Data.Migrations
 
                     b.OwnsOne("EliteAPI.Features.Leaderboards.Models.ProfileMemberMetadataCosmetics", "Cosmetics", b1 =>
                         {
-                            b1.Property<Guid>("ProfileMemberMetadataProfileMemberId")
-                                .HasColumnType("uuid");
+                            b1.Property<Guid>("ProfileMemberMetadataProfileMemberId");
 
                             b1.Property<string>("Prefix")
-                                .HasMaxLength(16)
-                                .HasColumnType("character varying(16)");
+                                .HasMaxLength(16);
 
                             b1.Property<string>("Suffix")
-                                .HasMaxLength(16)
-                                .HasColumnType("character varying(16)");
+                                .HasMaxLength(16);
 
                             b1.HasKey("ProfileMemberMetadataProfileMemberId");
 
@@ -3548,29 +3712,21 @@ namespace EliteAPI.Data.Migrations
                             b1.OwnsOne("EliteAPI.Features.Leaderboards.Models.MemberLeaderboardCosmeticsDto", "Leaderboard", b2 =>
                                 {
                                     b2.Property<Guid>("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId")
-                                        .HasColumnType("uuid")
                                         .HasColumnName("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemb~");
 
-                                    b2.Property<string>("BackgroundColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("BackgroundColor");
 
-                                    b2.Property<string>("BackgroundImage")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("BackgroundImage");
 
-                                    b2.Property<string>("BorderColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("BorderColor");
 
-                                    b2.Property<string>("OverlayImage")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("OverlayImage");
 
-                                    b2.Property<string>("RankColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("RankColor");
 
-                                    b2.Property<int?>("StyleId")
-                                        .HasColumnType("integer");
+                                    b2.Property<int?>("StyleId");
 
-                                    b2.Property<string>("TextColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("TextColor");
 
                                     b2.HasKey("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId");
 
@@ -3697,6 +3853,28 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.Recap.Models.YearlyRecap", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", "ProfileMember")
+                        .WithMany()
+                        .HasForeignKey("ProfileMemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProfileMember");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.Auction", b =>
+                {
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerProfileMemberId");
+
+                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", null)
+                        .WithMany("Auctions")
+                        .HasForeignKey("SellerProfileMemberId");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.AuctionItem", b =>
                 {
                     b.HasOne("EliteAPI.Features.Resources.Items.Models.SkyblockItem", null)
@@ -3719,17 +3897,6 @@ namespace EliteAPI.Data.Migrations
                         .HasForeignKey("ProfileMemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("EliteAPI.Features.Resources.Auctions.Models.EndedAuction", b =>
-                {
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", null)
-                        .WithMany()
-                        .HasForeignKey("BuyerProfileMemberId");
-
-                    b.HasOne("EliteAPI.Models.Entities.Hypixel.ProfileMember", null)
-                        .WithMany("EndedAuctions")
-                        .HasForeignKey("SellerProfileMemberId");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Resources.Bazaar.BazaarProductSummary", b =>
@@ -3886,13 +4053,22 @@ namespace EliteAPI.Data.Migrations
                             b1.Property<int>("Cricket")
                                 .HasColumnType("integer");
 
+                            b1.Property<int>("Dragonfly")
+                                .HasColumnType("integer");
+
                             b1.Property<int>("Earthworm")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Firefly")
                                 .HasColumnType("integer");
 
                             b1.Property<int>("Fly")
                                 .HasColumnType("integer");
 
                             b1.Property<int>("Locust")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Mantis")
                                 .HasColumnType("integer");
 
                             b1.Property<int>("Mite")
@@ -4060,6 +4236,9 @@ namespace EliteAPI.Data.Migrations
                             b1.Property<short>("Melon")
                                 .HasColumnType("smallint");
 
+                            b1.Property<short>("Moonflower")
+                                .HasColumnType("smallint");
+
                             b1.Property<short>("Mushroom")
                                 .HasColumnType("smallint");
 
@@ -4075,7 +4254,13 @@ namespace EliteAPI.Data.Migrations
                             b1.Property<short>("SugarCane")
                                 .HasColumnType("smallint");
 
+                            b1.Property<short>("Sunflower")
+                                .HasColumnType("smallint");
+
                             b1.Property<short>("Wheat")
+                                .HasColumnType("smallint");
+
+                            b1.Property<short>("WildRose")
                                 .HasColumnType("smallint");
 
                             b1.HasKey("GardenProfileId");
@@ -4103,6 +4288,9 @@ namespace EliteAPI.Data.Migrations
                             b1.Property<long>("Melon")
                                 .HasColumnType("bigint");
 
+                            b1.Property<long>("Moonflower")
+                                .HasColumnType("bigint");
+
                             b1.Property<long>("Mushroom")
                                 .HasColumnType("bigint");
 
@@ -4118,7 +4306,13 @@ namespace EliteAPI.Data.Migrations
                             b1.Property<long>("SugarCane")
                                 .HasColumnType("bigint");
 
+                            b1.Property<long>("Sunflower")
+                                .HasColumnType("bigint");
+
                             b1.Property<long>("Wheat")
+                                .HasColumnType("bigint");
+
+                            b1.Property<long>("WildRose")
                                 .HasColumnType("bigint");
 
                             b1.HasKey("GardenProfileId");
@@ -4546,6 +4740,8 @@ namespace EliteAPI.Data.Migrations
                 {
                     b.Navigation("Badges");
 
+                    b.Navigation("GuildMembers");
+
                     b.Navigation("PlayerData");
                 });
 
@@ -4626,10 +4822,10 @@ namespace EliteAPI.Data.Migrations
 
             modelBuilder.Entity("EliteAPI.Models.Entities.Hypixel.ProfileMember", b =>
                 {
+                    b.Navigation("Auctions");
+
                     b.Navigation("ChocolateFactory")
                         .IsRequired();
-
-                    b.Navigation("EndedAuctions");
 
                     b.Navigation("EventEntries");
 

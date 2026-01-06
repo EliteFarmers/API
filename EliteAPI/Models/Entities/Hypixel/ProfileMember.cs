@@ -35,6 +35,8 @@ public class ProfileMember
 	public bool IsSelected { get; set; } = false;
 	public bool WasRemoved { get; set; } = false;
 	public long LastUpdated { get; set; } = 0;
+	public long LastDataChanged { get; set; } = 0;
+	public long ResponseHash { get; set; } = 0;
 
 	[Column(TypeName = "jsonb")] public Dictionary<string, long> Collections { get; set; } = new();
 

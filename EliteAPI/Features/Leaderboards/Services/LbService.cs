@@ -26,6 +26,7 @@ public interface ILbService
 	Task<string?> GetFirstInterval(string leaderboardId);
 	double GetLeaderboardMinScore(string leaderboardId);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
+	Task EnsureMemberIntervalEntriesExist(Guid profileMemberId, CancellationToken c = default);
 	Task UpdateProfileLeaderboardsAsync(Profile profile, CancellationToken c);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetProfileLeaderboardEntriesWithRankAsync(string profileId);
@@ -367,6 +368,54 @@ public class LbService(
 		await context.LeaderboardEntries
 			.Where(e => e.ProfileMemberId == profileMemberId && e.IsRemoved == true)
 			.ExecuteUpdateAsync(s => s.SetProperty(le => le.IsRemoved, false), c);
+	}
+
+	public async Task EnsureMemberIntervalEntriesExist(Guid profileMemberId, CancellationToken c = default) {
+		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
+		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+
+		// Create missing interval entries for weekly leaderboards
+		await CreateMissingIntervalEntries(profileMemberId, weeklyInterval!, LeaderboardType.Weekly, c);
+		// Create missing interval entries for monthly leaderboards
+		await CreateMissingIntervalEntries(profileMemberId, monthlyInterval!, LeaderboardType.Monthly, c);
+	}
+
+	private async Task CreateMissingIntervalEntries(Guid profileMemberId, string intervalIdentifier, LeaderboardType type, CancellationToken c) {
+		var sql = """
+			INSERT INTO "LeaderboardEntries" (
+				"LeaderboardId", "IntervalIdentifier", "ProfileMemberId", 
+				"InitialScore", "Score", "IsRemoved", "ProfileType"
+			)
+			SELECT 
+				latest."LeaderboardId",
+				@intervalIdentifier,
+				latest."ProfileMemberId",
+				(latest."Score" + latest."InitialScore"),
+				0,
+				latest."IsRemoved",
+				latest."ProfileType"
+			FROM (
+				SELECT DISTINCT ON ("LeaderboardId") *
+				FROM "LeaderboardEntries"
+				WHERE "ProfileMemberId" = @profileMemberId
+				ORDER BY "LeaderboardId", "IntervalIdentifier" DESC
+			) latest
+			INNER JOIN "Leaderboards" lb ON lb."LeaderboardId" = latest."LeaderboardId"
+			WHERE lb."IntervalType" = @type
+			  AND NOT EXISTS (
+				  SELECT 1 FROM "LeaderboardEntries" existing
+				  WHERE existing."ProfileMemberId" = @profileMemberId
+					AND existing."LeaderboardId" = latest."LeaderboardId"
+					AND existing."IntervalIdentifier" = @intervalIdentifier
+			  )
+			""";
+
+		await context.Database.ExecuteSqlRawAsync(sql,
+			[
+				new Npgsql.NpgsqlParameter("profileMemberId", profileMemberId),
+				new Npgsql.NpgsqlParameter("intervalIdentifier", intervalIdentifier),
+				new Npgsql.NpgsqlParameter("type", type.ToString())
+			], c);
 	}
 
 	public async Task UpdateProfileLeaderboardsAsync(Profile profile,

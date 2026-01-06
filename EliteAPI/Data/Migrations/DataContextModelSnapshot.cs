@@ -32,7 +32,7 @@ namespace EliteAPI.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:CollationDefinition:case_insensitive", "en-u-ks-primary,en-u-ks-primary,icu,False")
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -504,7 +504,7 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<List<string>>("PreferredGames")
+                    b.PrimitiveCollection<string>("PreferredGames")
                         .HasColumnType("jsonb");
 
                     b.Property<bool>("Public")
@@ -1018,7 +1018,7 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<decimal>("ProductId")
                         .HasColumnType("numeric(20,0)")
-                        .HasAnnotation("Relational:JsonPropertyName", "sku_id");
+                        .HasJsonPropertyName("sku_id");
 
                     b.Property<DateTimeOffset?>("StartDate")
                         .HasColumnType("timestamp with time zone");
@@ -1772,7 +1772,7 @@ namespace EliteAPI.Data.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)");
 
-                    b.Property<List<string>>("DiscordFeatures")
+                    b.PrimitiveCollection<string>("DiscordFeatures")
                         .IsRequired()
                         .HasColumnType("jsonb");
 
@@ -2457,6 +2457,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<bool>("IsSelected")
                         .HasColumnType("boolean");
 
+                    b.Property<long>("LastDataChanged")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("LastUpdated")
                         .HasColumnType("bigint");
 
@@ -2489,6 +2492,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<double>("Purse")
                         .HasColumnType("double precision");
+
+                    b.Property<long>("ResponseHash")
+                        .HasColumnType("bigint");
 
                     b.Property<Dictionary<string, long>>("Sacks")
                         .IsRequired()
@@ -3014,30 +3020,35 @@ namespace EliteAPI.Data.Migrations
                         new
                         {
                             Id = "8270a1b1-5809-436a-ba1c-b712f4f55f67",
+                            ConcurrencyStamp = "11d759b6-025f-4334-b8fc-3b26a72cda87",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "3384aba1-5453-4787-81d9-0b7222225d81",
+                            ConcurrencyStamp = "34eb8585-7920-4f4c-857a-e5d131a835ef",
                             Name = "Moderator",
                             NormalizedName = "MODERATOR"
                         },
                         new
                         {
                             Id = "d8c803c1-63a0-4594-8d68-aad7bd59df7d",
+                            ConcurrencyStamp = "e0e6b08b-7cd1-4f8c-b827-cab959ebc9be",
                             Name = "Support",
                             NormalizedName = "SUPPORT"
                         },
                         new
                         {
                             Id = "ff4f5319-644e-4332-8bd5-2ec989ba5e7f",
+                            ConcurrencyStamp = "e4ec974b-71af-4307-8bf0-3feb9f380566",
                             Name = "Wiki",
                             NormalizedName = "WIKI"
                         },
                         new
                         {
                             Id = "e99efab5-3fd2-416e-b8f5-93b0370892ac",
+                            ConcurrencyStamp = "c9ad7f78-129a-4507-ace1-5a71c221a901",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -3678,16 +3689,13 @@ namespace EliteAPI.Data.Migrations
 
                     b.OwnsOne("EliteAPI.Features.Leaderboards.Models.ProfileMemberMetadataCosmetics", "Cosmetics", b1 =>
                         {
-                            b1.Property<Guid>("ProfileMemberMetadataProfileMemberId")
-                                .HasColumnType("uuid");
+                            b1.Property<Guid>("ProfileMemberMetadataProfileMemberId");
 
                             b1.Property<string>("Prefix")
-                                .HasMaxLength(16)
-                                .HasColumnType("character varying(16)");
+                                .HasMaxLength(16);
 
                             b1.Property<string>("Suffix")
-                                .HasMaxLength(16)
-                                .HasColumnType("character varying(16)");
+                                .HasMaxLength(16);
 
                             b1.HasKey("ProfileMemberMetadataProfileMemberId");
 
@@ -3701,29 +3709,21 @@ namespace EliteAPI.Data.Migrations
                             b1.OwnsOne("EliteAPI.Features.Leaderboards.Models.MemberLeaderboardCosmeticsDto", "Leaderboard", b2 =>
                                 {
                                     b2.Property<Guid>("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId")
-                                        .HasColumnType("uuid")
                                         .HasColumnName("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemb~");
 
-                                    b2.Property<string>("BackgroundColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("BackgroundColor");
 
-                                    b2.Property<string>("BackgroundImage")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("BackgroundImage");
 
-                                    b2.Property<string>("BorderColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("BorderColor");
 
-                                    b2.Property<string>("OverlayImage")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("OverlayImage");
 
-                                    b2.Property<string>("RankColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("RankColor");
 
-                                    b2.Property<int?>("StyleId")
-                                        .HasColumnType("integer");
+                                    b2.Property<int?>("StyleId");
 
-                                    b2.Property<string>("TextColor")
-                                        .HasColumnType("text");
+                                    b2.Property<string>("TextColor");
 
                                     b2.HasKey("ProfileMemberMetadataCosmeticsProfileMemberMetadataProfileMemberId");
 

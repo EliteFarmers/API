@@ -82,4 +82,5 @@ public class ProfileMemberDto
 	public bool IsSelected { get; set; }
 	public bool WasRemoved { get; set; }
 	public long LastUpdated { get; set; }
+	public long LastDataChanged { get; set; }
 }

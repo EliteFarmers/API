@@ -46,6 +46,13 @@ internal sealed class ClearPlayerCooldownsEndpoint(
 		await db.KeyDeleteAsync($"player:{account.Id}:updating");
 		await db.KeyDeleteAsync($"profile:{account.Id}:updating");
 
+		// Clear response hashes
+		await context.ProfileMembers
+			.Where(pm => pm.PlayerUuid == account.Id)
+			.ExecuteUpdateAsync(s => s
+				.SetProperty(pm => pm.ResponseHash, 0)
+				.SetProperty(pm => pm.LastDataChanged, 0), cancellationToken: c);
+
 		await Send.NoContentAsync(c);
 	}
 }
