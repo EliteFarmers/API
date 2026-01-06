@@ -722,7 +722,7 @@ public class LbService(
 				memberId = null;
 			}
 			else {
-				if (!skipUpdate) await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 5);
+				if (!skipUpdate) await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 10);
 
 				memberId = member.Id.ToString();
 			}
