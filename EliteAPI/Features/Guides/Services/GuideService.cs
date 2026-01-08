@@ -25,7 +25,7 @@ public class GuideService(DataContext db)
 
         // Generate initial slug based on ID
         guide.Slug = GetSlug(guide.Id);
-        
+
         // Create initial empty draft version
         var initialVersion = new GuideVersion
         {
@@ -35,7 +35,7 @@ public class GuideService(DataContext db)
             MarkdownContent = "# New Guide\nStart writing here...",
             CreatedAt = DateTime.UtcNow
         };
-        
+
         db.GuideVersions.Add(initialVersion);
         await db.SaveChangesAsync();
 
@@ -49,13 +49,13 @@ public class GuideService(DataContext db)
     {
         return await db.Guides
             .Include(g => g.Author)
-                .ThenInclude(a => a.MinecraftAccounts)
+            .ThenInclude(a => a.MinecraftAccounts)
             .Include(g => g.Author)
-                .ThenInclude(a => a.UserSettings)
+            .ThenInclude(a => a.UserSettings)
             .Include(g => g.ActiveVersion)
             .Include(g => g.DraftVersion)
             .Include(g => g.Tags)
-                .ThenInclude(t => t.Tag)
+            .ThenInclude(t => t.Tag)
             .FirstOrDefaultAsync(g => g.Slug == slug);
     }
 
@@ -67,7 +67,7 @@ public class GuideService(DataContext db)
             .Include(g => g.DraftVersion)
             .FirstOrDefaultAsync(g => g.Id == id);
     }
-    
+
     public string GetSlug(int id)
     {
         return EliteAPI.Features.Common.Services.SqidService.Encode(id);
@@ -78,7 +78,8 @@ public class GuideService(DataContext db)
         return EliteAPI.Features.Common.Services.SqidService.Decode(slug);
     }
 
-    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown, GuideRichData? richData)
+    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown,
+        GuideRichData? richData)
     {
         var guide = await db.Guides.FindAsync(guideId);
         if (guide == null) throw new KeyNotFoundException("Guide not found");
@@ -86,7 +87,6 @@ public class GuideService(DataContext db)
         var draft = await db.GuideVersions.FindAsync(guide.DraftVersionId);
         if (draft == null)
         {
-            // Should not happen if data integrity is kept, but let's handle it
             draft = new GuideVersion
             {
                 GuideId = guide.Id,
@@ -98,7 +98,7 @@ public class GuideService(DataContext db)
             };
             db.GuideVersions.Add(draft);
             await db.SaveChangesAsync();
-            
+
             guide.DraftVersionId = draft.Id;
         }
         else
@@ -107,11 +107,8 @@ public class GuideService(DataContext db)
             draft.Description = description;
             draft.MarkdownContent = markdown;
             draft.RichBlocks = richData;
-            // We don't update CreatedAt, effectively Draft is a single mutable version until published? 
-            // Or should we create a NEW version on every save? 
-            // Usually "Draft" is mutable. "Published" is immutable/snapshot.
         }
-        
+
         guide.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
     }
@@ -120,7 +117,7 @@ public class GuideService(DataContext db)
     {
         var guide = await db.Guides.FindAsync(guideId);
         if (guide == null) return;
-        
+
         guide.Status = GuideStatus.PendingApproval;
         guide.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
@@ -130,7 +127,7 @@ public class GuideService(DataContext db)
     {
         var guide = await db.Guides.FindAsync(guideId);
         if (guide == null) return;
-        
+
         // When publishing, the Draft becomes the Active version.
         if (guide.DraftVersionId == null) return;
 
@@ -155,16 +152,17 @@ public class GuideService(DataContext db)
         guide.ActiveVersionId = publishedVersion.Id;
         guide.Status = GuideStatus.Published;
         guide.UpdatedAt = DateTime.UtcNow;
-        
+
         await db.SaveChangesAsync();
     }
 
-    public async Task<bool> RejectGuideAsync(int guideId, ulong adminId)
+    public async Task<bool> RejectGuideAsync(int guideId, ulong adminId, string? reason = null)
     {
         var guide = await db.Guides.FindAsync(guideId);
         if (guide == null) return false;
-        
+
         guide.Status = GuideStatus.Rejected;
+        guide.RejectionReason = reason;
         guide.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         return true;
@@ -174,7 +172,7 @@ public class GuideService(DataContext db)
     {
         if (Math.Abs(value) != 1) throw new ArgumentException("Vote value must be 1 or -1");
 
-        var guideExists = await db.Guides.AnyAsync(g => g.Id == guideId);
+        var guideExists = await db.Guides.AnyAsync(g => g.Id == guideId && !g.IsDeleted);
         if (!guideExists) throw new KeyNotFoundException("Guide not found.");
 
         var vote = await db.GuideVotes.FindAsync(guideId, userId);
@@ -198,7 +196,7 @@ public class GuideService(DataContext db)
 
         // Update aggregate score
         var score = await db.GuideVotes.Where(v => v.GuideId == guideId).SumAsync(v => v.Value);
-        
+
         var guide = await db.Guides.FindAsync(guideId);
         if (guide != null)
         {
@@ -212,7 +210,7 @@ public class GuideService(DataContext db)
     /// </summary>
     public async Task<int> GetAuthorGuideCountAsync(ulong authorId)
     {
-        return await db.Guides.CountAsync(g => g.AuthorId == authorId);
+        return await db.Guides.CountAsync(g => g.AuthorId == authorId && !g.IsDeleted);
     }
 
     /// <summary>
@@ -220,7 +218,8 @@ public class GuideService(DataContext db)
     /// </summary>
     public async Task<int> GetAuthorApprovedGuideCountAsync(ulong authorId)
     {
-        return await db.Guides.CountAsync(g => g.AuthorId == authorId && g.Status == GuideStatus.Published);
+        return await db.Guides.CountAsync(g =>
+            g.AuthorId == authorId && g.Status == GuideStatus.Published && !g.IsDeleted);
     }
 
     /// <summary>
@@ -240,5 +239,134 @@ public class GuideService(DataContext db)
         var currentCount = await GetAuthorGuideCountAsync(authorId);
         var maxSlots = await GetAuthorMaxSlotsAsync(authorId);
         return currentCount < maxSlots;
+    }
+
+    /// <summary>
+    /// Soft delete a guide. Only author or admin can delete.
+    /// </summary>
+    public async Task<bool> DeleteGuideAsync(int guideId, ulong userId, bool isAdmin)
+    {
+        var guide = await db.Guides.FindAsync(guideId);
+        if (guide == null || guide.IsDeleted) return false;
+
+        // Only author or admin can delete
+        if (!isAdmin && guide.AuthorId != userId) return false;
+
+        guide.IsDeleted = true;
+        guide.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Revert a published guide back to draft status.
+    /// </summary>
+    public async Task<bool> UnpublishGuideAsync(int guideId, ulong userId, bool isAdmin)
+    {
+        var guide = await db.Guides.FindAsync(guideId);
+        if (guide == null || guide.IsDeleted) return false;
+        if (guide.Status != GuideStatus.Published) return false;
+
+        // Only author or admin can unpublish
+        if (!isAdmin && guide.AuthorId != userId) return false;
+
+        guide.Status = GuideStatus.Draft;
+        guide.ActiveVersionId = null; // Clear published version
+        guide.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Increment view count (auth-only).
+    /// </summary>
+    public async Task IncrementViewCountAsync(int guideId)
+    {
+        await db.Guides.Where(g => g.Id == guideId)
+            .ExecuteUpdateAsync(g => g.SetProperty(p => p.ViewCount, p => p.ViewCount + 1));
+    }
+
+    /// <summary>
+    /// Get all guides by a specific author.
+    /// </summary>
+    public async Task<List<Guide>> GetUserGuidesAsync(ulong authorId, bool includePrivate = false)
+    {
+        var query = db.Guides
+            .Include(g => g.ActiveVersion)
+            .Include(g => g.DraftVersion)
+            .Include(g => g.Tags).ThenInclude(t => t.Tag)
+            .Where(g => g.AuthorId == authorId && !g.IsDeleted);
+
+        if (!includePrivate)
+        {
+            query = query.Where(g => g.Status == GuideStatus.Published);
+        }
+
+        return await query.OrderByDescending(g => g.UpdatedAt ?? g.CreatedAt).ToListAsync();
+    }
+
+    /// <summary>
+    /// Bookmark a guide for the user.
+    /// </summary>
+    public async Task<bool> BookmarkGuideAsync(int guideId, ulong userId)
+    {
+        var exists = await db.GuideBookmarks.AnyAsync(b => b.GuideId == guideId && b.UserId == userId);
+        if (exists) return false;
+
+        var guideExists = await db.Guides.AnyAsync(g => g.Id == guideId && !g.IsDeleted);
+        if (!guideExists) return false;
+
+        db.GuideBookmarks.Add(new GuideBookmark
+        {
+            GuideId = guideId,
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Remove a bookmark.
+    /// </summary>
+    public async Task<bool> UnbookmarkGuideAsync(int guideId, ulong userId)
+    {
+        var bookmark = await db.GuideBookmarks.FindAsync(userId, guideId);
+        if (bookmark == null) return false;
+
+        db.GuideBookmarks.Remove(bookmark);
+        await db.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Get all bookmarked guides for a user.
+    /// </summary>
+    public async Task<List<Guide>> GetUserBookmarksAsync(ulong userId)
+    {
+        return await db.GuideBookmarks
+            .Where(b => b.UserId == userId)
+            .Include(b => b.Guide).ThenInclude(g => g.ActiveVersion)
+            .Include(b => b.Guide).ThenInclude(g => g.Author).ThenInclude(a => a.MinecraftAccounts)
+            .Select(b => b.Guide)
+            .Where(g => !g.IsDeleted && g.Status == GuideStatus.Published)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Get user's vote on a specific guide.
+    /// </summary>
+    public async Task<short?> GetUserVoteAsync(int guideId, ulong userId)
+    {
+        var vote = await db.GuideVotes.FindAsync(guideId, userId);
+        return vote?.Value;
+    }
+
+    /// <summary>
+    /// Check if user has bookmarked a guide.
+    /// </summary>
+    public async Task<bool> IsBookmarkedAsync(int guideId, ulong userId)
+    {
+        return await db.GuideBookmarks.AnyAsync(b => b.GuideId == guideId && b.UserId == userId);
     }
 }

@@ -1,14 +1,14 @@
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
 /// <summary>
 /// Vote on a guide (+1/-1)
 /// </summary>
-public class VoteGuideEndpoint(GuideService guideService, UserManager userManager) : Endpoint<VoteGuideRequest>
+public class VoteGuideEndpoint(GuideService guideService) : Endpoint<VoteGuideRequest>
 {
     public override void Configure()
     {
@@ -22,8 +22,8 @@ public class VoteGuideEndpoint(GuideService guideService, UserManager userManage
 
     public override async Task HandleAsync(VoteGuideRequest req, CancellationToken ct)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId == null)
+        var userId = User.GetDiscordId();
+        if (userId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -31,7 +31,7 @@ public class VoteGuideEndpoint(GuideService guideService, UserManager userManage
 
         try
         {
-            await guideService.VoteGuideAsync(req.GuideId, user.AccountId.Value, req.Value);
+            await guideService.VoteGuideAsync(req.GuideId, userId.Value, req.Value);
             await Send.NoContentAsync(ct);
         }
         catch (KeyNotFoundException)

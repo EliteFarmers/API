@@ -1,11 +1,11 @@
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class VoteCommentEndpoint(CommentService commentService, UserManager userManager) : Endpoint<VoteCommentRequest>
+public class VoteCommentEndpoint(CommentService commentService) : Endpoint<VoteCommentRequest>
 {
     public override void Configure()
     {
@@ -19,8 +19,8 @@ public class VoteCommentEndpoint(CommentService commentService, UserManager user
 
     public override async Task HandleAsync(VoteCommentRequest req, CancellationToken ct)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId == null)
+        var userId = User.GetDiscordId();
+        if (userId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -28,7 +28,7 @@ public class VoteCommentEndpoint(CommentService commentService, UserManager user
 
         try
         {
-            await commentService.VoteAsync(req.CommentId, user.AccountId.Value, req.Value);
+            await commentService.VoteAsync(req.CommentId, userId.Value, req.Value);
             await Send.NoContentAsync(ct);
         }
         catch (ArgumentException)

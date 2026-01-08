@@ -1,15 +1,15 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
 /// <summary>
 /// Edit a comment (author or admin)
 /// </summary>
-public class EditCommentEndpoint(CommentService commentService, UserManager userManager) : Endpoint<EditCommentRequest>
+public class EditCommentEndpoint(CommentService commentService) : Endpoint<EditCommentRequest>
 {
     public override void Configure()
     {
@@ -23,15 +23,15 @@ public class EditCommentEndpoint(CommentService commentService, UserManager user
 
     public override async Task HandleAsync(EditCommentRequest req, CancellationToken ct)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId == null)
+        var userId = User.GetDiscordId();
+        if (userId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
 
         var isAdmin = User.IsInRole(ApiUserPolicies.Moderator) || User.IsInRole(ApiUserPolicies.Admin);
-        var comment = await commentService.EditCommentAsync(req.CommentId, user.AccountId.Value, req.Content, isAdmin);
+        var comment = await commentService.EditCommentAsync(req.CommentId, userId.Value, req.Content, isAdmin);
         
         if (comment == null)
         {

@@ -35,6 +35,22 @@ public class Guide
     public List<GuideVote> Votes { get; set; } = [];
     
     public int Score { get; set; } = 0;
+    
+    /// <summary>
+    /// View count, only incremented for authenticated users.
+    /// </summary>
+    public int ViewCount { get; set; } = 0;
+    
+    /// <summary>
+    /// Reason provided by moderator when rejecting the guide.
+    /// </summary>
+    [MaxLength(1000)]
+    public string? RejectionReason { get; set; }
+    
+    /// <summary>
+    /// Soft delete flag for author-initiated deletions.
+    /// </summary>
+    public bool IsDeleted { get; set; } = false;
 }
 
 public enum GuideType

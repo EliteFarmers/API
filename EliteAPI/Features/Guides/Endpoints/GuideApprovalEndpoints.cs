@@ -1,7 +1,6 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Services;
 using FastEndpoints;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
@@ -115,7 +114,7 @@ public class RejectGuideEndpoint(GuideService guideService) : Endpoint<RejectGui
         Summary(s =>
         {
             s.Summary = "Reject a guide";
-            s.Description = "Reject a pending guide submission.";
+            s.Description = "Reject a pending guide submission with an optional reason.";
         });
     }
 
@@ -128,7 +127,7 @@ public class RejectGuideEndpoint(GuideService guideService) : Endpoint<RejectGui
             return;
         }
 
-        var success = await guideService.RejectGuideAsync(req.GuideId, 0);
+        var success = await guideService.RejectGuideAsync(req.GuideId, 0, req.Reason);
         if (!success)
         {
             await Send.NotFoundAsync(ct);
@@ -142,4 +141,9 @@ public class RejectGuideEndpoint(GuideService guideService) : Endpoint<RejectGui
 public class RejectGuideRequest
 {
     public int GuideId { get; set; }
+    
+    /// <summary>
+    /// Optional reason for rejection to provide feedback to the author.
+    /// </summary>
+    public string? Reason { get; set; }
 }

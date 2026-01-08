@@ -1,11 +1,11 @@
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class CreateCommentEndpoint(CommentService commentService, UserManager userManager) : Endpoint<CreateCommentRequest>
+public class CreateCommentEndpoint(CommentService commentService) : Endpoint<CreateCommentRequest>
 {
     public override void Configure()
     {
@@ -19,8 +19,8 @@ public class CreateCommentEndpoint(CommentService commentService, UserManager us
 
     public override async Task HandleAsync(CreateCommentRequest req, CancellationToken ct)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId == null)
+        var userId = User.GetDiscordId();
+        if (userId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -28,7 +28,7 @@ public class CreateCommentEndpoint(CommentService commentService, UserManager us
 
         try 
         {
-            var comment = await commentService.AddCommentAsync(req.GuideId, EliteAPI.Features.Comments.Models.CommentTargetType.Guide, user.AccountId.Value, req.Content, req.ParentId, req.LiftedElementId);
+            var comment = await commentService.AddCommentAsync(req.GuideId, EliteAPI.Features.Comments.Models.CommentTargetType.Guide, userId.Value, req.Content, req.ParentId, req.LiftedElementId);
             
             await Send.OkAsync(new CreateCommentResponse
             {

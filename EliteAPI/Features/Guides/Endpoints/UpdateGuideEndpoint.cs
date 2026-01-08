@@ -1,13 +1,13 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class UpdateGuideEndpoint(GuideService guideService, UserManager userManager) : Endpoint<UpdateGuideRequest>
+public class UpdateGuideEndpoint(GuideService guideService) : Endpoint<UpdateGuideRequest>
 {
     public override void Configure()
     {
@@ -21,8 +21,8 @@ public class UpdateGuideEndpoint(GuideService guideService, UserManager userMana
 
     public override async Task HandleAsync(UpdateGuideRequest req, CancellationToken ct)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId == null)
+        var userId = User.GetDiscordId();
+        if (userId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -36,7 +36,7 @@ public class UpdateGuideEndpoint(GuideService guideService, UserManager userMana
         }
         
         // Authorization: Only author or moderators can update
-        var isAuthor = guide.AuthorId == user.AccountId.Value;
+        var isAuthor = guide.AuthorId == userId.Value;
         var isModerator = User.IsInRole(ApiUserPolicies.Moderator) || User.IsInRole(ApiUserPolicies.Admin);
         
         if (!isAuthor && !isModerator)

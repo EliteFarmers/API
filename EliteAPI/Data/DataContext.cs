@@ -34,6 +34,9 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 		base.OnConfiguring(optionsBuilder);
 
+        if (optionsBuilder.IsConfigured)
+            return;
+
 		// Get connection string from config "PostgresConnection"
 		var connection = config.GetConnectionString("Postgres");
 
@@ -188,4 +191,5 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<Comment> Comments { get; set; } = null!;
 	public DbSet<CommentVote> CommentVotes { get; set; } = null!;
 	public DbSet<GuideVote> GuideVotes { get; set; } = null!;
+	public DbSet<GuideBookmark> GuideBookmarks { get; set; } = null!;
 }

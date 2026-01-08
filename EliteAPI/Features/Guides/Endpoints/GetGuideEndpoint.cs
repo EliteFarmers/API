@@ -1,12 +1,12 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
-using Microsoft.AspNetCore.Identity;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class GetGuideEndpoint(GuideService guideService, UserManager userManager) : Endpoint<GetGuideRequest, GetGuideResponse>
+public class GetGuideEndpoint(GuideService guideService) : Endpoint<GetGuideRequest, GetGuideResponse>
 {
     public override void Configure()
     {
@@ -22,23 +22,23 @@ public class GetGuideEndpoint(GuideService guideService, UserManager userManager
     public override async Task HandleAsync(GetGuideRequest req, CancellationToken ct)
     {
         var guide = await guideService.GetBySlugAsync(req.Slug);
-        if (guide == null)
+        if (guide == null || guide.IsDeleted)
         {
             await Send.NotFoundAsync(ct);
             return;
         }
 
+        var userId = User.GetDiscordId();
         GuideVersion? versionToReturn;
 
         // If explicitly requesting draft
         if (req.Draft)
         {
-            var user = await userManager.GetUserAsync(User);
             var canViewDraft = false;
              
-            if (user?.AccountId != null)
+            if (userId != null)
             {
-                if (guide.AuthorId == user.AccountId.Value) canViewDraft = true;
+                if (guide.AuthorId == userId.Value) canViewDraft = true;
                 if (User.IsInRole(ApiUserPolicies.Moderator) || User.IsInRole(ApiUserPolicies.Admin)) canViewDraft = true;
             }
 
@@ -59,6 +59,21 @@ public class GetGuideEndpoint(GuideService guideService, UserManager userManager
                 return;
             }
             versionToReturn = guide.ActiveVersion;
+            
+            // Increment view count for authenticated users viewing published version
+            if (userId != null)
+            {
+                await guideService.IncrementViewCountAsync(guide.Id);
+            }
+        }
+
+        // Get user-specific data if authenticated
+        short? userVote = null;
+        bool? isBookmarked = null;
+        if (userId != null)
+        {
+            userVote = await guideService.GetUserVoteAsync(guide.Id, userId.Value);
+            isBookmarked = await guideService.IsBookmarkedAsync(guide.Id, userId.Value);
         }
 
         await Send.OkAsync(new GetGuideResponse
@@ -69,11 +84,16 @@ public class GetGuideEndpoint(GuideService guideService, UserManager userManager
             Description = versionToReturn.Description,
             Content = versionToReturn.MarkdownContent,
             AuthorName = guide.Author.GetFormattedIgn(),
+            AuthorId = guide.AuthorId,
             AuthorUuid = guide.Author.MinecraftAccounts.FirstOrDefault(a => a.Selected)?.Id,
             CreatedAt = guide.CreatedAt,
             Score = guide.Score,
+            ViewCount = guide.ViewCount,
             Tags = guide.Tags.Select(t => t.Tag.Name).ToList(),
-            IsDraft = req.Draft
+            IsDraft = req.Draft,
+            UserVote = userVote,
+            IsBookmarked = isBookmarked,
+            RejectionReason = guide.Status == GuideStatus.Rejected ? guide.RejectionReason : null
         }, ct);
     }
 }
@@ -94,9 +114,26 @@ public class GetGuideResponse
     public string Description { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public string AuthorName { get; set; } = string.Empty;
+    public ulong AuthorId { get; set; }
     public string? AuthorUuid { get; set; }
     public DateTime CreatedAt { get; set; }
     public int Score { get; set; }
+    public int ViewCount { get; set; }
     public List<string> Tags { get; set; } = [];
     public bool IsDraft { get; set; }
+    
+    /// <summary>
+    /// Current user's vote on this guide (+1, -1, or null if not voted).
+    /// </summary>
+    public short? UserVote { get; set; }
+    
+    /// <summary>
+    /// Whether the current user has bookmarked this guide.
+    /// </summary>
+    public bool? IsBookmarked { get; set; }
+    
+    /// <summary>
+    /// Reason for rejection (only present for rejected guides visible to author).
+    /// </summary>
+    public string? RejectionReason { get; set; }
 }

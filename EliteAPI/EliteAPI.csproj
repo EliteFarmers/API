@@ -64,6 +64,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="assets\" />
         <Folder Include="Data\Grafana\Datasources\" />
         <Folder Include="Data\Grafana\Dashboards\" />
         <Folder Include="Features\Events\Admin\Members\" />

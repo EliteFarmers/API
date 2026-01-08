@@ -1,16 +1,14 @@
-using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Services;
 using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Data;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class CreateGuideEndpoint(GuideService guideService, UserManager userManager, DataContext db) : Endpoint<CreateGuideRequest, GuideResponse>
+public class CreateGuideEndpoint(GuideService guideService, DataContext db) : Endpoint<CreateGuideRequest, GuideResponse>
 {
     public override void Configure()
     {
@@ -25,15 +23,15 @@ public class CreateGuideEndpoint(GuideService guideService, UserManager userMana
 
     public override async Task HandleAsync(CreateGuideRequest req, CancellationToken ct)
     {
-        var user = await userManager.GetUserAsync(User);
-        if (user?.AccountId == null)
+        var userId = User.GetDiscordId();
+        if (userId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
 
         // Check for RestrictedFromGuides permission
-        var account = await db.Accounts.FindAsync(user.AccountId.Value);
+        var account = await db.Accounts.FindAsync(userId.Value);
         if (account != null && (account.Permissions & PermissionFlags.RestrictedFromGuides) != 0)
         {
             await Send.ForbiddenAsync(ct);
@@ -41,16 +39,16 @@ public class CreateGuideEndpoint(GuideService guideService, UserManager userMana
         }
 
         // Check author slot availability (3 + approved guides)
-        var canCreate = await guideService.CanCreateGuideAsync(user.AccountId.Value);
+        var canCreate = await guideService.CanCreateGuideAsync(userId.Value);
         if (!canCreate)
         {
-            var currentCount = await guideService.GetAuthorGuideCountAsync(user.AccountId.Value);
-            var maxSlots = await guideService.GetAuthorMaxSlotsAsync(user.AccountId.Value);
+            var currentCount = await guideService.GetAuthorGuideCountAsync(userId.Value);
+            var maxSlots = await guideService.GetAuthorMaxSlotsAsync(userId.Value);
             ThrowError($"You have reached your guide limit ({currentCount}/{maxSlots}). Get more guides approved to increase your limit.");
             return;
         }
         
-        var guide = await guideService.CreateDraftAsync(user.AccountId.Value, req.Type);
+        var guide = await guideService.CreateDraftAsync(userId.Value, req.Type);
         
         await Send.OkAsync(new GuideResponse
         {

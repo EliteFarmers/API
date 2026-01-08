@@ -27,7 +27,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260108005530_AddCommentsAndGuides")]
+    [Migration("20260108041955_AddCommentsAndGuides")]
     partial class AddCommentsAndGuides
     {
         /// <inheritdoc />
@@ -572,6 +572,13 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int?>("DraftVersionId")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
@@ -588,6 +595,9 @@ namespace EliteAPI.Data.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ActiveVersionId")
@@ -599,6 +609,24 @@ namespace EliteAPI.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Guides");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideBookmark", b =>
+                {
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("GuideId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "GuideId");
+
+                    b.HasIndex("GuideId");
+
+                    b.ToTable("GuideBookmarks");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideTag", b =>
@@ -3714,6 +3742,17 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("DraftVersion");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideBookmark", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.Guide", "Guide")
+                        .WithMany()
+                        .HasForeignKey("GuideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guide");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideTagMapping", b =>

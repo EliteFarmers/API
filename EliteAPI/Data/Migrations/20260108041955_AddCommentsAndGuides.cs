@@ -97,6 +97,19 @@ namespace EliteAPI.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "GuideBookmarks",
+                columns: table => new
+                {
+                    UserId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    GuideId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GuideBookmarks", x => new { x.UserId, x.GuideId });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Guides",
                 columns: table => new
                 {
@@ -110,7 +123,10 @@ namespace EliteAPI.Data.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Score = table.Column<int>(type: "integer", nullable: false)
+                    Score = table.Column<int>(type: "integer", nullable: false),
+                    ViewCount = table.Column<int>(type: "integer", nullable: false),
+                    RejectionReason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -214,6 +230,11 @@ namespace EliteAPI.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GuideBookmarks_GuideId",
+                table: "GuideBookmarks",
+                column: "GuideId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Guides_ActiveVersionId",
                 table: "Guides",
                 column: "ActiveVersionId",
@@ -246,6 +267,14 @@ namespace EliteAPI.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_GuideBookmarks_Guides_GuideId",
+                table: "GuideBookmarks",
+                column: "GuideId",
+                principalTable: "Guides",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Guides_GuideVersions_ActiveVersionId",
                 table: "Guides",
                 column: "ActiveVersionId",
@@ -266,15 +295,14 @@ namespace EliteAPI.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Guides_GuideVersions_ActiveVersionId",
-                table: "Guides");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Guides_GuideVersions_DraftVersionId",
-                table: "Guides");
+                name: "FK_GuideVersions_Guides_GuideId",
+                table: "GuideVersions");
 
             migrationBuilder.DropTable(
                 name: "CommentVotes");
+
+            migrationBuilder.DropTable(
+                name: "GuideBookmarks");
 
             migrationBuilder.DropTable(
                 name: "GuideTagMapping");
@@ -289,10 +317,10 @@ namespace EliteAPI.Data.Migrations
                 name: "GuideTags");
 
             migrationBuilder.DropTable(
-                name: "GuideVersions");
+                name: "Guides");
 
             migrationBuilder.DropTable(
-                name: "Guides");
+                name: "GuideVersions");
 
             migrationBuilder.DropColumn(
                 name: "Permissions",
