@@ -2,6 +2,7 @@
 using EliteAPI.Features.Announcements.Models;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Confirmations.Models;
+using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.HypixelGuilds.Models;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
@@ -71,6 +72,8 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 			.HasValue<Entitlement>(EntitlementTarget.None)
 			.HasValue<UserEntitlement>(EntitlementTarget.User)
 			.HasValue<GuildEntitlement>(EntitlementTarget.Guild);
+
+		// Guides configuration is handled via IEntityTypeConfiguration in model files
 	}
 
 	// Auth
@@ -177,4 +180,12 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	// Yearly Recap
 	public DbSet<YearlyRecap> YearlyRecaps { get; set; } = null!;
 	public DbSet<YearlyRecapSnapshot> YearlyRecapSnapshots { get; set; } = null!;
+
+	// Community Guides
+	public DbSet<Guide> Guides { get; set; } = null!;
+	public DbSet<GuideVersion> GuideVersions { get; set; } = null!;
+	public DbSet<GuideTag> GuideTags { get; set; } = null!;
+	public DbSet<Comment> Comments { get; set; } = null!;
+	public DbSet<CommentVote> CommentVotes { get; set; } = null!;
+	public DbSet<GuideVote> GuideVotes { get; set; } = null!;
 }

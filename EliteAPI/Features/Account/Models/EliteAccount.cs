@@ -22,6 +22,8 @@ public class EliteAccount
 
 	[ForeignKey("UserSettings")] public int? UserSettingsId { get; set; }
 	public UserSettings UserSettings { get; set; } = new();
+	
+	public PermissionFlags Permissions { get; set; } = PermissionFlags.None;
 
 	public bool ActiveRewards { get; set; } = false;
 	public List<UserEntitlement> Entitlements { get; set; } = [];
@@ -49,7 +51,11 @@ public enum PermissionFlags : ushort
 	Helper = 16,
 	ViewGraphs = 17,
 	Moderator = 32,
-	Admin = 64
+	Admin = 64,
+	
+	// Negative Permissions
+	RestrictedFromComments = 128,
+	RestrictedFromGuides = 256
 }
 
 public class DiscordAccountData
