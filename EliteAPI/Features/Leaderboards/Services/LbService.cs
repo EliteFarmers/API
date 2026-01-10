@@ -819,7 +819,7 @@ public class LbService(
 		var anchorId = userId;
 		var anchorRank = rankCount == -1 ? -1 : rankCount + 1;
 
-		if (atRank is > 0) {
+		if (atRank is > 0 && (anchorRank == -1 || atRank < anchorRank)) {
 			var anchor = await baseQuery
 				.OrderByDescending(e => e.Score)
 				.ThenByDescending(e => e.LeaderboardEntryId)
