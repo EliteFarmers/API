@@ -1,12 +1,14 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Guides.Mappers;
+using EliteAPI.Features.Guides.Models.Dtos;
 using EliteAPI.Utilities;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class GetGuideEndpoint(GuideService guideService) : Endpoint<GetGuideRequest, GetGuideResponse>
+public class GetGuideEndpoint(GuideService guideService, GuideMapper mapper) : Endpoint<GetGuideRequest, FullGuideDto>
 {
     public override void Configure()
     {
@@ -39,7 +41,7 @@ public class GetGuideEndpoint(GuideService guideService) : Endpoint<GetGuideRequ
             if (userId != null)
             {
                 if (guide.AuthorId == userId.Value) canViewDraft = true;
-                if (User.IsInRole(ApiUserPolicies.Moderator) || User.IsInRole(ApiUserPolicies.Admin)) canViewDraft = true;
+                if (User.IsSupportOrHigher()) canViewDraft = true;
             }
 
             if (!canViewDraft || guide.DraftVersion == null)
@@ -76,26 +78,7 @@ public class GetGuideEndpoint(GuideService guideService) : Endpoint<GetGuideRequ
             isBookmarked = await guideService.IsBookmarkedAsync(guide.Id, userId.Value);
         }
 
-        await Send.OkAsync(new GetGuideResponse
-        {
-            Id = guide.Id,
-            Slug = guide.Slug ?? guideService.GetSlug(guide.Id),
-            Title = versionToReturn.Title,
-            Description = versionToReturn.Description,
-            Content = versionToReturn.MarkdownContent,
-            AuthorName = guide.Author.GetFormattedIgn(),
-            AuthorId = guide.AuthorId,
-            AuthorUuid = guide.Author.MinecraftAccounts.FirstOrDefault(a => a.Selected)?.Id,
-            AuthorAvatar = guide.Author.HasMinecraftAccount() ? null : guide.Author.Avatar,
-            CreatedAt = guide.CreatedAt,
-            Score = guide.Score,
-            ViewCount = guide.ViewCount,
-            Tags = guide.Tags.Select(t => t.Tag.Name).ToList(),
-            IsDraft = req.Draft,
-            UserVote = userVote,
-            IsBookmarked = isBookmarked,
-            RejectionReason = guide.Status == GuideStatus.Rejected ? guide.RejectionReason : null
-        }, ct);
+        await Send.OkAsync(mapper.ToFullGuideDto(guide, versionToReturn, userVote, isBookmarked), ct);
     }
 }
 
@@ -107,35 +90,3 @@ public class GetGuideRequest
     public bool Draft { get; set; } = false;
 }
 
-public class GetGuideResponse
-{
-    public int Id { get; set; }
-    public string Slug { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public string AuthorName { get; set; } = string.Empty;
-    public string? AuthorAvatar { get; set; }
-    public ulong AuthorId { get; set; }
-    public string? AuthorUuid { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public int Score { get; set; }
-    public int ViewCount { get; set; }
-    public List<string> Tags { get; set; } = [];
-    public bool IsDraft { get; set; }
-    
-    /// <summary>
-    /// Current user's vote on this guide (+1, -1, or null if not voted).
-    /// </summary>
-    public short? UserVote { get; set; }
-    
-    /// <summary>
-    /// Whether the current user has bookmarked this guide.
-    /// </summary>
-    public bool? IsBookmarked { get; set; }
-    
-    /// <summary>
-    /// Reason for rejection (only present for rejected guides visible to author).
-    /// </summary>
-    public string? RejectionReason { get; set; }
-}

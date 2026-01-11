@@ -30,7 +30,7 @@ public class EditCommentEndpoint(CommentService commentService) : Endpoint<EditC
             return;
         }
 
-        var isAdmin = User.IsInRole(ApiUserPolicies.Moderator) || User.IsInRole(ApiUserPolicies.Admin);
+        var isAdmin = User.IsModeratorOrHigher();
         var comment = await commentService.EditCommentAsync(req.CommentId, userId.Value, req.Content, isAdmin);
         
         if (comment == null)

@@ -27,7 +27,7 @@ public class DeleteGuideEndpoint(GuideService guideService) : Endpoint<DeleteGui
             return;
         }
 
-        var isAdmin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
+        var isAdmin = User.IsModeratorOrHigher();
         var success = await guideService.DeleteGuideAsync(req.Id, userId.Value, isAdmin);
         
         if (!success)

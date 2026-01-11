@@ -1,10 +1,12 @@
 using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Guides.Mappers;
+using EliteAPI.Features.Guides.Models.Dtos;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class ListGuidesEndpoint(GuideSearchService searchService) : Endpoint<ListGuidesRequest, List<GuideResponse>>
+public class ListGuidesEndpoint(GuideSearchService searchService, GuideMapper mapper) : Endpoint<ListGuidesRequest, List<GuideDto>>
 {
     public override void Configure()
     {
@@ -21,13 +23,7 @@ public class ListGuidesEndpoint(GuideSearchService searchService) : Endpoint<Lis
     {
         var guides = await searchService.SearchGuidesAsync(req.Query, req.Type, req.Tags, req.Sort, req.Page, req.PageSize);
         
-        var response = guides.Select(g => new GuideResponse
-        {
-            Id = g.Id,
-            Slug = g.Slug ?? g.Id.ToString(),
-            Title = g.ActiveVersion?.Title ?? "Untitled",
-            Status = g.Status.ToString()
-        }).ToList();
+        var response = guides.Select(mapper.ToDto).ToList();
 
         await Send.OkAsync(response, ct);
     }

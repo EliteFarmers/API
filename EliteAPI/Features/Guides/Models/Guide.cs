@@ -14,8 +14,9 @@ public class Guide
     public required ulong AuthorId { get; set; }
     public EliteAccount Author { get; set; } = null!;
 
+    
     [MaxLength(256)]
-    public string? Slug { get; set; }
+    public string? IconSkyblockId { get; set; }
 
     public GuideType Type { get; set; }
 

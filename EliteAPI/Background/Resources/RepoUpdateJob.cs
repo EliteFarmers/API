@@ -4,12 +4,12 @@ using SkyblockRepo;
 
 namespace EliteAPI.Background.Resources;
 
-public class AuctionsUpdateJob(AuctionsIngestionService auctionsIngestionService)
+public class RepoUpdateJob(ISkyblockRepoClient repoClient)
 	: IJob
 {
-	public static readonly JobKey Key = new(nameof(AuctionsUpdateJob));
+	public static readonly JobKey Key = new(nameof(RepoUpdateJob));
 
 	public async Task Execute(IJobExecutionContext context) {
-		await auctionsIngestionService.TriggerUpdate();
+		await repoClient.CheckForUpdatesAsync();
 	}
 }

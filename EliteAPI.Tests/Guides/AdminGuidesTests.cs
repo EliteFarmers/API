@@ -1,9 +1,8 @@
-using System.Net;
 using EliteAPI.Features.Guides.Endpoints;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Features.Guides.Models.Dtos;
 using FastEndpoints;
 using FastEndpoints.Testing;
-using Shouldly;
 
 namespace EliteAPI.Tests.Guides;
 
@@ -13,7 +12,7 @@ public class AdminGuidesTests(GuideTestApp App) : TestBase
     [Fact]
     public async Task GetPendingGuides_AsModerator_ReturnsPendingGuides()
     {
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
 
@@ -21,7 +20,7 @@ public class AdminGuidesTests(GuideTestApp App) : TestBase
             new SubmitGuideRequest { GuideId = created!.Id });
         submitRsp.IsSuccessStatusCode.ShouldBeTrue();
 
-        var (pendingRsp, pendingGuides) = await App.ModeratorClient.GETAsync<AdminPendingGuidesEndpoint, List<GuideResponse>>();
+        var (pendingRsp, pendingGuides) = await App.ModeratorClient.GETAsync<AdminPendingGuidesEndpoint, List<GuideDto>>();
         
         pendingRsp.IsSuccessStatusCode.ShouldBeTrue();
         pendingGuides.ShouldNotBeNull();
@@ -31,11 +30,11 @@ public class AdminGuidesTests(GuideTestApp App) : TestBase
     [Fact]
     public async Task GetPendingGuides_DoesNotShowDrafts()
     {
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
-        var (pendingRsp, pendingGuides) = await App.ModeratorClient.GETAsync<AdminPendingGuidesEndpoint, List<GuideResponse>>();
+        var (pendingRsp, pendingGuides) = await App.ModeratorClient.GETAsync<AdminPendingGuidesEndpoint, List<GuideDto>>();
         
         pendingRsp.IsSuccessStatusCode.ShouldBeTrue();
         pendingGuides.ShouldNotContain(g => g.Id == created!.Id);

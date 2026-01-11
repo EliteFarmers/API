@@ -28,7 +28,7 @@ public class UnpublishGuideEndpoint(GuideService guideService) : Endpoint<Unpubl
             return;
         }
 
-        var isAdmin = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
+        var isAdmin = User.IsModeratorOrHigher();
         var success = await guideService.UnpublishGuideAsync(req.GuideId, userId.Value, isAdmin);
         
         if (!success)

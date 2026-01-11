@@ -1,11 +1,13 @@
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Comments.Mappers;
+using EliteAPI.Features.Comments.Models.Dtos;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class CreateCommentEndpoint(CommentService commentService) : Endpoint<CreateCommentRequest>
+public class CreateCommentEndpoint(CommentService commentService, CommentMapper mapper) : Endpoint<CreateCommentRequest, CommentDto>
 {
     public override void Configure()
     {
@@ -30,13 +32,9 @@ public class CreateCommentEndpoint(CommentService commentService) : Endpoint<Cre
         {
             var comment = await commentService.AddCommentAsync(req.GuideId, EliteAPI.Features.Comments.Models.CommentTargetType.Guide, userId.Value, req.Content, req.ParentId, req.LiftedElementId);
             
-            await Send.OkAsync(new CreateCommentResponse
-            {
-                Id = comment.Id,
-                Sqid = EliteAPI.Features.Common.Services.SqidService.Encode(comment.Id),
-                Content = comment.Content,
-                CreatedAt = comment.CreatedAt
-            }, ct);
+            // Create uses author's perms, so currentUserId matches authorId, and isModerator is not strictly needed for the author to see their own draft if it was drafted (though Add returns approved/unapproved state).
+            // Pass simple flags.
+            await Send.OkAsync(mapper.ToDto(comment, userId.Value, User.IsSupportOrHigher(), null), ct);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -45,13 +43,6 @@ public class CreateCommentEndpoint(CommentService commentService) : Endpoint<Cre
     }
 }
 
-public class CreateCommentResponse
-{
-    public int Id { get; set; }
-    public string Sqid { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-}
 
 public class CreateCommentRequest
 {

@@ -58,5 +58,16 @@ public class ResourceJobsConfiguration(
 					schedule.RepeatForever();
 				});
 			});
+		
+		var repoJobKey = RepoUpdateJob.Key;
+		options.AddJob<RepoUpdateJob>(builder => builder.WithIdentity(repoJobKey))
+			.AddTrigger(trigger => {
+				trigger.ForJob(repoJobKey);
+				trigger.StartAt(DateTimeOffset.Now.AddMinutes(15));
+				trigger.WithSimpleSchedule(schedule => {
+					schedule.WithIntervalInMinutes(15);
+					schedule.RepeatForever();
+				});
+			});
 	}
 }

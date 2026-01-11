@@ -1,8 +1,6 @@
 using EliteAPI.Data;
-using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Guides.Models;
 using Microsoft.EntityFrameworkCore;
-using Sqids;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Services;
@@ -22,10 +20,7 @@ public class GuideService(DataContext db)
 
         db.Guides.Add(guide);
         await db.SaveChangesAsync();
-
-        // Generate initial slug based on ID
-        guide.Slug = GetSlug(guide.Id);
-
+        
         // Create initial empty draft version
         var initialVersion = new GuideVersion
         {
@@ -47,6 +42,9 @@ public class GuideService(DataContext db)
 
     public async Task<Guide?> GetBySlugAsync(string slug)
     {
+        var id = GetIdFromSlug(slug);
+        if (id == null) return null;
+
         return await db.Guides
             .Include(g => g.Author)
             .ThenInclude(a => a.MinecraftAccounts)
@@ -56,7 +54,7 @@ public class GuideService(DataContext db)
             .Include(g => g.DraftVersion)
             .Include(g => g.Tags)
             .ThenInclude(t => t.Tag)
-            .FirstOrDefaultAsync(g => g.Slug == slug);
+            .FirstOrDefaultAsync(g => g.Id == id.Value);
     }
 
     public async Task<Guide?> GetByIdAsync(int id)
@@ -78,7 +76,7 @@ public class GuideService(DataContext db)
         return EliteAPI.Features.Common.Services.SqidService.Decode(slug);
     }
 
-    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown,
+    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown, string? iconSkyblockId,
         GuideRichData? richData)
     {
         var guide = await db.Guides.FindAsync(guideId);
@@ -109,6 +107,7 @@ public class GuideService(DataContext db)
             draft.RichBlocks = richData;
         }
 
+        guide.IconSkyblockId = iconSkyblockId;
         guide.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
     }

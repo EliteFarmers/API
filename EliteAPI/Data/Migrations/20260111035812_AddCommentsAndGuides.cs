@@ -117,7 +117,7 @@ namespace EliteAPI.Data.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AuthorId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    Slug = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    IconSkyblockId = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     ActiveVersionId = table.Column<int>(type: "integer", nullable: true),
                     DraftVersionId = table.Column<int>(type: "integer", nullable: true),

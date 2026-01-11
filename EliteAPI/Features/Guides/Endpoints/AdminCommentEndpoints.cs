@@ -1,6 +1,8 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Common.Services;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Comments.Mappers;
+using EliteAPI.Features.Comments.Models.Dtos;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
@@ -10,7 +12,7 @@ public class ApproveCommentEndpoint(CommentService commentService) : Endpoint<Ap
     public override void Configure()
     {
         Post("/admin/comments/{CommentId}/approve");
-        Policies(ApiUserPolicies.Moderator);
+        Policies(ApiUserPolicies.Support);
 
         Options(x => x.Accepts<ApproveCommentRequest>());
 
@@ -73,7 +75,7 @@ public class DeleteCommentRequest
     public int CommentId { get; set; }
 }
 
-public class ListPendingCommentsEndpoint(CommentService commentService) : EndpointWithoutRequest<List<CommentResponse>>
+public class ListPendingCommentsEndpoint(CommentService commentService, CommentMapper mapper) : EndpointWithoutRequest<List<CommentDto>>
 {
     public override void Configure()
     {
@@ -90,26 +92,7 @@ public class ListPendingCommentsEndpoint(CommentService commentService) : Endpoi
     {
         var comments = await commentService.GetAllPendingCommentsAsync();
         
-        var response = comments.Select(c => new CommentResponse
-        {
-            Id = c.Id,
-            Sqid = SqidService.Encode(c.Id),
-            ParentId = c.ParentId,
-            Content = c.Content,
-            AuthorId = c.AuthorId.ToString(),
-            AuthorName = c.Author.GetFormattedIgn(),
-            AuthorAvatar = c.Author.HasMinecraftAccount() ? null : c.Author.Avatar,
-            CreatedAt = c.CreatedAt,
-            Score = c.Score,
-            LiftedElementId = c.LiftedElementId,
-            IsPending = !c.IsApproved,
-            IsDeleted = c.IsDeleted,
-            IsEdited = c.EditedAt != null,
-            IsEditedByAdmin = c.EditedByAdminId != null,
-            HasPendingEdit = c.DraftContent != null,
-            EditedAt = c.EditedAt,
-            DraftContent = c.DraftContent
-        }).ToList();
+        var response = comments.Select(c => mapper.ToDto(c, null, true, null)).ToList();
         
         await Send.OkAsync(response, ct);
     }

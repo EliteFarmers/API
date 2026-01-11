@@ -1,15 +1,17 @@
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Guides.Mappers;
+using EliteAPI.Features.Guides.Models.Dtos;
 using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class AdminPendingGuidesEndpoint(GuideSearchService searchService) : EndpointWithoutRequest<List<GuideResponse>>
+public class AdminPendingGuidesEndpoint(GuideSearchService searchService, GuideMapper mapper) : EndpointWithoutRequest<List<GuideDto>>
 {
     public override void Configure()
     {
         Get("/admin/guides/pending");
-        Policies(ApiUserPolicies.Moderator);
+        Policies(ApiUserPolicies.Support);
         Summary(s => 
         {
             s.Summary = "Get pending guides";
@@ -21,13 +23,7 @@ public class AdminPendingGuidesEndpoint(GuideSearchService searchService) : Endp
     {
         var guides = await searchService.SearchGuidesAsync(null, null, null, GuideSort.Newest, 1, 100, Models.GuideStatus.PendingApproval);
         
-        var response = guides.Select(g => new GuideResponse
-        {
-            Id = g.Id,
-            Slug = g.Slug ?? g.Id.ToString(),
-            Title = g.DraftVersion?.Title ?? "Untitled", // Use DraftVersion for pending guides
-            Status = g.Status.ToString()
-        }).ToList();
+        var response = guides.Select(mapper.ToDto).ToList();
 
         await Send.OkAsync(response, ct);
     }

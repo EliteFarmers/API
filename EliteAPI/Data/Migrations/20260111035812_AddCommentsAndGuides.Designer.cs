@@ -27,7 +27,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260109072627_AddCommentsAndGuides")]
+    [Migration("20260111035812_AddCommentsAndGuides")]
     partial class AddCommentsAndGuides
     {
         /// <inheritdoc />
@@ -576,6 +576,10 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int?>("DraftVersionId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("IconSkyblockId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -585,10 +589,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<int>("Score")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Slug")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");

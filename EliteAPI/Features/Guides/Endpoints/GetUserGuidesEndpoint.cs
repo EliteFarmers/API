@@ -1,11 +1,13 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Guides.Mappers;
+using EliteAPI.Features.Guides.Models.Dtos;
 using EliteAPI.Utilities;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class GetUserGuidesEndpoint(GuideService guideService) : Endpoint<GetUserGuidesRequest, List<UserGuideResponse>>
+public class GetUserGuidesEndpoint(GuideService guideService, GuideMapper mapper) : Endpoint<GetUserGuidesRequest, List<UserGuideDto>>
 {
     public override void Configure()
     {
@@ -22,24 +24,12 @@ public class GetUserGuidesEndpoint(GuideService guideService) : Endpoint<GetUser
     {
         var userId = User.GetDiscordId();
         var isOwner = userId == req.AccountId;
-        var isMod = User.IsInRole(ApiUserPolicies.Admin) || User.IsInRole(ApiUserPolicies.Moderator);
+        var isMod = User.IsSupportOrHigher();
         
         var includePrivate = isOwner || isMod;
         var guides = await guideService.GetUserGuidesAsync(req.AccountId, includePrivate);
         
-        var response = guides.Select(g => new UserGuideResponse
-        {
-            Id = g.Id,
-            Slug = g.Slug ?? "",
-            Title = (g.ActiveVersion ?? g.DraftVersion)?.Title ?? "Untitled",
-            Description = (g.ActiveVersion ?? g.DraftVersion)?.Description ?? "",
-            Type = g.Type.ToString(),
-            Status = g.Status.ToString(),
-            Score = g.Score,
-            ViewCount = g.ViewCount,
-            CreatedAt = g.CreatedAt,
-            UpdatedAt = g.UpdatedAt
-        }).ToList();
+        var response = guides.Select(mapper.ToUserGuideDto).ToList();
 
         await Send.OkAsync(response, ct);
     }
@@ -50,16 +40,3 @@ public class GetUserGuidesRequest
     public ulong AccountId { get; set; }
 }
 
-public class UserGuideResponse
-{
-    public int Id { get; set; }
-    public string Slug { get; set; } = "";
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public string Type { get; set; } = "";
-    public string Status { get; set; } = "";
-    public int Score { get; set; }
-    public int ViewCount { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-}

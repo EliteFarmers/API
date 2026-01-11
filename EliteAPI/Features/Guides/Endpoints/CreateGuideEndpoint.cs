@@ -1,5 +1,7 @@
 using EliteAPI.Features.Guides.Services;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Features.Guides.Mappers;
+using EliteAPI.Features.Guides.Models.Dtos;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Data;
 using EliteAPI.Utilities;
@@ -8,7 +10,7 @@ using FluentValidation;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class CreateGuideEndpoint(GuideService guideService, DataContext db) : Endpoint<CreateGuideRequest, GuideResponse>
+public class CreateGuideEndpoint(GuideService guideService, DataContext db, GuideMapper mapper) : Endpoint<CreateGuideRequest, GuideDto>
 {
     public override void Configure()
     {
@@ -18,7 +20,7 @@ public class CreateGuideEndpoint(GuideService guideService, DataContext db) : En
             s.Summary = "Create a new guide draft";
             s.Description = "Initializes a new empty guide draft for the user.";
         });
-        Description(b => b.Produces<GuideResponse>(201).Produces(401).Produces(403));
+        Description(b => b.Produces<GuideDto>(201).Produces(401).Produces(403));
     }
 
     public override async Task HandleAsync(CreateGuideRequest req, CancellationToken ct)
@@ -50,13 +52,7 @@ public class CreateGuideEndpoint(GuideService guideService, DataContext db) : En
         
         var guide = await guideService.CreateDraftAsync(userId.Value, req.Type);
         
-        await Send.OkAsync(new GuideResponse
-        {
-            Id = guide.Id,
-            Slug = guide.Slug!,
-            Status = guide.Status.ToString(),
-            Title = guide.DraftVersion!.Title
-        }, ct);
+        await Send.OkAsync(mapper.ToDto(guide), ct);
     }
 }
 
@@ -75,10 +71,3 @@ public class CreateGuideValidator : Validator<CreateGuideRequest>
     }
 }
 
-public class GuideResponse
-{
-    public int Id { get; set; }
-    public string Slug { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-}

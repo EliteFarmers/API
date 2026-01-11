@@ -1,6 +1,7 @@
 using System.Net;
 using EliteAPI.Features.Guides.Endpoints;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Features.Guides.Models.Dtos;
 using FastEndpoints;
 using FastEndpoints.Testing;
 using Shouldly;
@@ -14,7 +15,7 @@ public class ListGuidesTests(GuideTestApp App) : TestBase
     public async Task ListGuides_NegativePage_ReturnsFirstPage()
     {
         // Request with negative page
-        var (rsp, res) = await App.AnonymousClient.GETAsync<ListGuidesEndpoint, ListGuidesRequest, List<GuideResponse>>(
+        var (rsp, res) = await App.AnonymousClient.GETAsync<ListGuidesEndpoint, ListGuidesRequest, List<GuideDto>>(
             new ListGuidesRequest { Page = -5, PageSize = 10 });
 
         rsp.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -25,7 +26,7 @@ public class ListGuidesTests(GuideTestApp App) : TestBase
     public async Task ListGuides_ZeroPage_ReturnsFirstPage()
     {
          // Request with zero page
-        var (rsp, res) = await App.AnonymousClient.GETAsync<ListGuidesEndpoint, ListGuidesRequest, List<GuideResponse>>(
+        var (rsp, res) = await App.AnonymousClient.GETAsync<ListGuidesEndpoint, ListGuidesRequest, List<GuideDto>>(
             new ListGuidesRequest { Page = 0, PageSize = 10 });
 
         rsp.StatusCode.ShouldBe(HttpStatusCode.OK);

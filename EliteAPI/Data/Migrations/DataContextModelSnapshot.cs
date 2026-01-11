@@ -573,6 +573,10 @@ namespace EliteAPI.Data.Migrations
                     b.Property<int?>("DraftVersionId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("IconSkyblockId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -582,10 +586,6 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<int>("Score")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Slug")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");

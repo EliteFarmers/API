@@ -45,7 +45,7 @@ public class UpdateGuideEndpoint(GuideService guideService) : Endpoint<UpdateGui
             return;
         }
 
-        await guideService.UpdateDraftAsync(req.Id, req.Title, req.Description, req.MarkdownContent, req.RichBlocks);
+        await guideService.UpdateDraftAsync(req.Id, req.Title, req.Description, req.MarkdownContent, req.IconSkyblockId, req.RichBlocks);
         
         await Send.NoContentAsync(ct);
     }
@@ -55,6 +55,7 @@ public class UpdateGuideRequest
 {
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
+    public string? IconSkyblockId { get; set; }
     public string Description { get; set; } = string.Empty;
     public string MarkdownContent { get; set; } = string.Empty;
     public GuideRichData? RichBlocks { get; set; }

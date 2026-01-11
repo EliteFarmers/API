@@ -1,5 +1,7 @@
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Guides.Mappers;
+using EliteAPI.Features.Guides.Models.Dtos;
 using EliteAPI.Utilities;
 using FastEndpoints;
 
@@ -72,7 +74,7 @@ public class UnbookmarkGuideEndpoint(GuideService guideService) : Endpoint<Bookm
     }
 }
 
-public class GetUserBookmarksEndpoint(GuideService guideService) : Endpoint<GetUserBookmarksRequest, List<UserGuideResponse>>
+public class GetUserBookmarksEndpoint(GuideService guideService, GuideMapper mapper) : Endpoint<GetUserBookmarksRequest, List<UserGuideDto>>
 {
     public override void Configure()
     {
@@ -102,19 +104,7 @@ public class GetUserBookmarksEndpoint(GuideService guideService) : Endpoint<GetU
 
         var guides = await guideService.GetUserBookmarksAsync(req.AccountId);
         
-        var response = guides.Select(g => new UserGuideResponse
-        {
-            Id = g.Id,
-            Slug = g.Slug ?? "",
-            Title = g.ActiveVersion?.Title ?? "Untitled",
-            Description = g.ActiveVersion?.Description ?? "",
-            Type = g.Type.ToString(),
-            Status = g.Status.ToString(),
-            Score = g.Score,
-            ViewCount = g.ViewCount,
-            CreatedAt = g.CreatedAt,
-            UpdatedAt = g.UpdatedAt
-        }).ToList();
+        var response = guides.Select(mapper.ToUserGuideDto).ToList();
 
         await Send.OkAsync(response, ct);
     }

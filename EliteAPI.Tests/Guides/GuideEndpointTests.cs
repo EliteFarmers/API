@@ -1,6 +1,7 @@
 using System.Net;
 using EliteAPI.Features.Guides.Endpoints;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Features.Guides.Models.Dtos;
 using FastEndpoints;
 using FastEndpoints.Testing;
 using Shouldly;
@@ -13,7 +14,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     [Fact, Priority(1)]
     public async Task CreateGuide_Unauthenticated_Returns401()
     {
-        var (rsp, _) = await App.AnonymousClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (rsp, _) = await App.AnonymousClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         
         rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
@@ -22,7 +23,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     [Fact, Priority(2)]
     public async Task CreateGuide_RestrictedUser_Returns403()
     {
-        var (rsp, _) = await App.RestrictedUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (rsp, _) = await App.RestrictedUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         
         rsp.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
@@ -31,7 +32,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     [Fact, Priority(3)]
     public async Task CreateGuide_ValidUser_CreatesGuide()
     {
-        var (rsp, res) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (rsp, res) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.Greenhouse });
         
         rsp.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -43,7 +44,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     [Fact, Priority(4)]
     public async Task GetGuide_NonExistent_Returns404()
     {
-        var (rsp, _) = await App.AnonymousClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (rsp, _) = await App.AnonymousClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = "nonexistent-slug" });
         
         rsp.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -53,12 +54,12 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task GetGuide_DraftWithoutAuth_Returns404()
     {
         // First create a guide (it's a draft by default)
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Anonymous user tries to get the draft (no ?draft=true, but no ActiveVersion either)
-        var (getRsp, _) = await App.AnonymousClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, _) = await App.AnonymousClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created!.Slug });
         
         // Should return 404 because no published version exists
@@ -69,12 +70,12 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task GetGuide_DraftAsAuthor_ReturnsContent()
     {
         // Create a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.Farm });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Author requests draft with ?draft=true
-        var (getRsp, guide) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, guide) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created!.Slug, Draft = true });
         
         getRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -86,12 +87,12 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task GetGuide_DraftAsModerator_ReturnsContent()
     {
         // Create a guide as regular user
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Moderator requests draft
-        var (getRsp, guide) = await App.ModeratorClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, guide) = await App.ModeratorClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created!.Slug, Draft = true });
         
         getRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -102,7 +103,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task UpdateGuide_NotAuthor_Returns403()
     {
         // Create a guide as regular user
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -125,7 +126,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task UpdateGuide_AsAuthor_Succeeds()
     {
         // Create a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -146,7 +147,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task SubmitGuide_NotAuthor_Returns403()
     {
         // Create a guide as regular user
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -161,7 +162,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task ApproveGuide_NotModerator_Returns403()
     {
         // Create and submit a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -179,7 +180,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task ApproveGuide_AsModerator_Succeeds()
     {
         // Create and submit a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -215,7 +216,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task DeleteGuide_NotAuthor_Returns404()
     {
         // Create a guide as regular user
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -230,7 +231,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task DeleteGuide_AsAuthor_Succeeds()
     {
         // Create a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -241,7 +242,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
         deleteRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Verify guide is no longer accessible
-        var (getRsp, _) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, _) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created.Slug, Draft = true });
         getRsp.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -250,12 +251,12 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task GetUserGuides_ReturnsUserGuides()
     {
         // Create a guide
-        var (createRsp, _) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, _) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Get user's guides - use the response pattern
-        var result = await App.RegularUserClient.GETAsync<GetUserGuidesEndpoint, GetUserGuidesRequest, List<UserGuideResponse>>(
+        var result = await App.RegularUserClient.GETAsync<GetUserGuidesEndpoint, GetUserGuidesRequest, List<UserGuideDto>>(
             new GetUserGuidesRequest { AccountId = GuideTestApp.RegularUserId });
         
         result.Response.IsSuccessStatusCode.ShouldBeTrue();
@@ -267,7 +268,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task Bookmark_AddAndRemove_Succeeds()
     {
         // Create and publish a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -291,7 +292,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task Unpublish_AsAuthor_Succeeds()
     {
         // Create, submit, and publish a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -306,7 +307,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
         unpublishRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Verify no longer publicly visible
-        var (getRsp, _) = await App.AnonymousClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, _) = await App.AnonymousClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created.Slug });
         getRsp.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -315,7 +316,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task RejectGuide_WithReason_StoresReason()
     {
         // Create and submit a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -328,7 +329,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
         rejectRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Author views rejected guide and sees reason
-        var (getRsp, guide) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, guide) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created.Slug, Draft = true });
         getRsp.IsSuccessStatusCode.ShouldBeTrue();
         guide!.RejectionReason.ShouldBe("Needs more detail");
@@ -338,7 +339,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     public async Task GetGuide_Authenticated_ReturnsVoteState()
     {
         // Create and publish a guide
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -352,7 +353,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
             new VoteGuideRequest { GuideId = created.Id, Value = 1 });
         
         // Get guide and verify vote state is present
-        var (getRsp, guide) = await App.ModeratorClient.GETAsync<GetGuideEndpoint, GetGuideRequest, GetGuideResponse>(
+        var (getRsp, guide) = await App.ModeratorClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
             new GetGuideRequest { Slug = created.Slug });
         
         getRsp.IsSuccessStatusCode.ShouldBeTrue();

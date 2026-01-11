@@ -1,6 +1,8 @@
 using System.Net;
+using EliteAPI.Features.Comments.Models.Dtos;
 using EliteAPI.Features.Guides.Endpoints;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Features.Guides.Models.Dtos;
 using FastEndpoints;
 using FastEndpoints.Testing;
 using Shouldly;
@@ -12,7 +14,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
 {
     private async Task<int> CreateTestGuideAsync()
     {
-        var (rsp, res) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (rsp, res) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         rsp.IsSuccessStatusCode.ShouldBeTrue();
         return res!.Id;
@@ -23,7 +25,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     {
         var guideId = await CreateTestGuideAsync();
         
-        var (rsp, _) = await App.AnonymousClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (rsp, _) = await App.AnonymousClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Test comment" });
         
         rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
@@ -35,7 +37,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // RestrictedUser has RestrictedFromComments flag
-        var (rsp, _) = await App.RestrictedUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (rsp, _) = await App.RestrictedUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Test comment" });
         
         // Service throws UnauthorizedAccessException which is caught and returns 400 with error message
@@ -47,7 +49,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     {
         var guideId = await CreateTestGuideAsync();
         
-        var (rsp, res) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (rsp, res) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "This is a great guide!" });
         
         rsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -61,7 +63,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     {
         var guideId = await CreateTestGuideAsync();
         
-        var (rsp, _) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (rsp, _) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "" });
         
         rsp.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
@@ -73,7 +75,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Create comment as regular user
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Original content" });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -91,7 +93,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Create comment
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Original content" });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -108,7 +110,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Create comment as regular user
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Original content" });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -161,7 +163,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Create comment
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Pending comment" });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -178,7 +180,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Create comment
-        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guideId, Content = "Comment to delete" });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -195,7 +197,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Regular user tries to set LiftedElementId - should fail
-        var (rsp, _) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (rsp, _) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest 
             { 
                 GuideId = guideId, 
@@ -213,7 +215,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         var guideId = await CreateTestGuideAsync();
         
         // Moderator can set LiftedElementId
-        var (rsp, res) = await App.ModeratorClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (rsp, res) = await App.ModeratorClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest 
             { 
                 GuideId = guideId, 
@@ -228,17 +230,17 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task ListComments_AuthorSeesPendingComment()
     {
         // Create guide and get its slug
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create a pending comment
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "My pending comment" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments as the author
-        var (listRsp, comments) = await App.RegularUserClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.RegularUserClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -252,17 +254,17 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task ListComments_OtherUserDoesNotSeePendingComment()
     {
         // Create guide as regular user
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create a pending comment as regular user
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "User's pending comment" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments as anonymous (different user)
-        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -274,17 +276,17 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task ListComments_ModeratorSeesAllPendingComments()
     {
         // Create guide as regular user
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create a pending comment as regular user
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "User's pending comment for mod" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments as moderator
-        var (listRsp, comments) = await App.ModeratorClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.ModeratorClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -298,12 +300,12 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task ListComments_ApprovedCommentHasIsPendingFalse()
     {
         // Create guide
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create and approve a comment
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "Comment to approve" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -312,7 +314,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         approveRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments as anonymous (should see approved comment)
-        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -325,12 +327,12 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task EditComment_AfterApproval_CreatesDraftRequiringReapproval()
     {
         // Create and approve a guide
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create and approve a comment
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "Original content" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -344,7 +346,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         editRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments as author - should show HasPendingEdit
-        var (listRsp, comments) = await App.RegularUserClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.RegularUserClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -359,12 +361,12 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task ApproveComment_WithDraft_AppliesDraftContent()
     {
         // Create and approve a guide
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create and approve a comment
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "Original content" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -383,7 +385,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         approve2.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments - should now show updated content
-        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -397,12 +399,12 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     public async Task DeletedComment_ShowsDeletedPlaceholder()
     {
         // Create guide
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create and approve a comment
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "Comment to delete" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -416,7 +418,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         deleteRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments - deleted comment should show placeholder
-        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -424,19 +426,19 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         deletedComment.ShouldNotBeNull();
         deletedComment.IsDeleted.ShouldBeTrue();
         deletedComment.Content.ShouldBe("[deleted]");
-        deletedComment.AuthorName.ShouldBe("[deleted]");
+        deletedComment.Author.Name.ShouldBe("[deleted]");
     }
 
     [Fact, Priority(23)]
     public async Task EditedComment_HasIsEditedFlag()
     {
         // Create guide
-        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideResponse>(
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         guideRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // Create comment (not approved yet, so direct edit allowed)
-        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CreateCommentResponse>(
+        var (commentRsp, comment) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
             new CreateCommentRequest { GuideId = guide!.Id, Content = "Original" });
         commentRsp.IsSuccessStatusCode.ShouldBeTrue();
         
@@ -451,7 +453,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
         approveRsp.IsSuccessStatusCode.ShouldBeTrue();
         
         // List comments
-        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentResponse>>(
+        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();

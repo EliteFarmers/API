@@ -1,5 +1,6 @@
 using EliteAPI.Data;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Utilities;
 using Microsoft.EntityFrameworkCore;
 using FastEndpoints;
 
@@ -59,6 +60,7 @@ public class GuideSearchService(DataContext db)
     }
 }
 
+[JsonStringEnum]
 public enum GuideSort
 {
     Newest,
