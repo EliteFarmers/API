@@ -291,4 +291,23 @@ public partial class ItemTextureResolver(
 	
 	[GeneratedRegex(@"^RUNE_(?<name>\w+)_(?<tier>\d)$")]
 	public static partial Regex RuneRegex();
+	
+	public async Task<byte[]> RenderBlockFace(string blockId, List<string>? packIds, int size = 16) {
+		try {
+			var renderer = await provider.GetRendererAsync();
+			using var image = renderer.RenderBlockFace(blockId, new MinecraftBlockRenderer.BlockFaceRenderOptions() {
+				Size = size,
+				Direction = BlockFaceDirection.Up,
+				PackIds = packIds ?? []
+			});
+		
+			using var ms = new MemoryStream();
+			await image.SaveAsPngAsync(ms);
+			return ms.ToArray();
+		}
+		catch (Exception ex) {
+			logger.LogError(ex, "Failed to render block face {BlockId}", blockId);
+			throw;
+		}
+	}
 }
