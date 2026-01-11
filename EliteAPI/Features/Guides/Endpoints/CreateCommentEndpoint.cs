@@ -1,13 +1,21 @@
+using EliteAPI.Data;
 using EliteAPI.Features.Guides.Services;
 using EliteAPI.Features.Comments.Mappers;
 using EliteAPI.Features.Comments.Models.Dtos;
+using EliteAPI.Features.Notifications.Models;
+using EliteAPI.Features.Notifications.Services;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class CreateCommentEndpoint(CommentService commentService, CommentMapper mapper) : Endpoint<CreateCommentRequest, CommentDto>
+public class CreateCommentEndpoint(
+    CommentService commentService, 
+    CommentMapper mapper,
+    DataContext db,
+    NotificationService notificationService) : Endpoint<CreateCommentRequest, CommentDto>
 {
     public override void Configure()
     {
@@ -32,8 +40,38 @@ public class CreateCommentEndpoint(CommentService commentService, CommentMapper 
         {
             var comment = await commentService.AddCommentAsync(req.GuideId, EliteAPI.Features.Comments.Models.CommentTargetType.Guide, userId.Value, req.Content, req.ParentId, req.LiftedElementId);
             
-            // Create uses author's perms, so currentUserId matches authorId, and isModerator is not strictly needed for the author to see their own draft if it was drafted (though Add returns approved/unapproved state).
-            // Pass simple flags.
+            var guide = await db.Guides
+                .Include(g => g.ActiveVersion)
+                .FirstOrDefaultAsync(g => g.Id == req.GuideId, ct);
+
+            var commenterAccount = await db.Accounts
+                .Include(a => a.MinecraftAccounts)
+                .FirstOrDefaultAsync(a => a.Id == userId.Value, ct);
+            var commenterName = commenterAccount?.MinecraftAccounts.FirstOrDefault()?.Name ?? "Someone";
+
+            if (req.ParentId.HasValue)
+            {
+                var parentComment = await db.Comments.FindAsync([req.ParentId.Value], ct);
+                if (parentComment != null && parentComment.AuthorId != userId.Value)
+                {
+                    await notificationService.CreateAsync(
+                        parentComment.AuthorId,
+                        NotificationType.NewReply,
+                        "New reply to your comment",
+                        $"**{commenterName}** replied to your comment.",
+                        $"/guides/{guide?.Id}-{guide?.ActiveVersion?.Title?.ToLower().Replace(" ", "-")}#comment-{comment.Id}");
+                }
+            }
+            else if (guide != null && guide.AuthorId != userId.Value)
+            {
+                await notificationService.CreateAsync(
+                    guide.AuthorId,
+                    NotificationType.NewComment,
+                    "New comment on your guide",
+                    $"**{commenterName}** commented on **{guide.ActiveVersion?.Title ?? "your guide"}**.",
+                    $"/guides/{guide.Id}-{guide.ActiveVersion?.Title?.ToLower().Replace(" ", "-")}#comment-{comment.Id}");
+            }
+            
             await Send.OkAsync(mapper.ToDto(comment, userId.Value, User.IsSupportOrHigher(), null), ct);
         }
         catch (UnauthorizedAccessException ex)
@@ -64,3 +102,4 @@ public class CreateCommentValidator : Validator<CreateCommentRequest>
             .MaximumLength(128);
     }
 }
+

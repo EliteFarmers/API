@@ -1,8 +1,10 @@
 ﻿using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Announcements.Models;
+using EliteAPI.Features.AuditLogs.Models;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Confirmations.Models;
 using EliteAPI.Features.Guides.Models;
+using EliteAPI.Features.Notifications.Models;
 using EliteAPI.Features.HypixelGuilds.Models;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Resources.Bazaar;
@@ -192,4 +194,10 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 	public DbSet<CommentVote> CommentVotes { get; set; } = null!;
 	public DbSet<GuideVote> GuideVotes { get; set; } = null!;
 	public DbSet<GuideBookmark> GuideBookmarks { get; set; } = null!;
+	
+	// Notifications
+	public DbSet<Notification> Notifications { get; set; } = null!;
+	
+	// Admin Audit Logs
+	public DbSet<AdminAuditLog> AdminAuditLogs { get; set; } = null!;
 }

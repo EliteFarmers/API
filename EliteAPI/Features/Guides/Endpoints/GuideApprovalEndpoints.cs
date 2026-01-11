@@ -1,5 +1,8 @@
+using EliteAPI.Features.AuditLogs.Services;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.Notifications.Models;
+using EliteAPI.Features.Notifications.Services;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
@@ -65,7 +68,11 @@ public class SubmitGuideRequest
 /// <summary>
 /// Approve and publish a guide (admin only)
 /// </summary>
-public class ApproveGuideEndpoint(GuideService guideService, UserManager userManager) : Endpoint<ApproveGuideRequest>
+public class ApproveGuideEndpoint(
+    GuideService guideService, 
+    UserManager userManager,
+    NotificationService notificationService,
+    AuditLogService auditLogService) : Endpoint<ApproveGuideRequest>
 {
     public override void Configure()
     {
@@ -96,7 +103,29 @@ public class ApproveGuideEndpoint(GuideService guideService, UserManager userMan
             return;
         }
 
+        var isNewGuide = guide.ActiveVersionId == null;
         await guideService.PublishAsync(req.GuideId, user?.AccountId ?? 0);
+
+        var notificationType = isNewGuide ? NotificationType.GuideApproved : NotificationType.GuideEditApproved;
+        var title = isNewGuide 
+            ? "Your guide has been approved!" 
+            : "Your guide edit has been approved!";
+        var guideTitle = guide.DraftVersion?.Title ?? guide.ActiveVersion?.Title ?? "Guide";
+
+        await notificationService.CreateAsync(
+            guide.AuthorId,
+            notificationType,
+            title,
+            $"**{guideTitle}** is now published and visible to everyone.",
+            $"/guides/{guideService.GetSlug(guide.Id)}");
+
+        await auditLogService.LogAsync(
+            user?.AccountId ?? 0,
+            isNewGuide ? "guide_approved" : "guide_edit_approved",
+            "Guide",
+            req.GuideId.ToString(),
+            $"Approved guide: {guideTitle}");
+
         await Send.NoContentAsync(ct);
     }
 }
@@ -109,7 +138,11 @@ public class ApproveGuideRequest
 /// <summary>
 /// Reject a guide (admin only)
 /// </summary>
-public class RejectGuideEndpoint(GuideService guideService) : Endpoint<RejectGuideRequest>
+public class RejectGuideEndpoint(
+    GuideService guideService,
+    UserManager userManager,
+    NotificationService notificationService,
+    AuditLogService auditLogService) : Endpoint<RejectGuideRequest>
 {
     public override void Configure()
     {
@@ -124,6 +157,8 @@ public class RejectGuideEndpoint(GuideService guideService) : Endpoint<RejectGui
 
     public override async Task HandleAsync(RejectGuideRequest req, CancellationToken ct)
     {
+        var user = await userManager.GetUserAsync(User);
+        
         var guide = await guideService.GetByIdAsync(req.GuideId);
         if (guide == null)
         {
@@ -131,12 +166,31 @@ public class RejectGuideEndpoint(GuideService guideService) : Endpoint<RejectGui
             return;
         }
 
-        var success = await guideService.RejectGuideAsync(req.GuideId, 0, req.Reason);
+        var success = await guideService.RejectGuideAsync(req.GuideId, user?.AccountId ?? 0, req.Reason);
         if (!success)
         {
             await Send.NotFoundAsync(ct);
             return;
         }
+
+        var guideTitle = guide.DraftVersion?.Title ?? guide.ActiveVersion?.Title ?? "Guide";
+        var message = string.IsNullOrEmpty(req.Reason)
+            ? $"**{guideTitle}** was not approved."
+            : $"**{guideTitle}** was not approved.\n\n**Reason:** {req.Reason}";
+
+        await notificationService.CreateAsync(
+            guide.AuthorId,
+            NotificationType.GuideRejected,
+            "Your guide was not approved",
+            message,
+            $"/guides/{guideService.GetSlug(guide.Id)}?draft=true");
+
+        await auditLogService.LogAsync(
+            user?.AccountId ?? 0,
+            "guide_rejected",
+            "Guide",
+            req.GuideId.ToString(),
+            $"Rejected guide: {guideTitle}" + (string.IsNullOrEmpty(req.Reason) ? "" : $" - Reason: {req.Reason}"));
         
         await Send.NoContentAsync(ct);
     }
@@ -151,3 +205,4 @@ public class RejectGuideRequest
     /// </summary>
     public string? Reason { get; set; }
 }
+

@@ -9,4 +9,5 @@ public interface IMessageService
 	void SendPurchaseMessage(string accountId, string skuId, string skuName = "Unknown");
 	void SendClaimMessage(string accountId, string skuId, string skuName = "Unknown");
 	void SendWipedMessage(string uuid, string ign, string profileId, string discordId = "");
+	void SendAuditLogMessage(string adminId, string action, string targetType, string? targetId, string? details);
 }

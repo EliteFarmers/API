@@ -1,13 +1,23 @@
+using EliteAPI.Data;
+using EliteAPI.Features.AuditLogs.Services;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Common.Services;
 using EliteAPI.Features.Guides.Services;
 using EliteAPI.Features.Comments.Mappers;
 using EliteAPI.Features.Comments.Models.Dtos;
+using EliteAPI.Features.Notifications.Models;
+using EliteAPI.Features.Notifications.Services;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
-public class ApproveCommentEndpoint(CommentService commentService) : Endpoint<ApproveCommentRequest>
+public class ApproveCommentEndpoint(
+    CommentService commentService,
+    DataContext db,
+    UserManager userManager,
+    NotificationService notificationService,
+    AuditLogService auditLogService) : Endpoint<ApproveCommentRequest>
 {
     public override void Configure()
     {
@@ -25,13 +35,42 @@ public class ApproveCommentEndpoint(CommentService commentService) : Endpoint<Ap
 
     public override async Task HandleAsync(ApproveCommentRequest req, CancellationToken ct)
     {
-        var success = await commentService.ApproveCommentAsync(req.CommentId, 0);
+        var user = await userManager.GetUserAsync(User);
+        
+        var comment = await db.Comments
+            .Include(c => c.Author)
+            .FirstOrDefaultAsync(c => c.Id == req.CommentId, ct);
+            
+        if (comment == null)
+        {
+            await Send.NotFoundAsync(ct);
+            return;
+        }
+
+        var hadDraft = !string.IsNullOrEmpty(comment.DraftContent);
+        var success = await commentService.ApproveCommentAsync(req.CommentId, user?.AccountId ?? 0);
         
         if (!success)
         {
             await Send.NotFoundAsync(ct);
             return;
         }
+
+        var notificationType = hadDraft ? NotificationType.CommentEditApproved : NotificationType.CommentApproved;
+        var title = hadDraft ? "Your comment edit was approved" : "Your comment was approved";
+
+        await notificationService.CreateAsync(
+            comment.AuthorId,
+            notificationType,
+            title,
+            "Your comment is now visible to everyone.");
+
+        await auditLogService.LogAsync(
+            user?.AccountId ?? 0,
+            hadDraft ? "comment_edit_approved" : "comment_approved",
+            "Comment",
+            req.CommentId.ToString(),
+            $"Approved comment by {comment.Author?.MinecraftAccounts.FirstOrDefault()?.Name ?? comment.AuthorId.ToString()}");
         
         await Send.NoContentAsync(ct);
     }
@@ -42,7 +81,12 @@ public class ApproveCommentRequest
     public int CommentId { get; set; }
 }
 
-public class DeleteCommentEndpoint(CommentService commentService, UserManager userManager) : Endpoint<DeleteCommentRequest>
+public class DeleteCommentEndpoint(
+    CommentService commentService, 
+    DataContext db,
+    UserManager userManager,
+    NotificationService notificationService,
+    AuditLogService auditLogService) : Endpoint<DeleteCommentRequest>
 {
     public override void Configure()
     {
@@ -58,6 +102,17 @@ public class DeleteCommentEndpoint(CommentService commentService, UserManager us
     public override async Task HandleAsync(DeleteCommentRequest req, CancellationToken ct)
     {
         var user = await userManager.GetUserAsync(User);
+        
+        var comment = await db.Comments
+            .Include(c => c.Author)
+            .FirstOrDefaultAsync(c => c.Id == req.CommentId, ct);
+            
+        if (comment == null)
+        {
+            await Send.NotFoundAsync(ct);
+            return;
+        }
+        
         var success = await commentService.DeleteCommentAsync(req.CommentId, user?.AccountId ?? 0);
         
         if (!success)
@@ -65,6 +120,13 @@ public class DeleteCommentEndpoint(CommentService commentService, UserManager us
             await Send.NotFoundAsync(ct);
             return;
         }
+
+        await auditLogService.LogAsync(
+            user?.AccountId ?? 0,
+            "comment_deleted",
+            "Comment",
+            req.CommentId.ToString(),
+            $"Deleted comment by {comment.Author?.MinecraftAccounts.FirstOrDefault()?.Name ?? comment.AuthorId.ToString()}");
         
         await Send.NoContentAsync(ct);
     }
@@ -97,3 +159,4 @@ public class ListPendingCommentsEndpoint(CommentService commentService, CommentM
         await Send.OkAsync(response, ct);
     }
 }
+
