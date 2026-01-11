@@ -27,7 +27,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260108041955_AddCommentsAndGuides")]
+    [Migration("20260109072627_AddCommentsAndGuides")]
     partial class AddCommentsAndGuides
     {
         /// <inheritdoc />
@@ -493,6 +493,10 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DraftContent")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<DateTime?>("EditedAt")
                         .HasColumnType("timestamp with time zone");

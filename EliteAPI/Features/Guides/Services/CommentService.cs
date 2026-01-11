@@ -2,12 +2,13 @@ using FastEndpoints;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Guides.Models;
+using Ganss.Xss;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.Guides.Services;
 
 [RegisterService<CommentService>(LifeTime.Scoped)]
-public class CommentService(DataContext db)
+public class CommentService(DataContext db, HtmlSanitizer sanitizer)
 {
     public async Task<Comment> AddCommentAsync(int targetId, EliteAPI.Features.Comments.Models.CommentTargetType targetType, ulong userId, string content, int? parentId, string? liftedElementId)
     {
@@ -21,20 +22,21 @@ public class CommentService(DataContext db)
         // Restrict LiftedElementId to Moderators/Admins
         if (!string.IsNullOrEmpty(liftedElementId))
         {
-             // Assuming user.Permissions has Moderator flag, or we need to check ApiUser policies if passed context.
-             // Since we only have userId here, check flags.
              if ((user!.Permissions & PermissionFlags.Moderator) == 0 && (user.Permissions & PermissionFlags.Admin) == 0)
              {
                  throw new UnauthorizedAccessException("Only moderators can lift comments.");
              }
         }
 
+        // Sanitize HTML content
+        var sanitizedContent = sanitizer.Sanitize(content);
+
         var comment = new Comment
         {
             TargetId = targetId,
             TargetType = targetType,
             AuthorId = userId,
-            Content = content,
+            Content = sanitizedContent,
             ParentId = parentId,
             LiftedElementId = liftedElementId,
             CreatedAt = DateTime.UtcNow,
@@ -46,14 +48,23 @@ public class CommentService(DataContext db)
         return comment;
     }
 
-    public async Task<List<Comment>> GetCommentsAsync(int targetId, EliteAPI.Features.Comments.Models.CommentTargetType targetType)
+    public async Task<List<Comment>> GetCommentsAsync(
+        int targetId, 
+        EliteAPI.Features.Comments.Models.CommentTargetType targetType,
+        ulong? viewingUserId = null,
+        bool isModerator = false)
     {
+        // Include deleted comments to preserve thread structure
         var comments = await db.Comments
             .Include(c => c.Author)
                 .ThenInclude(a => a.MinecraftAccounts)
             .Include(c => c.Author)
                 .ThenInclude(a => a.UserSettings)
-            .Where(c => c.TargetId == targetId && c.TargetType == targetType && !c.IsDeleted)
+            .Where(c => c.TargetId == targetId && c.TargetType == targetType)
+            .Where(c => c.IsDeleted 
+                || c.IsApproved 
+                || (viewingUserId != null && c.AuthorId == viewingUserId) 
+                || isModerator)
             .OrderByDescending(c => c.Score)
             .ThenByDescending(c => c.CreatedAt)
             .ToListAsync();
@@ -63,47 +74,64 @@ public class CommentService(DataContext db)
 
     public async Task VoteAsync(int commentId, ulong userId, short value)
     {
-        if (Math.Abs(value) != 1) throw new ArgumentException("Vote value must be 1 or -1");
-
         // Verify comment exists
         var commentExists = await db.Comments.AnyAsync(c => c.Id == commentId && !c.IsDeleted);
         if (!commentExists) throw new KeyNotFoundException("Comment not found.");
 
         var vote = await db.CommentVotes.FindAsync(commentId, userId);
-        if (vote != null)
+
+        if (value == 0)
         {
-            // Update existing
-            vote.Value = value;
-            vote.VotedAt = DateTime.UtcNow;
+            if (vote != null)
+            {
+                db.CommentVotes.Remove(vote);
+            }
         }
         else
         {
-            vote = new CommentVote
+            if (Math.Abs(value) != 1) throw new ArgumentException("Vote value must be 1, -1, or 0 (remove)");
+
+            if (vote != null)
             {
-                CommentId = commentId,
-                UserId = userId,
-                Value = value
-            };
-            db.CommentVotes.Add(vote);
+                vote.Value = value;
+                vote.VotedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                vote = new CommentVote
+                {
+                    CommentId = commentId,
+                    UserId = userId,
+                    Value = value
+                };
+                db.CommentVotes.Add(vote);
+            }
         }
 
         await db.SaveChangesAsync();
 
         // Update aggregate score
-        var score = await db.CommentVotes.Where(v => v.CommentId == commentId).SumAsync(v => v.Value);
-        
-        var comment = await db.Comments.FindAsync(commentId);
-        if (comment != null)
-        {
-            comment.Score = score;
-            await db.SaveChangesAsync();
-        }
+        var score = await db.CommentVotes
+            .Where(v => v.CommentId == commentId)
+            .SumAsync(v => (int)v.Value);
+
+        await db.Comments
+            .Where(c => c.Id == commentId)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.Score, score));
     }
 
     public async Task<bool> ApproveCommentAsync(int commentId, ulong moderatorId)
     {
         var comment = await db.Comments.FindAsync(commentId);
         if (comment == null || comment.IsDeleted) return false;
+        
+        // If there's a pending draft edit, apply it
+        if (!string.IsNullOrEmpty(comment.DraftContent))
+        {
+            comment.Content = comment.DraftContent;
+            comment.DraftContent = null;
+            comment.EditedAt = DateTime.UtcNow;
+        }
         
         comment.IsApproved = true;
         await db.SaveChangesAsync();
@@ -127,7 +155,19 @@ public class CommentService(DataContext db)
         return await db.Comments
             .Include(c => c.Author)
                 .ThenInclude(a => a.MinecraftAccounts)
-            .Where(c => c.TargetId == targetId && c.TargetType == targetType && !c.IsApproved && !c.IsDeleted)
+            .Where(c => c.TargetId == targetId && c.TargetType == targetType && !c.IsDeleted)
+            .Where(c => !c.IsApproved || c.DraftContent != null)
+            .OrderBy(c => c.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<List<Comment>> GetAllPendingCommentsAsync()
+    {
+        return await db.Comments
+            .Include(c => c.Author)
+                .ThenInclude(a => a.MinecraftAccounts)
+            .Where(c => !c.IsDeleted)
+            .Where(c => !c.IsApproved || c.DraftContent != null)
             .OrderBy(c => c.CreatedAt)
             .ToListAsync();
     }
@@ -140,14 +180,40 @@ public class CommentService(DataContext db)
         // Only author can edit, unless admin
         if (!isAdmin && comment.AuthorId != editorId) return null;
         
-        comment.Content = newContent;
-        comment.EditedAt = DateTime.UtcNow;
+        // Sanitize HTML content
+        var sanitizedContent = sanitizer.Sanitize(newContent);
+        
+        // Admin edits bypass draft workflow
         if (isAdmin && comment.AuthorId != editorId)
         {
+            comment.Content = sanitizedContent;
+            comment.EditedAt = DateTime.UtcNow;
             comment.EditedByAdminId = editorId;
+        }
+        else
+        {
+            // Author edits go to draft for re-approval (if comment was already approved)
+            if (comment.IsApproved)
+            {
+                comment.DraftContent = sanitizedContent;
+            }
+            else
+            {
+                // Not yet approved, direct edit is fine
+                comment.Content = sanitizedContent;
+            }
+            comment.EditedAt = DateTime.UtcNow;
         }
         
         await db.SaveChangesAsync();
         return comment;
     }
+    
+    public async Task<Dictionary<int, short>> GetUserVotesForCommentsAsync(IEnumerable<int> commentIds, ulong userId)
+    {
+        return await db.CommentVotes
+            .Where(v => commentIds.Contains(v.CommentId) && v.UserId == userId)
+            .ToDictionaryAsync(v => v.CommentId, v => v.Value);
+    }
 }
+

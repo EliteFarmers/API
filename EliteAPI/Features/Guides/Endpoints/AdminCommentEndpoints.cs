@@ -11,6 +11,9 @@ public class ApproveCommentEndpoint(CommentService commentService) : Endpoint<Ap
     {
         Post("/admin/comments/{CommentId}/approve");
         Policies(ApiUserPolicies.Moderator);
+
+        Options(x => x.Accepts<ApproveCommentRequest>());
+
         Summary(s =>
         {
             s.Summary = "Approve a comment";
@@ -68,4 +71,46 @@ public class DeleteCommentEndpoint(CommentService commentService, UserManager us
 public class DeleteCommentRequest
 {
     public int CommentId { get; set; }
+}
+
+public class ListPendingCommentsEndpoint(CommentService commentService) : EndpointWithoutRequest<List<CommentResponse>>
+{
+    public override void Configure()
+    {
+        Get("/admin/comments/pending");
+        Policies(ApiUserPolicies.Moderator);
+        Summary(s =>
+        {
+            s.Summary = "List all pending comments";
+            s.Description = "Returns a list of all comments pending approval.";
+        });
+    }
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var comments = await commentService.GetAllPendingCommentsAsync();
+        
+        var response = comments.Select(c => new CommentResponse
+        {
+            Id = c.Id,
+            Sqid = SqidService.Encode(c.Id),
+            ParentId = c.ParentId,
+            Content = c.Content,
+            AuthorId = c.AuthorId.ToString(),
+            AuthorName = c.Author.GetFormattedIgn(),
+            AuthorAvatar = c.Author.HasMinecraftAccount() ? null : c.Author.Avatar,
+            CreatedAt = c.CreatedAt,
+            Score = c.Score,
+            LiftedElementId = c.LiftedElementId,
+            IsPending = !c.IsApproved,
+            IsDeleted = c.IsDeleted,
+            IsEdited = c.EditedAt != null,
+            IsEditedByAdmin = c.EditedByAdminId != null,
+            HasPendingEdit = c.DraftContent != null,
+            EditedAt = c.EditedAt,
+            DraftContent = c.DraftContent
+        }).ToList();
+        
+        await Send.OkAsync(response, ct);
+    }
 }

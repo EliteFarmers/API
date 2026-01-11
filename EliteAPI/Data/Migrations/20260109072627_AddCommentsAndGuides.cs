@@ -31,6 +31,7 @@ namespace EliteAPI.Data.Migrations
                     AuthorId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
                     ParentId = table.Column<int>(type: "integer", nullable: true),
                     Content = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    DraftContent = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
                     IsApproved = table.Column<bool>(type: "boolean", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     LiftedElementId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),

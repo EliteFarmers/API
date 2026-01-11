@@ -170,39 +170,50 @@ public class GuideService(DataContext db)
 
     public async Task VoteGuideAsync(int guideId, ulong userId, short value)
     {
-        if (Math.Abs(value) != 1) throw new ArgumentException("Vote value must be 1 or -1");
-
         var guideExists = await db.Guides.AnyAsync(g => g.Id == guideId && !g.IsDeleted);
         if (!guideExists) throw new KeyNotFoundException("Guide not found.");
 
         var vote = await db.GuideVotes.FindAsync(guideId, userId);
-        if (vote != null)
+
+        if (value == 0)
         {
-            vote.Value = value;
-            vote.VotedAt = DateTime.UtcNow;
+            if (vote != null)
+            {
+                db.GuideVotes.Remove(vote);
+            }
         }
         else
         {
-            vote = new GuideVote
+            if (Math.Abs(value) != 1) throw new ArgumentException("Vote value must be 1, -1, or 0 (remove)");
+
+            if (vote != null)
             {
-                GuideId = guideId,
-                UserId = userId,
-                Value = value
-            };
-            db.GuideVotes.Add(vote);
+                vote.Value = value;
+                vote.VotedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                vote = new GuideVote
+                {
+                    GuideId = guideId,
+                    UserId = userId,
+                    Value = value
+                };
+                db.GuideVotes.Add(vote);
+            }
         }
 
         await db.SaveChangesAsync();
 
         // Update aggregate score
-        var score = await db.GuideVotes.Where(v => v.GuideId == guideId).SumAsync(v => v.Value);
+        // Recalculate score from GuideVotes for consistency
+        var score = await db.GuideVotes
+            .Where(v => v.GuideId == guideId)
+            .SumAsync(v => (int)v.Value);
 
-        var guide = await db.Guides.FindAsync(guideId);
-        if (guide != null)
-        {
-            guide.Score = score;
-            await db.SaveChangesAsync();
-        }
+        await db.Guides
+            .Where(g => g.Id == guideId)
+            .ExecuteUpdateAsync(s => s.SetProperty(g => g.Score, score));
     }
 
     /// <summary>

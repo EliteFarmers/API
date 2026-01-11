@@ -10,6 +10,7 @@ public class UnpublishGuideEndpoint(GuideService guideService) : Endpoint<Unpubl
     public override void Configure()
     {
         Post("/guides/{guideId}/unpublish");
+        Options(x => x.Accepts<UnpublishGuideRequest>());
         Summary(s =>
         {
             s.Summary = "Unpublish a guide";

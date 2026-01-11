@@ -10,6 +10,7 @@ public class BookmarkGuideEndpoint(GuideService guideService) : Endpoint<Bookmar
     public override void Configure()
     {
         Post("/guides/{guideId}/bookmark");
+        Options(x => x.Accepts<BookmarkRequest>());
         Summary(s =>
         {
             s.Summary = "Bookmark a guide";

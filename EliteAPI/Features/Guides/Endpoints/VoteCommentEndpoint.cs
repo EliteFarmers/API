@@ -49,7 +49,7 @@ public class VoteCommentValidator : Validator<VoteCommentRequest>
     public VoteCommentValidator()
     {
         RuleFor(x => x.Value)
-            .Must(v => v == 1 || v == -1)
-            .WithMessage("Vote value must be either 1 (upvote) or -1 (downvote).");
+            .Must(v => v == 1 || v == -1 || v == 0)
+            .WithMessage("Vote value must be 1 (upvote), -1 (downvote), or 0 (remove).");
     }
 }

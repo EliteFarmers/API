@@ -10,6 +10,9 @@ public class GuideSearchService(DataContext db)
 {
     public async Task<List<Guide>> SearchGuidesAsync(string? query, GuideType? type, List<int>? tagIds, GuideSort sort, int page = 1, int pageSize = 20, GuideStatus? status = GuideStatus.Published)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 20;
+
         var q = db.Guides
             .Include(g => g.ActiveVersion)
             .Include(g => g.Author)

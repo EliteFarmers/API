@@ -12,6 +12,9 @@ public class SubmitGuideForApprovalEndpoint(GuideService guideService, UserManag
     public override void Configure()
     {
         Post("/guides/{GuideId}/submit");
+        
+        Options(x => x.Accepts<SubmitGuideRequest>());
+        
         Summary(s =>
         {
             s.Summary = "Submit guide for approval";
@@ -67,6 +70,7 @@ public class ApproveGuideEndpoint(GuideService guideService, UserManager userMan
     public override void Configure()
     {
         Post("/admin/guides/{GuideId}/approve");
+        Options(x => x.Accepts<ApproveGuideRequest>());
         Policies(ApiUserPolicies.Moderator);
         Summary(s =>
         {

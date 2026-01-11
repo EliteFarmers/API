@@ -86,6 +86,7 @@ public class GetGuideEndpoint(GuideService guideService) : Endpoint<GetGuideRequ
             AuthorName = guide.Author.GetFormattedIgn(),
             AuthorId = guide.AuthorId,
             AuthorUuid = guide.Author.MinecraftAccounts.FirstOrDefault(a => a.Selected)?.Id,
+            AuthorAvatar = guide.Author.HasMinecraftAccount() ? null : guide.Author.Avatar,
             CreatedAt = guide.CreatedAt,
             Score = guide.Score,
             ViewCount = guide.ViewCount,
@@ -114,6 +115,7 @@ public class GetGuideResponse
     public string Description { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public string AuthorName { get; set; } = string.Empty;
+    public string? AuthorAvatar { get; set; }
     public ulong AuthorId { get; set; }
     public string? AuthorUuid { get; set; }
     public DateTime CreatedAt { get; set; }

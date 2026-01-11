@@ -21,6 +21,12 @@ public class Comment
 
     [MaxLength(2048)]
     public required string Content { get; set; }
+    
+    /// <summary>
+    /// Pending edit content awaiting approval. When approved, replaces Content.
+    /// </summary>
+    [MaxLength(2048)]
+    public string? DraftContent { get; set; }
 
     public bool IsApproved { get; set; } = false;
     public bool IsDeleted { get; set; } = false;

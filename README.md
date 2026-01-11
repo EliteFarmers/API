@@ -68,14 +68,13 @@ Please discuss any changes to the database schema in an issue or on [Discord](ht
 
 ### Get an Admin Account Locally
 
-If you need to test admin features, currently you can only do so by manually adding an admin role to yourself from the database.
+If you need to test admin features, you can set a Discord User ID in the `Seed` section of `appsettings.*.json` to grant admin permissions to that user. This only works if there are no admin users in the database, and if you already logged in to the API with that user.
 
-1. Run the API and Website locally.
-2. Login to the local Website instance with your Discord account.
-3. Use a tool like PGAdmin to connect to the local database.
-4. Create a new record in the `AspNetUserRoles` table with your `UserId` and the `RoleId` of the admin role.
-5. Log out and back in to the Website.
-6. You can now access the admin features, including granting other users roles on the `/admin` page of the Website.
+1. Set the `Seed.AdminUserId` in `appsettings.*.json` to your Discord User ID.
+2. Run the API and Website locally.
+3. Login to the local Website instance with your Discord account.
+4. Restart the API.
+5. You can now access the admin features, including granting other users roles on the `/admin` page of the Website.
 
 <h2 align="center">Docker Installation</h2>
 <hr>

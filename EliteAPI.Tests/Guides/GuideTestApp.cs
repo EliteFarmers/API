@@ -63,11 +63,7 @@ public class GuideTestApp : AppFixture<Program>
         await db.SaveChangesAsync();
     }
 
-    public async Task InitializeAsync()
-    {
-        await _postgres.StartAsync();
-        await SetupAsync();
-    }
+
 
     protected override void ConfigureApp(IWebHostBuilder builder)
     {
