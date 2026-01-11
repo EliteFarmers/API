@@ -39,6 +39,7 @@ public class ApproveCommentEndpoint(
         
         var comment = await db.Comments
             .Include(c => c.Author)
+                .ThenInclude(a => a.MinecraftAccounts)
             .FirstOrDefaultAsync(c => c.Id == req.CommentId, ct);
             
         if (comment == null)
@@ -47,6 +48,7 @@ public class ApproveCommentEndpoint(
             return;
         }
 
+        var wasAlreadyApproved = comment.IsApproved;
         var hadDraft = !string.IsNullOrEmpty(comment.DraftContent);
         var success = await commentService.ApproveCommentAsync(req.CommentId, user?.AccountId ?? 0);
         
@@ -64,6 +66,46 @@ public class ApproveCommentEndpoint(
             notificationType,
             title,
             "Your comment is now visible to everyone.");
+
+        // Send new comment/reply notifications only on first approval (not edit approval)
+        if (!wasAlreadyApproved && !hadDraft)
+        {
+            var commenterName = comment.Author?.MinecraftAccounts.FirstOrDefault()?.Name ?? "Someone";
+
+            if (comment.ParentId.HasValue)
+            {
+                var parentComment = await db.Comments.FindAsync([comment.ParentId.Value], ct);
+                if (parentComment != null && parentComment.AuthorId != comment.AuthorId)
+                {
+                    var guide = await db.Guides
+                        .Include(g => g.ActiveVersion)
+                        .FirstOrDefaultAsync(g => g.Id == comment.TargetId, ct);
+                    
+                    await notificationService.CreateAsync(
+                        parentComment.AuthorId,
+                        NotificationType.NewReply,
+                        "New reply to your comment",
+                        $"**{commenterName}** replied to your comment.",
+                        $"/guides/{guide?.Id}-{guide?.ActiveVersion?.Title?.ToLower().Replace(" ", "-")}#comment-{comment.Id}");
+                }
+            }
+            else
+            {
+                var guide = await db.Guides
+                    .Include(g => g.ActiveVersion)
+                    .FirstOrDefaultAsync(g => g.Id == comment.TargetId, ct);
+                    
+                if (guide != null && guide.AuthorId != comment.AuthorId)
+                {
+                    await notificationService.CreateAsync(
+                        guide.AuthorId,
+                        NotificationType.NewComment,
+                        "New comment on your guide",
+                        $"**{commenterName}** commented on **{guide.ActiveVersion?.Title ?? "your guide"}**.",
+                        $"/guides/{guide.Id}-{guide.ActiveVersion?.Title?.ToLower().Replace(" ", "-")}#comment-{comment.Id}");
+                }
+            }
+        }
 
         await auditLogService.LogAsync(
             user?.AccountId ?? 0,
