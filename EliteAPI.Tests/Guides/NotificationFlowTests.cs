@@ -57,7 +57,7 @@ public class NotificationFlowTests(GuideTestApp App) : TestBase
         var notification = await db.Notifications
             .Where(n => n.UserId == GuideTestApp.RegularUserId && n.Type == NotificationType.GuideApproved)
             .OrderByDescending(n => n.CreatedAt)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         notification.ShouldNotBeNull();
         notification.Title.ShouldContain("approved");
@@ -79,10 +79,10 @@ public class NotificationFlowTests(GuideTestApp App) : TestBase
         var notification = await db.Notifications
             .Where(n => n.UserId == GuideTestApp.RegularUserId && n.Type == NotificationType.GuideRejected)
             .OrderByDescending(n => n.CreatedAt)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         notification.ShouldNotBeNull();
-        notification.Message.ShouldContain("Needs more detail");
+        notification.Message!.ShouldContain("Needs more detail");
     }
 
     [Fact, Priority(3)]
@@ -100,7 +100,7 @@ public class NotificationFlowTests(GuideTestApp App) : TestBase
         var db = scope.ServiceProvider.GetRequiredService<DataContext>();
         var auditLog = await db.AdminAuditLogs
             .Where(l => l.TargetId == guideId.ToString() && l.Action == "guide_approved")
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         auditLog.ShouldNotBeNull();
         auditLog.AdminUserId.ShouldBe(GuideTestApp.ModeratorUserId);
@@ -130,7 +130,7 @@ public class NotificationFlowTests(GuideTestApp App) : TestBase
         var notification = await db.Notifications
             .Where(n => n.UserId == GuideTestApp.RegularUserId && n.Type == NotificationType.CommentApproved)
             .OrderByDescending(n => n.CreatedAt)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         notification.ShouldNotBeNull();
     }
@@ -150,16 +150,16 @@ public class NotificationFlowTests(GuideTestApp App) : TestBase
         var notification = await db.Notifications
             .Where(n => n.UserId == GuideTestApp.RegularUserId)
             .OrderByDescending(n => n.CreatedAt)
-            .FirstAsync();
+            .FirstAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         notification.IsRead.ShouldBeFalse();
 
         // Mark as read via endpoint
-        var markReadRsp = await App.RegularUserClient.PostAsync($"/notifications/{notification.Id}/read", null);
+        var markReadRsp = await App.RegularUserClient.PostAsync($"/notifications/{notification.Id}/read", null, TestContext.Current.CancellationToken);
         markReadRsp.IsSuccessStatusCode.ShouldBeTrue();
 
         // Verify in DB
-        await db.Entry(notification).ReloadAsync();
+        await db.Entry(notification).ReloadAsync(TestContext.Current.CancellationToken);
         notification.IsRead.ShouldBeTrue();
     }
 

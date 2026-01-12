@@ -396,7 +396,7 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
     }
 
     [Fact, Priority(22)]
-    public async Task DeletedComment_ShowsDeletedPlaceholder()
+    public async Task DeletedComment_NoReplies_PermanentlyDeleted()
     {
         // Create guide
         var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
@@ -417,16 +417,49 @@ public class CommentEndpointTests(GuideTestApp App) : TestBase
             new DeleteCommentRequest { CommentId = comment.Id });
         deleteRsp.IsSuccessStatusCode.ShouldBeTrue();
         
-        // List comments - deleted comment should show placeholder
+        // List comments - deleted comment should NOT be returned
         var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
             new ListCommentsRequest { Slug = guide.Slug });
         
         listRsp.IsSuccessStatusCode.ShouldBeTrue();
-        var deletedComment = comments!.FirstOrDefault(c => c.Id == comment.Id);
-        deletedComment.ShouldNotBeNull();
-        deletedComment.IsDeleted.ShouldBeTrue();
-        deletedComment.Content.ShouldBe("[deleted]");
-        deletedComment.Author.Name.ShouldBe("[deleted]");
+        comments?.FirstOrDefault(c => c.Id == comment.Id).ShouldBeNull();
+    }
+
+    [Fact, Priority(23)]
+    public async Task DeletedComment_WithReplies_SoftDeletes()
+    {
+        // Create guide
+        var (guideRsp, guide) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
+            new CreateGuideRequest { Type = GuideType.General });
+        guideRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        // Create parent comment
+        var (parentRsp, parent) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
+            new CreateCommentRequest { GuideId = guide!.Id, Content = "Parent comment" });
+        parentRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        await App.ModeratorClient.POSTAsync<ApproveCommentEndpoint, ApproveCommentRequest>(
+            new ApproveCommentRequest { CommentId = parent!.Id });
+            
+        // Create reply
+        var (replyRsp, reply) = await App.RegularUserClient.POSTAsync<CreateCommentEndpoint, CreateCommentRequest, CommentDto>(
+            new CreateCommentRequest { GuideId = guide!.Id, ParentId = parent.Id, Content = "Reply" });
+        replyRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        // Delete Parent
+        var deleteRsp = await App.ModeratorClient.DELETEAsync<DeleteCommentEndpoint, DeleteCommentRequest>(
+            new DeleteCommentRequest { CommentId = parent.Id });
+        deleteRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        // List comments - parent should be soft deleted
+        var (listRsp, comments) = await App.AnonymousClient.GETAsync<ListCommentsEndpoint, ListCommentsRequest, List<CommentDto>>(
+            new ListCommentsRequest { Slug = guide.Slug });
+        
+        listRsp.IsSuccessStatusCode.ShouldBeTrue();
+        var deletedParent = comments!.FirstOrDefault(c => c.Id == parent.Id);
+        deletedParent.ShouldNotBeNull();
+        deletedParent.IsDeleted.ShouldBeTrue();
+        deletedParent.Content.ShouldBe("[deleted]");
     }
 
     [Fact, Priority(23)]

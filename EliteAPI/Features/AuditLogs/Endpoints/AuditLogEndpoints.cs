@@ -34,7 +34,7 @@ public class GetAuditLogsEndpoint(AuditLogService auditLogService)
             Logs = logs.Select(l => new AuditLogDto
             {
                 Id = l.Id,
-                AdminUserId = l.AdminUserId,
+                AdminUserId = l.AdminUserId.ToString(),
                 AdminUserName = l.AdminUser.MinecraftAccounts
                     .FirstOrDefault()?.Name ?? l.AdminUserId.ToString(),
                 Action = l.Action,
@@ -55,7 +55,7 @@ public class GetAuditLogsRequest
     [QueryParam] public int Limit { get; set; } = 50;
     [QueryParam] public string? Action { get; set; }
     [QueryParam] public string? TargetType { get; set; }
-    [QueryParam] public ulong? AdminUserId { get; set; }
+    [QueryParam] public string? AdminUserId { get; set; }
     [QueryParam] public DateTime? FromDate { get; set; }
     [QueryParam] public DateTime? ToDate { get; set; }
 }
@@ -69,7 +69,7 @@ public class GetAuditLogsResponse
 public class AuditLogDto
 {
     public long Id { get; set; }
-    public ulong AdminUserId { get; set; }
+    public string AdminUserId { get; set; } = string.Empty;
     public string AdminUserName { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
     public string TargetType { get; set; } = string.Empty;

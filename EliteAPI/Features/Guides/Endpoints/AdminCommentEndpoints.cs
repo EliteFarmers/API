@@ -60,50 +60,49 @@ public class ApproveCommentEndpoint(
 
         var notificationType = hadDraft ? NotificationType.CommentEditApproved : NotificationType.CommentApproved;
         var title = hadDraft ? "Your comment edit was approved" : "Your comment was approved";
+        
+        var slug = SqidService.Encode(comment.TargetId);
 
         await notificationService.CreateAsync(
             comment.AuthorId,
             notificationType,
             title,
-            "Your comment is now visible to everyone.");
+            "Your comment is now visible to everyone.",
+            $"/guides/{slug}#comment-{SqidService.Encode(comment.Id)}");
 
         // Send new comment/reply notifications only on first approval (not edit approval)
         if (!wasAlreadyApproved && !hadDraft)
         {
-            var commenterName = comment.Author?.MinecraftAccounts.FirstOrDefault()?.Name ?? "Someone";
+            var commenterName = comment.Author?.MinecraftAccounts.FirstOrDefault()?.Name 
+                                ?? comment.Author?.Username
+                                ?? "[someone]";
 
             if (comment.ParentId.HasValue)
             {
                 var parentComment = await db.Comments.FindAsync([comment.ParentId.Value], ct);
                 if (parentComment != null && parentComment.AuthorId != comment.AuthorId)
                 {
-                    var guide = await db.Guides
-                        .Include(g => g.ActiveVersion)
-                        .FirstOrDefaultAsync(g => g.Id == comment.TargetId, ct);
-                    
                     await notificationService.CreateAsync(
                         parentComment.AuthorId,
                         NotificationType.NewReply,
                         "New reply to your comment",
                         $"**{commenterName}** replied to your comment.",
-                        $"/guides/{guide?.Id}-{guide?.ActiveVersion?.Title?.ToLower().Replace(" ", "-")}#comment-{comment.Id}");
+                        $"/guides/{slug}#comment-{SqidService.Encode(comment.Id)}");
                 }
             }
-            else
+
+            var guide = await db.Guides
+                .Include(g => g.ActiveVersion)
+                .FirstOrDefaultAsync(g => g.Id == comment.TargetId, ct);
+                
+            if (guide != null && guide.AuthorId != comment.AuthorId)
             {
-                var guide = await db.Guides
-                    .Include(g => g.ActiveVersion)
-                    .FirstOrDefaultAsync(g => g.Id == comment.TargetId, ct);
-                    
-                if (guide != null && guide.AuthorId != comment.AuthorId)
-                {
-                    await notificationService.CreateAsync(
-                        guide.AuthorId,
-                        NotificationType.NewComment,
-                        "New comment on your guide",
-                        $"**{commenterName}** commented on **{guide.ActiveVersion?.Title ?? "your guide"}**.",
-                        $"/guides/{guide.Id}-{guide.ActiveVersion?.Title?.ToLower().Replace(" ", "-")}#comment-{comment.Id}");
-                }
+                await notificationService.CreateAsync(
+                    guide.AuthorId,
+                    NotificationType.NewComment,
+                    "New comment on your guide",
+                    $"**{commenterName}** commented on **{guide.ActiveVersion?.Title ?? "your guide"}**.",
+                    $"/guides/{slug}#comment-{SqidService.Encode(comment.Id)}");
             }
         }
 
@@ -127,7 +126,6 @@ public class DeleteCommentEndpoint(
     CommentService commentService, 
     DataContext db,
     UserManager userManager,
-    NotificationService notificationService,
     AuditLogService auditLogService) : Endpoint<DeleteCommentRequest>
 {
     public override void Configure()
@@ -137,7 +135,7 @@ public class DeleteCommentEndpoint(
         Summary(s =>
         {
             s.Summary = "Delete a comment";
-            s.Description = "Soft-deletes a comment.";
+            s.Description = "Deletes a comment.";
         });
     }
 
@@ -147,6 +145,7 @@ public class DeleteCommentEndpoint(
         
         var comment = await db.Comments
             .Include(c => c.Author)
+                .ThenInclude(eliteAccount => eliteAccount.MinecraftAccounts)
             .FirstOrDefaultAsync(c => c.Id == req.CommentId, ct);
             
         if (comment == null)
@@ -184,7 +183,7 @@ public class ListPendingCommentsEndpoint(CommentService commentService, CommentM
     public override void Configure()
     {
         Get("/admin/comments/pending");
-        Policies(ApiUserPolicies.Moderator);
+        Policies(ApiUserPolicies.Support);
         Summary(s =>
         {
             s.Summary = "List all pending comments";

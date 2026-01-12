@@ -23,7 +23,16 @@ public class GuideSearchService(DataContext db)
 
         if (status.HasValue)
         {
-            q = q.Where(g => g.Status == status.Value);
+            if (status.Value == GuideStatus.Published)
+            {
+                // Include guides that are explicitly Published OR are in other states but have a live version (updates in progress)
+                q = q.Where(g => g.Status == GuideStatus.Published || 
+                                ((g.Status == GuideStatus.PendingApproval || g.Status == GuideStatus.Rejected) && g.ActiveVersionId != null));
+            }
+            else
+            {
+                q = q.Where(g => g.Status == status.Value);
+            }
         }
 
         if (type.HasValue)

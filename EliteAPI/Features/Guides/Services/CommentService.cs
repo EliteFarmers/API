@@ -143,9 +143,20 @@ public class CommentService(DataContext db, HtmlSanitizer sanitizer)
         var comment = await db.Comments.FindAsync(commentId);
         if (comment == null) return false;
         
-        comment.IsDeleted = true;
-        comment.EditedByAdminId = moderatorId;
-        comment.EditedAt = DateTime.UtcNow;
+        // Check for replies
+        var hasReplies = await db.Comments.AnyAsync(c => c.ParentId == commentId);
+
+        if (hasReplies)
+        {
+            comment.IsDeleted = true;
+            comment.EditedByAdminId = moderatorId;
+            comment.EditedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            db.Comments.Remove(comment);
+        }
+
         await db.SaveChangesAsync();
         return true;
     }

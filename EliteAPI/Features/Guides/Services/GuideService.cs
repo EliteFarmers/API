@@ -76,10 +76,13 @@ public class GuideService(DataContext db)
         return EliteAPI.Features.Common.Services.SqidService.Decode(slug);
     }
 
-    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown, string? iconSkyblockId,
+    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown, string? iconSkyblockId, List<string>? tags,
         GuideRichData? richData)
     {
-        var guide = await db.Guides.FindAsync(guideId);
+        var guide = await db.Guides
+            .Include(g => g.Tags)
+            .ThenInclude(g => g.Tag)
+            .FirstOrDefaultAsync(g => g.Id == guideId);
         if (guide == null) throw new KeyNotFoundException("Guide not found");
 
         var draft = await db.GuideVersions.FindAsync(guide.DraftVersionId);
@@ -109,6 +112,20 @@ public class GuideService(DataContext db)
 
         guide.IconSkyblockId = iconSkyblockId;
         guide.UpdatedAt = DateTime.UtcNow;
+        
+        // Update tags
+        if (tags != null)
+        {
+            guide.Tags = tags.Select(t => t.Trim().ToLower())
+                .Where(t => !string.IsNullOrEmpty(t) && int.TryParse(t, out _))
+                .Select(t => new GuideTagMapping
+                {
+                    GuideId = guide.Id,
+                    TagId = int.Parse(t)
+                })
+                .ToList();
+        }
+        
         await db.SaveChangesAsync();
     }
 
@@ -229,7 +246,9 @@ public class GuideService(DataContext db)
     public async Task<int> GetAuthorApprovedGuideCountAsync(ulong authorId)
     {
         return await db.Guides.CountAsync(g =>
-            g.AuthorId == authorId && g.Status == GuideStatus.Published && !g.IsDeleted);
+            g.AuthorId == authorId && 
+            !g.IsDeleted &&
+            (g.Status == GuideStatus.Published || ((g.Status == GuideStatus.PendingApproval || g.Status == GuideStatus.Rejected) && g.ActiveVersionId != null)));
     }
 
     /// <summary>
@@ -309,7 +328,7 @@ public class GuideService(DataContext db)
 
         if (!includePrivate)
         {
-            query = query.Where(g => g.Status == GuideStatus.Published);
+            query = query.Where(g => g.Status == GuideStatus.Published || ((g.Status == GuideStatus.PendingApproval || g.Status == GuideStatus.Rejected) && g.ActiveVersionId != null));
         }
 
         return await query.OrderByDescending(g => g.UpdatedAt ?? g.CreatedAt).ToListAsync();
@@ -359,7 +378,7 @@ public class GuideService(DataContext db)
             .Include(b => b.Guide).ThenInclude(g => g.ActiveVersion)
             .Include(b => b.Guide).ThenInclude(g => g.Author).ThenInclude(a => a.MinecraftAccounts)
             .Select(b => b.Guide)
-            .Where(g => !g.IsDeleted && g.Status == GuideStatus.Published)
+            .Where(g => !g.IsDeleted && (g.Status == GuideStatus.Published || ((g.Status == GuideStatus.PendingApproval || g.Status == GuideStatus.Rejected) && g.ActiveVersionId != null)))
             .ToListAsync();
     }
 

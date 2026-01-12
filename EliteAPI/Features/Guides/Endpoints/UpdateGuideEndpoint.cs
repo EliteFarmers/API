@@ -35,9 +35,8 @@ public class UpdateGuideEndpoint(GuideService guideService) : Endpoint<UpdateGui
             return;
         }
         
-        // Authorization: Only author or moderators can update
         var isAuthor = guide.AuthorId == userId.Value;
-        var isModerator = User.IsInRole(ApiUserPolicies.Moderator) || User.IsInRole(ApiUserPolicies.Admin);
+        var isModerator = User.IsModeratorOrHigher();
         
         if (!isAuthor && !isModerator)
         {
@@ -45,7 +44,7 @@ public class UpdateGuideEndpoint(GuideService guideService) : Endpoint<UpdateGui
             return;
         }
 
-        await guideService.UpdateDraftAsync(req.Id, req.Title, req.Description, req.MarkdownContent, req.IconSkyblockId, req.RichBlocks);
+        await guideService.UpdateDraftAsync(req.Id, req.Title, req.Description, req.MarkdownContent, req.IconSkyblockId, req.Tags, req.RichBlocks);
         
         await Send.NoContentAsync(ct);
     }
@@ -58,5 +57,6 @@ public class UpdateGuideRequest
     public string? IconSkyblockId { get; set; }
     public string Description { get; set; } = string.Empty;
     public string MarkdownContent { get; set; } = string.Empty;
+    public List<string>? Tags { get; set; }
     public GuideRichData? RichBlocks { get; set; }
 }

@@ -1,6 +1,7 @@
 using EliteAPI.Data;
 using EliteAPI.Features.AuditLogs.Models;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,7 +44,7 @@ public class AuditLogService(DataContext db, IMessageService messageService)
         int limit = 50,
         string? action = null,
         string? targetType = null,
-        ulong? adminUserId = null,
+        string? adminUserId = null,
         DateTime? fromDate = null,
         DateTime? toDate = null)
     {
@@ -62,9 +63,9 @@ public class AuditLogService(DataContext db, IMessageService messageService)
             query = query.Where(l => l.TargetType == targetType);
         }
 
-        if (adminUserId.HasValue)
+        if (adminUserId.IsNullOrEmpty() && ulong.TryParse(adminUserId, out var adminUserIdValue))
         {
-            query = query.Where(l => l.AdminUserId == adminUserId.Value);
+            query = query.Where(l => l.AdminUserId == adminUserIdValue);
         }
 
         if (fromDate.HasValue)

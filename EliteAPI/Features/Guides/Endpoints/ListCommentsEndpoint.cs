@@ -14,6 +14,11 @@ public class ListCommentsEndpoint(CommentService commentService, GuideService gu
     {
         Get("/guides/{Slug}/comments");
         AllowAnonymous();
+        Summary(s =>
+        {
+            s.Summary = "List comments for a guide";
+            s.Description = "Returns all comments for a specific guide.";
+        });
     }
 
     public override async Task HandleAsync(ListCommentsRequest req, CancellationToken ct)

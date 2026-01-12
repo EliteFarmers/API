@@ -1,5 +1,6 @@
 using EliteAPI.Features.AuditLogs.Services;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Common.Services;
 using EliteAPI.Features.Guides.Services;
 using EliteAPI.Features.Notifications.Models;
 using EliteAPI.Features.Notifications.Services;
@@ -48,10 +49,12 @@ public class SubmitGuideForApprovalEndpoint(GuideService guideService, UserManag
             return;
         }
 
-        // Must be in Draft status
-        if (guide.Status != Models.GuideStatus.Draft && guide.Status != Models.GuideStatus.Rejected)
+        // Must be in Draft, Rejected, or Published status (for updates)
+        if (guide.Status != Models.GuideStatus.Draft && 
+            guide.Status != Models.GuideStatus.Rejected && 
+            guide.Status != Models.GuideStatus.Published)
         {
-            ThrowError("Guide must be in Draft or Rejected status to submit for approval.");
+            ThrowError("Guide must be in Draft, Rejected, or Published status to submit for approval.");
             return;
         }
 
@@ -123,7 +126,7 @@ public class ApproveGuideEndpoint(
             user?.AccountId ?? 0,
             isNewGuide ? "guide_approved" : "guide_edit_approved",
             "Guide",
-            req.GuideId.ToString(),
+            SqidService.Encode(guide.Id),
             $"Approved guide: {guideTitle}");
 
         await Send.NoContentAsync(ct);

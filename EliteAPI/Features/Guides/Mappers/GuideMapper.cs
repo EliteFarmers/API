@@ -25,6 +25,11 @@ public partial class GuideMapper
             Status = guide.Status.ToString(),
             IconSkyblockId = guide.IconSkyblockId,
             Title = guide.ActiveVersion?.Title ?? "Untitled",
+            Views = guide.ViewCount,
+            Score = guide.Score,
+            CreatedAt = guide.CreatedAt,
+            Description = guide.ActiveVersion?.Description ?? "No description.",
+            Tags = guide.Tags.Select(t => t.Tag.Name).ToList(),
             Author = new AuthorDto
             {
                 Id = guide.AuthorId.ToString(),
