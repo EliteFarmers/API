@@ -2,6 +2,7 @@ using System.Net;
 using EliteAPI.Data;
 using EliteAPI.Features.AuditLogs.Endpoints;
 using EliteAPI.Features.Comments.Models.Dtos;
+using EliteAPI.Features.Common.Services;
 using EliteAPI.Features.Guides.Endpoints;
 using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Guides.Models.Dtos;
@@ -99,7 +100,7 @@ public class NotificationFlowTests(GuideTestApp App) : TestBase
         using var scope = App.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DataContext>();
         var auditLog = await db.AdminAuditLogs
-            .Where(l => l.TargetId == guideId.ToString() && l.Action == "guide_approved")
+            .Where(l => l.TargetId == SqidService.Encode(guideId) && l.Action == "guide_approved")
             .FirstOrDefaultAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         auditLog.ShouldNotBeNull();
