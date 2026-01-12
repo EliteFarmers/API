@@ -4,6 +4,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
+using EliteAPI.Features.Auth.Services;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
@@ -80,7 +81,9 @@ builder.Services.AddOpenTelemetry()
 	})
 	.WithTracing(x => {
 		x.AddSource("EliteAPI");
+#if !DEBUG
 		x.AddProcessor(new PyroscopeSpanProcessor());
+#endif
 	});
 
 // Use Cloudflare IP address as the client remote IP address
@@ -205,6 +208,9 @@ using (var scope = app.Services.CreateScope()) {
 
 	var lbRegistration = scope.ServiceProvider.GetRequiredService<ILeaderboardRegistrationService>();
 	await lbRegistration.RegisterLeaderboardsAsync(CancellationToken.None);
+
+	var adminSeeder = scope.ServiceProvider.GetRequiredService<IAdminSeeder>();
+	await adminSeeder.SeedAdminUserAsync();
 }
 
 app.Run();

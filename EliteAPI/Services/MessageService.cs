@@ -105,4 +105,23 @@ public class MessageService(
 			}
 		});
 	}
+
+	public void SendAuditLogMessage(string adminId, string action, string targetType, string? targetId, string? details) {
+		if (string.IsNullOrEmpty(_messagingSettings.AuditLogServer) ||
+		    string.IsNullOrEmpty(_messagingSettings.AuditLogChannel)) return;
+
+		SendMessage(new MessageDto {
+			Name = "audit_log",
+			GuildId = _messagingSettings.AuditLogServer,
+			AuthorId = adminId,
+			Data = new Dictionary<string, object> {
+				{ "channelId", _messagingSettings.AuditLogChannel },
+				{ "adminId", adminId },
+				{ "action", action },
+				{ "targetType", targetType },
+				{ "targetId", targetId ?? "" },
+				{ "details", details ?? "" }
+			}
+		});
+	}
 }

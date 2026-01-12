@@ -4,6 +4,7 @@ using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
+using EliteAPI.Features.Auth.Services;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Textures.Services;
 using EliteAPI.Services;
@@ -36,6 +37,7 @@ public static class ServiceExtensions
 		services.AddSingleton<IMessageService, MessageService>();
 		services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 		services.AddSingleton<IObjectStorageService, ObjectStorageService>();
+		services.AddSingleton<Ganss.Xss.HtmlSanitizer>();
 
 		services.AddHostedService<BackgroundQueueWorker>();
 		services.AddHostedService<MinecraftRendererInitializer>();
@@ -66,6 +68,7 @@ public static class ServiceExtensions
 		var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
 
 		services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
+		services.AddScoped<IAdminSeeder, AdminSeeder>();
 
 		services.AddIdentityCore<ApiUser>(o => {
 				o.ClaimsIdentity.RoleClaimType = ClaimNames.Role;

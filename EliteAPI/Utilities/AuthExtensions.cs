@@ -5,22 +5,43 @@ namespace EliteAPI.Utilities;
 
 public static class AuthExtensions
 {
-	public static string? GetId(this ClaimsPrincipal user) {
-		if (user.Identity?.IsAuthenticated is not true) return null;
+	extension(ClaimsPrincipal user)
+	{
+		public string? GetId() {
+			if (user.Identity?.IsAuthenticated is not true) return null;
 
-		return user.FindFirstValue(ClaimNames.NameId);
-	}
+			return user.FindFirstValue(ClaimNames.NameId);
+		}
 
-	public static ulong? GetDiscordId(this ClaimsPrincipal user) {
-		if (user.Identity?.IsAuthenticated is not true) return null;
+		public ulong? GetDiscordId() {
+			if (user.Identity?.IsAuthenticated is not true) return null;
 
-		if (!ulong.TryParse(user.FindFirstValue(ClaimNames.NameId), out var id)) return null;
+			if (!ulong.TryParse(user.FindFirstValue(ClaimNames.NameId), out var id)) return null;
 
-		return id;
-	}
-	
-	public static string? GetDiscordUsername(this ClaimsPrincipal user) {
-		if (user.Identity?.IsAuthenticated is not true) return null;
-		return user.FindFirstValue(ClaimNames.Name);
+			return id;
+		}
+
+		public string? GetDiscordUsername() {
+			if (user.Identity?.IsAuthenticated is not true) return null;
+			return user.FindFirstValue(ClaimNames.Name);
+		}
+		
+		public bool IsSupportOrHigher() {
+			if (user.Identity?.IsAuthenticated is not true) return false;
+
+			return user.IsInRole(ApiUserPolicies.Support) || user.IsInRole(ApiUserPolicies.Moderator) || user.IsInRole(ApiUserPolicies.Admin);
+		}
+		
+		public bool IsModeratorOrHigher() {
+			if (user.Identity?.IsAuthenticated is not true) return false;
+
+			return user.IsInRole(ApiUserPolicies.Moderator) || user.IsInRole(ApiUserPolicies.Admin);
+		}
+		
+		public bool IsAdmin() {
+			if (user.Identity?.IsAuthenticated is not true) return false;
+
+			return user.IsInRole(ApiUserPolicies.Admin);
+		}
 	}
 }

@@ -22,6 +22,8 @@ public class EliteAccount
 
 	[ForeignKey("UserSettings")] public int? UserSettingsId { get; set; }
 	public UserSettings UserSettings { get; set; } = new();
+	
+	public PermissionFlags Permissions { get; set; } = PermissionFlags.None;
 
 	public bool ActiveRewards { get; set; } = false;
 	public List<UserEntitlement> Entitlements { get; set; } = [];
@@ -31,14 +33,24 @@ public class EliteAccount
 
 	public string GetFormattedIgn(string? uuid = null) {
 		var primaryMinecraftAccount = MinecraftAccounts.FirstOrDefault(a => a.Selected);
-		if (uuid is not null && uuid != primaryMinecraftAccount?.Id) {
-			return MinecraftAccounts.FirstOrDefault(a => a.Id == uuid)?.Name ?? Username;
-		}
-		primaryMinecraftAccount ??= MinecraftAccounts.FirstOrDefault();
 		var prefix = UserSettings.Prefix ?? string.Empty;
 		var suffix = UserSettings.Suffix ?? string.Empty;
+		
+		if (uuid is not null && uuid != primaryMinecraftAccount?.Id) {
+			return MinecraftAccounts.FirstOrDefault(a => a.Id == uuid)?.Name 
+			       ?? $"{prefix} {Username} {suffix}".Trim();
+		}
+		primaryMinecraftAccount ??= MinecraftAccounts.FirstOrDefault();
+
 		var ign = primaryMinecraftAccount?.Name ?? Username;
 		return $"{prefix} {ign} {suffix}".Trim();
+	}
+	
+	public bool HasMinecraftAccount(string? uuid = null) {
+		if (uuid is not null && uuid != MinecraftAccounts.FirstOrDefault(a => a.Selected)?.Id) {
+			return MinecraftAccounts.Exists(a => a.Id == uuid);
+		}
+		return MinecraftAccounts.Count > 0;
 	}
 }
 
@@ -49,7 +61,11 @@ public enum PermissionFlags : ushort
 	Helper = 16,
 	ViewGraphs = 17,
 	Moderator = 32,
-	Admin = 64
+	Admin = 64,
+	
+	// Negative Permissions
+	RestrictedFromComments = 128,
+	RestrictedFromGuides = 256
 }
 
 public class DiscordAccountData

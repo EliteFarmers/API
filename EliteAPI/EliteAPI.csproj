@@ -27,6 +27,7 @@
         </PackageReference>
         <PackageReference Include="FastEndpoints.Security" Version="7.1.1" />
         <PackageReference Include="FastEndpoints.Swagger" Version="7.1.1" />
+        <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
         <PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.1" />
@@ -39,7 +40,7 @@
         <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.1.0" />
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.1" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
-        <PackageReference Include="MinecraftRenderer" Version="0.3.0" />
+        <PackageReference Include="MinecraftRenderer" Version="0.3.1" />
         <PackageReference Include="Npgsql" Version="10.0.1" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
@@ -54,7 +55,8 @@
         </PackageReference>
         <PackageReference Include="Scalar.AspNetCore" Version="2.11.8" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-        <PackageReference Include="SkyblockRepo" Version="0.4.1" />
+        <PackageReference Include="SkyblockRepo" Version="0.4.2" />
+        <PackageReference Include="Sqids" Version="3.2.0" />
         <PackageReference Include="StackExchange.Redis" Version="2.10.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.0" />
@@ -63,6 +65,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="assets\" />
         <Folder Include="Data\Grafana\Datasources\" />
         <Folder Include="Data\Grafana\Dashboards\" />
         <Folder Include="Features\Events\Admin\Members\" />

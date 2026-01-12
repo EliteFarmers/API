@@ -7,5 +7,7 @@ public class MessagingSettings
 	public string? ErrorAlertPing { get; set; }
 	public string? WipeServer { get; set; }
 	public string? WipeChannel { get; set; }
+	public string? AuditLogServer { get; set; }
+	public string? AuditLogChannel { get; set; }
 	public string ChannelName { get; set; } = "eliteapi_messages";
 }

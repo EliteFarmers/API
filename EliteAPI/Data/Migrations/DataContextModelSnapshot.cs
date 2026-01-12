@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.DTOs;
 using EliteAPI.Features.Account.Models;
+using EliteAPI.Features.Guides.Models;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Recap.Models;
@@ -98,6 +99,9 @@ namespace EliteAPI.Data.Migrations
 
                     b.Property<string>("Locale")
                         .HasColumnType("text");
+
+                    b.Property<int>("Permissions")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("UserSettingsId")
                         .HasColumnType("integer");
@@ -307,6 +311,54 @@ namespace EliteAPI.Data.Migrations
                     b.ToTable("DismissedAnnouncements");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.AuditLogs.Models.AdminAuditLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<decimal>("AdminUserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Dictionary<string, object>>("Data")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("TargetId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action");
+
+                    b.HasIndex("AdminUserId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("TargetType");
+
+                    b.ToTable("AdminAuditLogs");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Auth.Models.ApiUser", b =>
                 {
                     b.Property<string>("Id")
@@ -466,6 +518,269 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ConfirmationId");
 
                     b.ToTable("UserConfirmations");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.Comment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AuthorId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DraftContent")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("EditedByAdminId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LiftedElementId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.CommentVote", b =>
+                {
+                    b.Property<int>("CommentId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<short>("Value")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CommentId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommentVotes");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.Guide", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ActiveVersionId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("AuthorId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DraftVersionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IconSkyblockId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActiveVersionId")
+                        .IsUnique();
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("DraftVersionId")
+                        .IsUnique();
+
+                    b.ToTable("Guides");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideBookmark", b =>
+                {
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("GuideId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "GuideId");
+
+                    b.HasIndex("GuideId");
+
+                    b.ToTable("GuideBookmarks");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideTag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("HexColor")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GuideTags");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideTagMapping", b =>
+                {
+                    b.Property<int>("GuideId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("GuideId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("GuideTagMapping");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideVersion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<int>("GuideId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IconItemName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MarkdownContent")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<GuideRichData>("RichBlocks")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuideId");
+
+                    b.ToTable("GuideVersions");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideVote", b =>
+                {
+                    b.Property<int>("GuideId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<short>("Value")
+                        .HasColumnType("smallint");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("GuideId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("GuideVotes");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuild", b =>
@@ -1153,6 +1468,53 @@ namespace EliteAPI.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ShopOrderItems");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Notifications.Models.Notification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Dictionary<string, object>>("Data")
+                        .HasColumnType("jsonb");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsRead");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Profiles.Models.GameModeHistory", b =>
@@ -3378,6 +3740,17 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("EliteAccount");
                 });
 
+            modelBuilder.Entity("EliteAPI.Features.AuditLogs.Models.AdminAuditLog", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "AdminUser")
+                        .WithMany()
+                        .HasForeignKey("AdminUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AdminUser");
+                });
+
             modelBuilder.Entity("EliteAPI.Features.Auth.Models.ApiUser", b =>
                 {
                     b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "Account")
@@ -3413,6 +3786,127 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Confirmation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.Comment", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Guides.Models.Comment", "Parent")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentId");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.CommentVote", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.Comment", "Comment")
+                        .WithMany("Votes")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.Guide", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.GuideVersion", "ActiveVersion")
+                        .WithOne()
+                        .HasForeignKey("EliteAPI.Features.Guides.Models.Guide", "ActiveVersionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Guides.Models.GuideVersion", "DraftVersion")
+                        .WithOne()
+                        .HasForeignKey("EliteAPI.Features.Guides.Models.Guide", "DraftVersionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ActiveVersion");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("DraftVersion");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideBookmark", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.Guide", "Guide")
+                        .WithMany()
+                        .HasForeignKey("GuideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guide");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideTagMapping", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.Guide", "Guide")
+                        .WithMany("Tags")
+                        .HasForeignKey("GuideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Guides.Models.GuideTag", "Tag")
+                        .WithMany("Guides")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guide");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideVersion", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.Guide", "Guide")
+                        .WithMany("Versions")
+                        .HasForeignKey("GuideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guide");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideVote", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Guides.Models.Guide", "Guide")
+                        .WithMany("Votes")
+                        .HasForeignKey("GuideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Guide");
 
                     b.Navigation("User");
                 });
@@ -3824,6 +4318,17 @@ namespace EliteAPI.Data.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("ShopOrder");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Notifications.Models.Notification", b =>
+                {
+                    b.HasOne("EliteAPI.Features.Account.Models.EliteAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.Profiles.Models.GameModeHistory", b =>
@@ -4753,6 +5258,27 @@ namespace EliteAPI.Data.Migrations
             modelBuilder.Entity("EliteAPI.Features.Confirmations.Models.Confirmation", b =>
                 {
                     b.Navigation("UserConfirmations");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.Comment", b =>
+                {
+                    b.Navigation("Replies");
+
+                    b.Navigation("Votes");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.Guide", b =>
+                {
+                    b.Navigation("Tags");
+
+                    b.Navigation("Versions");
+
+                    b.Navigation("Votes");
+                });
+
+            modelBuilder.Entity("EliteAPI.Features.Guides.Models.GuideTag", b =>
+                {
+                    b.Navigation("Guides");
                 });
 
             modelBuilder.Entity("EliteAPI.Features.HypixelGuilds.Models.HypixelGuild", b =>
