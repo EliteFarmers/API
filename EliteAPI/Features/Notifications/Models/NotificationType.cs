@@ -15,5 +15,6 @@ public enum NotificationType
     CommentRejected = 7,
     NewComment = 8,
     NewReply = 9,
-    ShopPurchase = 10
+    ShopPurchase = 10,
+    GuideSubmitted = 11
 }

@@ -14,6 +14,9 @@ using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using EliteAPI.Features.AuditLogs.Services;
+using EliteAPI.Features.Notifications.Models;
+using EliteAPI.Features.Notifications.Services;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -27,6 +30,8 @@ public class MonetizationService(
 	ILogger<MonetizationService> logger,
 	IBadgeService badgeService,
 	IMessageService messageService,
+    NotificationService notificationService,
+    AuditLogService auditLogService,
 	IOptions<ConfigCooldownSettings> coolDowns)
 	: IMonetizationService
 {
@@ -140,6 +145,20 @@ public class MonetizationService(
 		);
 
 		await context.SaveChangesAsync();
+		
+		await auditLogService.LogAsync(
+			userId,
+			"shop_claim",
+			"Product",
+			productId.ToString(),
+			$"Claimed product {productId} {product?.Name ?? "Item"}");
+			
+		await notificationService.CreateAsync(
+			userId,
+			NotificationType.ShopPurchase,
+			"Claim Successful",
+			$"You have claimed **{product?.Name ?? "Item"}**! Use your perk(s) in your account settings!",
+			$"/profile/settings");		
 	}
 
 	public async Task<ActionResult> GrantTestEntitlementAsync(ulong targetId, ulong productId,
@@ -435,6 +454,22 @@ public class MonetizationService(
 						discordEntitlement.UserId.ToString() ?? string.Empty,
 						discordEntitlement.ProductId.ToString()
 					);
+                    
+					var product = await context.Products.FindAsync(discordEntitlement.ProductId);
+
+                    await auditLogService.LogAsync(
+                        discordEntitlement.UserId!.Value,
+                        "shop_purchase",
+                        "Product",
+                        discordEntitlement.ProductId.ToString(),
+                        $"Purchased product {discordEntitlement.ProductId} {product?.Name ?? "Item"}");
+                        
+                    await notificationService.CreateAsync(
+                        discordEntitlement.UserId.Value,
+                        NotificationType.ShopPurchase,
+                        "Purchase Successful",
+                        $"Thank you for purchasing **{product?.Name ?? "Item"}**! Use your perk(s) in your account settings!",
+                        $"/profile/settings");
 				}
 
 				context.ProductAccesses.Add(access);

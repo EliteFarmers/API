@@ -68,12 +68,12 @@ public class GuideService(DataContext db)
 
     public string GetSlug(int id)
     {
-        return EliteAPI.Features.Common.Services.SqidService.Encode(id);
+        return Common.Services.SqidService.Encode(id);
     }
 
     public int? GetIdFromSlug(string slug)
     {
-        return EliteAPI.Features.Common.Services.SqidService.Decode(slug);
+        return Common.Services.SqidService.Decode(slug);
     }
 
     public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown, string? iconSkyblockId, List<string>? tags,

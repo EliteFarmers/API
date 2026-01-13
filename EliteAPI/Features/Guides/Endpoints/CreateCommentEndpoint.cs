@@ -1,6 +1,8 @@
 using EliteAPI.Features.Guides.Services;
+using EliteAPI.Features.AuditLogs.Services;
 using EliteAPI.Features.Comments.Mappers;
 using EliteAPI.Features.Comments.Models.Dtos;
+using EliteAPI.Features.Common.Services;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using FluentValidation;
@@ -9,7 +11,8 @@ namespace EliteAPI.Features.Guides.Endpoints;
 
 public class CreateCommentEndpoint(
     CommentService commentService, 
-    CommentMapper mapper) : Endpoint<CreateCommentRequest, CommentDto>
+    CommentMapper mapper,
+    AuditLogService auditLogService) : Endpoint<CreateCommentRequest, CommentDto>
 {
     public override void Configure()
     {
@@ -34,6 +37,14 @@ public class CreateCommentEndpoint(
         {
             var comment = await commentService.AddCommentAsync(req.GuideId, EliteAPI.Features.Comments.Models.CommentTargetType.Guide, userId.Value, req.Content, req.ParentId, req.LiftedElementId);
             
+            var guideSlug = SqidService.Encode(req.GuideId);
+            await auditLogService.LogAsync(
+                userId.Value, 
+                "comment_submitted", 
+                "Guide", 
+                guideSlug,
+                $"Commented on guide {guideSlug}");
+
             await Send.OkAsync(mapper.ToDto(comment, userId.Value, User.IsSupportOrHigher(), null), ct);
         }
         catch (UnauthorizedAccessException ex)
