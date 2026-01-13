@@ -363,7 +363,7 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     [Fact, Priority(22)]
     public async Task UpdatePublishedGuide_MaintainsVisibility()
     {
-        // 1. Create and publish a guide
+        // Create and publish a guide
         var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -383,17 +383,17 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
                 MarkdownContent = "# Updated"
             });
             
-        // 3. Author submits update (Status: Published -> PendingApproval)
+        // Author submits update (Status: Published -> PendingApproval)
         var submitRsp = await App.RegularUserClient.POSTAsync<SubmitGuideForApprovalEndpoint, SubmitGuideRequest>(
             new SubmitGuideRequest { GuideId = created.Id });
         submitRsp.IsSuccessStatusCode.ShouldBeTrue();
         
-        // 4. Verify Admin sees it in Pending list
+        // Verify Admin sees it in Pending list
         var (adminListRsp, pendingGuides) = await App.ModeratorClient.GETAsync<AdminPendingGuidesEndpoint, List<GuideDto>>();
         adminListRsp.IsSuccessStatusCode.ShouldBeTrue();
         pendingGuides.ShouldContain(g => g.Id == created.Id);
         
-        // 5. Verify Public still sees the OLD version (Title should NOT be "Updated Title Pending")
+        // Verify Public still sees the OLD version (Title should NOT be "Updated Title Pending")
         var (publicListRsp, publicGuides) = await App.AnonymousClient.GETAsync<ListGuidesEndpoint, ListGuidesRequest, List<GuideDto>>(
             new ListGuidesRequest());
         publicListRsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -401,14 +401,40 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
         publicGuide.ShouldNotBeNull();
         publicGuide.Title.ShouldNotBe("Updated Title Pending"); // Helper likely doesn't verify exact content, but existence is key
         
-        // 6. Admin Approves
+        // Admin Approves
         await App.ModeratorClient.POSTAsync<ApproveGuideEndpoint, ApproveGuideRequest>(
             new ApproveGuideRequest { GuideId = created.Id });
             
-        // 7. Verify Public sees NEW version
+        // Verify Public sees NEW version
         var (finalListRsp, finalGuides) = await App.AnonymousClient.GETAsync<ListGuidesEndpoint, ListGuidesRequest, List<GuideDto>>(
             new ListGuidesRequest());
         finalGuides!.First(g => g.Id == created.Id).Title.ShouldBe("Updated Title Pending");
+    }
+
+    [Fact, Priority(23)]
+    public async Task UpdateGuide_Published_AsAuthor_Succeeds()
+    {
+        // Create and publish a guide
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
+            new CreateGuideRequest { Type = GuideType.General });
+        createRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        await App.RegularUserClient.POSTAsync<SubmitGuideForApprovalEndpoint, SubmitGuideRequest>(
+            new SubmitGuideRequest { GuideId = created!.Id });
+        await App.ModeratorClient.POSTAsync<ApproveGuideEndpoint, ApproveGuideRequest>(
+            new ApproveGuideRequest { GuideId = created.Id });
+            
+        // Author tries to update - should succeed
+        var updateRsp = await App.RegularUserClient.PUTAsync<UpdateGuideEndpoint, UpdateGuideRequest>(
+            new UpdateGuideRequest 
+            { 
+                Id = created.Id,
+                Title = "New Draft Title",
+                Description = "New Draft Desc",
+                MarkdownContent = "# New Draft Content"
+            });
+            
+        updateRsp.IsSuccessStatusCode.ShouldBeTrue();
     }
 
     protected override async ValueTask TearDownAsync()

@@ -11,7 +11,11 @@ namespace EliteAPI.Features.Guides.Endpoints;
 /// <summary>
 /// Submit a guide for approval (author only)
 /// </summary>
-public class SubmitGuideForApprovalEndpoint(GuideService guideService, UserManager userManager) : Endpoint<SubmitGuideRequest>
+public class SubmitGuideForApprovalEndpoint(
+    GuideService guideService, 
+    UserManager userManager,
+    AuditLogService auditLogService,
+    NotificationService notificationService) : Endpoint<SubmitGuideRequest>
 {
     public override void Configure()
     {
@@ -59,6 +63,23 @@ public class SubmitGuideForApprovalEndpoint(GuideService guideService, UserManag
         }
 
         await guideService.SubmitForApprovalAsync(req.GuideId);
+        
+        var guideSlug = guideService.GetSlug(guide.Id);
+
+        await auditLogService.LogAsync(
+            user.AccountId!.Value,
+            "guide_submitted",
+            "Guide",
+            guideSlug,
+            "Submitted guide for approval");
+            
+        await notificationService.CreateAsync(
+            user.AccountId!.Value,
+            NotificationType.GuideSubmitted,
+            "Guide Submitted",
+            $"**{guide.DraftVersion?.Title}** has been submitted for approval!",
+            $"/guides/{guideSlug}?draft=true");
+            
         await Send.NoContentAsync(ct);
     }
 }
