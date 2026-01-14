@@ -26,6 +26,17 @@ namespace EliteAPI.Data.Migrations
                 table: "HypixelGuildStats",
                 columns: new[] { "GuildId", "IsLatest" },
                 filter: "\"IsLatest\" = true");
+
+            migrationBuilder.Sql("""
+                                 UPDATE "HypixelGuildStats" s
+                                 SET "IsLatest" = true
+                                 FROM (
+                                     SELECT DISTINCT ON ("GuildId") "Id"
+                                     FROM "HypixelGuildStats"
+                                     ORDER BY "GuildId", "RecordedAt" DESC
+                                 ) AS latest
+                                 WHERE s."Id" = latest."Id";
+                                 """);
         }
 
         /// <inheritdoc />

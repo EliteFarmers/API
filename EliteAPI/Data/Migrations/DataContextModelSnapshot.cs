@@ -962,6 +962,9 @@ namespace EliteAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsLatest")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("MemberCount")
                         .HasColumnType("integer");
 
@@ -974,9 +977,10 @@ namespace EliteAPI.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuildId");
-
                     b.HasIndex("RecordedAt");
+
+                    b.HasIndex("GuildId", "IsLatest")
+                        .HasFilter("\"IsLatest\" = true");
 
                     b.ToTable("HypixelGuildStats");
                 });

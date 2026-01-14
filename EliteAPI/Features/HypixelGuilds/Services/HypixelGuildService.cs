@@ -311,15 +311,8 @@ public class HypixelGuildService(
 				var sql = """
 				           SELECT COUNT(*)::int as "Value"
 				           FROM "HypixelGuilds" g
-				           LEFT JOIN (
-				           	SELECT DISTINCT ON ("GuildId")
-				           		"GuildId",
-				                   ("Collections"->>@collectionId)::bigint as "Amount"
-				               FROM "HypixelGuildStats"
-				               WHERE "Collections"->>@collectionId IS NOT NULL
-				               ORDER BY "GuildId", "RecordedAt" DESC
-				           ) AS c ON c."GuildId" = g."Id"
-				           WHERE c."Amount" IS NOT NULL
+				           INNER JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
+				           WHERE (s."Collections"->>@collectionId)::bigint IS NOT NULL
 				           """;
 				
 				var result = await context.Database
@@ -334,15 +327,8 @@ public class HypixelGuildService(
 				var sql = """
 				           SELECT COUNT(*)::int as "Value"
 				           FROM "HypixelGuilds" g
-				           LEFT JOIN (
-				           	SELECT DISTINCT ON ("GuildId")
-				           		"GuildId",
-				                   ("Skills"->>@skillId)::bigint as "Amount"
-				               FROM "HypixelGuildStats"
-				               WHERE "Skills"->>@skillId IS NOT NULL
-				               ORDER BY "GuildId", "RecordedAt" DESC
-				           ) AS c ON c."GuildId" = g."Id"
-				           WHERE c."Amount" IS NOT NULL
+				           INNER JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
+				           WHERE (s."Skills"->>@skillId)::bigint IS NOT NULL
 				           """;
 				
 				var result = await context.Database
@@ -471,18 +457,11 @@ public class HypixelGuildService(
 		CancellationToken c = default) 
 	{
 		var sql = $"""
-		           SELECT c."Amount", g."Id", g."Name", g."CreatedAt", g."Tag", g."TagColor", g."MemberCount", g."LastUpdated"
+		           SELECT (s."Collections"->>@collectionId)::bigint as "Amount", g."Id", g."Name", g."CreatedAt", g."Tag", g."TagColor", g."MemberCount", g."LastUpdated"
 		           FROM "HypixelGuilds" g
-		           LEFT JOIN (
-		           	SELECT DISTINCT ON ("GuildId")
-		           		"GuildId",
-		                   ("Collections"->>@collectionId)::bigint as "Amount"
-		               FROM "HypixelGuildStats"
-		               WHERE "Collections"->>@collectionId IS NOT NULL
-		               ORDER BY "GuildId", "RecordedAt" DESC
-		           ) AS c ON c."GuildId" = g."Id"
-		           WHERE c."Amount" IS NOT NULL
-		           ORDER BY c."Amount"::bigint DESC
+		           INNER JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
+		           WHERE (s."Collections"->>@collectionId)::bigint IS NOT NULL
+		           ORDER BY (s."Collections"->>@collectionId)::bigint DESC
 		           LIMIT @pageSize OFFSET @offset;
 		           """;
 		
@@ -500,18 +479,11 @@ public class HypixelGuildService(
 		CancellationToken c = default) 
 	{
 		var sql = $"""
-		           SELECT c."Amount", g."Id", g."Name", g."CreatedAt", g."Tag", g."TagColor", g."MemberCount", g."LastUpdated"
+		           SELECT (s."Skills"->>@skillId)::bigint as "Amount", g."Id", g."Name", g."CreatedAt", g."Tag", g."TagColor", g."MemberCount", g."LastUpdated"
 		           FROM "HypixelGuilds" g
-		           LEFT JOIN (
-		           	SELECT DISTINCT ON ("GuildId")
-		           		"GuildId",
-		                   ("Skills"->>@skillId)::bigint as "Amount"
-		               FROM "HypixelGuildStats"
-		               WHERE "Skills"->>@skillId IS NOT NULL
-		               ORDER BY "GuildId", "RecordedAt" DESC
-		           ) AS c ON c."GuildId" = g."Id"
-		           WHERE c."Amount" IS NOT NULL
-		           ORDER BY c."Amount"::bigint DESC
+		           INNER JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
+		           WHERE (s."Skills"->>@skillId)::bigint IS NOT NULL
+		           ORDER BY (s."Skills"->>@skillId)::bigint DESC
 		           LIMIT @pageSize OFFSET @offset;
 		           """;
 		
