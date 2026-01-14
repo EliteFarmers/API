@@ -15,6 +15,8 @@ public class HypixelGuildStats
 	public required string GuildId { get; set; }
 	public DateTimeOffset RecordedAt { get; set; } = DateTimeOffset.UtcNow;
 	
+	public bool IsLatest { get; set; }
+	
 	public int MemberCount { get; set; }
 	
 	public HypixelGuildStat HypixelLevel { get; set; } = new();
@@ -44,6 +46,9 @@ public class HypixelGuildStatsEntityConfiguration : IEntityTypeConfiguration<Hyp
 	public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<HypixelGuildStats> builder)
 	{
 		builder.HasIndex(x => x.RecordedAt);
+		
+		builder.HasIndex(x => new { x.GuildId, x.IsLatest })
+			.HasFilter("\"IsLatest\" = true");
 		
 		builder.HasOne<HypixelGuild>()
 			.WithMany(x => x.Stats)

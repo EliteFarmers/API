@@ -191,6 +191,11 @@ public class HypixelGuildStatsService(
 
 		newStats.Collections = collections;
 		newStats.Skills = skills;
+		newStats.IsLatest = true;
+		
+		await context.HypixelGuildStats
+			.Where(s => s.GuildId == guildId && s.IsLatest)
+			.ExecuteUpdateAsync(s => s.SetProperty(x => x.IsLatest, false), ct);
 		
 		context.HypixelGuildStats.Add(newStats);
 		await context.SaveChangesAsync(ct);
