@@ -352,14 +352,8 @@ public class HypixelGuildService(
 			var statSql = $"""
 			           SELECT COUNT(*)::int as "Value"
 			           FROM "HypixelGuilds" g
-			           INNER JOIN LATERAL (
-			           	SELECT *
-			               FROM "HypixelGuildStats"
-			               WHERE "GuildId" = g."Id"
-			               ORDER BY "RecordedAt" DESC
-			               LIMIT 1
-			           ) AS stats ON true
-			           WHERE g."MemberCount" >= 30 AND stats."{statField}" IS NOT NULL AND stats."{statField}" > 0
+			           INNER JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
+			           WHERE g."MemberCount" >= 30 AND s."{statField}" IS NOT NULL AND s."{statField}" > 0
 			           """;
 		
 			var count = await context.Database
@@ -399,15 +393,9 @@ public class HypixelGuildService(
 		var sql = $"""
 		           SELECT g."Id"
 		           FROM "HypixelGuilds" g
-		           INNER JOIN LATERAL (
-		           	SELECT *
-		               FROM "HypixelGuildStats"
-		               WHERE "GuildId" = g."Id"
-		               ORDER BY "RecordedAt" DESC
-		               LIMIT 1
-		           ) AS stats ON true
-		           WHERE g."MemberCount" >= 30 AND stats."{statField}" IS NOT NULL AND stats."{statField}" > 0
-		           ORDER BY stats."{statField}" {orderDirection}
+		           INNER JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
+		           WHERE g."MemberCount" >= 30 AND s."{statField}" IS NOT NULL AND s."{statField}" > 0
+		           ORDER BY s."{statField}" {orderDirection}
 		           LIMIT @pageSize OFFSET @offset;
 		           """;
 		
@@ -678,20 +666,20 @@ public class HypixelGuildService(
 		// Build the ORDER BY expression using the same logic as GetGuildListAsync
 		var (orderColumn, useStats) = sortBy switch {
 			SortHypixelGuildsBy.MemberCount => ("g.\"MemberCount\"", false),
-			SortHypixelGuildsBy.SkyblockExperience => ("stats.\"SkyblockExperience_Total\"", true),
-			SortHypixelGuildsBy.SkyblockExperienceAverage => ("stats.\"SkyblockExperience_Average\"", true),
-			SortHypixelGuildsBy.SkillLevel => ("stats.\"SkillLevel_Total\"", true),
-			SortHypixelGuildsBy.SkillLevelAverage => ("stats.\"SkillLevel_Average\"", true),
-			SortHypixelGuildsBy.HypixelLevelAverage => ("stats.\"HypixelLevel_Average\"", true),
-			SortHypixelGuildsBy.SlayerExperience => ("stats.\"SlayerExperience_Total\"", true),
-			SortHypixelGuildsBy.CatacombsExperience => ("stats.\"CatacombsExperience_Total\"", true),
-			SortHypixelGuildsBy.FarmingWeight => ("stats.\"FarmingWeight_Total\"", true),
-			SortHypixelGuildsBy.Networth => ("stats.\"Networth_Total\"", true),
-			SortHypixelGuildsBy.NetworthAverage => ("stats.\"Networth_Average\"", true),
-			_ => ("stats.\"SkyblockExperience_Average\"", true)
+			SortHypixelGuildsBy.SkyblockExperience => ("s.\"SkyblockExperience_Total\"", true),
+			SortHypixelGuildsBy.SkyblockExperienceAverage => ("s.\"SkyblockExperience_Average\"", true),
+			SortHypixelGuildsBy.SkillLevel => ("s.\"SkillLevel_Total\"", true),
+			SortHypixelGuildsBy.SkillLevelAverage => ("s.\"SkillLevel_Average\"", true),
+			SortHypixelGuildsBy.HypixelLevelAverage => ("s.\"HypixelLevel_Average\"", true),
+			SortHypixelGuildsBy.SlayerExperience => ("s.\"SlayerExperience_Total\"", true),
+			SortHypixelGuildsBy.CatacombsExperience => ("s.\"CatacombsExperience_Total\"", true),
+			SortHypixelGuildsBy.FarmingWeight => ("s.\"FarmingWeight_Total\"", true),
+			SortHypixelGuildsBy.Networth => ("s.\"Networth_Total\"", true),
+			SortHypixelGuildsBy.NetworthAverage => ("s.\"Networth_Average\"", true),
+			_ => ("s.\"SkyblockExperience_Average\"", true)
 		};
 
-		var whereClause = useStats ? "WHERE stats.\"Id\" IS NOT NULL AND g.\"MemberCount\" >= 30" : "WHERE g.\"MemberCount\" >= 30";
+		var whereClause = useStats ? "WHERE s.\"Id\" IS NOT NULL AND g.\"MemberCount\" >= 30" : "WHERE g.\"MemberCount\" >= 30";
 
 		var sql = $"""
 			WITH ranked_guilds AS (
@@ -700,13 +688,7 @@ public class HypixelGuildService(
 					COALESCE({orderColumn}, 0) as amount,
 					ROW_NUMBER() OVER (ORDER BY COALESCE({orderColumn}, 0) DESC) as rank
 				FROM "HypixelGuilds" g
-				LEFT JOIN LATERAL (
-					SELECT *
-					FROM "HypixelGuildStats"
-					WHERE "GuildId" = g."Id"
-					ORDER BY "RecordedAt" DESC
-					LIMIT 1
-				) stats ON true
+				LEFT JOIN "HypixelGuildStats" s ON s."GuildId" = g."Id" AND s."IsLatest" = true
 				{whereClause}
 			)
 			SELECT rank::int as "Rank", amount::float as "Amount"
