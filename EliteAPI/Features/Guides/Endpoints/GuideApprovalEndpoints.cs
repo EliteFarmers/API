@@ -46,8 +46,9 @@ public class SubmitGuideForApprovalEndpoint(
             return;
         }
 
-        // Only author can submit
-        if (guide.AuthorId != user.AccountId.Value)
+        // Only author or moderator can submit
+        var isModerator = User.IsModeratorOrHigher();
+        if (guide.AuthorId != user.AccountId.Value && !isModerator)
         {
             await Send.ForbiddenAsync(ct);
             return;
@@ -213,7 +214,7 @@ public class RejectGuideEndpoint(
             user?.AccountId ?? 0,
             "guide_rejected",
             "Guide",
-            req.GuideId.ToString(),
+            guideService.GetSlug(guide.Id),
             $"Rejected guide: {guideTitle}" + (string.IsNullOrEmpty(req.Reason) ? "" : $" - Reason: {req.Reason}"));
         
         await Send.NoContentAsync(ct);

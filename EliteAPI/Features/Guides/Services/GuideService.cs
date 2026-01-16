@@ -159,7 +159,7 @@ public class GuideService(DataContext db)
             MarkdownContent = draft.MarkdownContent,
             RichBlocks = draft.RichBlocks,
             CreatedAt = DateTime.UtcNow,
-            IconItemName = draft.IconItemName
+            IconItemName = guide.IconSkyblockId ?? draft.IconItemName
         };
 
         db.GuideVersions.Add(publishedVersion);

@@ -11,10 +11,6 @@ namespace EliteAPI.Features.Guides.Mappers;
 [Mapper]
 public partial class GuideMapper
 {
-    public partial GuideDto GuideToDto(Guide guide);
-
-    public partial UserGuideDto GuideToUserGuideDto(Guide guide);
-    
     [UserMapping(Default = true)]
     public GuideDto ToDto(Guide guide)
     {
