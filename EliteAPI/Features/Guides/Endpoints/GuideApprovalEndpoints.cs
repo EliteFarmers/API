@@ -4,12 +4,13 @@ using EliteAPI.Features.Common.Services;
 using EliteAPI.Features.Guides.Services;
 using EliteAPI.Features.Notifications.Models;
 using EliteAPI.Features.Notifications.Services;
+using EliteAPI.Utilities;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Guides.Endpoints;
 
 /// <summary>
-/// Submit a guide for approval (author only)
+/// Submit a guide for approval
 /// </summary>
 public class SubmitGuideForApprovalEndpoint(
     GuideService guideService, 
