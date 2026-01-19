@@ -298,7 +298,7 @@ public partial class ItemTextureResolver(
 			using var image = renderer.RenderBlockFace(blockId, new MinecraftBlockRenderer.BlockFaceRenderOptions() {
 				Size = size,
 				Direction = BlockFaceDirection.Up,
-				PackIds = packIds ?? []
+				PackIds = packIds is { Count: > 0 } ? packIds.Where(p => p != "vanilla").ToList() : []
 			});
 		
 			using var ms = new MemoryStream();

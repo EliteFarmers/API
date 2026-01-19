@@ -26,8 +26,7 @@ public class GetProfileInventoryRequest : PlayerUuidRequest
 
 internal sealed class GetProfileInventoryEndpoint(
 	IMemberService memberService,
-	DataContext context,
-	ItemTextureResolver itemTextureResolver
+	DataContext context
 ) : Endpoint<GetProfileInventoryRequest, HypixelInventoryDto>
 {
 	public override void Configure() {
@@ -56,28 +55,32 @@ internal sealed class GetProfileInventoryEndpoint(
 		
 		var inventoryDto = inventory.ToDto();
 		
-		var resourceIds = await inventory.Items
-			.Where(i => i.Slot is not null)
-			.ToAsyncEnumerable()
-			.SelectAwait(async item => new { Hash = await itemTextureResolver.GetItemResourceId(item), item.Slot })
-			.ToDictionaryAsync(k => k.Slot!, k => k.Hash, cancellationToken: c);
+		// Commented out for now, this causes issues on the front end because pre-rendered image urls
+		// don't work well with player's changing their texture packs. The fallback on the front end
+		// works fine for now, may revisit later.
 		
-		var renderedItems = await context.HypixelItemTextures
-			.Where(i => resourceIds.Values.Contains(i.RenderHash))
-			.ToListAsync(c);
-		
-		foreach (var item in inventory.Items) {
-			if (item.Slot is null) continue;
-			
-			var resourceId = resourceIds.GetValueOrDefault(item.Slot);
-			var renderedItem = renderedItems.FirstOrDefault(i => i.RenderHash == resourceId);
-			if (renderedItem is null || item.Slot is null) continue;
-			
-			inventoryDto.Items.TryGetValue(item.Slot, out var itemDto);
-			if (itemDto is not null) {
-				itemDto.ImageUrl = renderedItem.ToUrl();
-			}
-		}
+		// var resourceIds = await inventory.Items
+		// 	.Where(i => i.Slot is not null)
+		// 	.ToAsyncEnumerable()
+		// 	.SelectAwait(async item => new { Hash = await itemTextureResolver.GetItemResourceId(item), item.Slot })
+		// 	.ToDictionaryAsync(k => k.Slot!, k => k.Hash, cancellationToken: c);
+		//
+		// var renderedItems = await context.HypixelItemTextures
+		// 	.Where(i => resourceIds.Values.Contains(i.RenderHash))
+		// 	.ToListAsync(c);
+		//
+		// foreach (var item in inventory.Items) {
+		// 	if (item.Slot is null) continue;
+		// 	
+		// 	var resourceId = resourceIds.GetValueOrDefault(item.Slot);
+		// 	var renderedItem = renderedItems.FirstOrDefault(i => i.RenderHash == resourceId);
+		// 	if (renderedItem is null || item.Slot is null) continue;
+		// 	
+		// 	inventoryDto.Items.TryGetValue(item.Slot, out var itemDto);
+		// 	if (itemDto is not null) {
+		// 		itemDto.ImageUrl = renderedItem.ToUrl();
+		// 	}
+		// }
 		
 		await Send.OkAsync(inventoryDto, c);
 	}
