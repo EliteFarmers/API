@@ -16,12 +16,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
-using Pyroscope.OpenTelemetry;
 using SkyblockRepo;
 using IPNetwork = System.Net.IPNetwork;
 
-[assembly: InternalsVisibleTo("Tests")]
+[assembly: InternalsVisibleTo("EliteAPI.Tests")]
 
 DotNetEnv.Env.Load();
 
