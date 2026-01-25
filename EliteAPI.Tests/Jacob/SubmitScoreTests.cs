@@ -11,7 +11,7 @@ namespace EliteAPI.Tests.Jacob;
 [Collection<JacobTestCollection>]
 public class SubmitScoreTests(JacobTestApp App) : TestBase
 {
-    [Fact]
+    [Fact, Priority(1)]
     public async Task SubmitScore_WithoutBotAuth_ReturnsForbidden()
     {
         var (rsp, _) = await App.AnonymousClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -26,7 +26,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         rsp.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
+    [Fact, Priority(2)]
     public async Task SubmitScore_WithBotAuth_MissingDiscordUserId_ReturnsBadRequest()
     {
         var (rsp, _) = await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -41,7 +41,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         rsp.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
+    [Fact, Priority(3)]
     public async Task SubmitScore_WithBotAuth_InvalidGuild_ReturnsNotFound()
     {
         var (rsp, _) = await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -56,7 +56,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         rsp.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Fact, Priority(4)]
     public async Task SubmitScore_WithBotAuth_InvalidLeaderboard_ReturnsNotFound()
     {
         var (rsp, _) = await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -71,7 +71,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         rsp.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
-    [Fact]
+    [Fact, Priority(5)]
     public async Task SubmitScore_ValidRequest_AddsScoreToLeaderboard()
     {
         // Setup: Remove the existing entry for the user so it counts as a new score
@@ -111,7 +111,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         change.Record.Collected.ShouldBe(600000);
     }
 
-    [Fact]
+    [Fact, Priority(6)]
     public async Task SubmitScore_ResponseShape_ContainsCorrectFields()
     {
         var (rsp, result) = await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -138,7 +138,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         }
     }
 
-    [Fact]
+    [Fact, Priority(7)]
     public async Task SubmitScore_LowerScore_NotAddedToFullLeaderboard()
     {
         // First three players submit their scores
@@ -186,7 +186,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
         wheatChange.ShouldBeNull();
     }
 
-    [Fact]
+    [Fact, Priority(8)]
     public async Task SubmitScore_BannedPlayer_ReturnsForbidden()
     {
         // Directly ban player in DB since we can't use admin endpoints without proper auth

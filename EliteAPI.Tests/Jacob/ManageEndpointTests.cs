@@ -14,7 +14,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 {
 	#region Authentication Tests
 
-	[Fact]
+	[Fact, Priority(1)]
 	public async Task BanPlayer_WithoutAuth_ReturnsUnauthorized() {
 		var rsp = await App.AnonymousClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
@@ -27,7 +27,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
-	[Fact]
+	[Fact, Priority(2)]
 	public async Task BanParticipation_WithoutAuth_ReturnsUnauthorized() {
 		var rsp = await App.AnonymousClient
 			.POSTAsync<BanParticipationFromJacobLeaderboardEndpoint, BanParticipationRequest>(
@@ -43,7 +43,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
-	[Fact]
+	[Fact, Priority(3)]
 	public async Task AddExcludedTimespan_WithoutAuth_ReturnsUnauthorized() {
 		var rsp = await App.AnonymousClient
 			.POSTAsync<AddJacobLeaderboardExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
@@ -59,7 +59,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
-	[Fact]
+	[Fact, Priority(4)]
 	public async Task BanPlayer_AsAdmin_BansPlayerAndRemovesFromLeaderboards() {
 		// First submit a score so there's something on the leaderboard
 		await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -105,7 +105,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 	}
 
-	[Fact]
+	[Fact, Priority(5)]
 	public async Task BanPlayer_AlreadyBanned_ReturnsConflict() {
 		// First ban the player
 		await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
@@ -129,7 +129,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		rsp.StatusCode.ShouldBe(HttpStatusCode.Conflict);
 	}
 
-	[Fact]
+	[Fact, Priority(6)]
 	public async Task BanPlayer_InvalidGuild_ReturnsNotFound() {
 		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
@@ -142,7 +142,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		rsp.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 	}
 
-	[Fact]
+	[Fact, Priority(7)]
 	public async Task UnbanPlayer_AsAdmin_UnbansPlayer() {
 		// First ban a player
 		await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
@@ -179,7 +179,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 	}
 
-	[Fact]
+	[Fact, Priority(8)]
 	public async Task BanParticipation_AsAdmin_BansParticipationAndRemovesFromLeaderboards() {
 		// First submit a score
 		var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - 3600;
@@ -233,7 +233,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 	}
 
-	[Fact]
+	[Fact, Priority(9)]
 	public async Task UnbanParticipation_AsAdmin_UnbansParticipation() {
 		// Ban a participation first
 		var timestamp = 1234567890;
@@ -272,7 +272,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 
 	#endregion
 
-	[Fact]
+	[Fact, Priority(10)]
 	public async Task AddExcludedTimespan_AsAdmin_AddsTimespan() {
 		var start = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds();
 		var end = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -300,7 +300,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 			t.Start == start && t.End == end && t.Reason == reason);
 	}
 
-	[Fact]
+	[Fact, Priority(11)]
 	public async Task RemoveExcludedTimespan_AsAdmin_RemovesTimespan() {
 		var start = DateTimeOffset.UtcNow.AddHours(-2).ToUnixTimeSeconds();
 		var end = DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeSeconds();
