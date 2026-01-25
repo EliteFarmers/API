@@ -5,13 +5,18 @@ using FastEndpoints;
 
 namespace EliteAPI.Features.Guilds.User.Jacob.Manage;
 
-internal sealed class UnbanParticipationEndpoint(
+public class UnbanParticipationRequest : JacobManageRequest
+{
+	public required string ParticipationId { get; set; }
+}
+
+internal sealed class UnbanParticipationFromJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<UnbanParticipationRequest>
 {
 	public override void Configure() {
-		Delete("/user/guild/{DiscordId}/jacob/participation/{ParticipationId}");
+		Delete("/guilds/{DiscordId}/jacob/bans/participations/{ParticipationId}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Unban a specific participation"; });
@@ -35,9 +40,4 @@ internal sealed class UnbanParticipationEndpoint(
 		await context.SaveChangesAsync(c);
 		await Send.NoContentAsync(c);
 	}
-}
-
-public class UnbanParticipationRequest : JacobManageRequest
-{
-	public required string ParticipationId { get; set; }
 }

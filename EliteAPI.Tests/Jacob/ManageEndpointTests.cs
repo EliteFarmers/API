@@ -16,7 +16,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 
 	[Fact]
 	public async Task BanPlayer_WithoutAuth_ReturnsUnauthorized() {
-		var rsp = await App.AnonymousClient.POSTAsync<BanPlayerEndpoint, BanPlayerRequest>(
+		var rsp = await App.AnonymousClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
 				Body = new() {
@@ -29,30 +29,32 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 
 	[Fact]
 	public async Task BanParticipation_WithoutAuth_ReturnsUnauthorized() {
-		var rsp = await App.AnonymousClient.POSTAsync<BanParticipationEndpoint, BanParticipationRequest>(
-			new BanParticipationRequest {
-				DiscordId = (long)JacobTestApp.TestGuildId,
-				Body = new() {
-					Uuid = JacobTestApp.TestPlayerUuid,
-					Crop = "Wheat",
-					Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-				}
-			});
+		var rsp = await App.AnonymousClient
+			.POSTAsync<BanParticipationFromJacobLeaderboardEndpoint, BanParticipationRequest>(
+				new BanParticipationRequest {
+					DiscordId = (long)JacobTestApp.TestGuildId,
+					Body = new() {
+						Uuid = JacobTestApp.TestPlayerUuid,
+						Crop = "Wheat",
+						Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+					}
+				});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
 
 	[Fact]
 	public async Task AddExcludedTimespan_WithoutAuth_ReturnsUnauthorized() {
-		var rsp = await App.AnonymousClient.POSTAsync<AddExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
-			new AddExcludedTimespanRequest {
-				DiscordId = (long)JacobTestApp.TestGuildId,
-				Body = new() {
-					Start = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds(),
-					End = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-					Reason = "Test exclusion"
-				}
-			});
+		var rsp = await App.AnonymousClient
+			.POSTAsync<AddJacobLeaderboardExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
+				new AddExcludedTimespanRequest {
+					DiscordId = (long)JacobTestApp.TestGuildId,
+					Body = new() {
+						Start = DateTimeOffset.UtcNow.AddDays(-1).ToUnixTimeSeconds(),
+						End = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+						Reason = "Test exclusion"
+					}
+				});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
 	}
@@ -79,7 +81,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 
 		// Ban the player via admin endpoint
-		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerEndpoint, BanPlayerRequest>(
+		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
 				Body = new() {
@@ -106,7 +108,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 	[Fact]
 	public async Task BanPlayer_AlreadyBanned_ReturnsConflict() {
 		// First ban the player
-		await App.GuildAdminClient.POSTAsync<BanPlayerEndpoint, BanPlayerRequest>(
+		await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
 				Body = new() {
@@ -115,7 +117,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 			});
 
 		// Try to ban again
-		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerEndpoint, BanPlayerRequest>(
+		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
 
@@ -129,7 +131,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 
 	[Fact]
 	public async Task BanPlayer_InvalidGuild_ReturnsNotFound() {
-		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerEndpoint, BanPlayerRequest>(
+		var rsp = await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
 				DiscordId = 999999999999999999,
 				Body = new() {
@@ -143,7 +145,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 	[Fact]
 	public async Task UnbanPlayer_AsAdmin_UnbansPlayer() {
 		// First ban a player
-		await App.GuildAdminClient.POSTAsync<BanPlayerEndpoint, BanPlayerRequest>(
+		await App.GuildAdminClient.POSTAsync<BanPlayerFromJacobLeaderboardEndpoint, BanPlayerRequest>(
 			new BanPlayerRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
 				Body = new() {
@@ -160,13 +162,10 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 
 		// Unban via endpoint
-		var rsp = await App.GuildAdminClient.DELETEAsync<UnbanPlayerEndpoint, BanPlayerRequest>(
-			new BanPlayerRequest {
+		var rsp = await App.GuildAdminClient.DELETEAsync<UnbanPlayerFromJacobLeaderboardEndpoint, UnbanPlayerRequest>(
+			new UnbanPlayerRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
-
-				Body = new() {
-					PlayerUuid = JacobTestApp.TestPlayer4Uuid
-				}
+				PlayerUuid = JacobTestApp.TestPlayer4Uuid
 			});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
@@ -206,15 +205,16 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 
 		// Ban the participation
-		var rsp = await App.GuildAdminClient.POSTAsync<BanParticipationEndpoint, BanParticipationRequest>(
-			new BanParticipationRequest {
-				DiscordId = (long)JacobTestApp.TestGuildId,
-				Body = new() {
-					Uuid = JacobTestApp.TestPlayerUuid,
-					Crop = "Wheat",
-					Timestamp = recordTimestamp
-				}
-			});
+		var rsp = await App.GuildAdminClient
+			.POSTAsync<BanParticipationFromJacobLeaderboardEndpoint, BanParticipationRequest>(
+				new BanParticipationRequest {
+					DiscordId = (long)JacobTestApp.TestGuildId,
+					Body = new() {
+						Uuid = JacobTestApp.TestPlayerUuid,
+						Crop = "Wheat",
+						Timestamp = recordTimestamp
+					}
+				});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
@@ -252,11 +252,12 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		}
 
 		// Unban
-		var rsp = await App.GuildAdminClient.DELETEAsync<UnbanParticipationEndpoint, UnbanParticipationRequest>(
-			new UnbanParticipationRequest {
-				DiscordId = (long)JacobTestApp.TestGuildId,
-				ParticipationId = key
-			});
+		var rsp = await App.GuildAdminClient
+			.DELETEAsync<UnbanParticipationFromJacobLeaderboardEndpoint, UnbanParticipationRequest>(
+				new UnbanParticipationRequest {
+					DiscordId = (long)JacobTestApp.TestGuildId,
+					ParticipationId = key
+				});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
@@ -277,15 +278,16 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		var end = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 		var reason = "Test maintenance window";
 
-		var rsp = await App.GuildAdminClient.POSTAsync<AddExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
-			new AddExcludedTimespanRequest {
-				DiscordId = (long)JacobTestApp.TestGuildId,
-				Body = new() {
-					Start = start,
-					End = end,
-					Reason = reason
-				}
-			});
+		var rsp = await App.GuildAdminClient
+			.POSTAsync<AddJacobLeaderboardExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
+				new AddExcludedTimespanRequest {
+					DiscordId = (long)JacobTestApp.TestGuildId,
+					Body = new() {
+						Start = start,
+						End = end,
+						Reason = reason
+					}
+				});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
@@ -305,7 +307,7 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		var reason = "To be removed";
 
 		// Add a timespan first
-		await App.GuildAdminClient.POSTAsync<AddExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
+		await App.GuildAdminClient.POSTAsync<AddJacobLeaderboardExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
 			new AddExcludedTimespanRequest {
 				DiscordId = (long)JacobTestApp.TestGuildId,
 
@@ -317,15 +319,14 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 			});
 
 		// Remove it
-		var rsp = await App.GuildAdminClient.DELETEAsync<RemoveExcludedTimespanEndpoint, RemoveExcludedTimespanRequest>(
-			new RemoveExcludedTimespanRequest {
-				DiscordId = (long)JacobTestApp.TestGuildId,
+		var rsp = await App.GuildAdminClient
+			.DELETEAsync<RemoveJacobLeaderboardExcludedTimespanEndpoint, RemoveExcludedTimespanRequest>(
+				new RemoveExcludedTimespanRequest {
+					DiscordId = (long)JacobTestApp.TestGuildId,
 
-				Body = new() {
 					Start = start,
 					End = end
-				}
-			});
+				});
 
 		rsp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 

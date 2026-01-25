@@ -19,13 +19,13 @@ public class AddExcludedTimespanRequest : JacobManageRequest
 	}
 }
 
-internal sealed class AddExcludedTimespanEndpoint(
+internal sealed class AddJacobLeaderboardExcludedTimespanEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<AddExcludedTimespanRequest>
 {
 	public override void Configure() {
-		Post("/user/guild/{DiscordId}/jacob/timespan");
+		Post("/guilds/{DiscordId}/jacob/exclusions/timespans");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Add an excluded timespan"; });

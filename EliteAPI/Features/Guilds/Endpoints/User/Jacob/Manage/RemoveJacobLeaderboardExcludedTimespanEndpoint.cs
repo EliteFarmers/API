@@ -7,23 +7,17 @@ namespace EliteAPI.Features.Guilds.User.Jacob.Manage;
 
 public class RemoveExcludedTimespanRequest : JacobManageRequest
 {
-	[FromBody] 
-	public required RemoveExcludedTimespanRequestBody Body { get; set; }
-	
-	public class RemoveExcludedTimespanRequestBody
-	{
-		public required long Start { get; set; }
-		public required long End { get; set; }
-	}
+	[FromQuery] public required long Start { get; set; }
+	[FromQuery] public required long End { get; set; }
 }
 
-internal sealed class RemoveExcludedTimespanEndpoint(
+internal sealed class RemoveJacobLeaderboardExcludedTimespanEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<RemoveExcludedTimespanRequest>
 {
 	public override void Configure() {
-		Delete("/user/guild/{DiscordId}/jacob/timespan");
+		Delete("/guilds/{DiscordId}/jacob/exclusions/timespans");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Remove an excluded timespan"; });
@@ -37,7 +31,8 @@ internal sealed class RemoveExcludedTimespanEndpoint(
 		}
 
 		var feature = guild.Features.JacobLeaderboard;
-		var removed = feature.ExcludedTimespans.RemoveAll(t => t.Start == request.Body.Start && t.End == request.Body.End);
+		var removed =
+			feature.ExcludedTimespans.RemoveAll(t => t.Start == request.Start && t.End == request.End);
 
 		if (removed == 0) {
 			ThrowError("Timespan not found.", StatusCodes.Status404NotFound);

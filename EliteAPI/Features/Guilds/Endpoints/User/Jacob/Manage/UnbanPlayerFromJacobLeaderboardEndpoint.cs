@@ -10,13 +10,13 @@ public class UnbanPlayerRequest : JacobManageRequest
 	public required string PlayerUuid { get; set; }
 }
 
-internal sealed class UnbanPlayerEndpoint(
+internal sealed class UnbanPlayerFromJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<UnbanPlayerRequest>
 {
 	public override void Configure() {
-		Delete("/user/guild/{DiscordId}/jacob/bans/{PlayerUuid}");
+		Delete("/guilds/{DiscordId}/jacob/bans/players/{PlayerUuid}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Unban a player from Jacob leaderboards"; });

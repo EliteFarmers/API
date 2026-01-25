@@ -20,13 +20,13 @@ public class BanParticipationRequest : JacobManageRequest
 	}
 }
 
-internal sealed class BanParticipationEndpoint(
+internal sealed class BanParticipationFromJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<BanParticipationRequest>
 {
 	public override void Configure() {
-		Post("/user/guild/{DiscordId}/jacob/participation/ban");
+		Post("/guilds/{DiscordId}/jacob/bans/participations");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Ban a specific participation from the leaderboard"; });

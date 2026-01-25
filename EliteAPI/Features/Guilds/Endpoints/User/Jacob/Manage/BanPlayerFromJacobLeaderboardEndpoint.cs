@@ -17,13 +17,13 @@ public class BanPlayerRequest : JacobManageRequest
 	}
 }
 
-internal sealed class BanPlayerEndpoint(
+internal sealed class BanPlayerFromJacobLeaderboardEndpoint(
 	IDiscordService discordService,
 	DataContext context
 ) : Endpoint<BanPlayerRequest>
 {
 	public override void Configure() {
-		Post("/user/guild/{DiscordId}/jacob/player/ban");
+		Post("/guilds/{DiscordId}/jacob/bans/players");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Ban a player from all Jacob leaderboards"; });
