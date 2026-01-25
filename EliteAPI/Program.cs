@@ -18,6 +18,10 @@ using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
 using SkyblockRepo;
 using IPNetwork = System.Net.IPNetwork;
+#if !DEBUG
+using OpenTelemetry.Trace;
+using Pyroscope.OpenTelemetry;
+#endif
 
 [assembly: InternalsVisibleTo("EliteAPI.Tests")]
 
