@@ -122,7 +122,7 @@ public class GuideTestApp : AppFixture<Program>
         // Create and migrate database
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
         
         // Seed test users
         await SeedTestUsers(db);

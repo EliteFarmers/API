@@ -174,7 +174,7 @@ public class JacobTestApp : AppFixture<Program>
         
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-        await db.Database.EnsureCreatedAsync();
+        await db.Database.MigrateAsync();
         
         await SeedTestData(db);
         
