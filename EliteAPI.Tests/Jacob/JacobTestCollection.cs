@@ -1,4 +1,4 @@
 namespace EliteAPI.Tests.Jacob;
 
-[CollectionDefinition("Jacob")]
+[CollectionDefinition("Jacob", DisableParallelization = true)]
 public class JacobTestCollection : ICollectionFixture<JacobTestApp>;
