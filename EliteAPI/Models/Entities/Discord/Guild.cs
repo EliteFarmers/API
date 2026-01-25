@@ -82,6 +82,7 @@ public class GuildJacobLeaderboardFeature
 
 	public List<DiscordRole> BlockedRoles { get; set; } = new();
 	public List<ulong> BlockedUsers { get; set; } = new();
+	public List<string> BlockedPlayerUuids { get; set; } = new();
 	public List<DiscordRole> RequiredRoles { get; set; } = new();
 
 	public List<string> ExcludedParticipations { get; set; } = new();

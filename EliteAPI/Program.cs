@@ -16,12 +16,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
-using Pyroscope.OpenTelemetry;
 using SkyblockRepo;
 using IPNetwork = System.Net.IPNetwork;
 
-[assembly: InternalsVisibleTo("Tests")]
+[assembly: InternalsVisibleTo("EliteAPI.Tests")]
 
 DotNetEnv.Env.Load();
 
@@ -38,6 +36,7 @@ builder.Services.AddEliteSwaggerDocumentation();
 
 builder.Services.AddEliteServices();
 builder.Services.AddEliteScopedServices();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddEliteRateLimiting();
 builder.AddEliteBackgroundJobs();
 
@@ -199,7 +198,6 @@ using (var scope = app.Services.CreateScope()) {
 
 	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
 	try {
-		await db.Database.EnsureCreatedAsync();
 		await db.Database.MigrateAsync();
 	}
 	catch (Exception e) {

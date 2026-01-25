@@ -65,7 +65,9 @@
       "COCOA",
       "CACTUS",
       "SUGAR_CANE",
-      "NETHER_WARTS"
+      "NETHER_WARTS",
+      "FLOWER",
+      "SUNFLOWER"
     ],
     "PestIds": {
       "0": "pest_mite_1",

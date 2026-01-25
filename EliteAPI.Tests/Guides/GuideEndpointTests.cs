@@ -151,11 +151,17 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
             new CreateGuideRequest { Type = GuideType.General });
         createRsp.IsSuccessStatusCode.ShouldBeTrue();
         
-        // Moderator (not author) tries to submit - should fail
+        // Moderator (not author) tries to submit - should pass
         var submitRsp = await App.ModeratorClient.POSTAsync<SubmitGuideForApprovalEndpoint, SubmitGuideRequest>(
             new SubmitGuideRequest { GuideId = created!.Id });
         
-        submitRsp.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        submitRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        // Random anonymous user tries to submit - should fail
+        var submitRsp2 = await App.AnonymousClient.POSTAsync<SubmitGuideForApprovalEndpoint, SubmitGuideRequest>(
+            new SubmitGuideRequest { GuideId = created.Id });
+        
+        submitRsp2.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     [Fact, Priority(11)]
