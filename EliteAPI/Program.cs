@@ -36,6 +36,7 @@ builder.Services.AddEliteSwaggerDocumentation();
 
 builder.Services.AddEliteServices();
 builder.Services.AddEliteScopedServices();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddEliteRateLimiting();
 builder.AddEliteBackgroundJobs();
 

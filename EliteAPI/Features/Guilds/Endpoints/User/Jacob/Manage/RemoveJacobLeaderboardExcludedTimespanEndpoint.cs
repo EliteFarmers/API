@@ -7,8 +7,8 @@ namespace EliteAPI.Features.Guilds.User.Jacob.Manage;
 
 public class RemoveExcludedTimespanRequest : JacobManageRequest
 {
-	[FromQuery] public required long Start { get; set; }
-	[FromQuery] public required long End { get; set; }
+	public required long Start { get; set; }
+	public required long End { get; set; }
 }
 
 internal sealed class RemoveJacobLeaderboardExcludedTimespanEndpoint(
@@ -17,7 +17,7 @@ internal sealed class RemoveJacobLeaderboardExcludedTimespanEndpoint(
 ) : Endpoint<RemoveExcludedTimespanRequest>
 {
 	public override void Configure() {
-		Delete("/guilds/{DiscordId}/jacob/exclusions/timespans");
+		Delete("/guilds/{DiscordId}/jacob/exclusions/timespans/{Start}/{End}");
 		Options(o => o.WithMetadata(new GuildAdminAuthorizeAttribute()));
 		Version(0);
 		Summary(s => { s.Summary = "Remove an excluded timespan"; });
@@ -31,6 +31,7 @@ internal sealed class RemoveJacobLeaderboardExcludedTimespanEndpoint(
 		}
 
 		var feature = guild.Features.JacobLeaderboard;
+		
 		var removed =
 			feature.ExcludedTimespans.RemoveAll(t => t.Start == request.Start && t.End == request.End);
 
