@@ -74,7 +74,7 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
     [Fact, Priority(5)]
     public async Task SubmitScore_ValidRequest_AddsScoreToLeaderboard()
     {
-        // Setup: Ensure clean state - remove existing entry and unban player if banned
+        // Setup: Ensure clean state - clear leaderboard and unban player if banned
         using (var scope = App.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<DataContext>();
@@ -82,12 +82,8 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
             var feature = guild!.Features.JacobLeaderboard!;
             var lb = feature.Leaderboards.First(l => l.Id == JacobTestApp.TestLeaderboardId);
             
-            // Remove existing leaderboard entry
-            var entry = lb.Crops.Wheat.FirstOrDefault(e => e.Uuid == JacobTestApp.TestPlayerUuid);
-            if (entry != null)
-            {
-               lb.Crops.Wheat.Remove(entry);
-            }
+            // Clear all Wheat entries to ensure fresh submission is considered
+            lb.Crops.Wheat.Clear();
             
             // Ensure player is not banned
             feature.BlockedPlayerUuids.Remove(JacobTestApp.TestPlayerUuid);

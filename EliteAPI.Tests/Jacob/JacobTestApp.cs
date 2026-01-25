@@ -289,17 +289,6 @@ public class JacobTestApp : AppFixture<Program>
         };
         db.Profiles.Add(profile);
         
-        var profileMember = new ProfileMember
-        {
-            Id = Guid.NewGuid(),
-            PlayerUuid = playerUuid,
-            ProfileId = profile.ProfileId,
-            Profile = profile,
-            IsSelected = true,
-            LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-        };
-        db.ProfileMembers.Add(profileMember);
-        
         var jacobContest = new JacobContest
         {
             Id = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + (long)userId,
@@ -309,15 +298,16 @@ public class JacobTestApp : AppFixture<Program>
         };
         db.JacobContests.Add(jacobContest);
         
+        var profileMemberId = Guid.NewGuid();
+        
         var jacobData = new JacobData
         {
-            ProfileMemberId = profileMember.Id,
+            ProfileMemberId = profileMemberId,
             Participations = 1,
             Contests = [
                 new ContestParticipation
                 {
-                    ProfileMemberId = profileMember.Id,
-                    ProfileMember = profileMember,
+                    ProfileMemberId = profileMemberId,
                     JacobContestId = jacobContest.Id,
                     JacobContest = jacobContest,
                     Collected = collected,
@@ -326,7 +316,19 @@ public class JacobTestApp : AppFixture<Program>
                 }
             ]
         };
-        profileMember.JacobData = jacobData;
+        
+        var profileMember = new ProfileMember
+        {
+            Id = profileMemberId,
+            PlayerUuid = playerUuid,
+            ProfileId = profile.ProfileId,
+            Profile = profile,
+            IsSelected = true,
+            LastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+            JacobData = jacobData
+        };
+        
+        db.ProfileMembers.Add(profileMember);
     }
 
     protected override async ValueTask TearDownAsync()

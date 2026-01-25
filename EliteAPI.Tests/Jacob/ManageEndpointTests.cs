@@ -317,21 +317,21 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 		var end = DateTimeOffset.UtcNow.AddHours(-1).ToUnixTimeSeconds();
 		var reason = "To be removed";
 
-		// Add a timespan directly to DB to avoid tracking conflicts
-		using (var scope = App.Services.CreateScope()) {
-			var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-			var guild = await db.Guilds.FirstOrDefaultAsync(g => g.Id == JacobTestApp.TestGuildId,
-				cancellationToken: TestContext.Current.CancellationToken);
-			guild!.Features.JacobLeaderboard!.ExcludedTimespans.Add(new ExcludedTimespan {
-				Start = start,
-				End = end,
-				Reason = reason
+		// Add a timespan via endpoint
+		var addRsp = await App.GuildAdminClient.POSTAsync<AddJacobLeaderboardExcludedTimespanEndpoint, AddExcludedTimespanRequest>(
+			new AddExcludedTimespanRequest {
+				DiscordId = (long)JacobTestApp.TestGuildId,
+				Body = new() {
+					Start = start,
+					End = end,
+					Reason = reason
+				}
 			});
-			db.Guilds.Update(guild);
-			await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-		}
 
-		// Verify it was added
+		// Verify add succeeded
+		addRsp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+		// Verify it was added in DB
 		using (var scope = App.Services.CreateScope()) {
 			var db = scope.ServiceProvider.GetRequiredService<DataContext>();
 			var guild = await db.Guilds.FirstOrDefaultAsync(g => g.Id == JacobTestApp.TestGuildId,
@@ -345,7 +345,6 @@ public class ManageEndpointTests(JacobTestApp App) : TestBase
 			.DELETEAsync<RemoveJacobLeaderboardExcludedTimespanEndpoint, RemoveExcludedTimespanRequest>(
 				new RemoveExcludedTimespanRequest {
 					DiscordId = (long)JacobTestApp.TestGuildId,
-
 					Start = start,
 					End = end
 				});
