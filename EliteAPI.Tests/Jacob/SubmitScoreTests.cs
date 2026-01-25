@@ -74,19 +74,29 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
     [Fact, Priority(5)]
     public async Task SubmitScore_ValidRequest_AddsScoreToLeaderboard()
     {
-        // Setup: Remove the existing entry for the user so it counts as a new score
+        // Setup: Ensure clean state - remove existing entry and unban player if banned
         using (var scope = App.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<DataContext>();
             var guild = await db.Guilds.FirstOrDefaultAsync(g => g.Id == JacobTestApp.TestGuildId, cancellationToken: TestContext.Current.CancellationToken);
-            var lb = guild!.Features.JacobLeaderboard!.Leaderboards.First(l => l.Id == JacobTestApp.TestLeaderboardId);
+            var feature = guild!.Features.JacobLeaderboard!;
+            var lb = feature.Leaderboards.First(l => l.Id == JacobTestApp.TestLeaderboardId);
+            
+            // Remove existing leaderboard entry
             var entry = lb.Crops.Wheat.FirstOrDefault(e => e.Uuid == JacobTestApp.TestPlayerUuid);
             if (entry != null)
             {
                lb.Crops.Wheat.Remove(entry);
-               db.Guilds.Update(guild);
-               await db.SaveChangesAsync(TestContext.Current.CancellationToken);
             }
+            
+            // Ensure player is not banned
+            feature.BlockedPlayerUuids.Remove(JacobTestApp.TestPlayerUuid);
+            
+            // Ensure participation is not excluded
+            feature.ExcludedParticipations.RemoveAll(p => p.Contains(JacobTestApp.TestPlayerUuid));
+            
+            db.Guilds.Update(guild);
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
         var (rsp, result) = await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
@@ -114,6 +124,19 @@ public class SubmitScoreTests(JacobTestApp App) : TestBase
     [Fact, Priority(6)]
     public async Task SubmitScore_ResponseShape_ContainsCorrectFields()
     {
+        // Ensure TestPlayer2 is unbanned in case a previous test banned them
+        using (var scope = App.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var guild = await db.Guilds.FirstOrDefaultAsync(g => g.Id == JacobTestApp.TestGuildId, cancellationToken: TestContext.Current.CancellationToken);
+            if (guild!.Features.JacobLeaderboard!.BlockedPlayerUuids.Contains(JacobTestApp.TestPlayer2Uuid))
+            {
+                guild.Features.JacobLeaderboard.BlockedPlayerUuids.Remove(JacobTestApp.TestPlayer2Uuid);
+                db.Guilds.Update(guild);
+                await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            }
+        }
+
         var (rsp, result) = await App.BotClient.POSTAsync<SubmitScoreEndpoint, SubmitScoreRequest, SubmitScoreResponse>(
             new SubmitScoreRequest
             {
