@@ -243,6 +243,7 @@ public partial class ProfileProcessorService(
 			}
 
 			profile.ProfileName = profileData.CuteName;
+			context.Profiles.Update(profile);
 		}
 		else {
 			context.Profiles.Add(profile);
