@@ -727,7 +727,9 @@ public class LbService(
 				if (!skipUpdate) {
 					var isActive = member.SkillsApiEnabled && await memberService.IsPlayerActiveAsync(member.Id);
 					if (isActive) {
-						await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, 10);
+						await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, RequestedResources.ProfilesOnly with {
+							CooldownMultiplier = 10
+						});
 					}
 				}
 

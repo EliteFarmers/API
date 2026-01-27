@@ -18,15 +18,44 @@ namespace EliteAPI.Features.Profiles.Services;
 public interface IMemberService
 {
 	Task UpdatePlayerIfNeeded(string playerUuid, float cooldownMultiplier = 1);
+	Task UpdatePlayerIfNeeded(string playerUuid, RequestedResources resources);
 	Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1);
 	Task<Guid?> GetProfileMemberId(string playerUuid, string profileId);
-	Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, float cooldownMultiplier = 1);
-	Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid, float cooldownMultiplier = 1);
+	Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid);
+	Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid);
+	Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, RequestedResources resources);
+	Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid, RequestedResources resources);
 	Task<IQueryable<ProfileMember>?> ProfileMemberIgnQuery(string playerName);
 
 	Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null);
-	Task RefreshProfiles(string playerUuid);
+	Task RefreshProfiles(string playerUuid, RequestedResources resources);
 	Task<bool> IsPlayerActiveAsync(Guid profileMemberId);
+}
+
+public record RequestedResources
+{
+	public float CooldownMultiplier { get; set; } = 1;
+	public bool Profiles { get; set; } = true;
+	public bool PlayerData { get; set; } = true;
+	public bool Museum { get; set; } = true;
+	public bool Guild { get; set; } = true;
+	public bool Garden { get; set; } = true;
+
+	public static RequestedResources All => new() {
+		Profiles = true,
+		PlayerData = true,
+		Museum = true,
+		Guild = true,
+		Garden = true
+	};
+
+	public static RequestedResources ProfilesOnly => new() {
+		Profiles = true,
+		PlayerData = false,
+		Museum = false,
+		Guild = false,
+		Garden = false
+	};
 }
 
 [RegisterService<IMemberService>(LifeTime.Scoped)]
@@ -47,13 +76,21 @@ public class MemberService(
 			.Where(p => p.PlayerUuid == playerUuid && p.ProfileId == profileId)
 			.Select(p => p.Id)
 			.FirstOrDefaultAsync();
-		
+
 		if (guid == Guid.Empty) return null;
 		return guid;
 	}
 
-	public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, float cooldownMultiplier = 1) {
-		await UpdatePlayerIfNeeded(playerUuid);
+	public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {
+		return await ProfileMemberQuery(playerUuid, RequestedResources.All);
+	}
+
+	public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid) {
+		return await ProfileMemberCompleteQuery(playerUuid, RequestedResources.All);
+	}
+
+	public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, RequestedResources resources) {
+		await UpdatePlayerIfNeeded(playerUuid, resources);
 
 		return context.ProfileMembers
 			.Where(p => p.PlayerUuid == playerUuid)
@@ -61,8 +98,8 @@ public class MemberService(
 	}
 
 	public async Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid,
-		float cooldownMultiplier = 1) {
-		await UpdatePlayerIfNeeded(playerUuid);
+		RequestedResources resources) {
+		await UpdatePlayerIfNeeded(playerUuid, resources);
 
 		var now = DateTimeOffset.UtcNow;
 		return context.ProfileMembers
@@ -99,6 +136,10 @@ public class MemberService(
 	}
 
 	public async Task UpdatePlayerIfNeeded(string playerUuid, float cooldownMultiplier = 1) {
+		await UpdatePlayerIfNeeded(playerUuid, RequestedResources.All);
+	}
+
+	public async Task UpdatePlayerIfNeeded(string playerUuid, RequestedResources resources) {
 		if (contextAccessor.HttpContext.IsKnownBot()) return;
 
 		var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
@@ -112,8 +153,8 @@ public class MemberService(
 
 		// Background guild update - not critical for profile response
 		await new UpdateGuildCommand { PlayerUuid = account.Id }.QueueJobAsync();
-		
-		await RefreshNeededData(lastUpdated, account, cooldownMultiplier);
+
+		await RefreshNeededData(lastUpdated, resources);
 	}
 
 	public async Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1) {
@@ -136,30 +177,35 @@ public class MemberService(
 		var account = await mojangService.GetMinecraftAccountByUuid(lastUpdated.PlayerUuid);
 		if (account is null) return;
 
-		await RefreshNeededData(lastUpdated, account, cooldownMultiplier);
+		await RefreshNeededData(lastUpdated, cooldownMultiplier);
 	}
 
-	private async Task RefreshNeededData(LastUpdatedDto lastUpdated, MinecraftAccount account,
-		float cooldownMultiplier = 1) {
+	private async Task RefreshNeededData(LastUpdatedDto lastUpdated, float cooldownMultiplier = 1) {
+		await RefreshNeededData(lastUpdated, new RequestedResources() { CooldownMultiplier = cooldownMultiplier });
+	}
+
+	private async Task RefreshNeededData(LastUpdatedDto lastUpdated, RequestedResources resources) {
 		var playerUuid = lastUpdated.PlayerUuid;
 		var db = redis.GetDatabase();
 
 		var updatePlayer = false;
 		var updateProfiles = false;
 
-		if (lastUpdated.Profiles.OlderThanSeconds((int)(_coolDowns.SkyblockProfileCooldown * cooldownMultiplier))
-		    && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) {
+		if (resources.Profiles && lastUpdated.Profiles.OlderThanSeconds((int)(_coolDowns.SkyblockProfileCooldown *
+		                                                                      resources.CooldownMultiplier))
+		                       && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) {
 			db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
 			updateProfiles = true;
 		}
 
-		if (lastUpdated.PlayerData.OlderThanSeconds((int)(_coolDowns.HypixelPlayerDataCooldown * cooldownMultiplier))
-		    && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) {
+		if (resources.PlayerData && lastUpdated.PlayerData.OlderThanSeconds((int)(_coolDowns.HypixelPlayerDataCooldown *
+			                         resources.CooldownMultiplier))
+		                         && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) {
 			db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
 			updatePlayer = true;
 		}
 
-		if (updateProfiles) await RefreshProfiles(playerUuid);
+		if (updateProfiles) await RefreshProfiles(playerUuid, resources);
 
 		// Background player data refresh
 		if (updatePlayer) {
@@ -167,7 +213,7 @@ public class MemberService(
 		}
 	}
 
-	public async Task RefreshProfiles(string playerUuid) {
+	public async Task RefreshProfiles(string playerUuid, RequestedResources resources) {
 		using var scope = provider.CreateScope();
 		var processor = scope.ServiceProvider.GetRequiredService<IProfileProcessorService>();
 		var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
@@ -181,7 +227,7 @@ public class MemberService(
 		}
 
 		try {
-			await processor.ProcessProfilesWaitForOnePlayer(data.Value, playerUuid);
+			await processor.ProcessProfilesWaitForOnePlayer(data.Value, playerUuid, resources);
 		}
 		catch (Exception e) {
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
@@ -247,28 +293,28 @@ public class MemberService(
 			.OrderByDescending(s => s.Time)
 			.Take(2)
 			.ToListAsync();
-		
+
 		if (entries.Count < 2) return true;
-		
+
 		var latest = entries[0];
 		var previous = entries[1];
-		
+
 		if (latest.Time < DateTimeOffset.UtcNow.AddHours(-_coolDowns.ActivityStaleThresholdHours)) {
 			return true;
 		}
-		
+
 		var xpGain = (latest.Farming - previous.Farming)
-		           + (latest.Combat - previous.Combat)
-		           + (latest.Mining - previous.Mining)
-		           + (latest.Foraging - previous.Foraging)
-		           + (latest.Fishing - previous.Fishing)
-		           + (latest.Enchanting - previous.Enchanting)
-		           + (latest.Alchemy - previous.Alchemy)
-		           + (latest.Carpentry - previous.Carpentry)
-		           + (latest.Runecrafting - previous.Runecrafting)
-		           + (latest.Social - previous.Social)
-		           + (latest.Taming - previous.Taming);
-		
+		             + (latest.Combat - previous.Combat)
+		             + (latest.Mining - previous.Mining)
+		             + (latest.Foraging - previous.Foraging)
+		             + (latest.Fishing - previous.Fishing)
+		             + (latest.Enchanting - previous.Enchanting)
+		             + (latest.Alchemy - previous.Alchemy)
+		             + (latest.Carpentry - previous.Carpentry)
+		             + (latest.Runecrafting - previous.Runecrafting)
+		             + (latest.Social - previous.Social)
+		             + (latest.Taming - previous.Taming);
+
 		return xpGain >= _coolDowns.ActivityMinXpGain;
 	}
 }

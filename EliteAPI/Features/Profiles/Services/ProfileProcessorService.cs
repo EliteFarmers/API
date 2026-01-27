@@ -41,16 +41,19 @@ public interface IProfileProcessorService
 	/// </summary>
 	/// <param name="data">Hypixel API Response</param>
 	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	/// <param name="resources"></param>
 	/// <returns></returns>
-	Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid);
+	Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid,
+		RequestedResources? resources = null);
 
-	/// <summary>
-	/// Processes a profile from the Hypixel API
-	/// </summary>
-	///	<param name="profileData">The profile to process</param>
-	/// <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	///  <summary>
+	///  Processes a profile from the Hypixel API
+	///  </summary>
+	/// 	<param name="profileData">The profile to process</param>
+	///  <param name="requestedPlayerUuid">The player uuid that was requested to get this data</param>
+	///  <param name="resources"></param>
 	Task<(Profile? profile, Dictionary<string, ProfileMemberResponse> members)> ProcessProfileData(
-		ProfileResponse profileData, string? requestedPlayerUuid);
+		ProfileResponse profileData, string? requestedPlayerUuid, RequestedResources? resources = null);
 
 	/// <summary>
 	/// Processes a member from the Hypixel API
@@ -172,12 +175,13 @@ public partial class ProfileProcessorService(
 			.ExecuteUpdateAsync(e => e.SetProperty(le => le.IsRemoved, true));
 	}
 
-	public async Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid) {
+	public async Task ProcessProfilesWaitForOnePlayer(ProfilesResponse data, string requestedPlayerUuid,
+		RequestedResources? resources = null) {
 		var profiles = await ProcessProfilesResponse(data, requestedPlayerUuid);
 		if (profiles.Count == 0) return;
 
 		foreach (var profileData in profiles) {
-			var (profile, members) = await ProcessProfileData(profileData, requestedPlayerUuid);
+			var (profile, members) = await ProcessProfileData(profileData, requestedPlayerUuid, resources);
 			if (profile is null) continue;
 
 			var profileId = profileData.ProfileId.Replace("-", "");
@@ -204,7 +208,7 @@ public partial class ProfileProcessorService(
 	}
 
 	public async Task<(Profile? profile, Dictionary<string, ProfileMemberResponse> members)> ProcessProfileData(
-		ProfileResponse profileData, string? requestedPlayerUuid) {
+		ProfileResponse profileData, string? requestedPlayerUuid, RequestedResources? resources = null) {
 		var members = profileData.Members.ToDictionary(
 			pair => pair.Key.Replace("-", ""), // Strip hyphens from UUIDs
 			pair => pair.Value);
@@ -267,16 +271,19 @@ public partial class ProfileProcessorService(
 			var hashChanged = existing?.Garden is null
 			                  || existing.Garden.ProfileResponseHash != profileResponseHash
 			                  || existing.Garden.ProfileResponseHash == 0;
+			var gardenOutdated =
+				existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(gardenCooldown);
 
-			if (hashChanged &&
-			    (existing?.Garden is null || existing.Garden.LastUpdated.OlderThanSeconds(gardenCooldown))) {
+			if ((resources is null || resources.Garden) && hashChanged && gardenOutdated) {
 				await new RefreshGardenCommand {
 					ProfileId = profileId,
 					ProfileResponseHash = profileResponseHash
 				}.QueueJobAsync();
 			}
 
-			if (existing is null || existing.MuseumLastUpdated.OlderThanSeconds(_coolDowns.SkyblockMuseumCooldown)) {
+			var museumOutdated = existing is null ||
+			                     existing.MuseumLastUpdated.OlderThanSeconds(_coolDowns.SkyblockMuseumCooldown);
+			if ((resources is null || resources.Museum) && hashChanged && museumOutdated) {
 				await new MuseumUpdateCommand { ProfileId = profileId }.QueueJobAsync();
 			}
 		}
