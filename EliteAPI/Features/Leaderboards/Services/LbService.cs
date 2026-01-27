@@ -724,13 +724,11 @@ public class LbService(
 				memberId = null;
 			}
 			else {
-				if (!skipUpdate) {
-					var isActive = member.SkillsApiEnabled && await memberService.IsPlayerActiveAsync(member.Id);
-					if (isActive) {
-						await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, RequestedResources.ProfilesOnly with {
-							CooldownMultiplier = 10
-						});
-					}
+				if (!skipUpdate && member.SkillsApiEnabled) {
+					await memberService.UpdatePlayerIfNeeded(member.PlayerUuid, RequestedResources.ProfilesOnly with {
+						CooldownMultiplier = 10,
+						RequireActiveMemberId = member.Id
+					});
 				}
 
 				memberId = member.Id.ToString();

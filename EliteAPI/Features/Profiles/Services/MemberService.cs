@@ -40,6 +40,7 @@ public record RequestedResources
 	public bool Museum { get; set; } = true;
 	public bool Guild { get; set; } = true;
 	public bool Garden { get; set; } = true;
+	public Guid? RequireActiveMemberId { get; set; } = null;
 
 	public static RequestedResources All => new() {
 		Profiles = true,
@@ -152,7 +153,9 @@ public class MemberService(
 		};
 
 		// Background guild update - not critical for profile response
-		await new UpdateGuildCommand { PlayerUuid = account.Id }.QueueJobAsync();
+		if (resources.Guild) {
+			await new UpdateGuildCommand { PlayerUuid = account.Id }.QueueJobAsync();
+		}
 
 		await RefreshNeededData(lastUpdated, resources);
 	}
@@ -195,7 +198,12 @@ public class MemberService(
 		                                                                      resources.CooldownMultiplier))
 		                       && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) {
 			db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
-			updateProfiles = true;
+
+			if (resources.RequireActiveMemberId is { } memberId) {
+				updateProfiles = await IsPlayerActiveAsync(memberId);
+			} else {
+				updateProfiles = true;
+			}
 		}
 
 		if (resources.PlayerData && lastUpdated.PlayerData.OlderThanSeconds((int)(_coolDowns.HypixelPlayerDataCooldown *
