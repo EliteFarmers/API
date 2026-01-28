@@ -67,7 +67,8 @@ public class LeaderboardCacheMetrics : ILeaderboardCacheMetrics
 			<= 5000 => "top_5k",
 			<= 25000 => "top_25k",
 			<= 50000 => "top_50k",
-			_ => "50k_plus"
+			<= 100000 => "top_100k",
+			_ => "100k_plus"
 		};
 	}
 }

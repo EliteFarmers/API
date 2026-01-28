@@ -76,14 +76,16 @@ public class LbService(
 
 	/// <summary>
 	/// Get the bucket size for a given rank. Higher ranks get finer granularity.
+	/// Buckets must be larger than typical upcoming request sizes (100) to have any chance of cache hits.
 	/// </summary>
 	private static int GetRankBucket(int atRank) {
 		return atRank switch {
-			<= 1000 => 1,
-			<= 5000 => 10,
-			<= 25000 => 25,
-			<= 50000 => 50,
-			_ => 100
+			<= 1000 => 10,       // Top 1k: bucket of 10, 100 possible buckets
+			<= 5000 => 50,       // Top 5k: bucket of 50, 80 possible buckets  
+			<= 25000 => 250,     // Top 25k: bucket of 250, 80 possible buckets
+			<= 50000 => 500,     // Top 50k: bucket of 500, 50 possible buckets
+			<= 100000 => 1000,   // Top 100k: bucket of 1000, 50 possible buckets
+			_ => 2500            // 100k+: bucket of 2500
 		};
 	}
 
@@ -101,27 +103,24 @@ public class LbService(
 	/// </summary>
 	private static HybridCacheEntryOptions GetCacheOptions(int atRank) {
 		var ttl = atRank switch {
-			<= 1000 => TimeSpan.FromSeconds(15),
-			<= 10000 => TimeSpan.FromSeconds(30),
+			<= 1000 => TimeSpan.FromSeconds(20),
+			<= 5000 => TimeSpan.FromSeconds(30),
+			<= 25000 => TimeSpan.FromSeconds(45),
 			<= 50000 => TimeSpan.FromSeconds(60),
 			_ => TimeSpan.FromSeconds(120)
 		};
 		return new HybridCacheEntryOptions {
 			Expiration = ttl,
-			LocalCacheExpiration = TimeSpan.FromSeconds(Math.Min(ttl.TotalSeconds, 10))
+			LocalCacheExpiration = TimeSpan.FromSeconds(Math.Min(ttl.TotalSeconds, 15))
 		};
 	}
 
 	/// <summary>
-	/// Round upcoming count to standard bucket sizes for better cache hit rates
+	/// Round upcoming count to standard bucket sizes for better cache hit rates.
 	/// </summary>
 	private static int GetBucketedUpcoming(int upcoming) {
-		return upcoming switch {
-			<= 10 => 10,
-			<= 25 => 25,
-			<= 50 => 50,
-			_ => 100
-		};
+		// Maximize cache reuse, a switch statmement might be used later
+		return 100;
 	}
 
 	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {
