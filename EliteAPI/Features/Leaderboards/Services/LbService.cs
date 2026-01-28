@@ -9,6 +9,7 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using StackExchange.Redis;
 
 namespace EliteAPI.Features.Leaderboards.Services;
@@ -62,10 +63,67 @@ public class LbService(
 	ILeaderboardRegistrationService registrationService,
 	ILogger<LbService> logger,
 	IConnectionMultiplexer redis,
+	HybridCache cache,
+	ILeaderboardCacheMetrics cacheMetrics,
 	IMemberService memberService,
 	DataContext context)
 	: ILbService
 {
+	/// <summary>
+	/// Cached anchor data for leaderboard rank lookups
+	/// </summary>
+	private record CachedAnchor(decimal Score, int EntryId);
+
+	/// <summary>
+	/// Get the bucket size for a given rank. Higher ranks get finer granularity.
+	/// </summary>
+	private static int GetRankBucket(int atRank) {
+		return atRank switch {
+			<= 1000 => 1,
+			<= 5000 => 10,
+			<= 25000 => 25,
+			<= 50000 => 50,
+			_ => 100
+		};
+	}
+
+	/// <summary>
+	/// Round a rank to its bucket boundary
+	/// </summary>
+	private static int GetBucketedRank(int atRank) {
+		var bucket = GetRankBucket(atRank);
+		if (bucket == 1) return atRank;
+		return (int)Math.Ceiling((double)atRank / bucket) * bucket;
+	}
+
+	/// <summary>
+	/// Get the cache TTL for a given rank. Higher ranks get shorter TTLs for fresher data.
+	/// </summary>
+	private static HybridCacheEntryOptions GetCacheOptions(int atRank) {
+		var ttl = atRank switch {
+			<= 1000 => TimeSpan.FromSeconds(15),
+			<= 10000 => TimeSpan.FromSeconds(30),
+			<= 50000 => TimeSpan.FromSeconds(60),
+			_ => TimeSpan.FromSeconds(120)
+		};
+		return new HybridCacheEntryOptions {
+			Expiration = ttl,
+			LocalCacheExpiration = TimeSpan.FromSeconds(Math.Min(ttl.TotalSeconds, 10))
+		};
+	}
+
+	/// <summary>
+	/// Round upcoming count to standard bucket sizes for better cache hit rates
+	/// </summary>
+	private static int GetBucketedUpcoming(int upcoming) {
+		return upcoming switch {
+			<= 10 => 10,
+			<= 25 => 25,
+			<= 50 => 50,
+			_ => 100
+		};
+	}
+
 	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return (null, null);
 
@@ -820,17 +878,32 @@ public class LbService(
 		var anchorRank = rankCount == -1 ? -1 : rankCount + 1;
 
 		if (atRank is > 0 && (anchorRank == -1 || atRank < anchorRank)) {
-			var anchor = await baseQuery
-				.OrderByDescending(e => e.Score)
-				.ThenByDescending(e => e.LeaderboardEntryId)
-				.Skip(atRank.Value - 1)
-				.Select(e => new { e.Score, e.LeaderboardEntryId })
-				.FirstOrDefaultAsync(cancellationToken);
+			var bucketedRank = GetBucketedRank(atRank.Value);
+			var anchorCacheKey = $"lb:anchor:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "c"}:{removedFilter}:{bucketedRank}";
+			var cacheOptions = GetCacheOptions(bucketedRank);
 
-			if (anchor is not null) {
-				anchorScore = anchor.Score;
-				anchorId = anchor.LeaderboardEntryId;
-				anchorRank = atRank.Value;
+			var anchorCacheMiss = false;
+			var cachedAnchor = await cache.GetOrCreateAsync(anchorCacheKey, async ct => {
+				anchorCacheMiss = true;
+				var anchor = await baseQuery
+					.OrderByDescending(e => e.Score)
+					.ThenByDescending(e => e.LeaderboardEntryId)
+					.Skip(bucketedRank - 1)
+					.Select(e => new CachedAnchor(e.Score, e.LeaderboardEntryId))
+					.FirstOrDefaultAsync(ct);
+				return anchor;
+			}, cacheOptions, cancellationToken: cancellationToken);
+
+			if (anchorCacheMiss) {
+				cacheMetrics.RecordAnchorCacheMiss(leaderboardId, bucketedRank);
+			} else {
+				cacheMetrics.RecordAnchorCacheHit(leaderboardId, bucketedRank);
+			}
+
+			if (cachedAnchor is not null) {
+				anchorScore = cachedAnchor.Score;
+				anchorId = cachedAnchor.EntryId;
+				anchorRank = bucketedRank;
 			}
 		}
 
@@ -838,15 +911,32 @@ public class LbService(
 		var previousPlayers = new List<LeaderboardEntryDto>();
 
 		if (upcoming > 0 && !userEntry.IsRemoved) {
-			var upcomingQuery = baseQuery
-				.Where(e => e.Score > anchorScore || (e.Score == anchorScore && e.LeaderboardEntryId > anchorId))
-				.OrderBy(e => e.Score)
-				.ThenBy(e => e.LeaderboardEntryId)
-				.Take(upcoming.Value);
+			var bucketedUpcoming = GetBucketedUpcoming(upcoming.Value);
+			var upcomingCacheKey = $"lb:upcoming:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "c"}:{removedFilter}:{definition.IsMemberLeaderboard()}:{anchorRank}:{bucketedUpcoming}";
+			var cacheOptions = GetCacheOptions(anchorRank > 0 ? anchorRank : 50000);
 
-			upcomingPlayers = definition.IsMemberLeaderboard()
-				? await upcomingQuery.MapToMemberLeaderboardEntries(upcoming.Value <= 20).ToListAsync(cancellationToken)
-				: await upcomingQuery.MapToProfileLeaderboardEntries(removedFilter).ToListAsync(cancellationToken);
+			var upcomingCacheMiss = false;
+			var cachedUpcoming = await cache.GetOrCreateAsync(upcomingCacheKey, async ct => {
+				upcomingCacheMiss = true;
+				var upcomingQuery = baseQuery
+					.Where(e => e.Score > anchorScore || (e.Score == anchorScore && e.LeaderboardEntryId > anchorId))
+					.OrderBy(e => e.Score)
+					.ThenBy(e => e.LeaderboardEntryId)
+					.Take(bucketedUpcoming);
+
+				return definition.IsMemberLeaderboard()
+					? await upcomingQuery.MapToMemberLeaderboardEntries(bucketedUpcoming <= 20).ToListAsync(ct)
+					: await upcomingQuery.MapToProfileLeaderboardEntries(removedFilter).ToListAsync(ct);
+			}, cacheOptions, cancellationToken: cancellationToken);
+
+			if (upcomingCacheMiss) {
+				cacheMetrics.RecordUpcomingCacheMiss(leaderboardId, anchorRank > 0 ? anchorRank : 50000);
+			} else {
+				cacheMetrics.RecordUpcomingCacheHit(leaderboardId, anchorRank > 0 ? anchorRank : 50000);
+			}
+
+			// Return only the requested amount from the cached list
+			upcomingPlayers = cachedUpcoming?.Take(upcoming.Value).ToList() ?? [];
 		}
 
 		if (previous > 0 && !userEntry.IsRemoved) {

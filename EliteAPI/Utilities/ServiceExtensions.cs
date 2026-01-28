@@ -6,6 +6,7 @@ using EliteAPI.Data;
 using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Auth.Services;
 using EliteAPI.Features.Images.Models;
+using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Features.Textures.Services;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
@@ -38,6 +39,7 @@ public static class ServiceExtensions
 		services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 		services.AddSingleton<IObjectStorageService, ObjectStorageService>();
 		services.AddSingleton<Ganss.Xss.HtmlSanitizer>();
+		services.AddSingleton<ILeaderboardCacheMetrics, LeaderboardCacheMetrics>();
 
 		services.AddHostedService<BackgroundQueueWorker>();
 		services.AddHostedService<MinecraftRendererInitializer>();

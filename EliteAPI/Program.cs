@@ -81,6 +81,7 @@ builder.Services.AddOpenTelemetry()
 			});
 
 		x.AddMeter("hypixel.api");
+		x.AddMeter("eliteapi.leaderboard");
 	})
 	.WithTracing(x => {
 		x.AddSource("EliteAPI");
