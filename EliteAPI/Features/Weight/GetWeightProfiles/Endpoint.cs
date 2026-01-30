@@ -36,12 +36,14 @@ internal sealed class GetWeightForProfilesEndpoint(
 		});
 
 		ResponseCache(120, varyByQueryKeys: ["collections"]);
-		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(2))); });
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(30))); });
 	}
 
 	public override async Task<Result> ExecuteAsync(GetWeightForProfilesRequest request, CancellationToken c) {
 		var uuid = request.PlayerUuidFormatted;
-		await memberService.UpdatePlayerIfNeeded(uuid, 32);
+		await memberService.UpdatePlayerIfNeeded(uuid, RequestedResources.ProfilesOnly with {
+			CooldownMultiplier = 32
+		});
 
 		var members = await context.ProfileMembers
 			.AsNoTracking()
