@@ -103,6 +103,8 @@ builder.AddEliteFastEndpoints();
 
 builder.Services.AddSkyblockRepo(opt => {
 	opt.UseNeuRepo = true;
+	opt.FileStoragePath = builder.Configuration["MinecraftRenderer:AssetsPath"]
+		?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EliteAPI");
 	opt.Matcher.Register(new EliteItemRepoMatcher());
 	opt.Matcher.Register(new RenderContextRepoMatcher());
 });

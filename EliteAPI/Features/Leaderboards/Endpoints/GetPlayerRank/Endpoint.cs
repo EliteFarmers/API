@@ -19,21 +19,21 @@ internal sealed class GetPlayerRankEndpoint(
 	}
 
 	public override async Task HandleAsync(GetPlayerRankRequest request, CancellationToken c) {
-		if (HttpContext.IsKnownBot()) return;
+		if (HttpContext.IsKnownBot()) {
+			await Send.ForbiddenAsync(c);
+			return;
+		}
 		
-		// SkyHanni version 6.13.0 requests this endpoint way too often causing performance issues
-		// Temporary fix to disable responses for this version
-		// if (HttpContext.GetSkyHanniVersion() is { } version && version == new Version("6.13.0")) {
-		// 	await Send.OkAsync(new LeaderboardPositionDto {
-		// 		Rank = -1,
-		// 		Amount = 0,
-		// 		MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard),
-		// 		UpcomingRank = 10_000,
-		// 		UpcomingPlayers = []
-		// 	}, c);
-
-		// 	return;
-		// }
+		if (request.Disabled is true) {
+			await Send.OkAsync(new LeaderboardPositionDto {
+				Rank = -1,
+				Amount = 0,
+				MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard),
+				UpcomingRank = 10_000,
+				UpcomingPlayers = []
+			}, c);
+			return;
+		}
 		
 #pragma warning disable CS0618 // Type or member is obsolete
 		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) request.Upcoming = 10;

@@ -66,6 +66,12 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest
 	[QueryParam]
 	[DefaultValue(RemovedFilter.NotRemoved)]
 	public RemovedFilter? Removed { get; set; } = RemovedFilter.NotRemoved;
+	
+	/// <summary>
+	/// Use the disabled response for rank queries. Can be easily toggled with request transforms as needed.
+	/// </summary>
+	[FromHeader(headerName: "x-disabled", IsRequired = false)]
+	public bool? Disabled { get; set; } = false;
 }
 
 internal sealed class GetPlayerRankRequestValidator : Validator<GetPlayerRankRequest>
