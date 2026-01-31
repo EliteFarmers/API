@@ -15,7 +15,7 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
         <PackageReference Include="AutoMapper" Version="[13.0.1]" />
-        <PackageReference Include="AWSSDK.S3" Version="4.0.17.3" />
+        <PackageReference Include="AWSSDK.S3" Version="4.0.18" />
         <PackageReference Include="DotNetEnv" Version="3.1.1" />
         <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="10.0.0" />
         <PackageReference Include="ErrorOr" Version="2.0.1" />
@@ -52,7 +52,7 @@
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" ExcludeAssets="runtime" PrivateAssets="all">
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.12.18" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.12.21" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
         <PackageReference Include="SkyblockRepo" Version="0.4.2" />
         <PackageReference Include="Sqids" Version="3.2.0" />
