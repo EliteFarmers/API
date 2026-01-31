@@ -170,4 +170,10 @@ public class LeaderboardPositionDto
 	/// </summary>
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public List<LeaderboardEntryDto>? Previous { get; set; }
+
+	/// <summary>
+	/// True if endpoint was disabled for this request
+	/// </summary>
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public bool? Disabled { get; set; }
 }

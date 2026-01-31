@@ -24,13 +24,14 @@ internal sealed class GetPlayerRankEndpoint(
 			return;
 		}
 		
-		if (request.Disabled is true) {
+		if (HttpContext.IsRequestDisabled()) {
 			await Send.OkAsync(new LeaderboardPositionDto {
 				Rank = -1,
 				Amount = 0,
 				MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard),
 				UpcomingRank = 10_000,
-				UpcomingPlayers = []
+				UpcomingPlayers = [],
+				Disabled = true
 			}, c);
 			return;
 		}

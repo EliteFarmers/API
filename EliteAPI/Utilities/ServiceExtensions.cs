@@ -239,6 +239,13 @@ public static class ServiceExtensions
 			return null;
 		}
 	}
+	
+	public static bool IsRequestDisabled(this HttpContext? context) {
+		if (context is null) return false;
+		return context.Request.Headers.TryGetValue("X-Disabled", out var isDisabled) &&
+		       isDisabled.Count > 0 &&
+		       isDisabled[0]!.Equals("true", StringComparison.OrdinalIgnoreCase);
+	}
 }
 
 public static class CachePolicy
