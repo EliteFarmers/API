@@ -47,7 +47,7 @@ services:
   cache:
     image: redis:8.4-alpine
     restart: always
-    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
+    command: redis-server --save 300 10 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
     ports:
       - '${REDIS_PORT:?REDIS_PORT env variable is required}:6379'
     expose:
