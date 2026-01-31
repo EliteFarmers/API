@@ -76,6 +76,8 @@ public partial class ProfileProcessorService(
 	IMojangService mojangService,
 	IMessageService messageService,
 	ILbService lbService,
+	ILeaderboardUpdateQueue leaderboardUpdateQueue,
+	IConfiguration configuration,
 	ISchedulerFactory schedulerFactory,
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
@@ -90,6 +92,7 @@ public partial class ProfileProcessorService(
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
+	private readonly bool _enableAsyncLeaderboardUpdates = configuration.GetValue("Leaderboards:EnableAsyncUpdates", true);
 
 	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData =
 		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>
@@ -260,7 +263,20 @@ public partial class ProfileProcessorService(
 			logger.LogError(e, "Failed to save profile {ProfileId} to database", profileId);
 		}
 
-		await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
+		// Update profile leaderboards
+		if (_enableAsyncLeaderboardUpdates) {
+			var updates = await lbService.GetProfileLeaderboardUpdatesAsync(profile, CancellationToken.None);
+			if (updates.Count > 0) {
+				var enqueued = leaderboardUpdateQueue.EnqueueBatch(updates);
+				if (enqueued < updates.Count) {
+					logger.LogWarning(
+						"Leaderboard update queue full, only enqueued {Enqueued}/{Total} profile updates for {ProfileId}",
+						enqueued, updates.Count, profile.ProfileId);
+				}
+			}
+		} else {
+			await lbService.UpdateProfileLeaderboardsAsync(profile, CancellationToken.None);
+		}
 
 		if (httpContextAccessor.HttpContext is not null && !httpContextAccessor.HttpContext.IsKnownBot()) {
 			var profileResponseHash = MemberDataHasher.ComputeHash(profileData);
@@ -508,7 +524,20 @@ public partial class ProfileProcessorService(
 		// Runs on background service
 		await ParseJacobContests(member.PlayerUuid, member.ProfileId, member.Id, incomingData.Jacob);
 
-		await lbService.UpdateMemberLeaderboardsAsync(member, CancellationToken.None);
+		// Update leaderboards
+		if (_enableAsyncLeaderboardUpdates) {
+			var updates = await lbService.GetLeaderboardUpdatesAsync(member, CancellationToken.None);
+			if (updates.Count > 0) {
+				var enqueued = leaderboardUpdateQueue.EnqueueBatch(updates);
+				if (enqueued < updates.Count) {
+					logger.LogWarning(
+						"Leaderboard update queue full, only enqueued {Enqueued}/{Total} updates for {Player}",
+						enqueued, updates.Count, member.PlayerUuid);
+				}
+			}
+		} else {
+			await lbService.UpdateMemberLeaderboardsAsync(member, CancellationToken.None);
+		}
 	}
 
 	private async Task ParseJacobContests(string playerUuid, string profileUuid, Guid memberId,

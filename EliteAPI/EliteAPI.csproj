@@ -17,8 +17,7 @@
         <PackageReference Include="AutoMapper" Version="[13.0.1]" />
         <PackageReference Include="AWSSDK.S3" Version="4.0.17.3" />
         <PackageReference Include="DotNetEnv" Version="3.1.1" />
-        <!-- EFCore.BulkExtensions.PostgreSql temporarily removed: does not support .NET 10 yet -->
-
+        <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="10.0.0" />
         <PackageReference Include="ErrorOr" Version="2.0.1" />
         <PackageReference Include="FastEndpoints" Version="7.2.0" />
         <PackageReference Include="FastEndpoints.Generator" Version="7.2.0">

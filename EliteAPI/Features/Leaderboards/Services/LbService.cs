@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using EFCore.BulkExtensions;
 using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Profiles.Services;
@@ -27,6 +28,9 @@ public interface ILbService
 	Task<string?> GetFirstInterval(string leaderboardId);
 	double GetLeaderboardMinScore(string leaderboardId);
 	Task UpdateMemberLeaderboardsAsync(ProfileMember member, CancellationToken c);
+	Task<List<LeaderboardUpdateEntry>> GetLeaderboardUpdatesAsync(ProfileMember member, CancellationToken c);
+	Task<List<LeaderboardUpdateEntry>> GetProfileLeaderboardUpdatesAsync(Profile profile, CancellationToken c);
+	Task ProcessLeaderboardUpdatesAsync(List<LeaderboardUpdateEntry> updates, CancellationToken c);
 	Task EnsureMemberIntervalEntriesExist(Guid profileMemberId, CancellationToken c = default);
 	Task UpdateProfileLeaderboardsAsync(Profile profile, CancellationToken c);
 	Task<List<PlayerLeaderboardEntryWithRankDto>> GetPlayerLeaderboardEntriesWithRankAsync(Guid profileMemberId);
@@ -315,12 +319,7 @@ public class LbService(
 
 		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
 		if (failed is { Count: > 0 }) {
-			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
-			// await context.BulkDeleteAsync(failed, cancellationToken: c);
-			var duplicateIds = failed.Select(e => e.LeaderboardEntryId).ToList();
-			await context.LeaderboardEntries
-				.Where(e => duplicateIds.Contains(e.LeaderboardEntryId))
-				.ExecuteDeleteAsync(c);
+			await context.BulkDeleteAsync(failed, cancellationToken: c);
 			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Player}", failed.Count,
 				member.PlayerUuid);
 		}
@@ -397,20 +396,20 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
-			// var options = new BulkConfig { PropertiesToIncludeOnUpdate = [...] };
-			// await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
-			context.LeaderboardEntries.UpdateRange(updatedEntries);
-			await context.SaveChangesAsync(c);
+			var options = new BulkConfig { 
+				PropertiesToIncludeOnUpdate = [
+					nameof(Models.LeaderboardEntry.Score),
+					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.ProfileType)
+				]
+			};
+			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
 			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
 		}
 
 		if (newEntries.Count != 0) {
-			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
-			// var options = new BulkConfig { ConflictOption = ConflictOption.Ignore };
-			// await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
-			await context.LeaderboardEntries.AddRangeAsync(newEntries, c);
-			await context.SaveChangesAsync(c);
+			var options = new BulkConfig { SetOutputIdentity = false };
+			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
 			logger.LogInformation("Inserted {Count} new leaderboard entries", newEntries.Count);
 		}
 
@@ -419,6 +418,202 @@ public class LbService(
 			member.Profile?.ProfileId,
 			DateTime.UtcNow.Subtract(time).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
 		);
+	}
+
+	public async Task<List<LeaderboardUpdateEntry>> GetLeaderboardUpdatesAsync(ProfileMember member, CancellationToken c) {
+		if (member.Profile?.GameMode == "bingo") return [];
+		
+		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
+		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+
+		var leaderboardsIdsBySlug = await context.Leaderboards
+			.AsNoTracking()
+			.Select(lb => new { lb.Slug, lb.LeaderboardId, lb.MinimumScore })
+			.ToDictionaryAsync(lb => lb.Slug, c);
+
+		var existingEntryList = await context.LeaderboardEntries
+			.AsNoTracking()
+			.Where(e =>
+				e.ProfileMemberId == member.Id
+				&& (e.IntervalIdentifier == monthlyInterval || e.IntervalIdentifier == weeklyInterval ||
+				    e.IntervalIdentifier == null))
+			.ToListAsync(c);
+
+		var existingEntries = new Dictionary<int, Models.LeaderboardEntry>();
+		var updates = new List<LeaderboardUpdateEntry>();
+
+		// Add existing entries to a dictionary, mark duplicates for deletion
+		foreach (var entry in existingEntryList) {
+			if (!existingEntries.TryAdd(entry.LeaderboardId, entry)) {
+				// Duplicate entry - mark for deletion
+				updates.Add(new LeaderboardUpdateEntry {
+					LeaderboardId = entry.LeaderboardId,
+					ProfileMemberId = entry.ProfileMemberId,
+					Score = entry.Score,
+					InitialScore = entry.InitialScore,
+					IntervalIdentifier = entry.IntervalIdentifier,
+					IsRemoved = entry.IsRemoved,
+					ProfileType = entry.ProfileType,
+					Operation = LeaderboardUpdateOperation.Delete,
+					ExistingEntryId = entry.LeaderboardEntryId
+				});
+			}
+		}
+
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			if (definition is not IMemberLeaderboardDefinition memberLb) continue;
+
+			var useIncrease = definition.Info.UseIncreaseForInterval;
+			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
+
+			var type = GetTypeFromSlug(slug);
+			var intervalIdentifier = type switch {
+				LeaderboardType.Monthly => monthlyInterval,
+				LeaderboardType.Weekly => weeklyInterval,
+				_ => null
+			};
+
+			var score = memberLb.GetScoreFromMember(member, type);
+
+			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+				var changed = false;
+				var newProfileType = entry.ProfileType;
+				var newIsRemoved = entry.IsRemoved;
+				var newScore = entry.Score;
+
+				if (member.Profile?.GameMode != entry.ProfileType) {
+					newProfileType = member.Profile?.GameMode;
+					changed = true;
+				}
+
+				if (entry.IsRemoved != member.WasRemoved) {
+					newIsRemoved = member.WasRemoved;
+					changed = true;
+				}
+
+				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
+					var calculatedScore = entry.IntervalIdentifier is not null && useIncrease
+						? score - entry.InitialScore
+						: score;
+
+					if (entry.Score != calculatedScore) {
+						newScore = calculatedScore;
+						changed = true;
+					}
+				}
+
+				if (changed) {
+					updates.Add(new LeaderboardUpdateEntry {
+						LeaderboardId = lb.LeaderboardId,
+						ProfileMemberId = member.Id,
+						Score = newScore,
+						InitialScore = entry.InitialScore,
+						IntervalIdentifier = entry.IntervalIdentifier,
+						IsRemoved = newIsRemoved,
+						ProfileType = newProfileType,
+						Operation = LeaderboardUpdateOperation.Update,
+						ExistingEntryId = entry.LeaderboardEntryId
+					});
+				}
+
+				continue;
+			}
+
+			if (score <= 0 || score < lb.MinimumScore) continue;
+
+			updates.Add(new LeaderboardUpdateEntry {
+				LeaderboardId = lb.LeaderboardId,
+				ProfileMemberId = member.Id,
+				Score = useIncrease && intervalIdentifier is not null ? 0 : score,
+				InitialScore = useIncrease && intervalIdentifier is not null ? score : 0,
+				IntervalIdentifier = intervalIdentifier,
+				IsRemoved = member.WasRemoved,
+				ProfileType = member.Profile?.GameMode,
+				Operation = LeaderboardUpdateOperation.Insert
+			});
+		}
+
+		return updates;
+	}
+
+	public async Task ProcessLeaderboardUpdatesAsync(List<LeaderboardUpdateEntry> updates, CancellationToken c) {
+		if (updates.Count == 0) return;
+
+		// Group by operation type
+		var inserts = updates.Where(u => u.Operation == LeaderboardUpdateOperation.Insert).ToList();
+		var updateOps = updates.Where(u => u.Operation == LeaderboardUpdateOperation.Update).ToList();
+		var deletes = updates.Where(u => u.Operation == LeaderboardUpdateOperation.Delete).ToList();
+
+		// Handle deletes first (duplicates, etc.)
+		if (deletes.Count > 0) {
+			var deleteIds = deletes
+				.Where(d => d.ExistingEntryId.HasValue)
+				.Select(d => d.ExistingEntryId!.Value)
+				.ToList();
+			
+			if (deleteIds.Count > 0) {
+				await context.LeaderboardEntries
+					.Where(e => deleteIds.Contains(e.LeaderboardEntryId))
+					.ExecuteDeleteAsync(c);
+				logger.LogInformation("Deleted {Count} leaderboard entries", deleteIds.Count);
+			}
+		}
+
+		// Handle updates
+		if (updateOps.Count > 0) {
+			// Deduplicate - keep only the latest update per entry
+			var latestUpdates = updateOps
+				.Where(u => u.ExistingEntryId.HasValue)
+				.GroupBy(u => u.ExistingEntryId!.Value)
+				.Select(g => g.Last())
+				.ToList();
+
+			var entriesToUpdate = latestUpdates.Select(u => new Models.LeaderboardEntry {
+				LeaderboardEntryId = u.ExistingEntryId!.Value,
+				LeaderboardId = u.LeaderboardId,
+				ProfileMemberId = u.ProfileMemberId,
+				ProfileId = u.ProfileId,
+				Score = u.Score,
+				InitialScore = u.InitialScore,
+				IntervalIdentifier = u.IntervalIdentifier,
+				IsRemoved = u.IsRemoved,
+				ProfileType = u.ProfileType
+			}).ToList();
+
+			var updateConfig = new BulkConfig {
+				PropertiesToIncludeOnUpdate = [
+					nameof(Models.LeaderboardEntry.Score),
+					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.ProfileType)
+				]
+			};
+			await context.BulkUpdateAsync(entriesToUpdate, updateConfig, cancellationToken: c);
+			logger.LogInformation("Bulk updated {Count} leaderboard entries", entriesToUpdate.Count);
+		}
+
+		// Handle inserts
+		if (inserts.Count > 0) {
+			// Deduplicate - keep only one insert per leaderboard+member/profile combination
+			var uniqueInserts = inserts
+				.GroupBy(i => (i.LeaderboardId, i.ProfileMemberId, i.ProfileId, i.IntervalIdentifier))
+				.Select(g => g.Last())
+				.ToList();
+
+			var entriesToInsert = uniqueInserts.Select(u => new Models.LeaderboardEntry {
+				LeaderboardId = u.LeaderboardId,
+				ProfileMemberId = u.ProfileMemberId,
+				ProfileId = u.ProfileId,
+				Score = u.Score,
+				InitialScore = u.InitialScore,
+				IntervalIdentifier = u.IntervalIdentifier,
+				IsRemoved = u.IsRemoved,
+				ProfileType = u.ProfileType
+			}).ToList();
+
+			var insertConfig = new BulkConfig { SetOutputIdentity = false };
+			await context.BulkInsertAsync(entriesToInsert, insertConfig, cancellationToken: c);
+			logger.LogInformation("Bulk inserted {Count} leaderboard entries", entriesToInsert.Count);
+		}
 	}
 
 	private async Task RestoreMemberLeaderboards(Guid profileMemberId, CancellationToken c = default) {
@@ -508,12 +703,7 @@ public class LbService(
 
 		// Delete duplicate entries (this should be very rare, but less expensive than a unique db constraint)
 		if (failed is { Count: > 0 }) {
-			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
-			// await context.BulkDeleteAsync(failed, cancellationToken: c);
-			var duplicateIds = failed.Select(e => e.LeaderboardEntryId).ToList();
-			await context.LeaderboardEntries
-				.Where(e => duplicateIds.Contains(e.LeaderboardEntryId))
-				.ExecuteDeleteAsync(c);
+			await context.BulkDeleteAsync(failed, cancellationToken: c);
 			logger.LogWarning("Deleted {Count} duplicate leaderboard entries for {Profile}", failed.Count,
 				profile.ProfileId);
 		}
@@ -598,27 +788,151 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
-			// var options = new BulkConfig { PropertiesToIncludeOnUpdate = [...] };
-			// await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
-			context.LeaderboardEntries.UpdateRange(updatedEntries);
-			await context.SaveChangesAsync(c);
-			logger.LogInformation("Updated {Count} leaderboard entries", updatedEntries.Count);
+			var options = new BulkConfig { 
+				PropertiesToIncludeOnUpdate = [
+					nameof(Models.LeaderboardEntry.Score),
+					nameof(Models.LeaderboardEntry.IsRemoved),
+					nameof(Models.LeaderboardEntry.ProfileType)
+				]
+			};
+			await context.BulkUpdateAsync(updatedEntries, options, cancellationToken: c);
+			logger.LogInformation("Updated {Count} profile leaderboard entries", updatedEntries.Count);
 		}
 
 		if (newEntries.Count != 0) {
-			// NOTE: EFCore.BulkExtensions is temporarily removed (no .NET 10 support).
-			// var options = new BulkConfig { ConflictOption = ConflictOption.Ignore };
-			// await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
-			await context.LeaderboardEntries.AddRangeAsync(newEntries, c);
-			await context.SaveChangesAsync(c);
-			logger.LogInformation("Inserted {Count} new leaderboard entries", newEntries.Count);
+			var options = new BulkConfig { SetOutputIdentity = false };
+			await context.BulkInsertAsync(newEntries, options, cancellationToken: c);
+			logger.LogInformation("Inserted {Count} new profile leaderboard entries", newEntries.Count);
 		}
 
 		logger.LogInformation("Updating profile leaderboards for {Profile} took {Time}ms",
 			profile!.ProfileId,
 			DateTime.UtcNow.Subtract(time).TotalMilliseconds.ToString(CultureInfo.InvariantCulture)
 		);
+	}
+
+	public async Task<List<LeaderboardUpdateEntry>> GetProfileLeaderboardUpdatesAsync(Profile profile, CancellationToken c) {
+		if (profile.GameMode == "bingo") return [];
+
+		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
+		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
+
+		var leaderboardsIdsBySlug = await context.Leaderboards
+			.AsNoTracking()
+			.Select(lb => new { lb.Slug, lb.LeaderboardId, lb.MinimumScore })
+			.ToDictionaryAsync(lb => lb.Slug, c);
+
+		var existingEntryList = await context.LeaderboardEntries
+			.AsNoTracking()
+			.Where(e =>
+				e.ProfileId == profile.ProfileId
+				&& (e.IntervalIdentifier == monthlyInterval || e.IntervalIdentifier == weeklyInterval ||
+				    e.IntervalIdentifier == null))
+			.ToListAsync(c);
+
+		var existingEntries = new Dictionary<int, Models.LeaderboardEntry>();
+		var updates = new List<LeaderboardUpdateEntry>();
+
+		// Add existing entries to a dictionary, mark duplicates for deletion
+		foreach (var entry in existingEntryList) {
+			if (!existingEntries.TryAdd(entry.LeaderboardId, entry)) {
+				// Duplicate entry - mark for deletion
+				updates.Add(new LeaderboardUpdateEntry {
+					LeaderboardId = entry.LeaderboardId,
+					ProfileId = entry.ProfileId,
+					Score = entry.Score,
+					InitialScore = entry.InitialScore,
+					IntervalIdentifier = entry.IntervalIdentifier,
+					IsRemoved = entry.IsRemoved,
+					ProfileType = entry.ProfileType,
+					Operation = LeaderboardUpdateOperation.Delete,
+					ExistingEntryId = entry.LeaderboardEntryId
+				});
+			}
+		}
+
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			if (definition is not IProfileLeaderboardDefinition profileLb) continue;
+
+			var useIncrease = definition.Info.UseIncreaseForInterval;
+			if (!leaderboardsIdsBySlug.TryGetValue(slug, out var lb)) continue;
+
+			var type = GetTypeFromSlug(slug);
+			var intervalIdentifier = type switch {
+				LeaderboardType.Monthly => monthlyInterval,
+				LeaderboardType.Weekly => weeklyInterval,
+				_ => null
+			};
+
+			var score = profileLb.GetScoreFromProfile(profile, type);
+			if (score == -1 && profile.Garden is not null) {
+				if (intervalIdentifier is not null) {
+					var valid = IsWithinInterval(type, profile.Garden.LastUpdated);
+					if (!valid) continue;
+				}
+
+				score = profileLb.GetScoreFromGarden(profile.Garden, type);
+			}
+
+			if (existingEntries.TryGetValue(lb.LeaderboardId, out var entry)) {
+				var changed = false;
+				var newProfileType = entry.ProfileType;
+				var newIsRemoved = entry.IsRemoved;
+				var newScore = entry.Score;
+
+				if (entry.IsRemoved != profile.IsDeleted) {
+					newIsRemoved = profile.IsDeleted;
+					changed = true;
+				}
+
+				if (profile.GameMode != entry.ProfileType) {
+					newProfileType = profile.GameMode;
+					changed = true;
+				}
+
+				if (score >= 0 && (score >= entry.InitialScore || !useIncrease)) {
+					var calculatedScore = entry.IntervalIdentifier is not null && useIncrease
+						? score - entry.InitialScore
+						: score;
+
+					if (entry.Score != calculatedScore) {
+						newScore = calculatedScore;
+						changed = true;
+					}
+				}
+
+				if (changed) {
+					updates.Add(new LeaderboardUpdateEntry {
+						LeaderboardId = lb.LeaderboardId,
+						ProfileId = profile.ProfileId,
+						Score = newScore,
+						InitialScore = entry.InitialScore,
+						IntervalIdentifier = entry.IntervalIdentifier,
+						IsRemoved = newIsRemoved,
+						ProfileType = newProfileType,
+						Operation = LeaderboardUpdateOperation.Update,
+						ExistingEntryId = entry.LeaderboardEntryId
+					});
+				}
+
+				continue;
+			}
+
+			if (score <= 0 || score < lb.MinimumScore) continue;
+
+			updates.Add(new LeaderboardUpdateEntry {
+				LeaderboardId = lb.LeaderboardId,
+				ProfileId = profile.ProfileId,
+				Score = useIncrease && intervalIdentifier is not null ? 0 : score,
+				InitialScore = useIncrease && intervalIdentifier is not null ? score : 0,
+				IntervalIdentifier = intervalIdentifier,
+				IsRemoved = profile.IsDeleted,
+				ProfileType = profile.GameMode,
+				Operation = LeaderboardUpdateOperation.Insert
+			});
+		}
+
+		return updates;
 	}
 
 	private async Task RestoreProfileLeaderboards(string profileId, CancellationToken c = default) {
