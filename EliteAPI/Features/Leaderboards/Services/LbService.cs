@@ -45,12 +45,14 @@ public interface ILbService
 		string? identifier = null, CancellationToken? c = null);
 
 	Task<LeaderboardPositionDto> GetLeaderboardRank(string leaderboardId, string playerUuid, string profileId,
-		int? upcoming = null, int? previous = null, int? atRank = null, string? gameMode = null,
+		int? upcoming = null, int? previous = null, int? atRank = null, double? atAmount = null,
+		string? gameMode = null,
 		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false,
 		CancellationToken? c = null);
 
 	Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(string leaderboardId, string resourceId,
-		int? upcoming = null, int? previous = null, int? atRank = null, string? gameMode = null,
+		int? upcoming = null, int? previous = null, int? atRank = null, double? atAmount = null,
+		string? gameMode = null,
 		RemovedFilter removedFilter = RemovedFilter.NotRemoved, string? identifier = null, bool skipUpdate = false,
 		CancellationToken? c = null);
 
@@ -79,17 +81,22 @@ public class LbService(
 	private record CachedAnchor(decimal Score, int EntryId);
 
 	/// <summary>
+	/// Cached anchor data for score-based lookups (stores rank at a score threshold)
+	/// </summary>
+	private record CachedAmountAnchor(int Rank);
+
+	/// <summary>
 	/// Get the bucket size for a given rank. Higher ranks get finer granularity.
 	/// Buckets must be larger than typical upcoming request sizes (100) to have any chance of cache hits.
 	/// </summary>
 	private static int GetRankBucket(int atRank) {
 		return atRank switch {
-			<= 1000 => 10,       // Top 1k: bucket of 10, 100 possible buckets
-			<= 5000 => 50,       // Top 5k: bucket of 50, 80 possible buckets  
-			<= 25000 => 250,     // Top 25k: bucket of 250, 80 possible buckets
-			<= 50000 => 500,     // Top 50k: bucket of 500, 50 possible buckets
-			<= 100000 => 1000,   // Top 100k: bucket of 1000, 50 possible buckets
-			_ => 2500            // 100k+: bucket of 2500
+			<= 1000 => 10, // Top 1k: bucket of 10, 100 possible buckets
+			<= 5000 => 50, // Top 5k: bucket of 50, 80 possible buckets  
+			<= 25000 => 250, // Top 25k: bucket of 250, 80 possible buckets
+			<= 50000 => 500, // Top 50k: bucket of 500, 50 possible buckets
+			<= 100000 => 1000, // Top 100k: bucket of 1000, 50 possible buckets
+			_ => 2500 // 100k+: bucket of 2500
 		};
 	}
 
@@ -396,7 +403,7 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			var options = new BulkConfig { 
+			var options = new BulkConfig {
 				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
 					nameof(Models.LeaderboardEntry.IsRemoved),
@@ -420,9 +427,10 @@ public class LbService(
 		);
 	}
 
-	public async Task<List<LeaderboardUpdateEntry>> GetLeaderboardUpdatesAsync(ProfileMember member, CancellationToken c) {
+	public async Task<List<LeaderboardUpdateEntry>> GetLeaderboardUpdatesAsync(ProfileMember member,
+		CancellationToken c) {
 		if (member.Profile?.GameMode == "bingo") return [];
-		
+
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
 		var weeklyInterval = GetCurrentIdentifier(LeaderboardType.Weekly);
 
@@ -550,7 +558,7 @@ public class LbService(
 				.Where(d => d.ExistingEntryId.HasValue)
 				.Select(d => d.ExistingEntryId!.Value)
 				.ToList();
-			
+
 			if (deleteIds.Count > 0) {
 				await context.LeaderboardEntries
 					.Where(e => deleteIds.Contains(e.LeaderboardEntryId))
@@ -788,7 +796,7 @@ public class LbService(
 		}
 
 		if (updatedEntries.Count != 0) {
-			var options = new BulkConfig { 
+			var options = new BulkConfig {
 				PropertiesToIncludeOnUpdate = [
 					nameof(Models.LeaderboardEntry.Score),
 					nameof(Models.LeaderboardEntry.IsRemoved),
@@ -811,7 +819,8 @@ public class LbService(
 		);
 	}
 
-	public async Task<List<LeaderboardUpdateEntry>> GetProfileLeaderboardUpdatesAsync(Profile profile, CancellationToken c) {
+	public async Task<List<LeaderboardUpdateEntry>> GetProfileLeaderboardUpdatesAsync(Profile profile,
+		CancellationToken c) {
 		if (profile.GameMode == "bingo") return [];
 
 		var monthlyInterval = GetCurrentIdentifier(LeaderboardType.Monthly);
@@ -1067,6 +1076,7 @@ public class LbService(
 				upcoming,
 				previous,
 				atRank,
+				atAmount: null,
 				gameMode,
 				removedFilter,
 				identifier,
@@ -1079,7 +1089,8 @@ public class LbService(
 
 	public async Task<LeaderboardPositionDto> GetLeaderboardRank(
 		string leaderboardId, string playerUuid, string profileId, int? upcoming = null, int? previous = null,
-		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
+		int? atRank = null, double? atAmount = null, string? gameMode = null,
+		RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null) {
 		var memberId = profileId;
 
@@ -1113,6 +1124,7 @@ public class LbService(
 				upcoming,
 				previous,
 				atRank,
+				atAmount,
 				gameMode,
 				removedFilter,
 				identifier,
@@ -1139,7 +1151,8 @@ public class LbService(
 
 	public async Task<LeaderboardPositionDto?> GetLeaderboardRankByResourceId(
 		string leaderboardId, string resourceId, int? upcoming = null, int? previous = null,
-		int? atRank = null, string? gameMode = null, RemovedFilter removedFilter = RemovedFilter.NotRemoved,
+		int? atRank = null, double? atAmount = null, string? gameMode = null,
+		RemovedFilter removedFilter = RemovedFilter.NotRemoved,
 		string? identifier = null, bool skipUpdate = false, CancellationToken? c = null) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return null;
 
@@ -1189,10 +1202,12 @@ public class LbService(
 		var anchorScore = userScore;
 		var anchorId = userId;
 		var anchorRank = rankCount == -1 ? -1 : rankCount + 1;
+		var usingAtAmount = atAmount is > 0 && (decimal)atAmount > userScore;
 
 		if (atRank is > 0 && (anchorRank == -1 || atRank < anchorRank)) {
 			var bucketedRank = GetBucketedRank(atRank.Value);
-			var anchorCacheKey = $"lb:anchor:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "c"}:{removedFilter}:{bucketedRank}";
+			var anchorCacheKey =
+				$"lb:anchor:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "c"}:{removedFilter}:{bucketedRank}";
 			var cacheOptions = GetCacheOptions(bucketedRank);
 
 			var anchorCacheMiss = false;
@@ -1209,7 +1224,8 @@ public class LbService(
 
 			if (anchorCacheMiss) {
 				cacheMetrics.RecordAnchorCacheMiss(leaderboardId, bucketedRank);
-			} else {
+			}
+			else {
 				cacheMetrics.RecordAnchorCacheHit(leaderboardId, bucketedRank);
 			}
 
@@ -1219,13 +1235,20 @@ public class LbService(
 				anchorRank = bucketedRank;
 			}
 		}
+		else if (usingAtAmount && atAmount is not null) {
+			anchorScore = (decimal)atAmount.Value;
+			anchorId = 0; // Will be filtered out by the > comparison in upcoming query
+			anchorRank = await baseQuery.CountAsync(
+				e => e.Score > (decimal)atAmount.Value, cancellationToken: cancellationToken) + 1;
+		}
 
 		var upcomingPlayers = new List<LeaderboardEntryDto>();
 		var previousPlayers = new List<LeaderboardEntryDto>();
 
 		if (upcoming > 0 && !userEntry.IsRemoved) {
 			var bucketedUpcoming = GetBucketedUpcoming(upcoming.Value);
-			var upcomingCacheKey = $"lb:upcoming:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "c"}:{removedFilter}:{definition.IsMemberLeaderboard()}:{anchorRank}:{bucketedUpcoming}";
+			var upcomingCacheKey =
+				$"lb:upcoming:{leaderboardId}:{gameMode ?? "all"}:{identifier ?? "c"}:{removedFilter}:{definition.IsMemberLeaderboard()}:{anchorRank}:{bucketedUpcoming}";
 			var cacheOptions = GetCacheOptions(anchorRank > 0 ? anchorRank : 50000);
 
 			var upcomingCacheMiss = false;
@@ -1244,12 +1267,15 @@ public class LbService(
 
 			if (upcomingCacheMiss) {
 				cacheMetrics.RecordUpcomingCacheMiss(leaderboardId, anchorRank > 0 ? anchorRank : 50000);
-			} else {
+			}
+			else {
 				cacheMetrics.RecordUpcomingCacheHit(leaderboardId, anchorRank > 0 ? anchorRank : 50000);
 			}
 
 			// Return only the requested amount from the cached list
-			upcomingPlayers = cachedUpcoming?.Take(upcoming.Value).ToList() ?? [];
+			upcomingPlayers = (usingAtAmount)
+				? cachedUpcoming.Where(e => atAmount < e.Amount).Take(upcoming.Value).ToList() ?? []
+				: cachedUpcoming.Take(upcoming.Value).ToList() ?? [];
 		}
 
 		if (previous > 0 && !userEntry.IsRemoved) {

@@ -47,6 +47,7 @@ internal sealed class GetPlayerRankEndpoint(
 			request.Upcoming,
 			request.Previous,
 			request.AtRank ?? -1,
+			request.AtAmount,
 			identifier: request.Interval,
 			gameMode: request.Mode,
 			removedFilter: request.Removed ?? RemovedFilter.NotRemoved,

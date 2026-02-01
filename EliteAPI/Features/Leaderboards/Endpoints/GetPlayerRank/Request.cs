@@ -36,10 +36,19 @@ public class GetPlayerRankRequest : PlayerProfileUuidRequest
 	public int? Previous { get; set; } = 0;
 
 	/// <summary>
-	/// Start at a specified rank for upcoming players
+	/// Start at a specified rank for upcoming players.
+	/// Use AtAmount instead for better lookups.
 	/// </summary>
 	[QueryParam]
 	public int? AtRank { get; set; } = -1;
+
+	/// <summary>
+	/// Start at a specified score threshold for upcoming players.
+	/// Pass your locally tracked score to get upcoming players
+	/// without needing to calculate the correct rank.
+	/// </summary>
+	[QueryParam]
+	public double? AtAmount { get; set; } = null;
 
 	/// <summary>
 	/// Time interval key of a monthly leaderboard. Format: yyyy-MM
