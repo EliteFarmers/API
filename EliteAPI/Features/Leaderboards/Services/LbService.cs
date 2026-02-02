@@ -1242,7 +1242,7 @@ public class LbService(
 				e => e.Score > (decimal)atAmount.Value, cancellationToken: cancellationToken) + 1;
 		}
 
-		var upcomingPlayers = new List<LeaderboardEntryDto>();
+		var upcomingPlayers = new List<LeaderboardEntryWithRankDto>();
 		var previousPlayers = new List<LeaderboardEntryDto>();
 
 		if (upcoming > 0 && !userEntry.IsRemoved) {
@@ -1260,9 +1260,11 @@ public class LbService(
 					.ThenBy(e => e.LeaderboardEntryId)
 					.Take(bucketedUpcoming);
 
-				return definition.IsMemberLeaderboard()
-					? await upcomingQuery.MapToMemberLeaderboardEntries(bucketedUpcoming <= 20).ToListAsync(ct)
+				var list = definition.IsMemberLeaderboard()
+					? await upcomingQuery.MapToMemberLeaderboardEntries(includeMeta: false).ToListAsync(ct)
 					: await upcomingQuery.MapToProfileLeaderboardEntries(removedFilter).ToListAsync(ct);
+
+				return list.Select((entry, i) => entry.ToDtoWithRank(anchorRank - i - 1)).ToList();
 			}, cacheOptions, cancellationToken: cancellationToken);
 
 			if (upcomingCacheMiss) {
@@ -1272,10 +1274,18 @@ public class LbService(
 				cacheMetrics.RecordUpcomingCacheHit(leaderboardId, anchorRank > 0 ? anchorRank : 50000);
 			}
 
-			// Return only the requested amount from the cached list
-			upcomingPlayers = (usingAtAmount)
-				? cachedUpcoming.Where(e => atAmount < e.Amount).Take(upcoming.Value).ToList() ?? []
-				: cachedUpcoming.Take(upcoming.Value).ToList() ?? [];
+			if (usingAtAmount) {
+				upcomingPlayers = cachedUpcoming.Where(e => atAmount < e.Amount && e.Uuid != resourceId)
+					.Take(upcoming.Value).ToList();
+			}
+			else {
+				upcomingPlayers = cachedUpcoming.Where(e => e.Uuid != resourceId).Take(upcoming.Value).ToList();
+			}
+
+			var next = upcomingPlayers.FirstOrDefault();
+			if (next is not null && next.Rank > 0) {
+				anchorRank = next.Rank + 1;
+			}
 		}
 
 		if (previous > 0 && !userEntry.IsRemoved) {
@@ -1286,7 +1296,7 @@ public class LbService(
 				.Take(previous.Value);
 
 			previousPlayers = definition.IsMemberLeaderboard()
-				? await previousQuery.MapToMemberLeaderboardEntries(previous.Value <= 20).ToListAsync(cancellationToken)
+				? await previousQuery.MapToMemberLeaderboardEntries(includeMeta: false).ToListAsync(cancellationToken)
 				: await previousQuery.MapToProfileLeaderboardEntries(removedFilter).ToListAsync(cancellationToken);
 		}
 

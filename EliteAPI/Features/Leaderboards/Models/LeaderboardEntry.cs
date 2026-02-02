@@ -165,4 +165,19 @@ public static class LeaderboardEntryExtensions
 			Meta = includeMeta ? e.ProfileMember.GetCosmeticsDto() : null
 		});
 	}
+	
+	public static LeaderboardEntryWithRankDto ToDtoWithRank(this LeaderboardEntryDto e, int rank) {
+		return new LeaderboardEntryWithRankDto {
+			Ign =  e.Ign,
+			Uuid = e.Uuid,
+			Profile = e.Profile,
+			Amount = e.Amount,
+			InitialAmount = e.InitialAmount,
+			Removed = e.Removed,
+			Mode = e.Mode,
+			Members = e.Members,
+			Meta = e.Meta,
+			Rank = rank
+		};
+	}
 }

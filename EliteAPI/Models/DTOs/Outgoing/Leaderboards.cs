@@ -163,7 +163,7 @@ public class LeaderboardPositionDto
 	/// <summary>
 	/// List of upcoming players
 	/// </summary>
-	public List<LeaderboardEntryDto>? UpcomingPlayers { get; set; }
+	public List<LeaderboardEntryWithRankDto>? UpcomingPlayers { get; set; }
 
 	/// <summary>
 	/// List of previous players
