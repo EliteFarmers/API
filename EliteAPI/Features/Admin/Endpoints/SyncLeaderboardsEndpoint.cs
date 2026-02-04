@@ -21,7 +21,7 @@ internal sealed class SyncLeaderboardsEndpoint(
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        await syncService.ForceUpdateAsync(ct);
+        _ = syncService.ForceUpdateAsync(CancellationToken.None);
         await Send.NoContentAsync(ct);
     }
 }
