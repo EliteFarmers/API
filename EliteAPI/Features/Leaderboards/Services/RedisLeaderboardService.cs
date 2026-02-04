@@ -99,13 +99,6 @@ public class RedisLeaderboardService(
 			memberId = cachedMemberId;
 		}
 
-		if (memberId == null && request.AtRank > 0) {
-			var range = await db.SortedSetRangeByRankAsync(key, request.AtRank.Value - 1, request.AtRank.Value - 1, Order.Descending);
-			if (range.Length > 0) {
-				memberId = range[0].ToString();
-			}
-		}
-
 		if (memberId == null) return new LeaderboardPositionDto { Rank = -1 };
 
 		var rank = await db.SortedSetRankAsync(key, memberId, Order.Descending);
@@ -114,19 +107,23 @@ public class RedisLeaderboardService(
 
 		List<LeaderboardEntryWithRankDto> upcomingPlayers = [];
 
+		var anchorIndex = position > 0 ? position - 1 : -1;
+		if (request.AtRank > 0 && (position == -1 || request.AtRank < position)) {
+			anchorIndex = request.AtRank.Value - 1;
+		}
+
 		// Providing upcoming implies we want players *better* than us (lower rank index)
 		if (request.Upcoming.HasValue && request.Upcoming.Value > 0) {
 			long start = 0;
 			long stop = 0;
 
-			if (position == -1) {
+			if (anchorIndex == -1) {
 				start = -request.Upcoming.Value;
 				stop = -1;
 			}
 			else {
-				var currentIndex = position - 1;
-				start = Math.Max(0, currentIndex - request.Upcoming.Value);
-				stop = currentIndex - 1;
+				start = Math.Max(0, anchorIndex - request.Upcoming.Value);
+				stop = anchorIndex - 1;
 			}
 
 			if (stop >= start) {
@@ -158,9 +155,9 @@ public class RedisLeaderboardService(
 		}
 		
 		List<LeaderboardEntryDto> previousPlayers = [];
-		if (request.Previous is > 0 && position != -1) {
-			long start = position; // position is 1-based rank, so it is the index of the *next* item (0-based)
-			long stop = position + request.Previous.Value - 1;
+		if (request.Previous is > 0 && anchorIndex != -1) {
+			long start = anchorIndex + 1;
+			long stop = anchorIndex + request.Previous.Value;
 			
 			var slice = await db.SortedSetRangeByRankWithScoresAsync(key, start, stop, Order.Descending);
 			var dtos = (await MapRedisEntries(slice, request.LeaderboardId)).Select(e => e.MapToDto()).ToList();
@@ -182,7 +179,7 @@ public class RedisLeaderboardService(
 		return new LeaderboardPositionDto {
 			Rank = position,
 			Amount = score,
-			UpcomingRank = position == -1 ? (int)(await db.SortedSetLengthAsync(key)) : position - 1,
+			UpcomingRank = anchorIndex == -1 ? (int)(await db.SortedSetLengthAsync(key)) : (int)anchorIndex,
 			UpcomingPlayers = upcomingPlayers,
 			Previous = previousPlayers
 		};

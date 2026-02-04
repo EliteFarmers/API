@@ -44,7 +44,8 @@ public static class ServiceExtensions
 		services.AddHostedService<BackgroundQueueWorker>();
 		services.AddHostedService<MinecraftRendererInitializer>();
 		services.AddHostedService<LeaderboardUpdateBackgroundService>();
-		services.AddHostedService<LeaderboardRedisSyncService>();
+		services.AddSingleton<LeaderboardRedisSyncService>();
+		services.AddHostedService(sp => sp.GetRequiredService<LeaderboardRedisSyncService>());
 
 		services.AddHttpClient(HypixelService.HttpClientName,
 			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });

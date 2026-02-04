@@ -16,6 +16,17 @@ public class LeaderboardRedisSyncService(
     private static readonly RedisValue ProfileHash = "p";
     private static readonly RedisValue IgnHash = "i";
     private static readonly RedisValue UuidHash = "u";
+    private readonly SemaphoreSlim _syncLock = new(1, 1);
+
+    public async Task ForceUpdateAsync(CancellationToken ct) {
+        await _syncLock.WaitAsync(ct);
+        try {
+            await UpdateRequestedLeaderboards(ct);
+        }
+        finally {
+            _syncLock.Release();
+        }
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -34,7 +45,13 @@ public class LeaderboardRedisSyncService(
         {
             try
             {
-                await UpdateRequestedLeaderboards(stoppingToken);
+                await _syncLock.WaitAsync(stoppingToken);
+                try {
+                    await UpdateRequestedLeaderboards(stoppingToken);
+                }
+                finally {
+                    _syncLock.Release();
+                }
             }
             catch (Exception ex)
             {
@@ -112,7 +129,7 @@ public class LeaderboardRedisSyncService(
                     _ = transaction.KeyRenameAsync(tempKey, lbKey, When.Always);
                     
                     // Set TTL on data (it should expire if no longer requested)
-                    _ = transaction.KeyExpireAsync(lbKey, TimeSpan.FromMinutes(30));
+                    _ = transaction.KeyExpireAsync(lbKey, TimeSpan.FromHours(1));
 
                     await transaction.ExecuteAsync();
 
