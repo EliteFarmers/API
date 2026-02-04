@@ -44,6 +44,7 @@ public static class ServiceExtensions
 		services.AddHostedService<BackgroundQueueWorker>();
 		services.AddHostedService<MinecraftRendererInitializer>();
 		services.AddHostedService<LeaderboardUpdateBackgroundService>();
+		services.AddHostedService<LeaderboardRedisSyncService>();
 
 		services.AddHttpClient(HypixelService.HttpClientName,
 			client => { client.DefaultRequestHeaders.UserAgent.ParseAdd("EliteAPI"); });
@@ -187,6 +188,7 @@ public static class ServiceExtensions
 		builder.Services.Configure<ConfigEventSettings>(builder.Configuration.GetSection("Events"));
 		builder.Services.Configure<SkyblockPetSettings>(builder.Configuration.GetSection("Pets"));
 		builder.Services.Configure<AuctionHouseSettings>(builder.Configuration.GetSection("Auctions"));
+		builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("Leaderboards"));
 
 		builder.Services.Configure<ConfigApiRateLimitSettings>(
 			builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));
@@ -246,6 +248,10 @@ public static class ServiceExtensions
 		return context.Request.Headers.TryGetValue("X-Disabled", out var isDisabled) &&
 		       isDisabled.Count > 0 &&
 		       isDisabled[0]!.Equals("true", StringComparison.OrdinalIgnoreCase);
+	}
+
+	public static bool IsSkyHanni(this HttpContext? context) {
+		return context?.GetSkyHanniVersion() is not null;
 	}
 }
 

@@ -1,11 +1,14 @@
+using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Models.DTOs.Outgoing;
+using EliteAPI.Utilities;
 using FastEndpoints;
 
 namespace EliteAPI.Features.Leaderboards.Endpoints.GetProfileRank;
 
 internal sealed class GetProfileRankEndpoint(
-	ILbService lbService
+	ILbService lbService,
+	IRedisLeaderboardService redisLbService
 ) : Endpoint<GetProfileRankRequest, LeaderboardPositionDto>
 {
 	public override void Configure() {
@@ -22,6 +25,28 @@ internal sealed class GetProfileRankEndpoint(
 #pragma warning disable CS0618 // Type or member is obsolete
 		if (request is { IncludeUpcoming: true, Upcoming: 0 or null }) request.Upcoming = 5;
 #pragma warning restore CS0618 // Type or member is obsolete
+		
+		if (HttpContext.IsSkyHanni())
+		{
+			var req = new LeaderboardRankRequest
+			{
+				LeaderboardId = request.Leaderboard,
+				ProfileId = request.ProfileUuidFormatted,
+				Upcoming = request.Upcoming,
+				Previous = request.Previous,
+				AtRank = request.AtRank,
+				Identifier = request.Interval,
+				GameMode = request.Mode,
+				RemovedFilter = request.Removed ?? RemovedFilter.NotRemoved,
+				CancellationToken = c
+			};
+			
+			var res = await redisLbService.GetLeaderboardRank(req);
+			res.MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard);
+			
+			await Send.OkAsync(res, c);
+			return;
+		}
 
 		var result = await lbService.GetLeaderboardRank(
 			request.Leaderboard,
