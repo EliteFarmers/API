@@ -42,7 +42,6 @@ internal sealed class GetProfileRankEndpoint(
 			};
 			
 			var res = await redisLbService.GetLeaderboardRank(req);
-			res.MinAmount = lbService.GetLeaderboardMinScore(request.Leaderboard);
 			
 			await Send.OkAsync(res, c);
 			return;

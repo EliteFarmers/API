@@ -100,11 +100,26 @@ public class LeaderboardRedisSyncService(
                 }
 
                 var entries = await query
-                    .Include(e => e.ProfileMember)
-                    .ThenInclude(pm => pm.MinecraftAccount)
-                    .Include(e => e.ProfileMember)
-                    .ThenInclude(pm => pm.Profile)
-                    .Include(e => e.Profile) 
+                    .OrderByDescending(e => e.Score)
+                    .Take(50000)
+                    .Select(e => new 
+                    {
+                        e.ProfileMemberId,
+                        e.ProfileId,
+                        e.Score,
+                        ProfileMember = e.ProfileMember == null ? null : new 
+                        {
+                            MinecraftAccount = new { Name = e.ProfileMember.MinecraftAccount.Name },
+                            e.ProfileMember.PlayerUuid,
+                            e.ProfileMember.ProfileName,
+                            Profile = new { ProfileName = e.ProfileMember.Profile.ProfileName }
+                        },
+                        Profile = e.Profile == null ? null : new 
+                        {
+                            e.Profile.ProfileName,
+                            e.Profile.ProfileId
+                        }
+                    })
                     .ToListAsync(ct); 
 
                 // Use transaction to swap sorted set atomically
@@ -130,6 +145,11 @@ public class LeaderboardRedisSyncService(
                     
                     // Set TTL on data (it should expire if no longer requested)
                     _ = transaction.KeyExpireAsync(lbKey, TimeSpan.FromHours(1));
+
+                    // Cache min score
+                    var minKey = $"lb-min:{slug}:{parts[2]}";
+                    _ = transaction.StringSetAsync(minKey, sortedSetEntries[^1].Score);
+                    _ = transaction.KeyExpireAsync(minKey, TimeSpan.FromHours(1));
 
                     await transaction.ExecuteAsync();
 
@@ -170,6 +190,9 @@ public class LeaderboardRedisSyncService(
             {
                 logger.LogError(ex, "Failed to update requested leaderboard {Slug}:{Mode}", slug, parts[2]);
             }
+
+            // Give database a small break between leaderboards
+            await Task.Delay(1000, ct);
         }
     }
 }

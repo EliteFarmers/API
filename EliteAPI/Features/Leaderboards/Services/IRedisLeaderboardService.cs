@@ -11,4 +11,5 @@ public interface IRedisLeaderboardService
         List<string> leaderboards, LeaderboardRankRequestWithoutId request);
         
     double GetLeaderboardMinScore(string leaderboardId);
+    Task<double> GetCachedMinScore(string leaderboardId, string gameMode = "all");
 }
