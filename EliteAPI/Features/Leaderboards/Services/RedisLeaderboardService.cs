@@ -179,7 +179,7 @@ public class RedisLeaderboardService(
 		return new LeaderboardPositionDto {
 			Rank = position,
 			Amount = score,
-			MinAmount = GetLeaderboardMinScore(request.LeaderboardId),
+			MinAmount = await GetCachedMinScore(request.LeaderboardId, request.GameMode),
 			UpcomingRank = anchorIndex == -1 ? (int)(await db.SortedSetLengthAsync(key)) : (int)anchorIndex,
 			UpcomingPlayers = upcomingPlayers,
 			Previous = previousPlayers
@@ -225,9 +225,9 @@ public class RedisLeaderboardService(
 		return 0;
 	}
 
-	public async Task<double> GetCachedMinScore(string leaderboardId, string gameMode = "all") {
+	public async Task<double> GetCachedMinScore(string leaderboardId, string? gameMode = "all") {
 		var db = redis.GetDatabase();
-		var key = $"lb-min:{leaderboardId}:{gameMode}";
+		var key = $"lb-min:{leaderboardId}:{gameMode ?? "all"}";
 		var val = await db.StringGetAsync(key);
 		if (val.HasValue && double.TryParse(val.ToString(), out var min)) {
 			return min;
