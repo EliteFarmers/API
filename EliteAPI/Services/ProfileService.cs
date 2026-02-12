@@ -159,8 +159,8 @@ public class ProfileService(
 			.FirstOrDefaultAsync(p => p.Uuid.Equals(playerUuid));
 
 		if (data is not null && !data.LastUpdated.OlderThanSeconds(skipCooldown
-			    ? _coolDowns.HypixelPlayerDataCooldown
-			    : _coolDowns.HypixelPlayerDataLinkingCooldown))
+			    ? _coolDowns.HypixelPlayerDataLinkingCooldown
+			    : _coolDowns.HypixelPlayerDataCooldown))
 			return data;
 
 		await memberService.RefreshPlayerData(playerUuid);
@@ -184,7 +184,7 @@ public class ProfileService(
 	}
 
 	public async Task<PlayerData?> GetPlayerDataByUuidOrIgn(string uuidOrIgn, bool skipCooldown = false) {
-		if (uuidOrIgn.Length == 32) return await GetPlayerData(uuidOrIgn);
+		if (uuidOrIgn.Length == 32) return await GetPlayerData(uuidOrIgn, skipCooldown);
 		return await GetPlayerDataByIgn(uuidOrIgn, skipCooldown);
 	}
 }

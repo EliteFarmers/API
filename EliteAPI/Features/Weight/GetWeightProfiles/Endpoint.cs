@@ -42,7 +42,7 @@ internal sealed class GetWeightForProfilesEndpoint(
 	public override async Task<Result> ExecuteAsync(GetWeightForProfilesRequest request, CancellationToken c) {
 		var uuid = request.PlayerUuidFormatted;
 		await memberService.UpdatePlayerIfNeeded(uuid, RequestedResources.ProfilesOnly with {
-			CooldownMultiplier = 32
+			CooldownMultiplier = 16
 		});
 
 		var members = await context.ProfileMembers
