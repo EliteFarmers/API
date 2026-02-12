@@ -9,6 +9,9 @@ public interface IRedisLeaderboardService
 
     Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
         List<string> leaderboards, LeaderboardRankRequestWithoutId request);
+
+    Task<Dictionary<string, PlayerLeaderboardEntryWithRankDto>> GetCachedPlayerLeaderboardRanks(
+        string playerUuid, string profileId, int? maxRank = null);
         
     double GetLeaderboardMinScore(string leaderboardId);
     Task<double> GetCachedMinScore(string leaderboardId, string gameMode = "all");

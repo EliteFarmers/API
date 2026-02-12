@@ -53,6 +53,63 @@ public class RedisLeaderboardService(
 		return result;
 	}
 
+	public async Task<Dictionary<string, PlayerLeaderboardEntryWithRankDto>> GetCachedPlayerLeaderboardRanks(
+		string playerUuid, string profileId, int? maxRank = null) {
+		var db = redis.GetDatabase();
+		var result = new Dictionary<string, PlayerLeaderboardEntryWithRankDto>();
+
+		var memberIdValue = await db.StringGetAsync($"memberid:{profileId}:{playerUuid}");
+		var memberId = memberIdValue.HasValue ? memberIdValue.ToString() : null;
+
+		var lookups = new List<(
+			string Slug,
+			ILeaderboardDefinition Definition,
+			string ResourceId,
+			string? IntervalIdentifier,
+			Task<long?> RankTask,
+			Task<double?> ScoreTask)>();
+
+		foreach (var (slug, definition) in registrationService.LeaderboardsById) {
+			var resourceId = definition.IsProfileLeaderboard() ? profileId : memberId;
+			if (string.IsNullOrWhiteSpace(resourceId)) continue;
+
+			var key = $"lb:{slug}:all";
+			var intervalType = LbService.GetTypeFromSlug(slug);
+			var intervalIdentifier = LbService.GetCurrentIdentifier(intervalType);
+
+			lookups.Add((
+				slug,
+				definition,
+				resourceId!,
+				intervalIdentifier,
+				db.SortedSetRankAsync(key, resourceId, Order.Descending),
+				db.SortedSetScoreAsync(key, resourceId)));
+		}
+
+		await Task.WhenAll(lookups.SelectMany(x => new Task[] { x.RankTask, x.ScoreTask }));
+
+		foreach (var lookup in lookups) {
+			if (!lookup.RankTask.Result.HasValue) continue;
+
+			var rank = (int)lookup.RankTask.Result.Value + 1;
+			if (maxRank is not null && rank > maxRank.Value) continue;
+
+			result[lookup.Slug] = new PlayerLeaderboardEntryWithRankDto {
+				Title = lookup.Definition.Info.Title,
+				Short = lookup.Definition.Info.ShortTitle,
+				Slug = lookup.Slug,
+				Profile = lookup.Definition.IsProfileLeaderboard() ? true : null,
+				Rank = rank,
+				IntervalIdentifier = lookup.IntervalIdentifier,
+				Amount = lookup.ScoreTask.Result ?? 0,
+				InitialAmount = 0, // Redis cache only stores current score.
+				Type = lookup.Definition.Info.ScoreDataType
+			};
+		}
+
+		return result;
+	}
+
 	public async Task<LeaderboardPositionDto> GetLeaderboardRank(LeaderboardRankRequest request) {
 		var (lb, definition) = await GetLeaderboard(request.LeaderboardId);
 		if (lb is null || definition is null) return new LeaderboardPositionDto { Rank = -1 };
@@ -60,13 +117,9 @@ public class RedisLeaderboardService(
 		var db = redis.GetDatabase();
 		var mode = request.GameMode ?? "all";
 		var key = $"lb:{request.LeaderboardId}:{mode}";
-		var reqKey = $"lb-req:{request.LeaderboardId}:{mode}";
 
 		// Check if data exists in Redis
 		if (!await db.KeyExistsAsync(key)) {
-			// Signal that we want this leaderboard synced
-			await db.StringSetAsync(reqKey, "wanted", TimeSpan.FromMinutes(20));
-
 			return new LeaderboardPositionDto {
 				Rank = -1,
 				Amount = 0,
@@ -76,10 +129,6 @@ public class RedisLeaderboardService(
 				Disabled = true
 			};
 		}
-
-		// Refresh heartbeat
-		await db.KeyExistsAsync(reqKey); // Ensure it stays alive (heartbeat)
-		await db.KeyExpireAsync(reqKey, TimeSpan.FromMinutes(20));
 
 		// Resolve MemberId
 		string? memberId = null;
@@ -153,15 +202,15 @@ public class RedisLeaderboardService(
 				upcomingPlayers.Reverse();
 			}
 		}
-		
+
 		List<LeaderboardEntryDto> previousPlayers = [];
 		if (request.Previous is > 0 && anchorIndex != -1) {
 			long start = anchorIndex + 1;
 			long stop = anchorIndex + request.Previous.Value;
-			
+
 			var slice = await db.SortedSetRangeByRankWithScoresAsync(key, start, stop, Order.Descending);
 			var dtos = (await MapRedisEntries(slice, request.LeaderboardId)).Select(e => e.MapToDto()).ToList();
-			
+
 			previousPlayers.AddRange(dtos.Select((dto, i) => new LeaderboardEntryDto {
 				Ign = dto.Ign,
 				Profile = dto.Profile,
@@ -193,7 +242,7 @@ public class RedisLeaderboardService(
 		foreach (var entry in entries) {
 			var memberId = entry.Element.ToString();
 			var memberData = await db.HashGetAllAsync($"member:{memberId}");
-			
+
 			var profile = memberData.FirstOrDefault(x => x.Name == ProfileHash).Value.ToString();
 			var ign = memberData.FirstOrDefault(x => x.Name == IgnHash).Value.ToString();
 			var uuid = memberData.FirstOrDefault(x => x.Name == UuidHash).Value.ToString();
@@ -209,7 +258,7 @@ public class RedisLeaderboardService(
 
 		return results;
 	}
-	
+
 	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {
 		if (!registrationService.LeaderboardsById.TryGetValue(leaderboardId, out var definition)) return (null, null);
 
@@ -232,6 +281,7 @@ public class RedisLeaderboardService(
 		if (val.HasValue && double.TryParse(val.ToString(), out var min)) {
 			return min;
 		}
+
 		return GetLeaderboardMinScore(leaderboardId);
 	}
 }

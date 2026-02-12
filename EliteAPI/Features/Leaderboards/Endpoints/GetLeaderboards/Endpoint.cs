@@ -33,6 +33,7 @@ internal sealed class GetLeaderboardsEndpoint(
 				Category = l.Value.Info.Category,
 				Profile = l.Value is IProfileLeaderboardDefinition,
 				MinimumScore = l.Value.Info.MinimumScore,
+				CachedRankAmount = l.Value.Info.CachedRankAmount,
 				IntervalType = LbService.GetTypeFromSlug(l.Key),
 				ScoreDataType = l.Value.Info.ScoreDataType
 			});

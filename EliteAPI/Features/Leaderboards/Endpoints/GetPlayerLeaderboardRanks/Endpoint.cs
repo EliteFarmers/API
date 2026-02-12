@@ -1,5 +1,4 @@
 using EliteAPI.Features.Leaderboards.Services;
-using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.Common;
 using EliteAPI.Utilities;
 using FastEndpoints;
@@ -22,8 +21,7 @@ internal sealed class LeaderboardRanksResponse
 }
 
 internal sealed class GetPlayerLeaderboardRanksEndpoint(
-	ILbService lbService,
-	IMemberService memberService
+	IRedisLeaderboardService redisLbService
 ) : Endpoint<LeaderboardRanksRequest, LeaderboardRanksResponse>
 {
 	public override void Configure() {
@@ -40,19 +38,12 @@ internal sealed class GetPlayerLeaderboardRanksEndpoint(
 			await Send.OkAsync(new LeaderboardRanksResponse(), c);
 			return;
 		}
-		
-		var member = await memberService.GetProfileMemberId(request.PlayerUuidFormatted, request.ProfileUuidFormatted);
-		if (member is null) ThrowError("Profile member not found.", StatusCodes.Status404NotFound);
-
-		var entries = await lbService.GetPlayerLeaderboardEntriesWithRankAsync(member.Value);
-		var profileEntries = await lbService.GetProfileLeaderboardEntriesWithRankAsync(request.ProfileUuidFormatted);
-
-		var ranks = entries.Concat(profileEntries)
-			.Where(e => request.Max is null || e.Rank <= request.Max)
-			.ToDictionary(e => e.Slug, e => e);
 
 		var response = new LeaderboardRanksResponse {
-			Ranks = ranks
+			Ranks = await redisLbService.GetCachedPlayerLeaderboardRanks(
+				request.PlayerUuidFormatted,
+				request.ProfileUuidFormatted,
+				request.Max)
 		};
 
 		await Send.OkAsync(response, c);

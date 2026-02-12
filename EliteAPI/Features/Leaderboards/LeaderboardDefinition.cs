@@ -18,6 +18,7 @@ public class LeaderboardInfo
 	public string? ItemId { get; set; }
 	public bool UseIncreaseForInterval { get; set; } = true;
 	public decimal MinimumScore { get; set; } = 0;
+	public int CachedRankAmount { get; set; } = 50_000;
 	public List<LeaderboardType> IntervalType { get; set; } = [];
 	public LeaderboardScoreDataType ScoreDataType { get; set; }
 	public LeaderboardSourceType? Source { get; set; }
@@ -75,6 +76,11 @@ public class LeaderboardInfoDto
 	/// Minimum score required to be on the leaderboard
 	/// </summary>
 	public decimal MinimumScore { get; set; }
+
+	/// <summary>
+	/// Amount of top ranks cached in Redis for this leaderboard.
+	/// </summary>
+	public int CachedRankAmount { get; set; }
 
 	/// <summary>
 	/// Interval type of the leaderboard
