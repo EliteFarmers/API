@@ -9,6 +9,7 @@ namespace EliteAPI.Features.Leaderboards.Services;
 public class LeaderboardRedisSyncService(
     IServiceProvider serviceProvider,
     IConnectionMultiplexer redis,
+    LeaderboardRedisMemoryMetricsService memoryMetrics,
     ILogger<LeaderboardRedisSyncService> logger,
     IOptions<ConfigLeaderboardSettings> settings) : BackgroundService
 {
@@ -194,5 +195,8 @@ public class LeaderboardRedisSyncService(
             // Give database a small break between leaderboards
             await Task.Delay(1000, ct);
         }
+
+        // Refresh Redis leaderboard memory gauges right after rebuild work.
+        await memoryMetrics.RefreshAsync(ct);
     }
 }
