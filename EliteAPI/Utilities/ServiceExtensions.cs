@@ -44,6 +44,7 @@ public static class ServiceExtensions
 		services.AddHostedService<BackgroundQueueWorker>();
 		services.AddHostedService<MinecraftRendererInitializer>();
 		services.AddHostedService<LeaderboardUpdateBackgroundService>();
+		services.AddSingleton<LeaderboardRedisMemoryMetricsService>();
 		services.AddSingleton<LeaderboardRedisSyncService>();
 		services.AddHostedService(sp => sp.GetRequiredService<LeaderboardRedisSyncService>());
 
