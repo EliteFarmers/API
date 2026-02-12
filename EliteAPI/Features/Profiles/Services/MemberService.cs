@@ -222,6 +222,8 @@ public class MemberService(
 	}
 
 	public async Task RefreshProfiles(string playerUuid, RequestedResources resources) {
+		if (contextAccessor.HttpContext.IsKnownBot()) return;
+
 		using var scope = provider.CreateScope();
 		var processor = scope.ServiceProvider.GetRequiredService<IProfileProcessorService>();
 		var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
@@ -244,6 +246,8 @@ public class MemberService(
 	}
 
 	public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {
+		if (contextAccessor.HttpContext.IsKnownBot()) return;
+
 		using var scope = provider.CreateScope();
 		await using var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
 
