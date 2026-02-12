@@ -1,6 +1,7 @@
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Models.Common;
+using EliteAPI.Utilities;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 
@@ -35,6 +36,11 @@ internal sealed class GetPlayerLeaderboardRanksEndpoint(
 	}
 
 	public override async Task HandleAsync(LeaderboardRanksRequest request, CancellationToken c) {
+		if (HttpContext.IsRequestDisabled()) {
+			await Send.OkAsync(new LeaderboardRanksResponse(), c);
+			return;
+		}
+		
 		var member = await memberService.GetProfileMemberId(request.PlayerUuidFormatted, request.ProfileUuidFormatted);
 		if (member is null) ThrowError("Profile member not found.", StatusCodes.Status404NotFound);
 
