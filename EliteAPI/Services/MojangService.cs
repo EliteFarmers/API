@@ -25,7 +25,8 @@ public partial class MojangService(
 	IOptions<ConfigCooldownSettings> coolDowns,
 	ICacheService cacheService,
 	IServiceScopeFactory serviceScopeFactory,
-	ILogger<MojangService> logger)
+	ILogger<MojangService> logger,
+	IHttpContextAccessor httpContextAccessor)
 	: IMojangService
 {
 	private const string ClientName = "EliteAPI";
@@ -41,6 +42,8 @@ public partial class MojangService(
 			.FirstOrDefaultAsync();
 
 		if (account is null || account.LastUpdated.OlderThanSeconds(_coolDowns.MinecraftAccountCooldown)) {
+			if (httpContextAccessor.HttpContext.IsKnownBot()) return account;
+
 			var fetched = await FetchMinecraftAccountByIgn(ign);
 			return fetched ?? account;
 		}
@@ -75,6 +78,12 @@ public partial class MojangService(
 			.FirstOrDefaultAsync();
 
 		if (account is null) {
+			if (httpContextAccessor.HttpContext.IsKnownBot()) {
+				// Bots should not trigger synchronous fetches, but we can queue a background refresh for the next request
+				await new RefreshMinecraftAccountCommand { Uuid = uuid }.QueueJobAsync();
+				return null;
+			}
+
 			// No existing account, must fetch synchronously
 			return await FetchMinecraftAccountByUuid(uuid);
 		}
