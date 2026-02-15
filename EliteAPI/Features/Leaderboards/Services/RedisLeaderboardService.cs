@@ -148,12 +148,15 @@ public class RedisLeaderboardService(
 			memberId = cachedMemberId;
 		}
 
-		if (memberId == null) return new LeaderboardPositionDto { Rank = -1 };
+		if (definition.IsMemberLeaderboard() && string.IsNullOrWhiteSpace(memberId))
+			return new LeaderboardPositionDto { Rank = -1 };
 
-		var rank = await db.SortedSetRankAsync(key, memberId, Order.Descending);
+		var resourceId = definition.IsProfileLeaderboard() ? request.ProfileId : memberId;
+		if (string.IsNullOrWhiteSpace(resourceId)) return new LeaderboardPositionDto { Rank = -1 };
+
+		var rank = await db.SortedSetRankAsync(key, resourceId, Order.Descending);
 		var position = rank.HasValue ? (int)rank.Value + 1 : -1;
-		var score = await db.SortedSetScoreAsync(key, memberId) ?? 0;
-
+		var score = await db.SortedSetScoreAsync(key, resourceId) ?? 0;
 		List<LeaderboardEntryWithRankDto> upcomingPlayers = [];
 
 		var anchorIndex = position > 0 ? position - 1 : -1;

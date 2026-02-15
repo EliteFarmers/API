@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Profiles.Services;

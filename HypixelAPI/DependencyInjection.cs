@@ -17,6 +17,7 @@ public static class DependencyInjection
 	/// <returns>An <see cref="IHttpClientBuilder"/> for further configuration.</returns>
 	public static IHttpClientBuilder AddHypixelApi(this IServiceCollection services, HypixelApiOptions options) {
 		services.AddSingleton<IHypixelKeyUsageCounter, HypixelKeyUsageCounter>();
+		services.AddSingleton<IHypixelRequestMetrics, HypixelRequestMetrics>();
 		services.AddSingleton<IHypixelRequestLimiter, HypixelRequestLimiter>();
 		services.AddScoped<HypixelRateLimitHandler>();
 

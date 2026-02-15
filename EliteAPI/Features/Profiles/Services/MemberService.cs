@@ -1,4 +1,4 @@
-﻿using EliteAPI.Configuration.Settings;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.HypixelGuilds.Commands;
@@ -8,6 +8,7 @@ using EliteAPI.Models.Entities.Hypixel;
 using EliteAPI.Services.Interfaces;
 using EliteAPI.Utilities;
 using FastEndpoints;
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -66,7 +67,8 @@ public class MemberService(
 	IServiceScopeFactory provider,
 	IMojangService mojangService,
 	IOptions<ConfigCooldownSettings> coolDowns,
-	IConnectionMultiplexer redis)
+	IConnectionMultiplexer redis,
+	IUpdatePathMetrics updatePathMetrics)
 	: IMemberService
 {
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
@@ -141,23 +143,73 @@ public class MemberService(
 	}
 
 	public async Task UpdatePlayerIfNeeded(string playerUuid, RequestedResources resources) {
-		if (contextAccessor.HttpContext.IsKnownBot()) return;
+		var totalTimer = Stopwatch.StartNew();
+		var success = false;
 
-		var account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
-		if (account is null) return;
+		try {
+			if (contextAccessor.HttpContext.IsKnownBot()) {
+				success = true;
+				return;
+			}
 
-		var lastUpdated = new LastUpdatedDto {
-			PlayerUuid = account.Id,
-			PlayerData = account.PlayerDataLastUpdated,
-			Profiles = account.ProfilesLastUpdated,
-		};
+			var mojangTimer = Stopwatch.StartNew();
+			var mojangSuccess = false;
+			MinecraftAccount? account = null;
+			try {
+				account = await mojangService.GetMinecraftAccountByUuidOrIgn(playerUuid);
+				mojangSuccess = true;
+			}
+			finally {
+				mojangTimer.Stop();
+				updatePathMetrics.RecordStage("update_player_if_needed", "mojang_lookup",
+					mojangTimer.Elapsed.TotalMilliseconds, mojangSuccess);
+			}
 
-		// Background guild update - not critical for profile response
-		if (resources.Guild) {
-			await new UpdateGuildCommand { PlayerUuid = account.Id }.QueueJobAsync();
+			if (account is null) {
+				success = true;
+				return;
+			}
+
+			var lastUpdated = new LastUpdatedDto {
+				PlayerUuid = account.Id,
+				PlayerData = account.PlayerDataLastUpdated,
+				Profiles = account.ProfilesLastUpdated,
+			};
+
+			// Background guild update - not critical for profile response
+			if (resources.Guild) {
+				var guildTimer = Stopwatch.StartNew();
+				var guildSuccess = false;
+				try {
+					await new UpdateGuildCommand { PlayerUuid = account.Id }.QueueJobAsync();
+					guildSuccess = true;
+				}
+				finally {
+					guildTimer.Stop();
+					updatePathMetrics.RecordStage("update_player_if_needed", "queue_guild_update",
+						guildTimer.Elapsed.TotalMilliseconds, guildSuccess);
+				}
+			}
+
+			var refreshTimer = Stopwatch.StartNew();
+			var refreshSuccess = false;
+			try {
+				await RefreshNeededData(lastUpdated, resources);
+				refreshSuccess = true;
+			}
+			finally {
+				refreshTimer.Stop();
+				updatePathMetrics.RecordStage("update_player_if_needed", "refresh_needed_data",
+					refreshTimer.Elapsed.TotalMilliseconds, refreshSuccess);
+			}
+
+			success = true;
 		}
-
-		await RefreshNeededData(lastUpdated, resources);
+		finally {
+			totalTimer.Stop();
+			updatePathMetrics.RecordStage("update_player_if_needed", "total",
+				totalTimer.Elapsed.TotalMilliseconds, success);
+		}
 	}
 
 	public async Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1) {
@@ -194,104 +246,203 @@ public class MemberService(
 		var updatePlayer = false;
 		var updateProfiles = false;
 
-		if (resources.Profiles && lastUpdated.Profiles.OlderThanSeconds((int)(_coolDowns.SkyblockProfileCooldown *
-		                                                                      resources.CooldownMultiplier))
-		                       && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) {
-			db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
+		var profileGateTimer = Stopwatch.StartNew();
+		try {
+			if (resources.Profiles && lastUpdated.Profiles.OlderThanSeconds((int)(_coolDowns.SkyblockProfileCooldown *
+			                                                                      resources.CooldownMultiplier))
+			                       && !await db.KeyExistsAsync($"profile:{playerUuid}:updating")) {
+				db.StringSet($"profile:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
 
-			if (resources.RequireActiveMemberId is { } memberId) {
-				updateProfiles = await IsPlayerActiveAsync(memberId);
-			} else {
-				updateProfiles = true;
+				if (resources.RequireActiveMemberId is { } memberId) {
+					updateProfiles = await IsPlayerActiveAsync(memberId);
+				}
+				else {
+					updateProfiles = true;
+				}
+			}
+		}
+		finally {
+			profileGateTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_needed_data",
+				updateProfiles ? "profile_refresh_gate_triggered" : "profile_refresh_gate_skipped",
+				profileGateTimer.Elapsed.TotalMilliseconds, true);
+		}
+
+		var playerGateTimer = Stopwatch.StartNew();
+		try {
+			if (resources.PlayerData && lastUpdated.PlayerData.OlderThanSeconds((int)(_coolDowns.HypixelPlayerDataCooldown *
+				                         resources.CooldownMultiplier))
+			                         && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) {
+				db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
+				updatePlayer = true;
+			}
+		}
+		finally {
+			playerGateTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_needed_data",
+				updatePlayer ? "player_refresh_gate_triggered" : "player_refresh_gate_skipped",
+				playerGateTimer.Elapsed.TotalMilliseconds, true);
+		}
+
+		if (updateProfiles) {
+			var refreshProfilesTimer = Stopwatch.StartNew();
+			var refreshProfilesSuccess = false;
+			try {
+				await RefreshProfiles(playerUuid, resources);
+				refreshProfilesSuccess = true;
+			}
+			finally {
+				refreshProfilesTimer.Stop();
+				updatePathMetrics.RecordStage("refresh_needed_data", "refresh_profiles",
+					refreshProfilesTimer.Elapsed.TotalMilliseconds, refreshProfilesSuccess);
 			}
 		}
 
-		if (resources.PlayerData && lastUpdated.PlayerData.OlderThanSeconds((int)(_coolDowns.HypixelPlayerDataCooldown *
-			                         resources.CooldownMultiplier))
-		                         && !await db.KeyExistsAsync($"player:{playerUuid}:updating")) {
-			db.StringSet($"player:{playerUuid}:updating", "1", TimeSpan.FromSeconds(15));
-			updatePlayer = true;
-		}
-
-		if (updateProfiles) await RefreshProfiles(playerUuid, resources);
-
 		// Background player data refresh
 		if (updatePlayer) {
-			await new RefreshPlayerDataCommand { PlayerUuid = playerUuid }.QueueJobAsync();
+			var queuePlayerRefreshTimer = Stopwatch.StartNew();
+			var queuePlayerRefreshSuccess = false;
+			try {
+				await new RefreshPlayerDataCommand { PlayerUuid = playerUuid }.QueueJobAsync();
+				queuePlayerRefreshSuccess = true;
+			}
+			finally {
+				queuePlayerRefreshTimer.Stop();
+				updatePathMetrics.RecordStage("refresh_needed_data", "queue_player_data_refresh",
+					queuePlayerRefreshTimer.Elapsed.TotalMilliseconds, queuePlayerRefreshSuccess);
+			}
 		}
 	}
 
 	public async Task RefreshProfiles(string playerUuid, RequestedResources resources) {
 		if (contextAccessor.HttpContext.IsKnownBot()) return;
 
-		using var scope = provider.CreateScope();
-		var processor = scope.ServiceProvider.GetRequiredService<IProfileProcessorService>();
-		var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
-
-		var data = await hypixelService.FetchProfiles(playerUuid);
-
-		if (data.Value is null) {
-			var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
-			logger.LogError("Failed to load profiles for {PlayerUuid}", playerUuid);
-			return;
-		}
+		var totalTimer = Stopwatch.StartNew();
+		var success = false;
 
 		try {
-			await processor.ProcessProfilesWaitForOnePlayer(data.Value, playerUuid, resources);
+			using var scope = provider.CreateScope();
+			var processor = scope.ServiceProvider.GetRequiredService<IProfileProcessorService>();
+			var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
+
+			var fetchTimer = Stopwatch.StartNew();
+			var fetchSuccess = false;
+			var data = await hypixelService.FetchProfiles(playerUuid);
+			fetchSuccess = true;
+			fetchTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_profiles", "fetch_profiles_api",
+				fetchTimer.Elapsed.TotalMilliseconds, fetchSuccess);
+
+			if (data.Value is null) {
+				var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
+				logger.LogError("Failed to load profiles for {PlayerUuid}", playerUuid);
+				return;
+			}
+
+			var processTimer = Stopwatch.StartNew();
+			var processSuccess = false;
+			try {
+				await processor.ProcessProfilesWaitForOnePlayer(data.Value, playerUuid, resources);
+				processSuccess = true;
+			}
+			finally {
+				processTimer.Stop();
+				updatePathMetrics.RecordStage("refresh_profiles", "process_profiles",
+					processTimer.Elapsed.TotalMilliseconds, processSuccess);
+			}
+
+			success = true;
 		}
 		catch (Exception e) {
+			using var scope = provider.CreateScope();
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<MemberService>>();
 			logger.LogError(e, "Failed to process profiles for {PlayerUuid}", playerUuid);
+		}
+		finally {
+			totalTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_profiles", "total",
+				totalTimer.Elapsed.TotalMilliseconds, success);
 		}
 	}
 
 	public async Task RefreshPlayerData(string playerUuid, MinecraftAccount? account = null) {
 		if (contextAccessor.HttpContext.IsKnownBot()) return;
 
-		using var scope = provider.CreateScope();
-		await using var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+		var totalTimer = Stopwatch.StartNew();
+		var success = false;
 
-		var mojang = scope.ServiceProvider.GetRequiredService<IMojangService>();
-		var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
-		var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
+		try {
+			using var scope = provider.CreateScope();
+			await using var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-		var minecraftAccount = account ?? await mojang.GetMinecraftAccountByUuidOrIgn(playerUuid);
-		if (minecraftAccount is null) return;
+			var mojang = scope.ServiceProvider.GetRequiredService<IMojangService>();
+			var hypixelService = scope.ServiceProvider.GetRequiredService<IHypixelService>();
+			var mapper = scope.ServiceProvider.GetRequiredService<IMapper>();
 
-		playerUuid = minecraftAccount.Id;
+			var mojangTimer = Stopwatch.StartNew();
+			var mojangSuccess = false;
+			var minecraftAccount = account ?? await mojang.GetMinecraftAccountByUuidOrIgn(playerUuid);
+			mojangSuccess = true;
+			mojangTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_player_data", "mojang_lookup",
+				mojangTimer.Elapsed.TotalMilliseconds, mojangSuccess);
 
-		var data = await hypixelService.FetchPlayer(playerUuid);
-		var player = data.Value;
+			if (minecraftAccount is null) return;
 
-		if (player?.Player is null) return;
+			playerUuid = minecraftAccount.Id;
 
-		var existing = await dataContext.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
-		var playerData = mapper.Map<PlayerData>(player.Player);
+			var fetchTimer = Stopwatch.StartNew();
+			var fetchSuccess = false;
+			var data = await hypixelService.FetchPlayer(playerUuid);
+			fetchSuccess = true;
+			fetchTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_player_data", "fetch_player_api",
+				fetchTimer.Elapsed.TotalMilliseconds, fetchSuccess);
 
-		if (existing is null) {
-			playerData.Uuid = minecraftAccount.Id;
+			var player = data.Value;
+			if (player?.Player is null) return;
 
-			minecraftAccount.PlayerData = playerData;
-			minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+			var existing = await dataContext.PlayerData.FirstOrDefaultAsync(a => a.Uuid == minecraftAccount.Id);
+			var playerData = mapper.Map<PlayerData>(player.Player);
 
-			dataContext.PlayerData.Add(playerData);
-		}
-		else {
-			mapper.Map(playerData, existing);
+			if (existing is null) {
+				playerData.Uuid = minecraftAccount.Id;
 
-			if (existing.MinecraftAccount is not null) {
-				existing.MinecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+				minecraftAccount.PlayerData = playerData;
+				minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+				dataContext.PlayerData.Add(playerData);
 			}
 			else {
-				minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-				if (dataContext.Entry(minecraftAccount).State == EntityState.Detached)
-					dataContext.Entry(minecraftAccount).State = EntityState.Modified;
+				mapper.Map(playerData, existing);
+
+				if (existing.MinecraftAccount is not null) {
+					existing.MinecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+				}
+				else {
+					minecraftAccount.PlayerDataLastUpdated = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+					if (dataContext.Entry(minecraftAccount).State == EntityState.Detached)
+						dataContext.Entry(minecraftAccount).State = EntityState.Modified;
+				}
+
+				dataContext.PlayerData.Update(existing);
 			}
 
-			dataContext.PlayerData.Update(existing);
-		}
+			var saveTimer = Stopwatch.StartNew();
+			var saveSuccess = false;
+			await dataContext.SaveChangesAsync();
+			saveSuccess = true;
+			saveTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_player_data", "save_player_data",
+				saveTimer.Elapsed.TotalMilliseconds, saveSuccess);
 
-		await dataContext.SaveChangesAsync();
+			success = true;
+		}
+		finally {
+			totalTimer.Stop();
+			updatePathMetrics.RecordStage("refresh_player_data", "total",
+				totalTimer.Elapsed.TotalMilliseconds, success);
+		}
 	}
 
 	/// <summary>
@@ -337,3 +488,4 @@ public class LastUpdatedDto
 	public long PlayerData { get; set; }
 	public required string PlayerUuid { get; set; }
 }
+
