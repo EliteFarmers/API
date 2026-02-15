@@ -112,6 +112,13 @@ builder.Services.AddSkyblockRepo(opt => {
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope()) {
+	FarmingWeightConfig.Settings =
+		scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
+	FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
+	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
+}
+
 app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
 app.UseEliteRateLimiting();
@@ -193,11 +200,6 @@ app.UseWhen(context => context.Request.Path.StartsWithSegments("/metrics"),
 	applicationBuilder => { applicationBuilder.UseMiddleware<LocalOnlyMiddleware>(); });
 
 using (var scope = app.Services.CreateScope()) {
-	FarmingWeightConfig.Settings =
-		scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
-	FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
-	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
-
 	var logging = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 	logging.LogInformation("Starting EliteAPI...");
 
