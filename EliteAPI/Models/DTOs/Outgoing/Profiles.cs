@@ -88,30 +88,59 @@ public class ProfileMemberDto
 
 public class ProfileMemberDataDto
 {
-	public Dictionary<string, int> AttributeStacks { get; set; } = new();
-	public List<ProfileMemberShardDataDto> Shards { get; set; } = [];
-	public ProfileMemberGardenChipsDataDto GardenChips { get; set; } = new();
+	public Dictionary<string, int> Attributes { get; set; } = new();
+	public List<ProfileMemberShardDataDto> CapturedShards { get; set; } = [];
+	public ProfileMemberGardenDataDto Garden { get; set; } = new();
+}
+
+public class ProfileMemberGardenDataDto
+{
+	public int Copper { get; set; } = 0;
+	public int DnaMilestone { get; set; } = 0;
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public ProfileMemberGardenChipsDataDto? Chips { get; set; }
+
 	public Dictionary<string, ProfileMemberMutationDataDto> Mutations { get; set; } = new();
 }
 
 public class ProfileMemberShardDataDto
 {
 	public required string Type { get; set; }
-	public int AmountOwned { get; set; }
+	public int Amount { get; set; }
 	public long CapturedAt { get; set; }
 }
 
 public class ProfileMemberGardenChipsDataDto
 {
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Cropshot { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Sowledge { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Hypercharge { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Quickdraw { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Mechamind { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Overdrive { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Synthesis { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? VerminVaporizer { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Evergreen { get; set; }
+
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? Rarefinder { get; set; }
 }
 
