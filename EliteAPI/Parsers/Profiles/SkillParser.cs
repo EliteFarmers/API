@@ -106,6 +106,9 @@ public static class SkillParser
 
 		foreach (var skillName in SkillName.StandardSkills) {
 			var level = skills.GetSkillLevel(skillName);
+			var defaultCap = SkillName.DefaultSkillCaps.GetValueOrDefault(skillName, 50);
+			// Scale the level to a 50 level cap for averaging purposes
+			level = (int)(Math.Min(level, defaultCap) * (50.0 / defaultCap));
 			totalLevel += level;
 			skillCount++;
 		}

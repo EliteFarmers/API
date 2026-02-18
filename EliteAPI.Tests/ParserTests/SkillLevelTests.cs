@@ -48,7 +48,7 @@ public class SkillLevelTests
 		
 		skills.GetSkillLevel(SkillName.Taming).ShouldBe(51);
 		
-		skills.GetAverageSkillLevel().ShouldBe(47.3333, 0.001);
+		skills.GetAverageSkillLevel().ShouldBe(38.8, 0.001);
 	}
 
 	[Fact]
