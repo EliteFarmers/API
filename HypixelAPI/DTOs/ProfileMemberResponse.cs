@@ -43,6 +43,9 @@ public class ProfileMemberResponse
 	[JsonPropertyName("nether_island_player_data")]
 	public NetherIslandPlayerDataResponse? NetherIslandPlayerData { get; set; }
 
+	public ProfileMemberAttributes Attributes { get; set; } = new();
+	public ProfileMemberShards Shards { get; set; } = new();
+
 	[JsonPropertyName("trophy_fish")] public TrophyFishStats? TrophyFish { get; set; }
 
 	[JsonPropertyName("abiphone")] public MemberAbiphoneResponse? Abiphone { get; set; }
@@ -58,11 +61,34 @@ public class MemberObjectivesResponse
 	public List<string> Tutorial { get; set; } = [];
 }
 
+public class ProfileMemberAttributes
+{
+	public Dictionary<string, int> Stacks = new();
+}
+
+public class ProfileMemberShards
+{
+	public List<ProfileMemberShard> Owned = [];
+}
+
+public class ProfileMemberShard
+{
+	public required string Type { get; set; }
+	[JsonPropertyName("amount_owned")] public int Owned { get; set; }
+	[JsonPropertyName("captured")] public long CapturedAt { get; set; } 
+}
+
 public class GardenPlayerDataResponse
 {
 	public int Copper { get; set; }
 
 	[JsonPropertyName("larva_consumed")] public int LarvaConsumed { get; set; }
+	
+	[JsonPropertyName("analyzed_greenhouse_crops")] 
+	public List<string> AnalyzedGreenhouseCrops { get; set; } = [];
+	
+	[JsonPropertyName("discovered_greenhouse_crops")] 
+	public List<string> DiscoveredGreenhouseCrops { get; set; } = [];
 }
 
 public class RawBestiaryResponse

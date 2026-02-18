@@ -28,6 +28,7 @@ public static class SkillParser
 		skills.Runecrafting = incoming.SkillRunecrafting ?? skills.Runecrafting;
 		skills.Social = incoming.SkillSocial ?? skills.Social;
 		skills.Farming = incoming.SkillFarming ?? skills.Farming;
+		skills.Hunting = incoming.SkillHunting ?? skills.Hunting;
 
 		if (memberData.Jacob?.Perks?.FarmingLevelCap is not null && memberData.Jacob.Perks.FarmingLevelCap != 0) {
 			skills.LevelCaps ??= new Dictionary<string, int>();
@@ -53,7 +54,8 @@ public static class SkillParser
 			{ SkillName.Carpentry, skills.Carpentry },
 			{ SkillName.Runecrafting, skills.Runecrafting },
 			{ SkillName.Social, skills.Social },
-			{ SkillName.Farming, skills.Farming }
+			{ SkillName.Farming, skills.Farming },
+			{ SkillName.Hunting, skills.Hunting },
 		};
 	}
 
@@ -70,6 +72,7 @@ public static class SkillParser
 			SkillName.Carpentry => skills.Carpentry,
 			SkillName.Runecrafting => skills.Runecrafting,
 			SkillName.Social => skills.Social,
+			SkillName.Hunting => skills.Hunting,
 			_ => 0
 		};
 	}
@@ -83,7 +86,8 @@ public static class SkillParser
 		       skills.Enchanting +
 		       skills.Alchemy +
 		       skills.Taming +
-		       skills.Carpentry;
+		       skills.Carpentry +
+		       skills.Hunting;
 	}
 
 	public static int GetSkillCap(this Skills skills, string skillName) {
@@ -162,17 +166,20 @@ public static class SkillName
 	public const string Taming = "taming";
 	public const string Farming = "farming";
 	public const string Social = "social";
+	public const string Hunting = "hunting";
 
 	public static readonly string[] AllSkills = [
 		Combat, Mining, Foraging, Fishing,
 		Enchanting, Alchemy, Carpentry,
-		Runecrafting, Taming, Farming, Social
+		Runecrafting, Taming, Farming, Social,
+		Hunting
 	];
 
 	public static readonly string[] StandardSkills = [
 		Combat, Mining, Foraging,
 		Fishing, Enchanting, Alchemy,
 		Carpentry, Taming, Farming,
+		Hunting
 	];
 
 	public static readonly Dictionary<string, int> DefaultSkillCaps = new() {
@@ -187,6 +194,7 @@ public static class SkillName
 		{ SkillName.Carpentry, 50 },
 		{ SkillName.Runecrafting, 25 },
 		{ SkillName.Social, 25 },
+		{ SkillName.Hunting, 25 },
 	};
 
 	public static readonly int[] LevelXp = [

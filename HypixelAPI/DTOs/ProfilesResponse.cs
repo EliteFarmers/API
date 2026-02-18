@@ -80,6 +80,32 @@ public class RawMemberPlayerData
 	public List<string> AchievementSpawnedIslandTypes { get; set; } = [];
 
 	[JsonPropertyName("visited_modes")] public List<string> VisitedModes { get; set; } = [];
+	
+	[JsonPropertyName("garden_chips")] public ProfileMemberGardenChips GardenChips { get; set; } = new();
+}
+
+public class ProfileMemberGardenChips
+{
+	[JsonPropertyName("cropshot")]
+	public int? Cropshot { get; set; }
+	[JsonPropertyName("sowledge")]
+	public int? Sowledge { get; set; }
+	[JsonPropertyName("hypercharge")]
+	public int? Hypercharge { get; set; }
+	[JsonPropertyName("quickdraw")]
+	public int? Quickdraw { get; set; }
+	[JsonPropertyName("mechamind")]
+	public int? Mechamind { get; set; }
+	[JsonPropertyName("overdrive")]
+	public int? Overdrive { get; set; }
+	[JsonPropertyName("synthesis")]
+	public int? Synthesis { get; set; }
+	[JsonPropertyName("vermin_vaporizer")]
+	public int? VerminVaporizer { get; set; }
+	[JsonPropertyName("evergreen")]
+	public int? Evergreen { get; set; }
+	[JsonPropertyName("rarefinder")]
+	public int? Rarefinder { get; set; }
 }
 
 public class MemberPetsResponse
@@ -152,6 +178,8 @@ public class MemberExperienceResponse
 	[JsonPropertyName("SKILL_FISHING")] public double? SkillFishing { get; set; }
 	[JsonPropertyName("SKILL_FORAGING")] public double? SkillForaging { get; set; }
 	[JsonPropertyName("SKILL_CARPENTRY")] public double? SkillCarpentry { get; set; }
+	
+	[JsonPropertyName("SKILL_HUNTING")] public double? SkillHunting { get; set; }
 }
 
 public class MemberProfileDataResponse
