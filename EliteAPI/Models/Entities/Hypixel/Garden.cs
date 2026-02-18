@@ -65,8 +65,12 @@ public class Garden
 	public CropUpgrades Upgrades { get; set; } = new();
 
 	public UnlockedPlots UnlockedPlots { get; set; } = 0;
+	public long LastGrowthStageTime { get; set; } = 0;
+	public long GreenhouseSlotsMaskLow { get; set; } = 0;
+	public long GreenhouseSlotsMaskHigh { get; set; } = 0;
 
 	[Column(TypeName = "jsonb")] public ComposterData? Composter { get; set; }
+	[Column(TypeName = "jsonb")] public GardenUpgradesData GardenUpgrades { get; set; } = new();
 
 	[Column(TypeName = "jsonb")] public Dictionary<string, VisitorData> Visitors { get; set; } = new();
 
@@ -115,4 +119,11 @@ public class VisitorData
 {
 	public int Visits { get; set; }
 	public int Accepted { get; set; }
+}
+
+public class GardenUpgradesData
+{
+	public int GreenhouseYield { get; set; }
+	public int GreenhousePlotLimit { get; set; }
+	public int GreenhouseGrowthSpeed { get; set; }
 }

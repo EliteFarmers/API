@@ -75,6 +75,7 @@ public class ProfileMemberDto
 	public required FarmingWeightDto FarmingWeight { get; set; }
 	public GardenDto? Garden { get; set; }
 	public SkillsDto Skills { get; set; } = new();
+	public ProfileMemberDataDto MemberData { get; set; } = new();
 	public ChocolateFactoryDto ChocolateFactory { get; set; } = new();
 	public List<ProfileEventMemberDto> Events { get; set; } = [];
 	public List<HypixelInventoryOverviewDto> Inventories { get; set; } = [];
@@ -83,4 +84,39 @@ public class ProfileMemberDto
 	public bool WasRemoved { get; set; }
 	public long LastUpdated { get; set; }
 	public long LastDataChanged { get; set; }
+}
+
+public class ProfileMemberDataDto
+{
+	public Dictionary<string, int> AttributeStacks { get; set; } = new();
+	public List<ProfileMemberShardDataDto> Shards { get; set; } = [];
+	public ProfileMemberGardenChipsDataDto GardenChips { get; set; } = new();
+	public Dictionary<string, ProfileMemberMutationDataDto> Mutations { get; set; } = new();
+}
+
+public class ProfileMemberShardDataDto
+{
+	public required string Type { get; set; }
+	public int AmountOwned { get; set; }
+	public long CapturedAt { get; set; }
+}
+
+public class ProfileMemberGardenChipsDataDto
+{
+	public int? Cropshot { get; set; }
+	public int? Sowledge { get; set; }
+	public int? Hypercharge { get; set; }
+	public int? Quickdraw { get; set; }
+	public int? Mechamind { get; set; }
+	public int? Overdrive { get; set; }
+	public int? Synthesis { get; set; }
+	public int? VerminVaporizer { get; set; }
+	public int? Evergreen { get; set; }
+	public int? Rarefinder { get; set; }
+}
+
+public class ProfileMemberMutationDataDto
+{
+	public bool Analyzed { get; set; }
+	public bool Discovered { get; set; }
 }

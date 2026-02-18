@@ -63,12 +63,12 @@ public class MemberObjectivesResponse
 
 public class ProfileMemberAttributes
 {
-	public Dictionary<string, int> Stacks = new();
+	public Dictionary<string, int> Stacks { get; set; } = new();
 }
 
 public class ProfileMemberShards
 {
-	public List<ProfileMemberShard> Owned = [];
+	public List<ProfileMemberShard> Owned { get; set; } = [];
 }
 
 public class ProfileMemberShard

@@ -46,6 +46,7 @@ public class ProfileMember
 	[Column(TypeName = "jsonb")] public Dictionary<string, long> Sacks { get; set; } = new();
 	[Column(TypeName = "jsonb")] public Slayers? Slayers { get; set; }
 	[Column(TypeName = "jsonb")] public List<Pet> Pets { get; set; } = new();
+	[Column(TypeName = "jsonb")] public ProfileMemberData MemberData { get; set; } = new();
 
 	[ForeignKey("MinecraftAccount")] public required string PlayerUuid { get; set; }
 	public MinecraftAccount MinecraftAccount { get; set; } = null!;
@@ -66,4 +67,39 @@ public class ApiAccess
 	public bool Skills { get; set; } = false;
 	public bool Vault { get; set; } = false;
 	public bool Museum { get; set; } = false;
+}
+
+public class ProfileMemberData
+{
+	public Dictionary<string, int> AttributeStacks { get; set; } = new();
+	public List<ProfileMemberShardData> Shards { get; set; } = [];
+	public ProfileMemberGardenChipsData GardenChips { get; set; } = new();
+	public Dictionary<string, ProfileMemberMutationData> Mutations { get; set; } = new();
+}
+
+public class ProfileMemberShardData
+{
+	public required string Type { get; set; }
+	public int AmountOwned { get; set; }
+	public long CapturedAt { get; set; }
+}
+
+public class ProfileMemberGardenChipsData
+{
+	public int? Cropshot { get; set; }
+	public int? Sowledge { get; set; }
+	public int? Hypercharge { get; set; }
+	public int? Quickdraw { get; set; }
+	public int? Mechamind { get; set; }
+	public int? Overdrive { get; set; }
+	public int? Synthesis { get; set; }
+	public int? VerminVaporizer { get; set; }
+	public int? Evergreen { get; set; }
+	public int? Rarefinder { get; set; }
+}
+
+public class ProfileMemberMutationData
+{
+	public bool Analyzed { get; set; }
+	public bool Discovered { get; set; }
 }

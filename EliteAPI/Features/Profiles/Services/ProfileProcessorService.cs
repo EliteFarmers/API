@@ -455,6 +455,7 @@ public partial class ProfileProcessorService(
 				{ "CRIMSON", incomingData.Currencies?.Essence?.Crimson?.Current ?? 0 }
 			}
 		};
+		member.MemberData = incomingData.ExtractMemberData();
 
 		member.Slayers = incomingData.Slayer?.ToDto();
 

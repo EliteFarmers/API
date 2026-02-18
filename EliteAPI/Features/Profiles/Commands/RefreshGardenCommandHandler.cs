@@ -59,6 +59,12 @@ public class RefreshGardenCommandHandler(
 			var gardenData = incoming.Value.Garden;
 			var plots = gardenData.CombinePlots();
 			var visitors = gardenData.CombineVisitors();
+			var (greenhouseSlotsMaskLow, greenhouseSlotsMaskHigh) = GreenhouseSlotParser.EncodeSlots(gardenData.GreenhouseSlots);
+			var gardenUpgrades = new EliteAPI.Models.Entities.Hypixel.GardenUpgradesData {
+				GreenhouseYield = gardenData.GardenUpgrades.GreenhouseYield,
+				GreenhousePlotLimit = gardenData.GardenUpgrades.GreenhousePlotLimit,
+				GreenhouseGrowthSpeed = gardenData.GardenUpgrades.GreenhouseGrowthSpeed
+			};
 
 			if (garden is null) {
 				var newGarden = new EliteAPI.Models.Entities.Hypixel.Garden {
@@ -70,8 +76,12 @@ public class RefreshGardenCommandHandler(
 					CompletedVisitors = gardenData.Visitors?.TotalVisitorsServed ?? 0,
 					UniqueVisitors = gardenData.Visitors?.UniqueVisitorsServed ?? 0,
 
+					LastGrowthStageTime = gardenData.LastGrowthStageTime,
+					GreenhouseSlotsMaskLow = greenhouseSlotsMaskLow,
+					GreenhouseSlotsMaskHigh = greenhouseSlotsMaskHigh,
 					Visitors = visitors,
 					Composter = gardenData.Composter,
+					GardenUpgrades = gardenUpgrades,
 					ProfileResponseHash = command.ProfileResponseHash
 				};
 
@@ -87,8 +97,12 @@ public class RefreshGardenCommandHandler(
 				garden.CompletedVisitors = gardenData.Visitors?.TotalVisitorsServed ?? 0;
 				garden.UniqueVisitors = gardenData.Visitors?.UniqueVisitorsServed ?? 0;
 
+				garden.LastGrowthStageTime = gardenData.LastGrowthStageTime;
+				garden.GreenhouseSlotsMaskLow = greenhouseSlotsMaskLow;
+				garden.GreenhouseSlotsMaskHigh = greenhouseSlotsMaskHigh;
 				garden.Visitors = visitors;
 				garden.Composter = gardenData.Composter;
+				garden.GardenUpgrades = gardenUpgrades;
 				garden.ProfileResponseHash = command.ProfileResponseHash;
 
 				garden.PopulateCropMilestones(gardenData);

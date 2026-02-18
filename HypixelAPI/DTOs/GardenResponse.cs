@@ -192,12 +192,12 @@ public class GreenhouseSlotUnlock
 
 public class GardenDeskUpgrades
 {
-	[JsonPropertyName("GROWTH_SPEED")]
+	[JsonPropertyName("YIELD")]
 	public int GreenhouseYield { get; set; }
 
 	[JsonPropertyName("PLOT_LIMIT")]
 	public int GreenhousePlotLimit { get; set; }
-	
+
 	[JsonPropertyName("GROWTH_SPEED")]
 	public int GreenhouseGrowthSpeed { get; set; }
 }
