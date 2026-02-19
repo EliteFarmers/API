@@ -117,6 +117,14 @@ using (var scope = app.Services.CreateScope()) {
 		scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
 	FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
 	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
+	
+	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+	try {
+		await db.Database.MigrateAsync();
+	}
+	catch (Exception e) {
+		Console.Error.WriteLine(e);
+	}
 }
 
 app.MapPrometheusScrapingEndpoint();
@@ -205,14 +213,6 @@ using (var scope = app.Services.CreateScope()) {
 
 	var repo = scope.ServiceProvider.GetRequiredService<ISkyblockRepoClient>();
 	await repo.InitializeAsync();
-
-	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-	try {
-		await db.Database.MigrateAsync();
-	}
-	catch (Exception e) {
-		Console.Error.WriteLine(e);
-	}
 
 	var lbRegistration = scope.ServiceProvider.GetRequiredService<ILeaderboardRegistrationService>();
 	await lbRegistration.RegisterLeaderboardsAsync(CancellationToken.None);
