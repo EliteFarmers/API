@@ -34,6 +34,7 @@ public class ProfileMemberMapper : Profile
 			.ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming))
 			.ForMember(x => x.Garden, opt => opt.MapFrom(x => x.Profile.Garden))
 			.ForMember(x => x.Unparsed, opt => opt.MapFrom(x => x.Unparsed))
+			.ForMember(x => x.MemberData, opt => opt.Ignore())
 			.ForMember(x => x.ChocolateFactory, opt => opt.MapFrom(x => x.ChocolateFactory))
 			.ForMember(x => x.Api, opt => opt.MapFrom(x => x.Api))
 			.ForMember(x => x.Meta, opt => opt.MapFrom(x => x.GetCosmeticsDto()))
@@ -44,7 +45,10 @@ public class ProfileMemberMapper : Profile
 				Liquid = x.LiquidNetworth,
 				Functional = x.FunctionalNetworth,
 				LiquidFunctional = x.LiquidFunctionalNetworth
-			}));
+			}))
+			.AfterMap((src, dest) => {
+				dest.MemberData = BuildMemberDataDto(src);
+			});
 
 		CreateMap<ProfileMember, MemberDetailsDto>()
 			.ForMember(x => x.Uuid, opt => opt.MapFrom(x => x.PlayerUuid))
@@ -53,6 +57,70 @@ public class ProfileMemberMapper : Profile
 			.ForMember(x => x.FarmingWeight, opt => opt.MapFrom(x => x.Farming.TotalWeight))
 			.ForMember(x => x.Meta, opt => opt.MapFrom(x => x.GetCosmeticsDto()))
 			.ForMember(x => x.Active, opt => opt.MapFrom(x => !x.WasRemoved));
+
+		CreateMap<ProfileMemberShardData, ProfileMemberShardDataDto>();
+		CreateMap<ProfileMemberGardenChipsData, ProfileMemberGardenChipsDataDto>();
+		CreateMap<ProfileMemberMutationData, ProfileMemberMutationDataDto>();
+	}
+
+	private static ProfileMemberDataDto BuildMemberDataDto(ProfileMember source) {
+		var memberData = source.MemberData ?? new ProfileMemberData();
+		var attributeStacks = memberData.AttributeStacks ?? new Dictionary<string, int>();
+		var ownedShards = memberData.Shards ?? [];
+		var mutations = memberData.Mutations ?? new Dictionary<string, ProfileMemberMutationData>();
+		var unparsed = source.Unparsed ?? new UnparsedApiData();
+
+		return new ProfileMemberDataDto {
+			Attributes = attributeStacks,
+			CapturedShards = ownedShards
+				.Select(shard => new ProfileMemberShardDataDto {
+					Type = shard.Type,
+					Amount = shard.AmountOwned,
+					CapturedAt = shard.CapturedAt
+				})
+				.ToList(),
+			Garden = new ProfileMemberGardenDataDto {
+				Copper = unparsed.Copper,
+				DnaMilestone = unparsed.DnaMilestone,
+				Chips = TryBuildGardenChipsDto(memberData.GardenChips),
+				Mutations = mutations.ToDictionary(
+					kvp => kvp.Key,
+					kvp => new ProfileMemberMutationDataDto {
+						Analyzed = kvp.Value.Analyzed,
+						Discovered = kvp.Value.Discovered
+					})
+			}
+		};
+	}
+
+	private static ProfileMemberGardenChipsDataDto? TryBuildGardenChipsDto(ProfileMemberGardenChipsData? chips) {
+		if (chips is null) return null;
+
+		var hasAnyValue = chips.Cropshot.HasValue ||
+			chips.Sowledge.HasValue ||
+			chips.Hypercharge.HasValue ||
+			chips.Quickdraw.HasValue ||
+			chips.Mechamind.HasValue ||
+			chips.Overdrive.HasValue ||
+			chips.Synthesis.HasValue ||
+			chips.VerminVaporizer.HasValue ||
+			chips.Evergreen.HasValue ||
+			chips.Rarefinder.HasValue;
+
+		if (!hasAnyValue) return null;
+
+		return new ProfileMemberGardenChipsDataDto {
+			Cropshot = chips.Cropshot,
+			Sowledge = chips.Sowledge,
+			Hypercharge = chips.Hypercharge,
+			Quickdraw = chips.Quickdraw,
+			Mechamind = chips.Mechamind,
+			Overdrive = chips.Overdrive,
+			Synthesis = chips.Synthesis,
+			VerminVaporizer = chips.VerminVaporizer,
+			Evergreen = chips.Evergreen,
+			Rarefinder = chips.Rarefinder
+		};
 	}
 }
 

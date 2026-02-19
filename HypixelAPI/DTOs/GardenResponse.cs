@@ -63,6 +63,24 @@ public class GardenResponseData
 	/// </summary>
 	[JsonPropertyName("active_commissions")]
 	public Dictionary<string, object> CurrentVisitors { get; set; } = new();
+	
+	/// <summary>
+	/// Unix timestamp of the last greenhouse growth stage in milliseconds
+	/// </summary>
+	[JsonPropertyName("last_growth_stage_time")]
+	public long LastGrowthStageTime { get; set; }
+	
+	/// <summary>
+	/// Unlocked greenhouse slots
+	/// </summary>
+	[JsonPropertyName("greenhouse_slots")]
+	public List<GreenhouseSlotUnlock> GreenhouseSlots { get; set; } = new();
+	
+	/// <summary>
+	/// Garden upgrades
+	/// </summary>
+	[JsonPropertyName("garden_upgrades")]
+	public GardenDeskUpgrades GardenUpgrades { get; set; } = new();
 }
 
 public class GardenVisitorData
@@ -164,4 +182,22 @@ public class ComposterUpgrades
 	/// </summary>
 	[JsonPropertyName("cost_reduction")]
 	public int CostReduction { get; set; }
+}
+
+public class GreenhouseSlotUnlock
+{
+	public int X { get; set; }
+	public int Z { get; set; }
+}
+
+public class GardenDeskUpgrades
+{
+	[JsonPropertyName("YIELD")]
+	public int GreenhouseYield { get; set; }
+
+	[JsonPropertyName("PLOT_LIMIT")]
+	public int GreenhousePlotLimit { get; set; }
+
+	[JsonPropertyName("GROWTH_SPEED")]
+	public int GreenhouseGrowthSpeed { get; set; }
 }

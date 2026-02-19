@@ -52,6 +52,21 @@ public class GardenDto
 	public Dictionary<string, VisitorDto> Visitors { get; set; } = new();
 
 	/// <summary>
+	/// Unix timestamp of the last greenhouse growth stage in milliseconds
+	/// </summary>
+	public long LastGrowthStageTime { get; set; } = 0;
+
+	/// <summary>
+	/// Tracked unlocked greenhouse slots
+	/// </summary>
+	public List<GreenhouseSlotUnlock> GreenhouseSlots { get; set; } = [];
+
+	/// <summary>
+	/// Greenhouse upgrades
+	/// </summary>
+	public GardenUpgradesDto GardenUpgrades { get; set; } = new();
+
+	/// <summary>
 	/// Last save time in unix seconds
 	/// </summary>
 	public string LastSave { get; set; } = "0";
@@ -68,3 +83,10 @@ public class ComposterDto : ComposterData
 
 /// <inheritdoc />
 public class VisitorDto : VisitorData;
+
+public class GardenUpgradesDto
+{
+	public int GreenhouseYield { get; set; }
+	public int GreenhousePlotLimit { get; set; }
+	public int GreenhouseGrowthSpeed { get; set; }
+}

@@ -13,4 +13,5 @@ public class SkillsDto
 	public double Runecrafting { get; set; } = 0;
 	public double Taming { get; set; } = 0;
 	public double Social { get; set; } = 0;
+	public double Hunting { get; set; } = 0;
 }
