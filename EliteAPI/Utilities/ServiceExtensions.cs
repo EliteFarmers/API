@@ -191,6 +191,9 @@ public static class ServiceExtensions
 		builder.Services.Configure<SkyblockPetSettings>(builder.Configuration.GetSection("Pets"));
 		builder.Services.Configure<AuctionHouseSettings>(builder.Configuration.GetSection("Auctions"));
 		builder.Services.Configure<ConfigLeaderboardSettings>(builder.Configuration.GetSection("Leaderboards"));
+		builder.Services.Configure<WebsiteGatewaySettings>(options => {
+			options.WebsiteSecret = builder.Configuration["WebsiteSecret"] ?? string.Empty;
+		});
 
 		builder.Services.Configure<ConfigApiRateLimitSettings>(
 			builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));

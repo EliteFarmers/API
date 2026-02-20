@@ -19,6 +19,7 @@ public class ConfigGlobalRateLimitSettings
 	public static ConfigGlobalRateLimitSettings Settings { get; set; } = new();
 
 	public const string RateLimitName = "GlobalRateLimit";
+	public string? WebsiteSecret { get; set; }
 
 	public int ReplenishmentPeriod { get; set; } = 2;
 	public int QueueLimit { get; set; } = 2;

@@ -111,7 +111,14 @@ public class DiscordService(
 			account.Avatar = user.Avatar;
 			account.Locale = user.Locale;
 			account.Data ??= new DiscordAccountData();
-			account.Data.Banner = user.Banner;
+			
+			if (account.Data.Banner != user.Banner) {
+				account.Data.Banner = user.Banner;
+				if (existing is not null) {
+					context.Accounts.Update(account);	
+				}
+			}
+			
 
 			if (existing is null) context.Accounts.Add(account);
 			await context.SaveChangesAsync();
@@ -119,7 +126,7 @@ public class DiscordService(
 			return account;
 		}
 		catch (Exception e) {
-			Console.WriteLine(e);
+			logger.LogError(e, "Failed to update discord account");
 			return null;
 		}
 	}

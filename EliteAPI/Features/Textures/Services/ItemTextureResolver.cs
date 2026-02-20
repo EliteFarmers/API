@@ -24,8 +24,11 @@ public partial class ItemTextureResolver(
 	IImageService imageService,
 	DataContext context,
 	HybridCache cache,
+	IConfiguration config,
 	ISkyblockRepoClient repoClient)
 {
+	public bool SaveToS3 => config.GetValue<bool>("S3:UseForTextures");
+	
 	public async Task<byte[]?> GetPackIcon(string packId) {
 		try {
 			var renderer = await provider.GetRendererAsync();
@@ -197,22 +200,22 @@ public partial class ItemTextureResolver(
 		return renderer.ComputeResourceIdFromNbt(root, renderOptions);
 	}
 
-	public async Task<string> RenderItemAndGetPathAsync(HypixelItem item, List<string>? packIds = null, int size = 64) {
+	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(HypixelItem item, List<string>? packIds = null, int size = 64) {
 		var root = GetItemNbt(item);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
-	public async Task<string> RenderItemAndGetPathAsync(string itemId, List<string>? packIds = null, int size = 64) {
+	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(string itemId, List<string>? packIds = null, int size = 64) {
 		var root = GetItemNbt(itemId);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
-	public async Task<string> RenderPetAndGetPathAsync(string petId, List<string>? packIds = null, int size = 64) {
+	public async Task<(string? Path, byte[]? Data)> RenderPetAndGetPathAsync(string petId, List<string>? packIds = null, int size = 64) {
 		var root = GetItemNbt(petId, true);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
-	public async Task<string>
+	public async Task<(string? Path, byte[]? Data)>
 		RenderItemAndGetPathAsync(NbtCompound root, List<string>? packIds = null, int size = 64) {
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = GetRenderOptions(renderer, packIds, size);
@@ -231,8 +234,17 @@ public partial class ItemTextureResolver(
 				existingRenderedItem.LastUsed = DateTimeOffset.UtcNow;
 				await context.SaveChangesAsync();
 
-				return existingRenderedItem.ToUrl();
+				return (existingRenderedItem.ToUrl(), null);
 			}
+		}
+		
+		if (!SaveToS3) {
+			using var renderResult = renderer.RenderAnimatedItemFromNbtWithResourceId(root, renderOptions);
+			using var image = renderResult.CloneAsAnimatedImage();
+
+			using var ms = new MemoryStream();
+			await image.SaveAsWebpAsync(ms);
+			return (null, ms.ToArray());
 		}
 
 		var result = await cache.GetOrCreateAsync(preResourceId.ResourceId, async c => {
@@ -266,7 +278,7 @@ public partial class ItemTextureResolver(
 			return savedImage.ToPrimaryUrl()!;
 		});
 
-		return result;
+		return (result, null);
 	}
 
 	private MinecraftBlockRenderer.BlockRenderOptions GetRenderOptions(MinecraftBlockRenderer renderer,

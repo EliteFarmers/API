@@ -12,6 +12,7 @@ using EliteAPI.Features.Leaderboards.Models;
 using EliteAPI.Features.Monetization.Models;
 using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Recap.Models;
+using EliteAPI.Features.ToolSettings.Models;
 using EliteAPI.Features.Resources.Auctions.Models;
 using EliteAPI.Features.Resources.Firesales.Models;
 using EliteAPI.Features.Resources.Items.Models;
@@ -87,6 +88,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 
 	public DbSet<MinecraftAccount> MinecraftAccounts { get; set; } = null!;
 	public DbSet<UserSettings> UserSettings { get; set; } = null!;
+	public DbSet<ToolSetting> ToolSettings { get; set; } = null!;
 	public DbSet<Badge> Badges { get; set; } = null!;
 	public DbSet<UserBadge> UserBadges { get; set; } = null!;
 	public DbSet<Profile> Profiles { get; set; } = null!;

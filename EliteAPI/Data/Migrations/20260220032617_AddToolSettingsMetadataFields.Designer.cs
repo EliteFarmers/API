@@ -19,6 +19,7 @@ using EliteAPI.Models.Entities.Monetization;
 using EliteFarmers.HypixelAPI.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -27,9 +28,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EliteAPI.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260220032617_AddToolSettingsMetadataFields")]
+    partial class AddToolSettingsMetadataFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2650,19 +2653,6 @@ namespace EliteAPI.Data.Migrations
                     b.Property<long>("GardenExperience")
                         .HasColumnType("bigint");
 
-                    b.Property<GardenUpgradesData>("GardenUpgrades")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
-                    b.Property<long>("GreenhouseSlotsMaskHigh")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("GreenhouseSlotsMaskLow")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("LastGrowthStageTime")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTimeOffset>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
 
@@ -2905,10 +2895,6 @@ namespace EliteAPI.Data.Migrations
                     b.Property<double>("LiquidNetworth")
                         .HasColumnType("double precision");
 
-                    b.Property<ProfileMemberData>("MemberData")
-                        .IsRequired()
-                        .HasColumnType("jsonb");
-
                     b.Property<double>("Networth")
                         .HasColumnType("double precision");
 
@@ -2989,9 +2975,6 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<double>("Foraging")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("Hunting")
                         .HasColumnType("double precision");
 
                     b.Property<Dictionary<string, int>>("LevelCaps")
@@ -3409,9 +3392,6 @@ namespace EliteAPI.Data.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<double>("Foraging")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("Hunting")
                         .HasColumnType("double precision");
 
                     b.Property<double>("Mining")

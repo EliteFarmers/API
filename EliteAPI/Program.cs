@@ -105,7 +105,8 @@ builder.AddEliteFastEndpoints();
 builder.Services.AddSkyblockRepo(opt => {
 	opt.UseNeuRepo = true;
 	opt.FileStoragePath = builder.Configuration["MinecraftRenderer:AssetsPath"]
-		?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EliteAPI");
+	                      ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+		                      "EliteAPI");
 	opt.Matcher.Register(new EliteItemRepoMatcher());
 	opt.Matcher.Register(new RenderContextRepoMatcher());
 });
@@ -117,6 +118,10 @@ using (var scope = app.Services.CreateScope()) {
 		scope.ServiceProvider.GetRequiredService<IOptions<ConfigFarmingWeightSettings>>().Value;
 	FarmingItemsConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<FarmingItemsSettings>>().Value;
 	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
+	ConfigGlobalRateLimitSettings.Settings =
+		scope.ServiceProvider.GetRequiredService<IOptions<ConfigGlobalRateLimitSettings>>().Value;
+	ConfigGlobalRateLimitSettings.Settings.WebsiteSecret = app.Configuration["WebsiteSecret"] ??
+	                                                       ConfigGlobalRateLimitSettings.Settings.WebsiteSecret;
 	
 	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
 	try {

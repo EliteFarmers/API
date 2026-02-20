@@ -62,9 +62,21 @@ public class SkyblockItemsIngestionService(
 		}
 
 		foreach (var item in existingItems.Values) {
-			if (item.Data is not null) continue;
 			var repoItem = repo.FindItem(item.ItemId);
-
+			var name = repoItem?.Name ?? repoItem?.Data?.Name ?? item.ItemId;
+			
+			if (item.Data is not null) {
+				if (item.Data.Name == name) {
+					continue;	
+				}
+				
+				item.Data.Name = name;
+				context.Entry(item).Property(x => x.Data).IsModified = true;
+				
+				updatedCount++;
+				continue;
+			}
+			
 			item.Data = new ItemResponse() {
 				Id = item.ItemId,
 				Name = repoItem?.Name ?? repoItem?.Data?.Name ?? item.ItemId,
