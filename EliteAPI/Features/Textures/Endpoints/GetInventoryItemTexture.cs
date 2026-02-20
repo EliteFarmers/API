@@ -76,8 +76,18 @@ internal sealed class GetInventoryItemTextureEndpoint(
 			itemData = inventoryItem.ToHypixelItem();
 		}
 
-		var path = await itemTextureResolver.RenderItemAndGetPathAsync(itemData, request.PackList);
+		var (path, data) = await itemTextureResolver.RenderItemAndGetPathAsync(itemData, request.PackList);
 
-		await Send.RedirectAsync(path, false, true);
+		if (path is not null) {
+			await Send.RedirectAsync(path, false, true);
+			return;
+		}
+
+		if (data is not null) {
+			await Send.BytesAsync(data, contentType: MediaTypeNames.Image.Webp, cancellation: c);
+			return;
+		}
+		
+		await Send.NotFoundAsync(c);
 	}
 }

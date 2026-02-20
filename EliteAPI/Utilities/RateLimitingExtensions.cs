@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Net;
 using System.Threading.RateLimiting;
+using EliteAPI.Authentication;
 using EliteAPI.Configuration.Settings;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Utilities;
 
@@ -35,6 +37,13 @@ public static class RateLimitingExtensions
 
 	public static IApplicationBuilder UseEliteRateLimiting(this IApplicationBuilder app) {
 		return app.Use(async (context, next) => {
+			var websiteSettings = context.RequestServices
+				.GetRequiredService<IOptions<WebsiteGatewaySettings>>();
+			if (context.HasValidWebsiteSecret(websiteSettings)) {
+				await next();
+				return;
+			}
+
 			var limiter = context.RequestServices
 				.GetRequiredService<PartitionedRateLimiter<HttpContext>>();
 			var options = context.RequestServices

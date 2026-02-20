@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using System.Text.Json.Serialization;
 using EliteAPI.Features.Textures.Services;
 using FastEndpoints;
@@ -37,8 +38,18 @@ internal sealed class GetItemTextureEndpoint(
 			request.ItemId = request.ItemId.Split('.')[0];
 		}
 
-		var path = await itemTextureResolver.RenderItemAndGetPathAsync(request.ItemId, request.PackList);
+		var (path, data) = await itemTextureResolver.RenderItemAndGetPathAsync(request.ItemId, request.PackList);
 
-		await Send.RedirectAsync(path, false, true);
+		if (path is not null) {
+			await Send.RedirectAsync(path, false, true);
+			return;
+		}
+
+		if (data is not null) {
+			await Send.BytesAsync(data, contentType: MediaTypeNames.Image.Webp, cancellation: c);
+			return;
+		}
+		
+		await Send.NotFoundAsync(c);
 	}
 }

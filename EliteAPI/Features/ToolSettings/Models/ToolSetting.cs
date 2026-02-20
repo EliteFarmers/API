@@ -20,6 +20,14 @@ public class ToolSetting
 	[MaxLength(128)]
 	public string TargetId { get; set; } = string.Empty;
 
+	public int Version { get; set; } = 1;
+
+	[MaxLength(128)]
+	public string? Name { get; set; }
+
+	[MaxLength(512)]
+	public string? Description { get; set; }
+
 	public bool IsPublic { get; set; } = false;
 
 	[Column(TypeName = "jsonb")]
@@ -33,6 +41,9 @@ public class ToolSettingEntityConfiguration : IEntityTypeConfiguration<ToolSetti
 {
 	public void Configure(EntityTypeBuilder<ToolSetting> builder) {
 		builder.Property(x => x.TargetId).HasMaxLength(128).IsRequired();
+		builder.Property(x => x.Version).IsRequired();
+		builder.Property(x => x.Name).HasMaxLength(128);
+		builder.Property(x => x.Description).HasMaxLength(512);
 		builder.Property(x => x.Data).IsRequired();
 		builder.Property(x => x.OwnerId).IsRequired();
 

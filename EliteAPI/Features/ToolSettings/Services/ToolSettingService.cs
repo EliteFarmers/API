@@ -3,31 +3,36 @@ using EliteAPI.Data;
 using EliteAPI.Features.Common.Services;
 using EliteAPI.Features.ToolSettings.Models;
 using FastEndpoints;
+using Ganss.Xss;
 using Microsoft.EntityFrameworkCore;
 
 namespace EliteAPI.Features.ToolSettings.Services;
 
 public interface IToolSettingService
 {
-	Task<ToolSetting> CreateAsync(string ownerId, string targetId, JsonElement data, bool isPublic, CancellationToken ct);
+	Task<ToolSetting> CreateAsync(string ownerId, string targetId, int version, string? name, string? description,
+		JsonElement data, bool isPublic, CancellationToken ct);
 	Task<ToolSetting?> GetBySqidAsync(string sqid, string requesterId, CancellationToken ct);
 	Task<List<ToolSetting>> ListByOwnerAsync(string ownerId, string? targetId, bool? isPublic, int limit, int offset,
 		CancellationToken ct);
-	Task<ToolSetting?> UpdateAsync(string sqid, string ownerId, string targetId, JsonElement data, bool isPublic,
-		CancellationToken ct);
+	Task<ToolSetting?> UpdateAsync(string sqid, string ownerId, string targetId, int version, string? name,
+		string? description, JsonElement data, bool isPublic, CancellationToken ct);
 	Task<bool> DeleteAsync(string sqid, string ownerId, CancellationToken ct);
 	string GetSqid(int id);
 }
 
 [RegisterService<IToolSettingService>(LifeTime.Scoped)]
-public class ToolSettingService(DataContext db) : IToolSettingService
+public class ToolSettingService(DataContext db, HtmlSanitizer sanitizer) : IToolSettingService
 {
-	public async Task<ToolSetting> CreateAsync(string ownerId, string targetId, JsonElement data, bool isPublic,
-		CancellationToken ct) {
+	public async Task<ToolSetting> CreateAsync(string ownerId, string targetId, int version, string? name,
+		string? description, JsonElement data, bool isPublic, CancellationToken ct) {
 		var now = DateTime.UtcNow;
 		var setting = new ToolSetting {
 			OwnerId = ownerId,
 			TargetId = targetId,
+			Version = version,
+			Name = SanitizeText(name),
+			Description = SanitizeText(description),
 			IsPublic = isPublic,
 			Data = ConvertToJsonDocument(data),
 			CreatedAt = now,
@@ -79,8 +84,8 @@ public class ToolSettingService(DataContext db) : IToolSettingService
 			.ToListAsync(ct);
 	}
 
-	public async Task<ToolSetting?> UpdateAsync(string sqid, string ownerId, string targetId, JsonElement data,
-		bool isPublic, CancellationToken ct) {
+	public async Task<ToolSetting?> UpdateAsync(string sqid, string ownerId, string targetId, int version, string? name,
+		string? description, JsonElement data, bool isPublic, CancellationToken ct) {
 		var id = SqidService.Decode(sqid);
 		if (id is null)
 			return null;
@@ -90,6 +95,9 @@ public class ToolSettingService(DataContext db) : IToolSettingService
 			return null;
 
 		setting.TargetId = targetId;
+		setting.Version = version;
+		setting.Name = SanitizeText(name);
+		setting.Description = SanitizeText(description);
 		setting.IsPublic = isPublic;
 		setting.Data.Dispose();
 		setting.Data = ConvertToJsonDocument(data);
@@ -115,7 +123,15 @@ public class ToolSettingService(DataContext db) : IToolSettingService
 
 	public string GetSqid(int id) => SqidService.Encode(id);
 
-	private static JsonDocument ConvertToJsonDocument(JsonElement data) {
-		return JsonDocument.Parse(data.GetRawText());
+	private JsonDocument ConvertToJsonDocument(JsonElement data) {
+		return ToolSettingsJsonGuard.SanitizeStrings(data, sanitizer);
+	}
+
+	private string? SanitizeText(string? value) {
+		if (string.IsNullOrWhiteSpace(value))
+			return null;
+
+		var sanitized = sanitizer.Sanitize(value.Trim());
+		return string.IsNullOrWhiteSpace(sanitized) ? null : sanitized;
 	}
 }
