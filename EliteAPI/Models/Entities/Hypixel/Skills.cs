@@ -20,6 +20,7 @@ public class Skills
 	public double Taming { get; set; } = 0;
 	public double Farming { get; set; } = 0;
 	public double Social { get; set; } = 0;
+	public double Hunting { get; set; } = 0;
 
 	[Column(TypeName = "jsonb")] public Dictionary<string, int> LevelCaps { get; set; } = new();
 

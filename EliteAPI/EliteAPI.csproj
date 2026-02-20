@@ -26,7 +26,7 @@
         </PackageReference>
         <PackageReference Include="FastEndpoints.Security" Version="7.2.0" />
         <PackageReference Include="FastEndpoints.Swagger" Version="7.2.0" />
-        <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
+        <PackageReference Include="HtmlSanitizer" Version="9.0.892" />
         <PackageReference Include="McProtoNet.NBT" Version="1.7.3" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.2" />

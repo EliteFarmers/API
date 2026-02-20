@@ -46,6 +46,7 @@ public class GardenMapper : Profile
 			.ForMember(c => c.WildRose, o => o.MapFrom(c => c.WildRose.ToString()));
 
 		CreateMap<CropUpgrades, CropSettings<int>>();
+		CreateMap<GardenUpgradesData, GardenUpgradesDto>();
 
 		CreateMap<Garden, GardenDto>()
 			.ForMember(g => g.Experience, o => o.MapFrom(g => (int)g.GardenExperience))
@@ -53,6 +54,11 @@ public class GardenMapper : Profile
 			.ForMember(g => g.Composter, o => o.MapFrom(g => g.Composter))
 			.ForMember(g => g.Crops, o => o.MapFrom(g => g.Crops))
 			.ForMember(g => g.CropUpgrades, o => o.MapFrom(g => g.Upgrades))
+			.ForMember(g => g.LastGrowthStageTime, o => o.MapFrom(g => g.LastGrowthStageTime))
+			.ForMember(g => g.GreenhouseSlots,
+				o => o.MapFrom(g =>
+					GreenhouseSlotParser.DecodeSlots(g.GreenhouseSlotsMaskLow, g.GreenhouseSlotsMaskHigh)))
+			.ForMember(g => g.GardenUpgrades, o => o.MapFrom(g => g.GardenUpgrades))
 			.ForMember(g => g.LastSave, o => o.MapFrom(g => g.LastUpdated.ToUnixTimeSeconds()));
 	}
 }

@@ -19,6 +19,7 @@ public class SkillExperience : ITimeScale
 	public double Social { get; set; }
 	public double Taming { get; set; }
 	public double Farming { get; set; }
+	public double Hunting { get; set; }
 
 	[HypertableColumn] public DateTimeOffset Time { get; set; }
 
