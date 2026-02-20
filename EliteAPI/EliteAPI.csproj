@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
-        <PackageReference Include="AutoMapper" Version="[13.0.1]" />
+        <PackageReference Include="AutoMapper" Version="[16.0.0]" />
         <PackageReference Include="AWSSDK.S3" Version="4.0.17.3" />
         <PackageReference Include="DotNetEnv" Version="3.1.1" />
         <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="10.0.0" />
