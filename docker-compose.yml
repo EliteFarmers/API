@@ -44,7 +44,7 @@ services:
     healthcheck:
       test: [ 'CMD', 'pg_isready', '-U', '${POSTGRES_USER:-user}', '-d', '${POSTGRES_DB:-eliteapi}' ]
   cache:
-    image: redis:8.4-alpine
+    image: redis:8.6-alpine
     restart: always
     command: redis-server --save 300 10 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
     ports:
@@ -72,7 +72,7 @@ services:
     networks:
       - eliteapi-network
   prometheus:
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:v3.9.1
     restart: unless-stopped
     ports:
       - '9090:9090'
