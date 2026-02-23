@@ -102,6 +102,14 @@ public partial class ItemTextureResolver(
 			}
 
 			if (item?.Data?.Skin?.Value is null) {
+				var neuItem = SkyblockRepoClient.Data.NeuItems.GetValueOrDefault(skyblockId);
+				if (neuItem?.NbtTag is not null) {
+					var skin = SkyblockRepoRegexUtils.ExtractSkullTexture(neuItem.NbtTag)?.Value;
+					if (skin is not null) {
+						root = root.WithProfileComponent(skin);
+					}
+				}
+				
 				return root;
 			}
 			

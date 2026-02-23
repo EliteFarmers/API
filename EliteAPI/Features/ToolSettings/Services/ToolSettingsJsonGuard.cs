@@ -118,5 +118,10 @@ public static partial class ToolSettingsJsonGuard
 	[GeneratedRegex(@"^[a-zA-Z0-9_:\-]+$", RegexOptions.Compiled)]
 	private static partial Regex KeyRegex();
 
-	private static bool IsValidKey(string key) => KeyRegex().IsMatch(key);
+	private static bool IsValidKey(string key) {
+		if (key is "__proto__" or "constructor" or "prototype") {
+			return false;
+		}
+		return KeyRegex().IsMatch(key);
+	}
 }
