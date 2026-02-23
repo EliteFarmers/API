@@ -71,7 +71,7 @@ public class ToolSettingsJsonGuardTests
 	public void Validate_Rejects_Non_Alphanumeric_Key() {
 		using var doc = JsonDocument.Parse("""
 		{
-		  "bad_key": 1
+		  "bad$key": 1
 		}
 		""");
 
