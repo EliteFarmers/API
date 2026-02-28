@@ -439,6 +439,11 @@ public class ProductDto
 	public bool IsSubscription { get; set; }
 	public bool IsGuildSubscription { get; set; }
 	public bool IsUserSubscription { get; set; }
+	
+	/// <summary>
+	/// Product release date
+	/// </summary>
+	public DateTimeOffset? ReleasedAt { get; set; }
 }
 
 public class EditProductDto
