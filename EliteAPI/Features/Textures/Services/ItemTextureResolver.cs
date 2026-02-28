@@ -67,7 +67,9 @@ public partial class ItemTextureResolver(
 		var item = SkyblockRepoClient.Data.Items.GetValueOrDefault(skyblockId);
 		var mappedId = item?.Data?.Material is not null
 			? LegacyItemMappings.MapBukkitIdOrDefault(item.Data.Material, (short)item.Data.Durability)
-			: null;
+			: LegacyItemMappings.MapBukkitIdOrDefault(skyblockId, defaultValue: string.Empty) is { } value && value != string.Empty
+				? value
+				: null;
 
 		if (mappedId is null && skyblockId.StartsWith("ENCHANTMENT_")) {
 			mappedId = LegacyItemMappings.MapBukkitIdOrDefault("ENCHANTED_BOOK");
