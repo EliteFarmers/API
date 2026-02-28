@@ -26,7 +26,6 @@ public static class FarmingToolParser
 			// Tool was removed from inventory, then added back
 			if (!existingState.IsActive) {
 				// Add the counts gained while the tool was inactive to the uncounted values
-				existingState.Counter.Uncounted += newState.Counter.Current - existingState.Counter.Current;
 				existingState.Cultivating.Uncounted += newState.Cultivating.Current - existingState.Cultivating.Current;
 			}
 
@@ -34,11 +33,9 @@ public static class FarmingToolParser
 			existingState.LastSeen = newState.LastSeen;
 
 			// Update the previous values
-			existingState.Counter.Previous = existingState.Counter.Current;
 			existingState.Cultivating.Previous = existingState.Cultivating.Current;
 
 			// Update the current values
-			existingState.Counter.Current = newState.Counter.Current;
 			existingState.Cultivating.Current = newState.Cultivating.Current;
 
 			newStates[uuid] = existingState;
@@ -65,7 +62,6 @@ public static class FarmingToolParser
 				FirstSeen = time,
 				LastSeen = time,
 				IsActive = true,
-				Counter = new EventToolCounterState(counter),
 				Cultivating = new EventToolCounterState(cultivating)
 			};
 

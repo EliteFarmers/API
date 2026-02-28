@@ -6,11 +6,6 @@ namespace EliteAPI.Parsers.Events;
 
 public static class WeightEventProgressParser
 {
-	/// <summary>
-	/// Cap mushrooms attributed to Mushroom Eater perk to 95% of 72,000 per hour
-	/// </summary>
-	private const int MaxMushroomEaterPerHour = (int)(72_000 * 0.95);
-
 	public static void UpdateFarmingWeight(this WeightEventMember eventMember, WeightEvent weightEvent,
 		ProfileMember? member = null) {
 		if (member is not null) {
@@ -26,6 +21,7 @@ public static class WeightEventProgressParser
 
 		var collectionIncreases = eventMember.Data.IncreasedCollection;
 		var countedCollections = new Dictionary<Crop, long>();
+		var seedCollectionIncrease = collectionIncreases.GetValueOrDefault(Crop.Seeds);
 
 		var toolsByCrop = eventMember.Data.ToolStates
 			.Where(t => t.Value.Crop.HasValue)
@@ -33,36 +29,19 @@ public static class WeightEventProgressParser
 			.GroupBy(t => t.Crop!.Value)
 			.ToDictionary(g => g.Key, g => g.ToList());
 
-		var mushroomEaterMushrooms = GetMushroomEaterMushrooms(eventMember, collectionIncreases, toolsByCrop);
-
 		foreach (var (crop, tools) in toolsByCrop) {
 			collectionIncreases.TryGetValue(crop, out var increasedCollection);
 			if (increasedCollection <= 0) continue; // Skip if the collection didn't increase
-
-			var counterIncrease = tools.Sum(t => t.Counter.IncreaseFromInitial());
-
-			// Counter should always be prioritized over cultivating
-			// This handles Wheat, Carrot, Potato, Sugar Cane, and Nether Wart
-			if (counterIncrease > 0) {
-				countedCollections.TryAdd(crop, Math.Min(counterIncrease, increasedCollection));
-				continue;
-			}
-
-			// Cultivating should be used if the counter increase is 0
-			// This handles Mushroom, Cocoa Beans, Cactus, Pumpkin, and Melon
+			
 			var cultivatingIncrease = tools.Sum(t => t.Cultivating.IncreaseFromInitial());
 			if (cultivatingIncrease <= 0) continue; // Skip if the cultivating didn't increase
-
-			// If there's a positive difference between the increased collection and cultivating
-			// and the mushroom eater mushrooms are greater than 0, then remove the difference
-			// from the counted collection to avoid counting extra mushrooms
-			// (This is needed because cultivating increase includes these mushrooms)
-			var difference = increasedCollection - cultivatingIncrease;
-			if (difference > 0 && mushroomEaterMushrooms > 0 && crop != Crop.Mushroom) {
-				var toRemove = Math.Min(difference, mushroomEaterMushrooms);
-
+			
+			// Wheat cultivating counter also increases by seed collection, so we need to account for that to avoid counting extra wheat
+			// Subtract as much of the seed collection increase as possible from the cultivating increase
+			if (crop == Crop.Wheat) {
+				var toRemove = Math.Min(seedCollectionIncrease, cultivatingIncrease);
 				cultivatingIncrease -= toRemove;
-				mushroomEaterMushrooms -= toRemove;
+				seedCollectionIncrease -= toRemove;
 			}
 
 			countedCollections.TryAdd(crop, Math.Min(increasedCollection, cultivatingIncrease));
@@ -77,27 +56,7 @@ public static class WeightEventProgressParser
 		eventMember.Status = newAmount > eventMember.Score ? EventMemberStatus.Active : EventMemberStatus.Inactive;
 		eventMember.Score = newAmount;
 	}
-
-	/// <summary>
-	/// Get maximum mushrooms attributed to Mushroom Eater perk
-	/// </summary>
-	private static long GetMushroomEaterMushrooms(WeightEventMember eventMember,
-		Dictionary<Crop, long> collectionIncreases,
-		Dictionary<Crop, List<EventToolState>> toolsByCrop) {
-		// Get unaccounted for mushroom collection for dealing with Mushroom Eater perk
-		collectionIncreases.TryGetValue(Crop.Mushroom, out var increasedMushroom);
-
-		var farmedMushroom = toolsByCrop.TryGetValue(Crop.Mushroom, out var mushroomTools)
-			? mushroomTools.Sum(t => t.Cultivating.IncreaseFromInitial())
-			: 0;
-
-		var elapsedHours = eventMember.EstimatedTimeActive / 3600.0;
-		var maxMushroomEater = (int)(elapsedHours * MaxMushroomEaterPerHour);
-		var mushroomEaterMushrooms = Math.Min(Math.Max(increasedMushroom - farmedMushroom, 0), maxMushroomEater);
-
-		return mushroomEaterMushrooms;
-	}
-
+	
 	public static void UpdateToolsAndCollections(this WeightEventMember eventMember, ProfileMember member) {
 		var toolStates =
 			member.Farming.Inventory?.Tools.ExtractToolStates(eventMember.Data.ToolStates)

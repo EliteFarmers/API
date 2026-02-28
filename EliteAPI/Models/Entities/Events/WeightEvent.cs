@@ -38,6 +38,7 @@ public class EventToolState
 	public long LastSeen { get; set; }
 	public bool IsActive { get; set; }
 
+	[Obsolete("Hypixel stopped incrementing counters")]
 	public EventToolCounterState Counter { get; set; } = new();
 	public EventToolCounterState Cultivating { get; set; } = new();
 }
