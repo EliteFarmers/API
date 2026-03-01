@@ -20,7 +20,7 @@
         <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="10.0.0" />
         <PackageReference Include="ErrorOr" Version="2.0.1" />
         <PackageReference Include="FastEndpoints" Version="7.2.0" />
-        <PackageReference Include="FastEndpoints.Generator" Version="7.2.0">
+        <PackageReference Include="FastEndpoints.Generator" Version="8.0.1">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
