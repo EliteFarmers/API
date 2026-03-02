@@ -56,7 +56,7 @@ public class MinecraftRendererProvider
 
 			Options = MinecraftBlockRenderer.BlockRenderOptions.Default with {
 				Size = 128,
-				SkullTextureResolver = SkullTextureResolver
+				SkullTextureResolver = SkullTextureResolver,
 			};
 
 			NbtParser.SetRenderer(renderer);

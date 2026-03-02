@@ -12,6 +12,7 @@ using MinecraftRenderer;
 using MinecraftRenderer.Hypixel;
 using MinecraftRenderer.Nbt;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
 using SkyblockRepo;
 using SkyblockRepo.Models;
 
@@ -28,7 +29,11 @@ public partial class ItemTextureResolver(
 	ISkyblockRepoClient repoClient)
 {
 	public bool SaveToS3 => config.GetValue<bool>("S3:UseForTextures");
-	
+
+	private readonly WebpEncoder _webpEncoderSettings = new WebpEncoder() {
+		Quality = 100,
+	};
+
 	public async Task<byte[]?> GetPackIcon(string packId) {
 		try {
 			var renderer = await provider.GetRendererAsync();
@@ -67,7 +72,8 @@ public partial class ItemTextureResolver(
 		var item = SkyblockRepoClient.Data.Items.GetValueOrDefault(skyblockId);
 		var mappedId = item?.Data?.Material is not null
 			? LegacyItemMappings.MapBukkitIdOrDefault(item.Data.Material, (short)item.Data.Durability)
-			: LegacyItemMappings.MapBukkitIdOrDefault(skyblockId, defaultValue: string.Empty) is { } value && value != string.Empty
+			: LegacyItemMappings.MapBukkitIdOrDefault(skyblockId, defaultValue: string.Empty) is { } value &&
+			  value != string.Empty
 				? value
 				: null;
 
@@ -86,14 +92,15 @@ public partial class ItemTextureResolver(
 			root = new NbtCompound(new Dictionary<string, NbtTag> {
 				["id"] = new NbtString("minecraft:player_head")
 			});
-			
+
 			// Reformat RUNE_SPECIAL_1 to SPECIAL_RUNE;1
 			var runeMatch = RuneRegex().Match(skyblockId);
 			if (runeMatch.Success) {
 				var name = runeMatch.Groups["name"].Value;
 				var tier = runeMatch.Groups["tier"].Value;
-			
-				if (SkyblockRepoClient.Data.NeuItems.TryGetValue($"{name.ToUpperInvariant()}_RUNE;{tier}", out var runeItem)) {
+
+				if (SkyblockRepoClient.Data.NeuItems.TryGetValue($"{name.ToUpperInvariant()}_RUNE;{tier}",
+					    out var runeItem)) {
 					var skin = SkyblockRepoRegexUtils.ExtractSkullTexture(runeItem.NbtTag)?.Value;
 					if (skin is not null) {
 						root = root.WithProfileComponent(skin);
@@ -111,10 +118,10 @@ public partial class ItemTextureResolver(
 						root = root.WithProfileComponent(skin);
 					}
 				}
-				
+
 				return root;
 			}
-			
+
 			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3);
 		}
 
@@ -152,7 +159,8 @@ public partial class ItemTextureResolver(
 
 	public NbtCompound GetItemNbt(HypixelItem item) {
 		var extraAttributes =
-			item.Attributes?.Extra.Select(a => new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value.ToString() ?? string.Empty))) ?? [];
+			item.Attributes?.Extra.Select(a =>
+				new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value.ToString() ?? string.Empty))) ?? [];
 		var itemId = LegacyItemMappings.MapNumericIdOrDefault(item.Id, item.Damage);
 
 		// Color is 3 RGB numbers with commas, e.g. "255,0,0"
@@ -210,23 +218,26 @@ public partial class ItemTextureResolver(
 		return renderer.ComputeResourceIdFromNbt(root, renderOptions);
 	}
 
-	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(HypixelItem item, List<string>? packIds = null, int size = 64) {
+	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(HypixelItem item,
+		List<string>? packIds = null, int size = 128) {
 		var root = GetItemNbt(item);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
-	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(string itemId, List<string>? packIds = null, int size = 64) {
+	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(string itemId,
+		List<string>? packIds = null, int size = 128) {
 		var root = GetItemNbt(itemId);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
-	public async Task<(string? Path, byte[]? Data)> RenderPetAndGetPathAsync(string petId, List<string>? packIds = null, int size = 64) {
+	public async Task<(string? Path, byte[]? Data)> RenderPetAndGetPathAsync(string petId, List<string>? packIds = null,
+		int size = 128) {
 		var root = GetItemNbt(petId, true);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
 	public async Task<(string? Path, byte[]? Data)>
-		RenderItemAndGetPathAsync(NbtCompound root, List<string>? packIds = null, int size = 64) {
+		RenderItemAndGetPathAsync(NbtCompound root, List<string>? packIds = null, int size = 128) {
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = GetRenderOptions(renderer, packIds, size);
 		var preResourceId = renderer.ComputeResourceIdFromNbt(root, renderOptions);
@@ -247,13 +258,13 @@ public partial class ItemTextureResolver(
 				return (existingRenderedItem.ToUrl(), null);
 			}
 		}
-		
+
 		if (!SaveToS3) {
 			using var renderResult = renderer.RenderAnimatedItemFromNbtWithResourceId(root, renderOptions);
 			using var image = renderResult.CloneAsAnimatedImage();
 
 			using var ms = new MemoryStream();
-			await image.SaveAsWebpAsync(ms);
+			await image.SaveAsWebpAsync(ms, _webpEncoderSettings);
 			return (null, ms.ToArray());
 		}
 
@@ -310,10 +321,10 @@ public partial class ItemTextureResolver(
 
 		return provider.Options with { Size = size, PackIds = packIds };
 	}
-	
+
 	[GeneratedRegex(@"^RUNE_(?<name>\w+)_(?<tier>\d)$")]
 	public static partial Regex RuneRegex();
-	
+
 	public async Task<byte[]> RenderBlockFace(string blockId, List<string>? packIds, int size = 16) {
 		try {
 			var renderer = await provider.GetRendererAsync();
@@ -322,7 +333,7 @@ public partial class ItemTextureResolver(
 				Direction = BlockFaceDirection.Up,
 				PackIds = packIds is { Count: > 0 } ? packIds.Where(p => p != "vanilla").ToList() : []
 			});
-		
+
 			using var ms = new MemoryStream();
 			await image.SaveAsPngAsync(ms);
 			return ms.ToArray();
