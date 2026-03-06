@@ -20,6 +20,8 @@ public sealed class JobRecord : IJobStorageRecord
 
 public class JobStorageProvider(IConnectionMultiplexer redis, ILogger<JobStorageProvider> logger) : IJobStorageProvider<JobRecord>
 {
+	public bool DistributedJobProcessingEnabled => false;
+	
 	public Task StoreJobAsync(JobRecord r, CancellationToken ct) {
        var db = redis.GetDatabase();
        var key = $"job:{r.TrackingID}";
@@ -32,7 +34,7 @@ public class JobStorageProvider(IConnectionMultiplexer redis, ILogger<JobStorage
        return db.StringSetAsync(key, value, TimeSpan.FromHours(1));
     }
 
-    public Task<IEnumerable<JobRecord>> GetNextBatchAsync(PendingJobSearchParams<JobRecord> parameters) {
+    public Task<ICollection<JobRecord>> GetNextBatchAsync(PendingJobSearchParams<JobRecord> parameters) {
        var db = redis.GetDatabase();
        var server = redis.GetServer(redis.GetEndPoints().First());
        
@@ -68,7 +70,7 @@ public class JobStorageProvider(IConnectionMultiplexer redis, ILogger<JobStorage
              db.KeyDelete(key); // Delete corrupted/invalid keys
           }
        }
-       return Task.FromResult<IEnumerable<JobRecord>>(records);
+       return Task.FromResult<ICollection<JobRecord>>(records);
     }
 	
 	public Task MarkJobAsCompleteAsync(JobRecord r, CancellationToken ct) {

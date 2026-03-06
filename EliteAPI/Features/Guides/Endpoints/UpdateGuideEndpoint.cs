@@ -57,7 +57,7 @@ public class UpdateGuideRequest
 	public string MarkdownContent { get; set; } = string.Empty;
 	public List<string>? Tags { get; set; }
 	public GuideRichData? RichBlocks { get; set; }
-	public int ConcurrencyVersion { get; set; }
+	public int ConcurrencyVersion { get; set; } = 1;
 }
 
 public class UpdateGuideResponse

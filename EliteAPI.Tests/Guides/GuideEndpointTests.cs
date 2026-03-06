@@ -84,6 +84,21 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
     }
 
     [Fact, Priority(7)]
+    public async Task GetGuide_Draft_ReturnsInitialConcurrencyVersion()
+    {
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
+            new CreateGuideRequest { Type = GuideType.General });
+        createRsp.IsSuccessStatusCode.ShouldBeTrue();
+
+        var (getRsp, guide) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
+            new GetGuideRequest { Slug = created!.Slug, Draft = true });
+
+        getRsp.IsSuccessStatusCode.ShouldBeTrue();
+        guide.ShouldNotBeNull();
+        guide.ConcurrencyVersion.ShouldBe(1);
+    }
+
+    [Fact, Priority(7)]
     public async Task GetGuide_DraftAsModerator_ReturnsContent()
     {
         // Create a guide as regular user
@@ -142,6 +157,32 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
             });
         
         updateRsp.IsSuccessStatusCode.ShouldBeTrue();
+    }
+
+    [Fact, Priority(10)]
+    public async Task UpdateGuide_WithoutExplicitConcurrencyVersion_UsesInitialVersion()
+    {
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
+            new CreateGuideRequest { Type = GuideType.General });
+        createRsp.IsSuccessStatusCode.ShouldBeTrue();
+
+        var updateRsp = await App.RegularUserClient.PUTAsync<UpdateGuideEndpoint, UpdateGuideRequest>(
+            new UpdateGuideRequest
+            {
+                Id = created!.Id,
+                Title = "Updated Title",
+                Description = "Updated Description",
+                MarkdownContent = "# Updated Content"
+            });
+
+        updateRsp.IsSuccessStatusCode.ShouldBeTrue();
+
+        var (getRsp, guide) = await App.RegularUserClient.GETAsync<GetGuideEndpoint, GetGuideRequest, FullGuideDto>(
+            new GetGuideRequest { Slug = created.Slug, Draft = true });
+
+        getRsp.IsSuccessStatusCode.ShouldBeTrue();
+        guide.ShouldNotBeNull();
+        guide.ConcurrencyVersion.ShouldBe(2);
     }
 
     [Fact, Priority(9)]
