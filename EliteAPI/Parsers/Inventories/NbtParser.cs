@@ -16,6 +16,11 @@ namespace EliteAPI.Parsers.Inventories;
 public static class NbtParser
 {
 	private static MinecraftBlockRenderer? _cachedRenderer;
+	public const string InventoryHashVersionPrefix = "v2:";
+
+	public static string ComputeInventoryHash(string? data) {
+		return InventoryHashVersionPrefix + HashUtility.ComputeSha256Hash(data ?? string.Empty);
+	}
 
 	/// <summary>
 	/// Set the renderer instance to use for computing resource IDs.
@@ -70,7 +75,7 @@ public static class NbtParser
 
 		return new HypixelInventory {
 			Name = inventoryName,
-			Hash = HashUtility.ComputeSha256Hash(data ?? string.Empty),
+			Hash = ComputeInventoryHash(data),
 			Items = items.Select(item => item.ToHypixelItem()).ToList(),
 			EmptySlots = empty.Count == 0 ? null : empty.ToArray()
 		};
@@ -265,6 +270,17 @@ public static class NbtParser
 				kvp.Key,
 				GetValueAsString(kvp.Value) ?? string.Empty))
 			.ToDictionary(x => x.Key, x => x.Value);
+		
+		// Integer in base 16, convert to string with 255:255:255 format
+		var color = display?.GetInt("Color");
+		if (color.HasValue) {
+			var r = (color.Value >> 16) & 0xFF;
+			var g = (color.Value >> 8) & 0xFF;
+			var b = color.Value & 0xFF;
+			var colorString = $"{r}:{g}:{b}";
+			attributes ??= new Dictionary<string, string>();
+			attributes["color"] = colorString;
+		}
 		
 		var compoundAttributes = extraAttributes?
 			.Where(kvp => !string.IsNullOrEmpty(kvp.Key) &&

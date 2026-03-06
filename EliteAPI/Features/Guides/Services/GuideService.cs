@@ -76,8 +76,8 @@ public class GuideService(DataContext db)
         return Common.Services.SqidService.Decode(slug);
     }
 
-    public async Task UpdateDraftAsync(int guideId, string title, string description, string markdown, string? iconSkyblockId, List<string>? tags,
-        GuideRichData? richData)
+    public async Task<int> UpdateDraftAsync(int guideId, string title, string description, string markdown, string? iconSkyblockId, List<string>? tags,
+        GuideRichData? richData, int concurrencyVersion)
     {
         var guide = await db.Guides
             .Include(g => g.Tags)
@@ -95,7 +95,8 @@ public class GuideService(DataContext db)
                 Description = description,
                 MarkdownContent = markdown,
                 RichBlocks = richData,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                ConcurrencyVersion = 1
             };
             db.GuideVersions.Add(draft);
             await db.SaveChangesAsync();
@@ -104,10 +105,16 @@ public class GuideService(DataContext db)
         }
         else
         {
+            if (draft.ConcurrencyVersion != concurrencyVersion)
+            {
+                throw new DbUpdateConcurrencyException("The guide has been modified in another tab. Please refresh to see the latest changes.");
+            }
+
             draft.Title = title;
             draft.Description = description;
             draft.MarkdownContent = markdown;
             draft.RichBlocks = richData;
+            draft.ConcurrencyVersion++;
         }
 
         guide.IconSkyblockId = iconSkyblockId;
@@ -127,6 +134,8 @@ public class GuideService(DataContext db)
         }
         
         await db.SaveChangesAsync();
+
+        return draft.ConcurrencyVersion;
     }
 
     public async Task SubmitForApprovalAsync(int guideId)

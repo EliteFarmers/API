@@ -1,0 +1,8 @@
+{
+  "BazaarSnapshots": {
+    "CleanupEnabled": true,
+    "CleanupIntervalHours": 24,
+    "DownsampleAfterDays": 30,
+    "DownsampleBucketMinutes": 60
+  }
+}

@@ -2,11 +2,15 @@ using System.ComponentModel;
 using System.Net.Mime;
 using System.Text.Json.Serialization;
 using EliteAPI.Data;
+using EliteAPI.Features.Account.Services;
+using EliteAPI.Features.Auth.Models;
 using EliteAPI.Features.Profiles.Mappers;
+using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Features.Textures.Services;
 using EliteAPI.Utilities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using CacheControlHeaderValue = Microsoft.Net.Http.Headers.CacheControlHeaderValue;
 
 namespace EliteAPI.Features.Textures.Endpoints;
 
@@ -32,6 +36,8 @@ internal sealed class GetInventoryItemTextureRequest
 
 internal sealed class GetInventoryItemTextureEndpoint(
 	ItemTextureResolver itemTextureResolver,
+	IAccountService accountService,
+	IMemberService memberService,
 	DataContext context
 ) : Endpoint<GetInventoryItemTextureRequest>
 {
@@ -76,7 +82,26 @@ internal sealed class GetInventoryItemTextureEndpoint(
 			itemData = inventoryItem.ToHypixelItem();
 		}
 
-		var (path, data) = await itemTextureResolver.RenderItemAndGetPathAsync(itemData, request.PackList);
+		var playerUuid = await memberService.GetPlayerUuidFromMemberId(inventory.ProfileMemberId);
+
+		var isAuthorized = false;
+		if (playerUuid is not null) {
+			isAuthorized = await accountService.OwnsMinecraftAccount(User, playerUuid, ApiUserPolicies.Moderator);
+		}
+
+		var color = isAuthorized && itemData.Attributes?.TryGetValue("color", out var itemColor) is true
+			? itemColor
+			: null;
+
+		if (color is not null) {
+			HttpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue {
+				Public = false,
+				NoCache = true,
+				NoStore = true
+			};
+		}
+
+		var (path, data) = await itemTextureResolver.RenderItemAndGetPathAsync(itemData, request.PackList, 128, color);
 
 		if (path is not null) {
 			await Send.RedirectAsync(path, false, true);

@@ -59,23 +59,29 @@ internal sealed class GetBazaarProductHistoryEndpoint(
 				InstaSellPrice = s.InstaSellPrice,
 				InstaBuyPrice = s.InstaBuyPrice,
 				BuyOrderPrice = s.BuyOrderPrice,
-				SellOrderPrice = s.SellOrderPrice
+				TopBuyOrderPrice = s.TopBuyOrderPrice,
+				SellOrderPrice = s.SellOrderPrice,
+				TopSellOrderPrice = s.TopSellOrderPrice
 			})
 			.ToListAsync(c);
 
 		var response = new GetBazaarProductHistoryResponse {
 			ProductId = summary.ItemId,
 			Product = new BazaarProductSummaryDto {
-				Name = summary.SkyblockItem.Data != null ? summary.SkyblockItem.Data.Name : null,
+				Name = summary.SkyblockItem.Data?.Name,
 				Npc = summary.SkyblockItem.NpcSellPrice,
 				Sell = summary.InstaSellPrice,
 				Buy = summary.InstaBuyPrice,
 				SellOrder = summary.SellOrderPrice,
 				BuyOrder = summary.BuyOrderPrice,
+				TopSellOrder = summary.TopSellOrderPrice,
+				TopBuyOrder = summary.TopBuyOrderPrice,
 				AverageSell = summary.AvgInstaSellPrice,
 				AverageBuy = summary.AvgInstaBuyPrice,
 				AverageBuyOrder = summary.AvgBuyOrderPrice,
-				AverageSellOrder = summary.AvgSellOrderPrice
+				AverageTopBuyOrder = summary.AvgTopBuyOrderPrice,
+				AverageSellOrder = summary.AvgSellOrderPrice,
+				AverageTopSellOrder = summary.AvgTopSellOrderPrice
 			},
 			History = history
 		};
@@ -97,5 +103,7 @@ internal sealed class BazaarHistoryDataPoint
 	public double InstaSellPrice { get; set; }
 	public double InstaBuyPrice { get; set; }
 	public double BuyOrderPrice { get; set; }
+	public double TopBuyOrderPrice { get; set; }
 	public double SellOrderPrice { get; set; }
+	public double TopSellOrderPrice { get; set; }
 }

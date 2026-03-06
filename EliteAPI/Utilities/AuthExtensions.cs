@@ -20,6 +20,12 @@ public static class AuthExtensions
 
 			return id;
 		}
+		
+		public string? GetPrimaryMinecraftUuid() {
+			if (user.Identity?.IsAuthenticated is not true) return null;
+
+			return user.FindFirstValue(ClaimNames.Uuid);
+		}
 
 		public string? GetDiscordUsername() {
 			if (user.Identity?.IsAuthenticated is not true) return null;

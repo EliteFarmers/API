@@ -10,6 +10,7 @@ using EliteAPI.Utilities;
 using FastEndpoints;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using IMapper = AutoMapper.IMapper;
@@ -22,6 +23,7 @@ public interface IMemberService
 	Task UpdatePlayerIfNeeded(string playerUuid, RequestedResources resources);
 	Task UpdateProfileMemberIfNeeded(Guid memberId, float cooldownMultiplier = 1);
 	Task<Guid?> GetProfileMemberId(string playerUuid, string profileId);
+	Task<string?> GetPlayerUuidFromMemberId(Guid memberId);
 	Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid);
 	Task<IQueryable<ProfileMember>?> ProfileMemberCompleteQuery(string playerUuid);
 	Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid, RequestedResources resources);
@@ -68,8 +70,9 @@ public class MemberService(
 	IMojangService mojangService,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IConnectionMultiplexer redis,
-	IUpdatePathMetrics updatePathMetrics)
-	: IMemberService
+	HybridCache cache,
+    IUpdatePathMetrics updatePathMetrics)
+    : IMemberService
 {
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 
@@ -82,6 +85,20 @@ public class MemberService(
 
 		if (guid == Guid.Empty) return null;
 		return guid;
+	}
+
+	public async Task<string?> GetPlayerUuidFromMemberId(Guid memberId) {
+		return await cache.GetOrCreateAsync("member_player_uuid:" + memberId, async (ct) => {
+				var uuid = await context.ProfileMembers
+					.AsNoTracking()
+					.Where(p => p.Id == memberId)
+					.Select(p => p.PlayerUuid)
+					.FirstOrDefaultAsync(ct);
+
+				return uuid;
+			}, new HybridCacheEntryOptions() {
+			Expiration = TimeSpan.FromHours(1)
+		});
 	}
 
 	public async Task<IQueryable<ProfileMember>?> ProfileMemberQuery(string playerUuid) {
@@ -480,6 +497,12 @@ public class MemberService(
 
 		return xpGain >= _coolDowns.ActivityMinXpGain;
 	}
+
+    public Task<Guid?> GetPlayerUuidFrom(string playerUuid, string profileId)
+    {
+        throw new NotImplementedException();
+    }
+
 }
 
 public class LastUpdatedDto

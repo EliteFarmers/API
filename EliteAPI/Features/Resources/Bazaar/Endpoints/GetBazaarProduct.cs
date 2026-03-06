@@ -38,10 +38,14 @@ internal sealed class GetBazaarProductEndpoint(
 					Buy = s.InstaBuyPrice,
 					SellOrder = s.SellOrderPrice,
 					BuyOrder = s.BuyOrderPrice,
+					TopSellOrder = s.TopSellOrderPrice,
+					TopBuyOrder = s.TopBuyOrderPrice,
 					AverageSell = s.AvgInstaSellPrice,
 					AverageBuy = s.AvgInstaBuyPrice,
 					AverageBuyOrder = s.AvgBuyOrderPrice,
+					AverageTopBuyOrder = s.AvgTopBuyOrderPrice,
 					AverageSellOrder = s.AvgSellOrderPrice,
+					AverageTopSellOrder = s.AvgTopSellOrderPrice,
 					Orders = s.Orders
 				}
 			})

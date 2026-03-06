@@ -30,8 +30,32 @@ public class RedisLeaderboardService(
 
 	public async Task<Dictionary<string, LeaderboardPositionDto?>> GetMultipleLeaderboardRanks(
 		List<string> leaderboards, LeaderboardRankRequestWithoutId request) {
-		var result = new Dictionary<string, LeaderboardPositionDto?>();
-		foreach (var lbId in leaderboards) {
+		var ct = request.CancellationToken ?? CancellationToken.None;
+
+		var lbEntities = await context.Leaderboards
+			.AsNoTracking()
+			.Where(l => leaderboards.Contains(l.Slug))
+			.ToDictionaryAsync(l => l.Slug, ct);
+		
+		string? memberId = null;
+		var needsMemberId = leaderboards.Any(id =>
+			registrationService.LeaderboardsById.TryGetValue(id, out var def) && def.IsMemberLeaderboard());
+
+		if (needsMemberId && !string.IsNullOrEmpty(request.ProfileId) && !string.IsNullOrEmpty(request.PlayerUuid)) {
+			memberId = await ResolveMemberId(request.ProfileId, request.PlayerUuid, ct);
+		}
+
+		// 3. Execute all requests concurrently
+		var tasks = leaderboards.Select(async lbId => {
+			if (!lbEntities.TryGetValue(lbId, out var lb) ||
+			    !registrationService.LeaderboardsById.TryGetValue(lbId, out var definition)) {
+				return (lbId, Result: new LeaderboardPositionDto { Rank = -1 });
+			}
+
+			if (definition.IsMemberLeaderboard() && string.IsNullOrEmpty(memberId)) {
+				return (lbId, Result: new LeaderboardPositionDto { Rank = -1 });
+			}
+
 			var subRequest = new LeaderboardRankRequest {
 				LeaderboardId = lbId,
 				PlayerUuid = request.PlayerUuid,
@@ -47,10 +71,13 @@ public class RedisLeaderboardService(
 				SkipUpdate = request.SkipUpdate,
 				CancellationToken = request.CancellationToken
 			};
-			result[lbId] = await GetLeaderboardRank(subRequest);
-		}
 
-		return result;
+			var rankResult = await GetLeaderboardRankInternal(lb, definition, memberId, subRequest);
+			return (lbId, Result: rankResult);
+		}).ToList();
+
+		var completedResults = await Task.WhenAll(tasks);
+		return completedResults.ToDictionary(x => x.lbId, x => (LeaderboardPositionDto?)x.Result);
 	}
 
 	public async Task<Dictionary<string, PlayerLeaderboardEntryWithRankDto>> GetCachedPlayerLeaderboardRanks(
@@ -114,38 +141,49 @@ public class RedisLeaderboardService(
 		var (lb, definition) = await GetLeaderboard(request.LeaderboardId);
 		if (lb is null || definition is null) return new LeaderboardPositionDto { Rank = -1 };
 
+		// Resolve MemberId
+		string? memberId = null;
+		if (definition is IMemberLeaderboardDefinition) {
+			memberId = await ResolveMemberId(request.ProfileId, request.PlayerUuid, request.CancellationToken);
+			if (string.IsNullOrEmpty(memberId)) return new LeaderboardPositionDto { Rank = -1 };
+		}
+
+		return await GetLeaderboardRankInternal(lb, definition, memberId, request);
+	}
+
+	private async Task<string?> ResolveMemberId(string? profileId, string? playerUuid, CancellationToken? ct = null) {
+		if (string.IsNullOrEmpty(profileId) || string.IsNullOrEmpty(playerUuid)) return null;
+
+		var memberIdCacheKey = $"memberid:{profileId}:{playerUuid}";
+		return await cache.GetOrCreateAsync(memberIdCacheKey, async cancel => {
+			var member = await context.ProfileMembers
+				.AsNoTracking()
+				.Where(p => p.ProfileId.Equals(profileId) && p.PlayerUuid.Equals(playerUuid))
+				.Select(p => p.Id.ToString())
+				.FirstOrDefaultAsync(cancel);
+			return member;
+		}, cancellationToken: ct ?? CancellationToken.None);
+	}
+
+	private async Task<LeaderboardPositionDto> GetLeaderboardRankInternal(
+		Leaderboard lb,
+		ILeaderboardDefinition definition,
+		string? memberId,
+		LeaderboardRankRequest request) {
 		var db = redis.GetDatabase();
 		var mode = request.GameMode ?? "all";
-		var key = $"lb:{request.LeaderboardId}:{mode}";
+		var key = $"lb:{lb.Slug}:{mode}";
 
 		// Check if data exists in Redis
 		if (!await db.KeyExistsAsync(key)) {
 			return new LeaderboardPositionDto {
 				Rank = -1,
 				Amount = 0,
-				MinAmount = GetLeaderboardMinScore(request.LeaderboardId),
+				MinAmount = GetLeaderboardMinScore(lb.Slug),
 				UpcomingRank = 10_000,
 				UpcomingPlayers = [],
 				Disabled = true
 			};
-		}
-
-		// Resolve MemberId
-		string? memberId = null;
-		if (memberId == null && definition is IMemberLeaderboardDefinition) {
-			// Try cache first for memberId lookup
-			var memberIdCacheKey = $"memberid:{request.ProfileId}:{request.PlayerUuid}";
-			var cachedMemberId = await cache.GetOrCreateAsync(memberIdCacheKey, async cancel => {
-				var member = await context.ProfileMembers
-					.AsNoTracking()
-					.Where(p => p.ProfileId.Equals(request.ProfileId) && p.PlayerUuid.Equals(request.PlayerUuid))
-					.Select(p => p.Id.ToString())
-					.FirstOrDefaultAsync(cancel);
-				return member;
-			});
-
-			if (string.IsNullOrEmpty(cachedMemberId)) return new LeaderboardPositionDto { Rank = -1 };
-			memberId = cachedMemberId;
 		}
 
 		if (definition.IsMemberLeaderboard() && string.IsNullOrWhiteSpace(memberId))
@@ -180,7 +218,7 @@ public class RedisLeaderboardService(
 
 			if (stop >= start) {
 				var slice = await db.SortedSetRangeByRankWithScoresAsync(key, start, stop, Order.Descending);
-				var dtos = (await MapRedisEntries(slice, request.LeaderboardId)).Select(e => e.MapToDto()).ToList();
+				var dtos = (await MapRedisEntries(slice, lb.Slug)).Select(e => e.MapToDto()).ToList();
 
 				// Calculate absolute rank based on the requested start index
 				var actualStartRank = start;
@@ -212,7 +250,7 @@ public class RedisLeaderboardService(
 			long stop = anchorIndex + request.Previous.Value;
 
 			var slice = await db.SortedSetRangeByRankWithScoresAsync(key, start, stop, Order.Descending);
-			var dtos = (await MapRedisEntries(slice, request.LeaderboardId)).Select(e => e.MapToDto()).ToList();
+			var dtos = (await MapRedisEntries(slice, lb.Slug)).Select(e => e.MapToDto()).ToList();
 
 			previousPlayers.AddRange(dtos.Select((dto, i) => new LeaderboardEntryDto {
 				Ign = dto.Ign,
@@ -231,7 +269,7 @@ public class RedisLeaderboardService(
 		return new LeaderboardPositionDto {
 			Rank = position,
 			Amount = score,
-			MinAmount = await GetCachedMinScore(request.LeaderboardId, request.GameMode),
+			MinAmount = await GetCachedMinScore(lb.Slug, request.GameMode),
 			UpcomingRank = anchorIndex == -1 ? (int)(await db.SortedSetLengthAsync(key)) : (int)anchorIndex,
 			UpcomingPlayers = upcomingPlayers,
 			Previous = previousPlayers
@@ -240,9 +278,8 @@ public class RedisLeaderboardService(
 
 	private async Task<List<LeaderboardEntry>> MapRedisEntries(SortedSetEntry[] entries, string leaderboardId) {
 		var db = redis.GetDatabase();
-		var results = new List<LeaderboardEntry>();
 
-		foreach (var entry in entries) {
+		var tasks = entries.Select(async entry => {
 			var memberId = entry.Element.ToString();
 			var memberData = await db.HashGetAllAsync($"member:{memberId}");
 
@@ -250,16 +287,17 @@ public class RedisLeaderboardService(
 			var ign = memberData.FirstOrDefault(x => x.Name == IgnHash).Value.ToString();
 			var uuid = memberData.FirstOrDefault(x => x.Name == UuidHash).Value.ToString();
 
-			results.Add(new LeaderboardEntry {
+			return new LeaderboardEntry {
 				MemberId = memberId,
 				Amount = entry.Score,
 				Profile = profile,
 				Ign = ign,
 				Uuid = uuid
-			});
-		}
+			};
+		}).ToList();
 
-		return results;
+		var results = await Task.WhenAll(tasks);
+		return results.ToList();
 	}
 
 	public async Task<(Leaderboard? lb, ILeaderboardDefinition? definition)> GetLeaderboard(string leaderboardId) {

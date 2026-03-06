@@ -577,7 +577,7 @@ public partial class ProfileProcessorService(
 		}
 
 		if (incomingData.Inventories?.BackpackIcons is not null) {
-			var hash = HashUtility.ComputeSha256Hash(string.Join(",",
+			var hash = NbtParser.ComputeInventoryHash(string.Join(",",
 				incomingData.Inventories.BackpackIcons.Select(i => i.Value.Data)));
 
 			var existing = member.Inventories.FirstOrDefault(i => i.Name == "icons_backpack");
@@ -615,7 +615,7 @@ public partial class ProfileProcessorService(
 
 	private void ParseInventory(string name, string? data, ProfileMember member,
 		Dictionary<string, string>? meta = null) {
-		var hash = HashUtility.ComputeSha256Hash(data ?? string.Empty);
+		var hash = NbtParser.ComputeInventoryHash(data);
 
 		// Remove existing inventory if we have new data, or it hasn't been updated in a while
 		var existing = member.Inventories.FirstOrDefault(i => i.Name == name);

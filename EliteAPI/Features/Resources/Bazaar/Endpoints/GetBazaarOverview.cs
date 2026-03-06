@@ -61,10 +61,14 @@ internal sealed class GetBazaarOverviewEndpoint(
                     Buy = s.InstaBuyPrice,
                     SellOrder = s.SellOrderPrice,
                     BuyOrder = s.BuyOrderPrice,
+                    TopSellOrder = s.TopSellOrderPrice,
+                    TopBuyOrder = s.TopBuyOrderPrice,
                     AverageSell = s.AvgInstaSellPrice,
                     AverageBuy = s.AvgInstaBuyPrice,
                     AverageBuyOrder = s.AvgBuyOrderPrice,
-                    AverageSellOrder = s.AvgSellOrderPrice
+                    AverageTopBuyOrder = s.AvgTopBuyOrderPrice,
+                    AverageSellOrder = s.AvgSellOrderPrice,
+                    AverageTopSellOrder = s.AvgTopSellOrderPrice
                 }
             })
             .ToList();
@@ -86,10 +90,14 @@ internal sealed class GetBazaarOverviewEndpoint(
                     Buy = s.InstaBuyPrice,
                     SellOrder = s.SellOrderPrice,
                     BuyOrder = s.BuyOrderPrice,
+                    TopSellOrder = s.TopSellOrderPrice,
+                    TopBuyOrder = s.TopBuyOrderPrice,
                     AverageSell = s.AvgInstaSellPrice,
                     AverageBuy = s.AvgInstaBuyPrice,
                     AverageBuyOrder = s.AvgBuyOrderPrice,
-                    AverageSellOrder = s.AvgSellOrderPrice
+                    AverageTopBuyOrder = s.AvgTopBuyOrderPrice,
+                    AverageSellOrder = s.AvgSellOrderPrice,
+                    AverageTopSellOrder = s.AvgTopSellOrderPrice
                 }
             })
             .ToList();

@@ -38,6 +38,7 @@ public class BazaarIngestionService(
 			var bids = productDetails.SellSummary
 				.OrderByDescending(o => o.PricePerUnit)
 				.ToList();
+			var topBuyOrderPrice = GetTopOfBookPrice(bids);
 			var representativeBuyOrderPrice = GetRepresentativeOrderPrices(bids, instaSellPrice);
 
 			var asks = productDetails.BuySummary
@@ -45,6 +46,7 @@ public class BazaarIngestionService(
 				// Skip last order in list as it tends to be fake buy orders / storing coins
 				.SkipLast(productDetails.BuySummary.Count > 2 ? 1 : 0)
 				.ToList();
+			var topSellOrderPrice = GetTopOfBookPrice(asks);
 			var representativeSellOrderPrice = GetRepresentativeOrderPrices(asks, instaBuyPrice);
 
 			newSnapshots.Add(new BazaarProductSnapshot {
@@ -53,7 +55,9 @@ public class BazaarIngestionService(
 				InstaSellPrice = instaSellPrice,
 				InstaBuyPrice = instaBuyPrice,
 				BuyOrderPrice = representativeBuyOrderPrice,
-				SellOrderPrice = representativeSellOrderPrice
+				TopBuyOrderPrice = topBuyOrderPrice,
+				SellOrderPrice = representativeSellOrderPrice,
+				TopSellOrderPrice = topSellOrderPrice
 			});
 
 			await context.BazaarProductSummaries
@@ -97,6 +101,10 @@ public class BazaarIngestionService(
 		if (orderPrices == 0) orderPrices = instaSellPrice;
 
 		return orderPrices;
+	}
+
+	private static double GetTopOfBookPrice(List<BazaarOrder> orders) {
+		return orders.FirstOrDefault(order => order.Amount > 0 && order.PricePerUnit > 0)?.PricePerUnit ?? 0;
 	}
 
 	private static double CalculateVwap(List<BazaarOrder> orders) {
@@ -151,8 +159,10 @@ public class BazaarIngestionService(
 			var avgInstaSell = CalculateResistantAverage(relevantSnapshots.Select(s => s.InstaSellPrice));
 			var avgInstaBuy = CalculateResistantAverage(relevantSnapshots.Select(s => s.InstaBuyPrice));
 			var avgRepBuy = CalculateResistantAverage(relevantSnapshots.Select(s => s.BuyOrderPrice));
+			var avgTopBuy = CalculateResistantAverage(relevantSnapshots.Select(s => s.TopBuyOrderPrice));
 			var avgRepSell =
 				CalculateResistantAverage(relevantSnapshots.Select(s => s.SellOrderPrice));
+			var avgTopSell = CalculateResistantAverage(relevantSnapshots.Select(s => s.TopSellOrderPrice));
 
 			if (existingAveragesDict.TryGetValue(productId, out var existingAverage)) {
 				// Update existing record
@@ -160,13 +170,17 @@ public class BazaarIngestionService(
 					existingAverage.InstaSellPrice = mostRecentSnapshot.InstaSellPrice;
 					existingAverage.InstaBuyPrice = mostRecentSnapshot.InstaBuyPrice;
 					existingAverage.BuyOrderPrice = mostRecentSnapshot.BuyOrderPrice;
+					existingAverage.TopBuyOrderPrice = mostRecentSnapshot.TopBuyOrderPrice;
 					existingAverage.SellOrderPrice = mostRecentSnapshot.SellOrderPrice;
+					existingAverage.TopSellOrderPrice = mostRecentSnapshot.TopSellOrderPrice;
 				}
 
 				existingAverage.AvgInstaSellPrice = avgInstaSell;
 				existingAverage.AvgInstaBuyPrice = avgInstaBuy;
 				existingAverage.AvgBuyOrderPrice = avgRepBuy;
+				existingAverage.AvgTopBuyOrderPrice = avgTopBuy;
 				existingAverage.AvgSellOrderPrice = avgRepSell;
+				existingAverage.AvgTopSellOrderPrice = avgTopSell;
 				existingAverage.CalculationTimestamp = currentTime;
 
 				updatedCount++;
@@ -183,14 +197,18 @@ public class BazaarIngestionService(
 					AvgInstaSellPrice = avgInstaSell,
 					AvgInstaBuyPrice = avgInstaBuy,
 					AvgBuyOrderPrice = avgRepBuy,
-					AvgSellOrderPrice = avgRepSell
+					AvgTopBuyOrderPrice = avgTopBuy,
+					AvgSellOrderPrice = avgRepSell,
+					AvgTopSellOrderPrice = avgTopSell
 				};
 
 				if (mostRecentSnapshot is not null) {
 					newAverage.InstaSellPrice = mostRecentSnapshot.InstaSellPrice;
 					newAverage.InstaBuyPrice = mostRecentSnapshot.InstaBuyPrice;
 					newAverage.BuyOrderPrice = mostRecentSnapshot.BuyOrderPrice;
+					newAverage.TopBuyOrderPrice = mostRecentSnapshot.TopBuyOrderPrice;
 					newAverage.SellOrderPrice = mostRecentSnapshot.SellOrderPrice;
+					newAverage.TopSellOrderPrice = mostRecentSnapshot.TopSellOrderPrice;
 				}
 
 				context.BazaarProductSummaries.Add(newAverage);

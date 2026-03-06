@@ -21,7 +21,7 @@ namespace EliteAPI.Features.Account.Services;
 public class AccountService(
 	DataContext context,
 	IMemberService memberService,
-	IMojangService mojangService,
+	HybridCache cache,
 	IServiceScopeFactory scopeFactory,
 	IOptions<ConfigCooldownSettings> coolDowns,
 	IOptions<FarmingItemsSettings> farmingItems)
@@ -374,10 +374,19 @@ public class AccountService(
 		
 		var discordId = user.GetDiscordId();
 		if (discordId is null) return false;
+
+		var primaryAccountId = user.GetPrimaryMinecraftUuid();
+		if (primaryAccountId != null && (primaryAccountId.Equals(playerUuidOrIgn) || playerUuidOrIgn.Equals(playerUuidOrIgn, StringComparison.OrdinalIgnoreCase))) {
+			return true;
+		}
 		
-		return await context.MinecraftAccounts
-			.AnyAsync(mc =>
-				mc.AccountId == discordId &&
-				(mc.Id.Equals(playerUuidOrIgn) || mc.Name.ToLower().Equals(playerUuidOrIgn.ToLower())));
+		return await cache.GetOrCreateAsync("owns_mc_account:" + discordId + ":" + playerUuidOrIgn.ToLower(), async (ct) => {
+			return await context.MinecraftAccounts
+				.AnyAsync(mc =>
+					mc.AccountId == discordId &&
+					(mc.Id.Equals(playerUuidOrIgn) || mc.Name.ToLower().Equals(playerUuidOrIgn.ToLower())), cancellationToken: ct);
+		}, new HybridCacheEntryOptions() {
+			Expiration = TimeSpan.FromMinutes(5)
+		});
 	}
 }

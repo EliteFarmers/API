@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using EliteAPI.Data;
 using EliteAPI.Features.Images.Models;
@@ -157,18 +158,18 @@ public partial class ItemTextureResolver(
 		return root;
 	}
 
-	public NbtCompound GetItemNbt(HypixelItem item) {
+	public NbtCompound GetItemNbt(HypixelItem item, string? color = null) {
 		var extraAttributes =
 			item.Attributes?.Extra.Select(a =>
 				new KeyValuePair<string, NbtTag>(a.Key, new NbtString(a.Value.ToString() ?? string.Empty))) ?? [];
 		var itemId = LegacyItemMappings.MapNumericIdOrDefault(item.Id, item.Damage);
+		
+		var decimalColor = ParseColorToDecimal(color)
+			?? ParseColorToDecimal(repoClient.FindItem(item.SkyblockId)?.Data?.Color);
 
-		// Color is 3 RGB numbers with commas, e.g. "255,0,0"
-		// We convert to decimal integer for Minecraft NBT
-		var dyeColor = repoClient.FindItem(item.SkyblockId)?.Data?.Color;
-		var decimalColor = dyeColor != null
-			? Convert.ToInt32(string.Join("", dyeColor.Split(',').Select(c => int.Parse(c).ToString("X2"))), 16)
-			: (int?)null;
+		if (decimalColor is null && item.Attributes?.TryGetValue("color", out var itemColor) is true) {
+			decimalColor = ParseColorToDecimal(itemColor);
+		}
 
 		var components = new List<KeyValuePair<string, NbtTag>>() {
 			new(
@@ -211,16 +212,16 @@ public partial class ItemTextureResolver(
 	}
 
 	public async Task<MinecraftBlockRenderer.ResourceIdResult> GetItemResource(HypixelItem item,
-		List<string>? packIds = null, int size = 64) {
-		var root = GetItemNbt(item);
+		List<string>? packIds = null, int size = 64, string? color = null) {
+		var root = GetItemNbt(item, color);
 		var renderer = await provider.GetRendererAsync();
 		var renderOptions = GetRenderOptions(renderer, packIds, size);
 		return renderer.ComputeResourceIdFromNbt(root, renderOptions);
 	}
 
 	public async Task<(string? Path, byte[]? Data)> RenderItemAndGetPathAsync(HypixelItem item,
-		List<string>? packIds = null, int size = 128) {
-		var root = GetItemNbt(item);
+		List<string>? packIds = null, int size = 128, string? color = null) {
+		var root = GetItemNbt(item, color);
 		return await RenderItemAndGetPathAsync(root, packIds, size);
 	}
 
@@ -342,5 +343,27 @@ public partial class ItemTextureResolver(
 			logger.LogError(ex, "Failed to render block face {BlockId}", blockId);
 			throw;
 		}
+	}
+
+	private static int? ParseColorToDecimal(string? colorValue) {
+		if (string.IsNullOrWhiteSpace(colorValue)) {
+			return null;
+		}
+
+		var separator = colorValue.Contains(':') ? ':' : ',';
+		if (colorValue.Contains(separator)) {
+			var components = colorValue
+				.Split(separator)
+				.Select(c => int.TryParse(c.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : -1)
+				.ToArray();
+
+			if (components.Length == 3 && components.All(c => c is >= 0 and <= 255)) {
+				return (components[0] << 16) | (components[1] << 8) | components[2];
+			}
+		}
+
+		return int.TryParse(colorValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedColor)
+			? parsedColor
+			: null;
 	}
 }

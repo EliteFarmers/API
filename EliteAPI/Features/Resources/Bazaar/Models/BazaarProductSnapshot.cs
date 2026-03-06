@@ -28,9 +28,19 @@ public class BazaarProductSnapshot
 	public double BuyOrderPrice { get; set; }
 
 	/// <summary>
+	/// Highest current buy-order price (best bid)
+	/// </summary>
+	public double TopBuyOrderPrice { get; set; }
+
+	/// <summary>
 	/// Representative price for a new sell order (from buy_summary)
 	/// </summary>
 	public double SellOrderPrice { get; set; }
+
+	/// <summary>
+	/// Lowest current sell-order price (best ask)
+	/// </summary>
+	public double TopSellOrderPrice { get; set; }
 
 	// /// <summary>
 	// /// Amount of sold items averaged over the last week

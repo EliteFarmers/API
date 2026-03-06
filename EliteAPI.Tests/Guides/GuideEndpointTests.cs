@@ -137,10 +137,46 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
                 Id = created!.Id,
                 Title = "Updated Title",
                 Description = "Updated Description",
-                MarkdownContent = "# Updated Content"
+                MarkdownContent = "# Updated Content",
+                ConcurrencyVersion = 1
             });
         
         updateRsp.IsSuccessStatusCode.ShouldBeTrue();
+    }
+
+    [Fact, Priority(9)]
+    public async Task UpdateGuide_WithOutdatedConcurrencyVersion_Returns409()
+    {
+        // Create a guide
+        var (createRsp, created) = await App.RegularUserClient.POSTAsync<CreateGuideEndpoint, CreateGuideRequest, GuideDto>(
+            new CreateGuideRequest { Type = GuideType.General });
+        createRsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        // Author updates the guide with valid version 1
+        var update1Rsp = await App.RegularUserClient.PUTAsync<UpdateGuideEndpoint, UpdateGuideRequest>(
+            new UpdateGuideRequest 
+            { 
+                Id = created!.Id,
+                Title = "Updated Title 1",
+                Description = "Updated Description",
+                MarkdownContent = "# Updated Content",
+                ConcurrencyVersion = 1
+            });
+        
+        update1Rsp.IsSuccessStatusCode.ShouldBeTrue();
+        
+        // Author attempts to update the guide with outdated version 1
+        var update2Rsp = await App.RegularUserClient.PUTAsync<UpdateGuideEndpoint, UpdateGuideRequest>(
+            new UpdateGuideRequest 
+            { 
+                Id = created.Id,
+                Title = "Updated Title 2",
+                Description = "Updated Description",
+                MarkdownContent = "# Updated Content again",
+                ConcurrencyVersion = 1
+            });
+        
+        update2Rsp.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
     [Fact, Priority(10)]
@@ -386,7 +422,8 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
                 Id = created.Id,
                 Title = "Updated Title Pending",
                 Description = "Updated Desc",
-                MarkdownContent = "# Updated"
+                MarkdownContent = "# Updated",
+                ConcurrencyVersion = 1
             });
             
         // Author submits update (Status: Published -> PendingApproval)
@@ -437,7 +474,8 @@ public class GuideEndpointTests(GuideTestApp App) : TestBase
                 Id = created.Id,
                 Title = "New Draft Title",
                 Description = "New Draft Desc",
-                MarkdownContent = "# New Draft Content"
+                MarkdownContent = "# New Draft Content",
+                ConcurrencyVersion = 1
             });
             
         updateRsp.IsSuccessStatusCode.ShouldBeTrue();

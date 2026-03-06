@@ -6,10 +6,12 @@ namespace EliteAPI.Background.Resources;
 
 public class ResourceJobsConfiguration(
 	IOptions<ConfigCooldownSettings> cooldowns,
+	IOptions<ConfigBazaarSnapshotSettings> bazaarSnapshotSettings,
 	IOptions<AuctionHouseSettings> auctionSettings)
 	: IConfigureOptions<QuartzOptions>
 {
 	private readonly ConfigCooldownSettings _cooldowns = cooldowns.Value;
+	private readonly ConfigBazaarSnapshotSettings _bazaarSnapshotSettings = bazaarSnapshotSettings.Value;
 	private readonly AuctionHouseSettings _auctionSettings = auctionSettings.Value;
 
 	public void Configure(QuartzOptions options) {
@@ -24,6 +26,19 @@ public class ResourceJobsConfiguration(
 					schedule.RepeatForever();
 				});
 			});
+
+		if (_bazaarSnapshotSettings.CleanupEnabled) {
+			var cleanupJobKey = BazaarSnapshotCleanupJob.Key;
+			options.AddJob<BazaarSnapshotCleanupJob>(builder => builder.WithIdentity(cleanupJobKey))
+				.AddTrigger(trigger => {
+					trigger.ForJob(cleanupJobKey);
+					trigger.StartAt(DateTimeOffset.Now.AddMinutes(30));
+					trigger.WithSimpleSchedule(schedule => {
+						schedule.WithIntervalInHours(Math.Max(1, _bazaarSnapshotSettings.CleanupIntervalHours));
+						schedule.RepeatForever();
+					});
+				});
+		}
 
 		var itemsJobKey = ItemsUpdateJob.Key;
 		options.AddJob<ItemsUpdateJob>(builder => builder.WithIdentity(itemsJobKey))

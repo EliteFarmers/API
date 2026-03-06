@@ -34,10 +34,14 @@ internal sealed class GetBazaarProductsEndpoint(
 					Buy = s.InstaBuyPrice,
 					SellOrder = s.SellOrderPrice,
 					BuyOrder = s.BuyOrderPrice,
+					TopSellOrder = s.TopSellOrderPrice,
+					TopBuyOrder = s.TopBuyOrderPrice,
 					AverageSell = s.AvgInstaSellPrice,
 					AverageBuy = s.AvgInstaBuyPrice,
 					AverageBuyOrder = s.AvgBuyOrderPrice,
-					AverageSellOrder = s.AvgSellOrderPrice
+					AverageTopBuyOrder = s.AvgTopBuyOrderPrice,
+					AverageSellOrder = s.AvgSellOrderPrice,
+					AverageTopSellOrder = s.AvgTopSellOrderPrice
 				}
 			})
 			.ToDictionaryAsync(k => k.ProductId, v => v.Info, c);
@@ -86,6 +90,16 @@ internal sealed class BazaarProductSummaryDto
 	public double BuyOrder { get; set; }
 
 	/// <summary>
+	/// Top buy-order price from the current order book
+	/// </summary>
+	public double TopBuyOrder { get; set; }
+
+	/// <summary>
+	/// Top sell-order price from the current order book
+	/// </summary>
+	public double TopSellOrder { get; set; }
+
+	/// <summary>
 	/// Calculated average Instant Sell price that should be more resistant to price fluctuations
 	/// </summary>
 	public double AverageSell { get; set; }
@@ -101,9 +115,19 @@ internal sealed class BazaarProductSummaryDto
 	public double AverageSellOrder { get; set; }
 
 	/// <summary>
+	/// Calculated average top sell-order price
+	/// </summary>
+	public double AverageTopSellOrder { get; set; }
+
+	/// <summary>
 	/// Calculated average Buy Order price that should be more resistant to price fluctuations
 	/// </summary>
 	public double AverageBuyOrder { get; set; }
+
+	/// <summary>
+	/// Calculated average top buy-order price
+	/// </summary>
+	public double AverageTopBuyOrder { get; set; }
 
 	/// <summary>
 	/// Current orders in the bazaar for this item if they exist.

@@ -81,7 +81,8 @@ public partial class GuideMapper
             IsDraft = version.Id == guide.DraftVersionId, 
             UserVote = userVote,
             IsBookmarked = isBookmarked,
-            RejectionReason = guide.Status == GuideStatus.Rejected ? guide.RejectionReason : null
+            RejectionReason = guide.Status == GuideStatus.Rejected ? guide.RejectionReason : null,
+            ConcurrencyVersion = version.ConcurrencyVersion
         };
     }
 }

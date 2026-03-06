@@ -10,7 +10,7 @@ namespace EliteAPI.Features.Profiles.Mappers;
 [UseStaticMapper(typeof(ImageMapper))]
 public static partial class HypixelItemMapper
 {
-	public static HypixelInventoryDto ToDto(this HypixelInventory inventory) {
+	public static HypixelInventoryDto ToDto(this HypixelInventory inventory, bool hideValuableData = true) {
 		var items = new Dictionary<string, ItemDto?>();
 		if (inventory.EmptySlots is not null) {
 			foreach (var i in inventory.EmptySlots) {
@@ -19,7 +19,7 @@ public static partial class HypixelItemMapper
 		}
 		
 		foreach (var i in inventory.Items) {
-			var dto = i.ToDto();
+			var dto = i.ToDto(hideValuableData);
 			if (dto.Slot is null) continue;
 			items.TryAdd(dto.Slot, dto);
 		}
@@ -89,7 +89,7 @@ public static partial class HypixelItemMapper
 		return item;
 	}
 
-	public static ItemDto ToDto(this HypixelItem item) {
+	public static ItemDto ToDto(this HypixelItem item, bool hideValuableData = true) {
 		var dto = new ItemDto {
 			Uuid = item.Uuid?.ToString(),
 			SkyblockId = item.SkyblockId,
@@ -101,7 +101,7 @@ public static partial class HypixelItemMapper
 			Enchantments = item.Enchantments,
 			Gems = item.Gems,
 			Slot = item.Slot,
-			Attributes = item.Attributes ?? new Dictionary<string, string>()
+			Attributes = CloneAttributes(item.Attributes)
 		};
 
 		if (item.Modifier is not null) {
@@ -119,24 +119,68 @@ public static partial class HypixelItemMapper
 		if (item.DonatedMuseum is not null) {
 			dto.Attributes["donated_museum"] = item.DonatedMuseum;
 		}
+
+		// If we're not hiding valuable data, return the full DTO
+		if (!hideValuableData) return dto;
 		
 		// Remove edition numbers from attributes and lore (replace with obfuscated edition number in lore)
 		if (dto.Attributes?.Extra.TryGetValue("edition", out var edition) is true) {
-            if (dto.Lore is not null) {
+			if (dto.Lore is not null) {
 				for (var i = 0; i < dto.Lore.Count; i++) {
 					dto.Lore[i] = HypixelItemExtensions.EditionRegex().Replace(dto.Lore[i], $"Edition #§khidden§r");
 				}
 			}
 			dto.Attributes.Remove("edition");
 		}
-		
+			
 		// Remove any color attribute to hide exotic colors
 		dto.Attributes?.Remove("color");
-		
+			
 		// Some people care about weird origin tags
 		dto.Attributes?.Remove("originTag");
 
 		return dto;
+	}
+
+	private static ItemAttributes CloneAttributes(ItemAttributes? attributes) {
+		if (attributes is null) {
+			return new ItemAttributes();
+		}
+
+		return new ItemAttributes {
+			Runes = attributes.Runes?.ToDictionary(k => k.Key, v => v.Value),
+			Effects = attributes.Effects?.Select(effect => new ItemEffectAttribute {
+				Level = effect.Level,
+				Effect = effect.Effect,
+				DurationTicks = effect.DurationTicks
+			}).ToList(),
+			NecromancerSouls = attributes.NecromancerSouls?.Select(soul => new ItemSoulAttribute {
+				MobId = soul.MobId,
+				DroppedInstanceId = soul.DroppedInstanceId,
+				DroppedModeId = soul.DroppedModeId
+			}).ToList(),
+			Hook = attributes.Hook is null
+				? null
+				: new ItemRodPartAttribute {
+					Part = attributes.Hook.Part,
+					Donated = attributes.Hook.Donated
+				},
+			Line = attributes.Line is null
+				? null
+				: new ItemRodPartAttribute {
+					Part = attributes.Line.Part,
+					Donated = attributes.Line.Donated
+				},
+			Sinker = attributes.Sinker is null
+				? null
+				: new ItemRodPartAttribute {
+					Part = attributes.Sinker.Part,
+					Donated = attributes.Sinker.Donated
+				},
+			AbilityScrolls = attributes.AbilityScrolls?.ToList(),
+			Inventory = attributes.Inventory?.ToDictionary(k => k.Key, v => v.Value),
+			Extra = attributes.Extra.ToDictionary(k => k.Key, v => v.Value)
+		};
 	}
 }
 

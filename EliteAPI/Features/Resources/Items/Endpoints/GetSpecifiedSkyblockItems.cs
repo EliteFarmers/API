@@ -47,10 +47,14 @@ internal sealed class GetSpecifiedSkyblockItemsEndpoint(
 						Buy = s.BazaarProductSummary.InstaBuyPrice,
 						SellOrder = s.BazaarProductSummary.SellOrderPrice,
 						BuyOrder = s.BazaarProductSummary.BuyOrderPrice,
+						TopSellOrder = s.BazaarProductSummary.TopSellOrderPrice,
+						TopBuyOrder = s.BazaarProductSummary.TopBuyOrderPrice,
 						AverageSell = s.BazaarProductSummary.AvgInstaSellPrice,
 						AverageBuy = s.BazaarProductSummary.AvgInstaBuyPrice,
 						AverageBuyOrder = s.BazaarProductSummary.AvgBuyOrderPrice,
-						AverageSellOrder = s.BazaarProductSummary.AvgSellOrderPrice
+						AverageTopBuyOrder = s.BazaarProductSummary.AvgTopBuyOrderPrice,
+						AverageSellOrder = s.BazaarProductSummary.AvgSellOrderPrice,
+						AverageTopSellOrder = s.BazaarProductSummary.AvgTopSellOrderPrice
 					}
 					: null
 			})

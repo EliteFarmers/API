@@ -2,6 +2,7 @@ using EliteAPI.Data;
 using EliteAPI.Features.Leaderboards.Services;
 using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Features.Profiles.Utilities;
+using EliteAPI.Parsers.Inventories;
 using EliteAPI.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -47,11 +48,17 @@ public class ProcessMemberDataCommandHandler(
 			// Check if we have an existing member
 			var existingMember = await context.ProfileMembers
 				.Where(pm => pm.ProfileId == command.ProfileId && pm.PlayerUuid == command.PlayerUuid)
-				.Select(pm => new { pm.Id, pm.ResponseHash })
+				.Select(pm => new {
+					pm.Id,
+					pm.ResponseHash,
+					NeedsInventoryRefresh = pm.Inventories.Any(i => !i.Hash.StartsWith(NbtParser.InventoryHashVersionPrefix))
+				})
 				.FirstOrDefaultAsync(ct);
 
 			if (existingMember is not null) {
-				if (existingMember.ResponseHash == newHash && existingMember.ResponseHash != 0) {
+				if (existingMember.ResponseHash == newHash
+				    && existingMember.ResponseHash != 0
+				    && !existingMember.NeedsInventoryRefresh) {
 					// Ensure interval leaderboard entries exist
 					// Disabled for now because of complications with players disabling API access
 					// await lbService.EnsureMemberIntervalEntriesExist(existingMember.Id, ct);

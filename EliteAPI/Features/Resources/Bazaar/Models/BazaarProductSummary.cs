@@ -18,11 +18,15 @@ public class BazaarProductSummary
 	public double InstaSellPrice { get; set; }
 	public double InstaBuyPrice { get; set; }
 	public double BuyOrderPrice { get; set; }
+	public double TopBuyOrderPrice { get; set; }
 	public double SellOrderPrice { get; set; }
+	public double TopSellOrderPrice { get; set; }
 	public double AvgInstaSellPrice { get; set; }
 	public double AvgInstaBuyPrice { get; set; }
 	public double AvgBuyOrderPrice { get; set; }
+	public double AvgTopBuyOrderPrice { get; set; }
 	public double AvgSellOrderPrice { get; set; }
+	public double AvgTopSellOrderPrice { get; set; }
 	
 	[Column(TypeName = "jsonb")]
 	public BazaarOrders Orders { get; set; } = new();

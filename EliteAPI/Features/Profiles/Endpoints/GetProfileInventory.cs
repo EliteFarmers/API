@@ -6,6 +6,8 @@ using EliteAPI.Features.Profiles.Models;
 using EliteAPI.Features.Profiles.Services;
 using EliteAPI.Features.Textures.Services;
 using EliteAPI.Models.Common;
+using EliteAPI.Features.Account.Services;
+using EliteAPI.Features.Auth.Models;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +28,7 @@ public class GetProfileInventoryRequest : PlayerUuidRequest
 
 internal sealed class GetProfileInventoryEndpoint(
 	IMemberService memberService,
+	IAccountService accountService,
 	DataContext context
 ) : Endpoint<GetProfileInventoryRequest, HypixelInventoryDto>
 {
@@ -53,7 +56,9 @@ internal sealed class GetProfileInventoryEndpoint(
 			return;
 		}
 		
-		var inventoryDto = inventory.ToDto();
+		var isAuthorized = await accountService.OwnsMinecraftAccount(User, request.PlayerUuidFormatted, ApiUserPolicies.Moderator);
+		
+		var inventoryDto = inventory.ToDto(!isAuthorized);
 		
 		// Commented out for now, this causes issues on the front end because pre-rendered image urls
 		// don't work well with player's changing their texture packs. The fallback on the front end
