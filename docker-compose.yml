@@ -1,124 +1,153 @@
 services:
+  database:
+    image: postgres:18-alpine
+    shm_size: 1gb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-eliteapi}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+    command: >
+      postgres
+      -c shared_buffers=4GB
+      -c io_method=${POSTGRES_IO_METHOD:-worker}
+      -c max_connections=${POSTGRES_MAX_CONNECTIONS:-100}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - eliteapi-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-eliteapi}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    restart: unless-stopped
+    environment:
+      DB_USER: ${POSTGRES_USER:-user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      DB_HOST: database
+      DB_NAME: ${POSTGRES_DB:-eliteapi}
+      AUTH_TYPE: scram-sha-256
+      POOL_MODE: transaction
+      ADMIN_USERS: ${POSTGRES_USER:-user}
+      MAX_CLIENT_CONN: 1000
+      LOGFILE: /var/log/pgbouncer/pgbouncer.log
+      VERBOSE: 0
+      EXTRA_CONFIG: ignore_startup_parameters=extra_float_digits,timezone,client_encoding
+    volumes:
+      - ./logs:/var/log/pgbouncer
+    ports:
+      - "${POSTGRES_PORT:-5436}:5432"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - eliteapi-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -h localhost -p 5432 -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-eliteapi}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  cache:
+    image: redis:8.4-alpine
+    restart: unless-stopped
+    command: redis-server --save 300 10 --loglevel warning --requirepass ${REDIS_PASSWORD:-redis123}
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - eliteapi-network
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli -a '${REDIS_PASSWORD:-redis123}' ping | grep -q PONG" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   eliteapi:
+    profiles: [ "full-stack" ]
     image: eliteapi:latest
     restart: unless-stopped
     build:
       context: .
       dockerfile: EliteAPI/Dockerfile
-    env_file:
-      - ./EliteAPI/.env
+    environment:
+      ELITE_API_PORT: ${ELITE_API_PORT:-7008}
+      ConnectionStrings__Postgres: Server=pgbouncer;Port=5432;Database=${POSTGRES_DB:-eliteapi};Username=${POSTGRES_USER:-user};Password=${POSTGRES_PASSWORD:-postgres123};Include Error Detail=true
+      ConnectionStrings__Redis: cache:6379,password=${REDIS_PASSWORD:-redis123}
+      Discord__ClientId: ${Discord__ClientId:-}
+      Discord__ClientSecret: ${Discord__ClientSecret:-}
+      Discord__BotToken: ${Discord__BotToken:-}
+      Hypixel__ApiKey: ${Hypixel__ApiKey:-}
+      Hypixel__BaseUrl: ${Hypixel__BaseUrl:-https://api.hypixel.net/}
+      Jwt__Secret: ${Jwt__Secret:-local-dev-jwt-secret-change-if-shared}
+      WebsiteSecret: ${WebsiteSecret:-local-website-secret}
+      S3__AccessKey: ${S3__AccessKey:-}
+      S3__SecretKey: ${S3__SecretKey:-}
+      S3__BucketName: ${S3__BucketName:-}
+      S3__Endpoint: ${S3__Endpoint:-}
+      S3__PublicUrl: ${S3__PublicUrl:-}
+      S3__UseForTextures: ${S3__UseForTextures:-false}
+      MinecraftRenderer__AssetsPath: /app/assets
     depends_on:
-      - pgbouncer
-      - cache
-      - logging
-      - prometheus
-      - pyroscope
+      database:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
     ports:
-      - "7008:7008"
-      - "9102:9102"
+      - "${ELITE_API_PORT:-7008}:7008"
+      - "${ELITE_API_METRICS_PORT:-9102}:9102"
     volumes:
       - ./EliteAPI/TempKeys:/app/TempKeys
       - ./EliteAPI/assets:/app/assets
     networks:
       - eliteapi-network
-  database:
-    image: postgres:18-alpine
-    shm_size: 1gb
-    restart: always
-    env_file:
-      - ./EliteAPI/.env
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-eliteapi}
-      - POSTGRES_USER=${POSTGRES_USER:-user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD env variable is required}
-    command: >
-      postgres
-      -c shared_buffers=4GB
-      -c io_method=${POSTGRES_IO_METHOD:-io_uring}
-      -c max_connections=${POSTGRES_MAX_CONNECTIONS:-100}
-    volumes:
-      - db-data:/var/lib/postgresql
-      - ./EliteAPI/Data/setup.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - eliteapi-network
-    healthcheck:
-      test: [ 'CMD', 'pg_isready', '-U', '${POSTGRES_USER:-user}', '-d', '${POSTGRES_DB:-eliteapi}' ]
-  cache:
-    image: redis:8.4-alpine
-    restart: always
-    command: redis-server --save 300 10 --loglevel warning --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD env variable is required}
-    ports:
-      - '${REDIS_PORT:?REDIS_PORT env variable is required}:6379'
-    expose:
-      - '${REDIS_PORT:?REDIS_PORT env variable is required}'
-    volumes:
-      - redis-data:/data
-    networks:
-      - eliteapi-network
+
   logging:
+    profiles: [ "observability" ]
     image: grafana/grafana-oss:latest
     restart: unless-stopped
     ports:
-      - '8081:3000'
-    expose:
-      - '8081'
+      - "8081:3000"
     volumes:
       - ./EliteAPI/Data/Grafana/Datasources:/etc/grafana/provisioning/datasources
       - ./EliteAPI/Data/Grafana/Dashboards:/etc/grafana/provisioning/dashboards
       - ./EliteAPI/Data/Grafana/config.ini:/etc/grafana/config.ini
       - grafana-data:/var/lib/grafana
     depends_on:
-      - prometheus
+      prometheus:
+        condition: service_started
     networks:
       - eliteapi-network
+
   prometheus:
+    profiles: [ "observability" ]
     image: prom/prometheus:v3.5.0
     restart: unless-stopped
     ports:
-      - '9090:9090'
-    expose:
-      - '9090'
+      - "9090:9090"
     volumes:
       - ./EliteAPI/Data/Prometheus:/etc/prometheus
       - prometheus-data:/data
     networks:
       - eliteapi-network
+
   pyroscope:
+    profiles: [ "observability" ]
     image: grafana/pyroscope:latest
     restart: unless-stopped
     ports:
-      - '4040:4040'
+      - "4040:4040"
     volumes:
       - pyroscope-data:/data
     networks:
       - eliteapi-network
-  pgbouncer:
-    container_name: pgbouncer
-    image: edoburu/pgbouncer:latest
-    restart: unless-stopped
-    environment:
-      - DB_USER=${POSTGRES_USER:-user}
-      - DB_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD env variable is required}
-      - DB_HOST=database
-      - DB_NAME=${POSTGRES_DB:-eliteapi}
-      - AUTH_TYPE=scram-sha-256
-      - POOL_MODE=transaction
-      - ADMIN_USERS=${POSTGRES_USER:-user}
-      - MAX_CLIENT_CONN=1000
-      - LOGFILE=/var/log/pgbouncer/pgbouncer.log
-      - VERBOSE=0
-      - EXTRA_CONFIG=ignore_startup_parameters=extra_float_digits,timezone,client_encoding
-    volumes:
-      - ./logs:/var/log/pgbouncer
-    ports:
-      - "${POSTGRES_PORT:?POSTGRES_PORT env variable is required}:5432"
-    depends_on:
-      - database
-    networks:
-      - eliteapi-network
-    healthcheck:
-      test: [ 'CMD', 'pg_isready', '-h', 'localhost', '-p', '5432', '-U', '${POSTGRES_USER:-user}', '-d', '${POSTGRES_DB:-eliteapi}' ]
-
 
 networks:
   eliteapi-network:
@@ -126,8 +155,8 @@ networks:
     driver: bridge
 
 volumes:
-  db-data: { }
-  grafana-data: { }
-  prometheus-data: { }
-  pyroscope-data: { }
-  redis-data: { }
+  db-data: {}
+  grafana-data: {}
+  prometheus-data: {}
+  pyroscope-data: {}
+  redis-data: {}

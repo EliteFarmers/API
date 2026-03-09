@@ -1,4 +1,5 @@
 # Added
+.dotnet/
 .env
 /EliteAPI/.env
 .idea

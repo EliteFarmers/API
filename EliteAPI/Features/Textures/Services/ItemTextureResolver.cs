@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Features.Images.Services;
@@ -9,6 +10,7 @@ using EliteAPI.Parsers.Inventories;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Options;
 using MinecraftRenderer;
 using MinecraftRenderer.Hypixel;
 using MinecraftRenderer.Nbt;
@@ -26,10 +28,11 @@ public partial class ItemTextureResolver(
 	IImageService imageService,
 	DataContext context,
 	HybridCache cache,
-	IConfiguration config,
+	IOptions<ObjectStorageSettings> objectStorageOptions,
 	ISkyblockRepoClient repoClient)
 {
-	public bool SaveToS3 => config.GetValue<bool>("S3:UseForTextures");
+	private readonly ObjectStorageSettings _objectStorageSettings = objectStorageOptions.Value;
+	public bool SaveToS3 => _objectStorageSettings.UseForTextures;
 
 	private readonly WebpEncoder _webpEncoderSettings = new WebpEncoder() {
 		Quality = 100,

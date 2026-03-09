@@ -36,12 +36,27 @@ public static class RateLimitingExtensions
 	}
 
 	public static IApplicationBuilder UseEliteRateLimiting(this IApplicationBuilder app) {
-		return app.Use(async (context, next) => {
+		return app.Use(async (HttpContext context, RequestDelegate next) => {
 			var websiteSettings = context.RequestServices
 				.GetRequiredService<IOptions<WebsiteGatewaySettings>>();
+			var diagnosticsSettings = context.RequestServices
+				.GetRequiredService<IOptions<SetupDiagnosticsSettings>>().Value;
+			var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+				.CreateLogger("EliteAPI.RateLimiting");
+			
 			if (context.HasValidWebsiteSecret(websiteSettings)) {
-				await next();
+				context.Response.Headers["X-RateLimit-Bypass"] = "website-secret";
+				if (diagnosticsSettings.LogWebsiteSecretBypass) {
+					logger.LogInformation("Website secret rate-limit bypass applied for {Path}", context.Request.Path);
+				}
+				
+				await next(context);
 				return;
+			}
+
+			if (diagnosticsSettings.LogWebsiteSecretBypass &&
+			    context.Request.Headers.ContainsKey(WebsiteSecretExtensions.WebsiteSecretHeaderName)) {
+				logger.LogWarning("Invalid website secret header received for {Path}", context.Request.Path);
 			}
 
 			var limiter = context.RequestServices
@@ -78,7 +93,7 @@ public static class RateLimitingExtensions
 				return Task.CompletedTask;
 			});
 
-			await next();
+			await next(context);
 		});
 	}
 }

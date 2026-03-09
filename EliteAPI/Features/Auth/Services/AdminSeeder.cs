@@ -1,5 +1,7 @@
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Auth.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Auth.Services;
 
@@ -8,11 +10,16 @@ public interface IAdminSeeder
     Task SeedAdminUserAsync();
 }
 
-public class AdminSeeder(UserManager<ApiUser> userManager, IConfiguration configuration, ILogger<AdminSeeder> logger) : IAdminSeeder
+public class AdminSeeder(
+	UserManager<ApiUser> userManager,
+	IOptions<SeedSettings> seedOptions,
+	ILogger<AdminSeeder> logger) : IAdminSeeder
 {
+	private readonly SeedSettings _seedSettings = seedOptions.Value;
+
     public async Task SeedAdminUserAsync()
     {
-        var adminId = configuration["Seed:AdminUserId"];
+        var adminId = _seedSettings.AdminUserId;
         if (string.IsNullOrEmpty(adminId))
         {
             return;

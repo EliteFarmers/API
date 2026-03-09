@@ -1,3 +1,5 @@
+using EliteAPI.Configuration.Settings;
+using Microsoft.Extensions.Options;
 using SkyblockRepo;
 
 namespace EliteAPI.Features.Textures.Services;
@@ -14,14 +16,14 @@ public class MinecraftRendererInitializer(
 			await using var scope = serviceProvider.CreateAsyncScope();
 			var scopedProvider = scope.ServiceProvider;
 
-			var configuration = scopedProvider.GetRequiredService<IConfiguration>();
-			await RendererConfiguration.DownloadMinecraftTexturesAsync(configuration);
+			var rendererOptions = scopedProvider.GetRequiredService<IOptions<MinecraftRendererSettings>>();
+			await RendererConfiguration.DownloadMinecraftTexturesAsync(rendererOptions);
 
 			var rendererProvider = scopedProvider.GetRequiredService<MinecraftRendererProvider>();
 			var repoClient = scopedProvider.GetRequiredService<ISkyblockRepoClient>();
 			var initLogger = scopedProvider.GetRequiredService<ILogger<MinecraftRendererProvider>>();
 
-			await rendererProvider.InitializeAsync(configuration, repoClient, initLogger);
+			await rendererProvider.InitializeAsync(rendererOptions, repoClient, initLogger);
 		}, cancellationToken);
 
 		return Task.CompletedTask;

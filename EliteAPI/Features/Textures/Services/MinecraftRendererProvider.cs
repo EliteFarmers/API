@@ -1,7 +1,9 @@
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Parsers.Inventories;
 using FastEndpoints;
 using MinecraftRenderer;
 using MinecraftRenderer.TexturePacks;
+using Microsoft.Extensions.Options;
 using SkyblockRepo;
 
 namespace EliteAPI.Features.Textures.Services;
@@ -28,7 +30,7 @@ public class MinecraftRendererProvider
 	/// <param name="repoClient"></param>
 	/// <param name="logger"></param>
 	public async Task InitializeAsync(
-		IConfiguration configuration,
+		IOptions<MinecraftRendererSettings> options,
 		ISkyblockRepoClient repoClient,
 		ILogger logger) {
 		try {
@@ -37,10 +39,7 @@ public class MinecraftRendererProvider
 			// All the long-running code from your original constructor goes here.
 			// We run it on a background thread to avoid blocking.
 			var renderer = await Task.Run(() => {
-				var assetsPath = configuration["MinecraftRenderer:AssetsPath"]
-				                 ?? Path.Combine(
-					                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-					                 "EliteAPI");
+				var assetsPath = options.Value.ResolveAssetsPath();
 				var texturePacksPath = Path.Combine(assetsPath, "texturepacks");
 				var assetsPathRoot = Path.Combine(assetsPath, "minecraft", "assets", "minecraft");
 

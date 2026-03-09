@@ -1,15 +1,18 @@
 global using UserManager = Microsoft.AspNetCore.Identity.UserManager<EliteAPI.Features.Auth.Models.ApiUser>;
-using FastEndpoints;
+using System.Diagnostics;
 using System.Net;
 using System.Runtime.CompilerServices;
 using EliteAPI.Authentication;
 using EliteAPI.Background;
-using EliteAPI.Features.Auth.Services;
 using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
+using EliteAPI.Features.Auth.Services;
 using EliteAPI.Features.Leaderboards.Services;
+using EliteAPI.Setup;
 using EliteAPI.Utilities;
 using EliteFarmers.HypixelAPI;
+using FastEndpoints;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -25,9 +28,16 @@ using Pyroscope.OpenTelemetry;
 
 [assembly: InternalsVisibleTo("EliteAPI.Tests")]
 
-DotNetEnv.Env.Load();
+var doctorMode = args.Any(arg =>
+	arg.Equals("doctor", StringComparison.OrdinalIgnoreCase) ||
+	arg.Equals("--doctor", StringComparison.OrdinalIgnoreCase));
 
 var builder = WebApplication.CreateBuilder(args);
+var hypixelSettings = builder.Configuration.GetSection(HypixelSettings.SectionName).Get<HypixelSettings>() ??
+                      new HypixelSettings();
+var rendererSettings =
+	builder.Configuration.GetSection(MinecraftRendererSettings.SectionName).Get<MinecraftRendererSettings>() ??
+	new MinecraftRendererSettings();
 
 builder.RegisterEliteConfigFiles();
 builder.Services.AddEliteAuthentication(builder.Configuration);
@@ -45,8 +55,8 @@ builder.Services.AddEliteRateLimiting();
 builder.AddEliteBackgroundJobs();
 
 builder.Services.AddHypixelApi(opt => {
-	opt.ApiKey = DotNetEnv.Env.GetString("HYPIXEL_API_KEY");
-	opt.UserAgent = "EliteAPI (+https://api.eliteapi.dev)";
+	opt.ApiKey = hypixelSettings.ApiKey;
+	opt.UserAgent = "EliteAPI (+https://api.elitebot.dev)";
 }).AddStandardResilienceHandler();
 
 builder.Services.AddRouting(options => {
@@ -104,14 +114,31 @@ builder.AddEliteFastEndpoints();
 
 builder.Services.AddSkyblockRepo(opt => {
 	opt.UseNeuRepo = true;
-	opt.FileStoragePath = builder.Configuration["MinecraftRenderer:AssetsPath"]
-	                      ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-		                      "EliteAPI");
+	opt.FileStoragePath = rendererSettings.ResolveAssetsPath();
 	opt.Matcher.Register(new EliteItemRepoMatcher());
 	opt.Matcher.Register(new RenderContextRepoMatcher());
 });
 
 var app = builder.Build();
+
+await using (var scope = app.Services.CreateAsyncScope()) {
+	var setupDoctor = scope.ServiceProvider.GetRequiredService<IEliteSetupDoctor>();
+	var report = await setupDoctor.CreateReportAsync(includeConnectivityChecks: true);
+
+	if (doctorMode) {
+		setupDoctor.WriteReport(Console.Out, report);
+		Environment.ExitCode = report.HasErrors ? 1 : 0;
+		return;
+	}
+
+	var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+	setupDoctor.LogReport(startupLogger, report);
+
+	if (report.HasErrors) {
+		throw new InvalidOperationException(
+			"Startup configuration validation failed. Run `dotnet run --project EliteAPI -- doctor` for details.");
+	}
+}
 
 using (var scope = app.Services.CreateScope()) {
 	FarmingWeightConfig.Settings =
@@ -120,20 +147,55 @@ using (var scope = app.Services.CreateScope()) {
 	SkyblockPetConfig.Settings = scope.ServiceProvider.GetRequiredService<IOptions<SkyblockPetSettings>>().Value;
 	ConfigGlobalRateLimitSettings.Settings =
 		scope.ServiceProvider.GetRequiredService<IOptions<ConfigGlobalRateLimitSettings>>().Value;
-	ConfigGlobalRateLimitSettings.Settings.WebsiteSecret = app.Configuration["WebsiteSecret"] ??
-	                                                       ConfigGlobalRateLimitSettings.Settings.WebsiteSecret;
 	
 	var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-	try {
-		await db.Database.MigrateAsync();
-	}
-	catch (Exception e) {
-		Console.Error.WriteLine(e);
-	}
+	await db.Database.MigrateAsync();
 }
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions {
+	Predicate = _ => false
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions {
+	Predicate = registration => registration.Tags.Contains("ready")
+});
 
 app.MapPrometheusScrapingEndpoint();
 app.UseForwardedHeaders();
+
+app.Use(async (context, next) => {
+	var settings = context.RequestServices.GetRequiredService<IOptions<SetupDiagnosticsSettings>>().Value;
+	if (!settings.LogProfileRequests ||
+	    settings.PathPrefixes.All(prefix => !context.Request.Path.StartsWithSegments(prefix))) {
+		await next();
+		return;
+	}
+
+	var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+		.CreateLogger("EliteAPI.Setup.RequestDiagnostics");
+	var stopwatch = Stopwatch.StartNew();
+	logger.LogInformation("Setup diagnostic request started: {Method} {Path}{QueryString}",
+		context.Request.Method,
+		context.Request.Path,
+		context.Request.QueryString);
+
+	try {
+		await next();
+		logger.LogInformation("Setup diagnostic request completed: {Method} {Path} -> {StatusCode} in {ElapsedMs}ms",
+			context.Request.Method,
+			context.Request.Path,
+			context.Response.StatusCode,
+			stopwatch.ElapsedMilliseconds);
+	}
+	catch (Exception ex) {
+		logger.LogError(ex, "Setup diagnostic request failed: {Method} {Path} after {ElapsedMs}ms",
+			context.Request.Method,
+			context.Request.Path,
+			stopwatch.ElapsedMilliseconds);
+		throw;
+	}
+});
+
 app.UseEliteRateLimiting();
 
 app.UseResponseCaching();

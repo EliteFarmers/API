@@ -45,10 +45,10 @@ public class JacobTestApp : AppFixture<Program>
 	public HttpClient GuildAdminClient { get; private set; } = null!;
 
 	protected override async ValueTask PreSetupAsync() {
-		Environment.SetEnvironmentVariable("DISCORD_CLIENT_ID", "test-client-id");
-		Environment.SetEnvironmentVariable("DISCORD_CLIENT_SECRET", "test-client-secret");
-		Environment.SetEnvironmentVariable("DISCORD_BOT_TOKEN", "test-bot-token");
-		Environment.SetEnvironmentVariable("HYPIXEL_API_KEY", "test-api-key");
+		Environment.SetEnvironmentVariable("Discord__ClientId", "test-client-id");
+		Environment.SetEnvironmentVariable("Discord__ClientSecret", "test-client-secret");
+		Environment.SetEnvironmentVariable("Discord__BotToken", "test-bot-token");
+		Environment.SetEnvironmentVariable("Hypixel__ApiKey", "test-api-key");
 
 		_postgres = new PostgreSqlBuilder("postgres:18-alpine")
 			.WithDatabase("eliteapi_jacob_test")

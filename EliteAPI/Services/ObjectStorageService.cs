@@ -1,8 +1,10 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Images.Models;
 using EliteAPI.Services.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Services;
 
@@ -13,15 +15,16 @@ public class ObjectStorageService : IObjectStorageService
 	private readonly ILogger<ObjectStorageService> _logger;
 	private readonly IHttpClientFactory _httpClientFactory;
 
-	public ObjectStorageService(IConfiguration config, ILogger<ObjectStorageService> logger,
+	public ObjectStorageService(IOptions<ObjectStorageSettings> options, ILogger<ObjectStorageService> logger,
 		IHttpClientFactory httpClientFactory) {
 		_logger = logger;
 		_httpClientFactory = httpClientFactory;
+		var settings = options.Value;
 
-		var accessKey = config["S3:AccessKey"];
-		var secretKey = config["S3:SecretKey"];
-		var endpoint = config["S3:Endpoint"];
-		_bucketName = config["S3:BucketName"] ?? "elite";
+		var accessKey = settings.AccessKey;
+		var secretKey = settings.SecretKey;
+		var endpoint = settings.Endpoint;
+		_bucketName = string.IsNullOrWhiteSpace(settings.BucketName) ? "elite" : settings.BucketName;
 
 		if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(endpoint)) {
 			_logger.LogWarning("S3 credentials not found, ObjectStorageService will not be available");

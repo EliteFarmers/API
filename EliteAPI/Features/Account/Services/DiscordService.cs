@@ -30,24 +30,15 @@ public class DiscordService(
 	UserManager userManager,
 	IMapper mapper,
 	IOptions<ConfigCooldownSettings> coolDowns,
+	IOptions<DiscordSettings> discordOptions,
 	IConnectionMultiplexer redis,
 	IGuildImageService guildImageService)
 	: IDiscordService
 {
 	private const string ClientName = "EliteAPI";
 	private const string Scopes = "identify guilds role_connections.write";
-	private const string DiscordBaseUrl = "https://discord.com/api/v10";
-
-	private readonly string _clientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID")
-	                                    ?? throw new Exception("DISCORD_CLIENT_ID env variable is not set.");
-
-	private readonly string _clientSecret = Environment.GetEnvironmentVariable("DISCORD_CLIENT_SECRET")
-	                                        ?? throw new Exception("DISCORD_CLIENT_SECRET env variable is not set.");
-
-	private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN")
-	                                    ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");
-
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
+	private readonly DiscordSettings _discordSettings = discordOptions.Value;
 
 	public async Task<DiscordUpdateResponse?> GetDiscordUser(string? accessToken, string? refreshToken) {
 		if (accessToken is null && refreshToken is null) return null;
@@ -85,7 +76,7 @@ public class DiscordService(
 		var client = httpClientFactory.CreateClient(ClientName);
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-		var response = await client.GetAsync(DiscordBaseUrl + "/users/@me");
+		var response = await client.GetAsync(_discordSettings.BaseUrl.TrimEnd('/') + "/users/@me");
 
 		if (!response.IsSuccessStatusCode) return null;
 
@@ -176,14 +167,15 @@ public class DiscordService(
 
 		// application/x-www-form-urlencoded
 		var body = new Dictionary<string, string> {
-			{ "client_id", _clientId },
-			{ "client_secret", _clientSecret },
+			{ "client_id", _discordSettings.ClientId },
+			{ "client_secret", _discordSettings.ClientSecret },
 			{ "grant_type", "refresh_token" },
 			{ "refresh_token", refreshToken },
 			{ "scope", Scopes }
 		};
 
-		var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
+		var response = await client.PostAsync(_discordSettings.BaseUrl.TrimEnd('/') + "/oauth2/token",
+			new FormUrlEncodedContent(body));
 
 		if (!response.IsSuccessStatusCode) return null;
 
@@ -202,15 +194,16 @@ public class DiscordService(
 
 		// application/x-www-form-urlencoded
 		var body = new Dictionary<string, string> {
-			{ "client_id", _clientId },
-			{ "client_secret", _clientSecret },
+			{ "client_id", _discordSettings.ClientId },
+			{ "client_secret", _discordSettings.ClientSecret },
 			{ "grant_type", "authorization_code" },
 			{ "code", accessToken },
 			{ "scope", Scopes },
 			{ "redirect_uri", redirectUri }
 		};
 
-		var response = await client.PostAsync(DiscordBaseUrl + "/oauth2/token", new FormUrlEncodedContent(body));
+		var response = await client.PostAsync(_discordSettings.BaseUrl.TrimEnd('/') + "/oauth2/token",
+			new FormUrlEncodedContent(body));
 
 		if (!response.IsSuccessStatusCode) return null;
 
@@ -238,7 +231,7 @@ public class DiscordService(
 
 	public async Task<List<GuildMember>> FetchUserGuilds(ApiUser user) {
 		await RefreshDiscordUserIfNeeded(user);
-		const string url = DiscordBaseUrl + "/users/@me/guilds";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') + "/users/@me/guilds";
 
 		var client = httpClientFactory.CreateClient(ClientName);
 		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.DiscordAccessToken);
@@ -380,10 +373,10 @@ public class DiscordService(
 	}
 
 	public async Task FetchUserRoles(GuildMember member) {
-		var url = DiscordBaseUrl + $"/guilds/{member.GuildId}/members/{member.AccountId}";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') + $"/guilds/{member.GuildId}/members/{member.AccountId}";
 
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
 		var response = await client.GetAsync(url);
 
@@ -423,9 +416,9 @@ public class DiscordService(
 			return existing;
 
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
-		var response = await client.GetAsync(DiscordBaseUrl + $"/guilds/{guildId}?with_counts=true");
+		var response = await client.GetAsync(_discordSettings.BaseUrl.TrimEnd('/') + $"/guilds/{guildId}?with_counts=true");
 
 		if (!response.IsSuccessStatusCode) {
 			logger.LogWarning("Failed to fetch guild from Discord with error code {StatusCode}", response.StatusCode);
@@ -507,9 +500,9 @@ public class DiscordService(
 		if (!fetchChannels || guild is null) return guild;
 
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
-		var channels = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/channels");
+		var channels = await client.GetAsync(_discordSettings.BaseUrl.TrimEnd('/') + $"/guilds/{incoming.Id}/channels");
 		if (!channels.IsSuccessStatusCode) return guild;
 
 		var channelList = await channels.Content.ReadFromJsonAsync<List<DiscordChannel>>();
@@ -525,7 +518,7 @@ public class DiscordService(
 			.Where(c => c.GuildId == guild.Id && !channelIds.Contains(c.Id))
 			.ExecuteDeleteAsync();
 
-		var roles = await client.GetAsync(DiscordBaseUrl + $"/guilds/{incoming.Id}/roles");
+		var roles = await client.GetAsync(_discordSettings.BaseUrl.TrimEnd('/') + $"/guilds/{incoming.Id}/roles");
 		if (!roles.IsSuccessStatusCode) return guild;
 
 		var roleList = await roles.Content.ReadFromJsonAsync<List<DiscordRole>>();

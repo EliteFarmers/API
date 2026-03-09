@@ -5,8 +5,10 @@ FROM pyroscope/pyroscope-dotnet:0.13.0-glibc AS pyroscope
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+EXPOSE 7008
 EXPOSE 9102
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build

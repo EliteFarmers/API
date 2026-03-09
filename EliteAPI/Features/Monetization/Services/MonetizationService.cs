@@ -32,19 +32,13 @@ public class MonetizationService(
 	IMessageService messageService,
     NotificationService notificationService,
     AuditLogService auditLogService,
-	IOptions<ConfigCooldownSettings> coolDowns)
+	IOptions<ConfigCooldownSettings> coolDowns,
+	IOptions<DiscordSettings> discordOptions)
 	: IMonetizationService
 {
 	private const string ClientName = "EliteAPI";
-	private const string DiscordBaseUrl = "https://discord.com/api/v10";
-
-	private readonly string _clientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID")
-	                                    ?? throw new Exception("DISCORD_CLIENT_ID env variable is not set.");
-
-	private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN")
-	                                    ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");
-
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
+	private readonly DiscordSettings _discordSettings = discordOptions.Value;
 
 	public async Task UpdateProductAsync(ulong productId, EditProductDto editProductDto) {
 		var product = await context.Products
@@ -164,7 +158,7 @@ public class MonetizationService(
 	public async Task<ActionResult> GrantTestEntitlementAsync(ulong targetId, ulong productId,
 		EntitlementTarget target = EntitlementTarget.User) {
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
 		var body = new {
 			sku_id = productId,
@@ -174,7 +168,7 @@ public class MonetizationService(
 
 		var jsonContent = JsonSerializer.Serialize(body);
 
-		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') + $"/applications/{_discordSettings.ClientId}/entitlements";
 		var response = await client.PostAsync(url, new StringContent(jsonContent, Encoding.UTF8, "application/json"));
 
 		if (!response.IsSuccessStatusCode) return new StatusCodeResult((int)response.StatusCode);
@@ -190,9 +184,10 @@ public class MonetizationService(
 	public async Task<ActionResult> RemoveTestEntitlementAsync(ulong targetId, ulong entitlementId,
 		EntitlementTarget target = EntitlementTarget.User) {
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
-		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements/{entitlementId}";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') +
+		          $"/applications/{_discordSettings.ClientId}/entitlements/{entitlementId}";
 		var response = await client.DeleteAsync(url);
 
 		if (!response.IsSuccessStatusCode) return new StatusCodeResult((int)response.StatusCode);
@@ -500,7 +495,7 @@ public class MonetizationService(
 	}
 
 	private async Task<List<DiscordEntitlement>> FetchDiscordEntitlements(ulong entityId, bool isGuild) {
-		var url = DiscordBaseUrl + $"/applications/{_clientId}/entitlements";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') + $"/applications/{_discordSettings.ClientId}/entitlements";
 		if (isGuild)
 			url += $"?guild_id={entityId}";
 		else
@@ -512,7 +507,7 @@ public class MonetizationService(
 	private async Task<List<DiscordEntitlement>> FetchEntitlementsRecursive(string url,
 		List<DiscordEntitlement>? entitlements = null, ulong? after = null) {
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
 		var response = after is not null
 			? await client.GetAsync(url + $"&after={after}")

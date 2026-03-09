@@ -1,7 +1,12 @@
-﻿namespace EliteAPI.Authentication;
+using EliteAPI.Configuration.Settings;
+using Microsoft.Extensions.Options;
 
-public class DiscordBotOnlyFilter : IEndpointFilter
+namespace EliteAPI.Authentication;
+
+public class DiscordBotOnlyFilter(IOptions<DiscordSettings> discordOptions) : IEndpointFilter
 {
+	private readonly DiscordSettings _discordSettings = discordOptions.Value;
+
 	public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next) {
 		if (context.HttpContext.Request.Headers.Authorization.Count < 1)
 			return Results.Problem("Only the bot can access this endpoint.",
@@ -16,7 +21,7 @@ public class DiscordBotOnlyFilter : IEndpointFilter
 			return Results.Problem("Only the bot can access this endpoint.",
 				statusCode: StatusCodes.Status403Forbidden);
 
-		if (auth.Replace("Bearer EliteDiscordBot ", "") != Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN"))
+		if (auth.Replace("Bearer EliteDiscordBot ", "") != _discordSettings.BotToken)
 			return Results.Problem("Only the bot can access this endpoint.",
 				statusCode: StatusCodes.Status403Forbidden);
 

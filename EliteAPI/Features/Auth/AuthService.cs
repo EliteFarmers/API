@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Web;
 using EliteAPI.Background.Discord;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Data;
 using EliteAPI.Features.Account.Models;
 using EliteAPI.Features.Account.Services;
@@ -15,6 +16,7 @@ using FastEndpoints;
 using FastEndpoints.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace EliteAPI.Features.Auth;
@@ -23,7 +25,7 @@ namespace EliteAPI.Features.Auth;
 public partial class AuthService(
 	IDiscordService discordService,
 	UserManager userManager,
-	IConfiguration configuration,
+	IOptions<JwtSettings> jwtOptions,
 	ISchedulerFactory schedulerFactory,
 	ILogger<AuthService> logger,
 	IConfirmationService confirmationService,
@@ -32,6 +34,7 @@ public partial class AuthService(
 {
 	private const string LoginProvider = "EliteAPI";
 	private const string RefreshToken = "RefreshToken";
+	private readonly JwtSettings _jwtSettings = jwtOptions.Value;
 
 	[GeneratedRegex("^[0-9]$")]
 	private static partial Regex DiscordIdRegex();
@@ -128,7 +131,7 @@ public partial class AuthService(
 		rng.GetBytes(randomNumber);
 		var refreshTokenValue = Convert.ToBase64String(randomNumber);
 
-		var refreshTokenValidityInDays = configuration.GetValue("Jwt:RefreshTokenExpirationInDays", 30);
+		var refreshTokenValidityInDays = _jwtSettings.RefreshTokenExpirationInDays;
 
 		var refreshToken = new RefreshToken {
 			Token = refreshTokenValue,
@@ -224,9 +227,7 @@ public partial class AuthService(
 		var roles = await userManager.GetRolesAsync(user);
 		claims.AddRange(roles.Select(role => new Claim(ClaimNames.Role, role)));
 
-		var expiresAt = configuration["Jwt:TokenExpirationInMinutes"] is { } expiration
-			? DateTime.UtcNow.AddMinutes(int.Parse(expiration))
-			: DateTime.UtcNow.AddMinutes(30);
+		var expiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.TokenExpirationInMinutes);
 
 		var token = JwtBearer.CreateToken(o => {
 			o.User.Claims.AddRange(claims);

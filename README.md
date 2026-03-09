@@ -1,88 +1,196 @@
-<h1 align="center">Elite API</h1>
-<hr>
+# Elite API
 
-This is the backend API for the [Elite Farmers Website](https://github.com/EliteFarmers/Website) and the [Elite Discord Bot](https://github.com/EliteFarmers/API).
+Elite API is the backend for the [Elite Farmers Website](https://github.com/EliteFarmers/Website) and the [Elite Discord Bot](https://github.com/EliteFarmers/Bot).
 
-**API Spec:** https://api.elitebot.dev/ <br>
-**API TOS:** https://elitebot.dev/apiterms
+- Production API spec: https://api.elitebot.dev/
+- Production API terms: https://elitebot.dev/apiterms
 
-The production API (api.elitebot.dev) should **never** be used for your own projects without permission. Please run your own instance of the API for that or use something else.
-__This is neither a Mojang API nor a Hypixel API proxy.__
+Do not build against `api.elitebot.dev` for your own projects without permission. Run your own local instance instead.
 
-We are not affiliated with Mojang or Hypixel in any way.
+This project is not a Mojang API or Hypixel API proxy. It is not affiliated with Mojang or Hypixel.
 
-<h2 align="center">Development</h2>
-<hr>
+## Requirements
 
-Contributions are welcome!
-
-### Prerequisites
-- .NET 9.0 SDK
-- Docker (unless you run the other services some other way)
-- A Discord Application and Bot Token
+- .NET 10 SDK
+- Docker Desktop or Docker Engine
+- A Discord application with a client ID, client secret, and bot token
   - [Create a Discord Application](https://discord.com/developers/applications)
-- A Hypixel API Key
+- A Hypixel API key
   - [Get a Hypixel API Key](https://developer.hypixel.net/)
-- Optional: S3 Bucket for storing images
-  - Cloudflare R2 also works for this
-- Recommended: JetBrains Rider or Visual Studio
+- Optional: S3 or Cloudflare R2 for image storage
 
-### Libraries
-This API is built using [Fast Endpoints](https://fast-endpoints.com/). The documentation for Fast Endpoints is useful if you need to modify or add endpoints.
+This API uses [FastEndpoints](https://fast-endpoints.com/).
 
-### General Guidelines
-1. New features should only be added if they are relevant and useful to the [Website](https://github.com/EliteFarmers/Website) or the [Discord Bot](https://github.com/EliteFarmers/Bot).
-    1. Feel free to open an issue or join the [Discord](https://elitebot.dev/support) to discuss the feature before starting work on it!
-    2. This generally means that new features should be related to farming in Hypixel Skyblock, or the Elite Farmers community.
-2. Code should follow the existing style and conventions.
-3. Run the tests before submitting a PR, and please consider adding tests for new features.
+## Recommended Local Setup
 
-### Running the API Locally
+For the easiest local development workflow, run Postgres, pgbouncer, and Redis in Docker. Then you can run the API from your IDE or `dotnet run`.
 
-1. Clone the repository
-2. Make a copy of `EliteAPI/.env.example` and rename it to `.env` in the same directory. Then fill in the environment variables in your new file.
-3. Make a copy of `EliteAPI/appsettings.json` and rename it to `appsettings.Development.json` in the same directory. 
-4. Fill in at least the database connection string in the `appsettings.Development.json` file, but it should work with the default settings if using the provided `docker-compose` file locally.
-5. Start up the database and redis server using `docker compose up -d database cache` in the root directory of the repository. The other services are usually not needed for local development.
-6. Open the solution in JetBrains Rider, Visual Studio, or use the `dotnet` cli to run the API.
-7. The API should now be running on `http://localhost:5164/`.
+1. Start the local infrastructure:
 
-### Using the API with the Website or Bot
-1. Follow the steps above to run the API locally.
-2. Follow the instructions in the [Website](https://github.com/EliteFarmers/Website) or the [Discord Bot](https://github.com/EliteFarmers/Bot) repos to set them up.
-3. Fill in the `ELITE_API_URL` environment variable in the Website or Bot with http://localhost:5164/.
-4. The Website and Bot should now be using your local API.
+   ```bash
+   docker compose up -d
+   ```
 
-When making changes to responses or adding new endpoints, download the API spec (http://localhost:5164/openapi/v1.json) and run `pnpm run generate-api-types` in the bot/website to update the typings.
+2. Copy `EliteAPI/appsettings.json` to `EliteAPI/appsettings.Development.json`.
 
-### Making Database Changes
+3. Add your local secrets and overrides to `EliteAPI/appsettings.Development.json`. A minimal example:
 
-Please discuss any changes to the database schema in an issue or on [Discord](https://elitebot.dev/support) before spending the time doing so.
+   ```json
+   {
+     "Discord": {
+       "ClientId": "<discord-client-id>",
+       "ClientSecret": "<discord-client-secret>",
+       "BotToken": "<discord-bot-token>"
+     },
+     "Hypixel": {
+       "ApiKey": "<hypixel-api-key>"
+     },
+     "Jwt": {
+       "Secret": "<local-jwt-secret>"
+     },
+     "WebsiteSecret": "<local-website-secret>"
+   }
+   ```
 
-1. Make the changes to the `EliteAPI/Models/Entities` and related DTO mappings.
-2. Run the EF Core migrations to generate a new migration into the `EliteAPI/Data/Migrations` folder.
-3. If you are adding a new table, make sure to add a new `DbSet` to the `EliteAPI/Data/DataContext.cs` file.
-4. Don't add multiple migrations for the same PR unless absolutely necessary. It should be easy for you to revert the migration and generate a new one with all the changes.
-   1. Keeping migrations uncommited until the PR is ready for review is a good idea to avoid committing and removing multiple migrations.
-5. Migrations are run automatically when the API starts up. (I am aware this is not ideal for production, but it's fine for development.)
+4. Validate the setup:
 
-### Get an Admin Account Locally
+   ```bash
+   dotnet run --project EliteAPI -- doctor
+   ```
 
-If you need to test admin features, you can set a Discord User ID in the `Seed` section of `appsettings.*.json` to grant admin permissions to that user. This only works if there are no admin users in the database, and if you already logged in to the API with that user.
+5. Run the API:
 
-1. Set the `Seed.AdminUserId` in `appsettings.*.json` to your Discord User ID.
+   ```bash
+   dotnet run --project EliteAPI
+   ```
+
+6. Use these local URLs:
+
+- API: `http://localhost:5164`
+- OpenAPI: `http://localhost:5164/openapi/v1.json`
+- Readiness: `http://localhost:5164/health/ready`
+
+Notes for this setup:
+
+- Postgres is available on `localhost:5436`
+- Redis is available on `localhost:6380`
+- `EliteAPI/.env` is not used
+- Environment variables and user secrets still work, but `appsettings.Development.json` is the normal local override file
+
+## Full Docker Setup
+
+For production or just running everything in docker, do the following:
+
+1. Copy `.env.example` to `.env`.
+
+2. Fill in the required values in `.env`:
+
+- `Discord__ClientId`
+- `Discord__ClientSecret`
+- `Discord__BotToken`
+- `Hypixel__ApiKey`
+(You can override other appsettings too, just use `__` in place of `:` seperators)
+
+3. Start the full stack:
+
+   ```bash
+   docker compose --profile full-stack up -d
+   ```
+
+4. Use these local URLs:
+
+- API: `http://localhost:7008`
+- Readiness: `http://localhost:7008/health/ready`
+
+5. Validate the running container when needed:
+
+   ```bash
+   docker compose --profile full-stack exec eliteapi dotnet EliteAPI.dll doctor
+   ```
+
+Optional observability stack:
+
+```bash
+docker compose --profile full-stack --profile observability up -d
+```
+
+## Website Setup
+
+To run the Website against your local API, use the same Discord application in both repos and set these Website env vars:
+
+```env
+ELITE_API_URL=http://localhost:5164
+PUBLIC_DISCORD_CLIENT_ID=<same value as Discord.ClientId>
+ELITE_API_TOKEN=<same value as WebsiteSecret>
+```
+
+If the Website should talk to the Dockerized API instead, use:
+
+```env
+ELITE_API_URL=http://localhost:7008
+```
+
+Add the correct redirect URL to your Discord application:
+
+```text
+http://localhost:5173/login/callback
+```
+
+Basic smoke test:
+
+1. Start the API.
+2. Start the Website.
+3. Log in with Discord.
+4. Open a profile page.
+5. Refresh the profile page.
+6. Confirm the API still responds at `/openapi/v1.json` and `/health/ready`.
+
+If you change API responses or add endpoints, regenerate the Website or Bot API types with the following command in the website repo.
+
+```sh
+pnpm run generate-api
+```
+
+## Supported Development Setups
+
+These combinations are expected to work:
+
+- Local API + local Website
+- Full Docker API + local Website
+- Full Docker API only
+
+## Troubleshooting
+
+- If you run the API locally from your IDE, use `localhost:5436` for Postgres and `localhost:6380` for Redis.
+- If you run the API in Docker, use `pgbouncer:5432` for Postgres and `cache:6379` for Redis.
+- If you change Docker config and nothing happens, restart the affected containers. You should not need to rebuild the image for normal config changes.
+- If you edit `EliteAPI/.env` and nothing changes, that is expected. The local IDE flow uses `appsettings.Development.json`, environment variables, or user secrets.
+- If Website login or profile refresh fails locally, verify `ELITE_API_URL`, `PUBLIC_DISCORD_CLIENT_ID`, `ELITE_API_TOKEN`, and the Discord callback URL.
+- For extra request-level diagnostics during local Website debugging, set `SetupDiagnostics:LogProfileRequests=true`.
+- Run `dotnet run --project EliteAPI -- doctor` to catch common config mistakes before startup.
+
+## Contributing
+
+- Keep changes relevant to the Website or Discord Bot.
+- Follow the existing code style and project structure.
+- Run tests before opening a PR when possible.
+- Add tests for new behavior when practical.
+- If a feature is large or changes core behavior, discuss it in an issue or in the community Discord first: https://elitebot.dev/support
+
+## Database Changes
+
+1. Make your entity and DTO changes.
+2. Add or update the related `DbSet` in `EliteAPI/Data/DataContext.cs` if needed.
+3. Generate an EF Core migration in `EliteAPI/Data/Migrations`.
+4. Avoid stacking multiple migrations in the same PR unless there is a clear reason.
+5. Migrations run automatically when the API starts in development.
+
+## Local Admin Account
+
+If you need admin features locally, set `Seed:AdminUserId` to your Discord user ID. This only works if there are no existing admin users and that account has already logged in once.
+
+1. Set `Seed:AdminUserId` in `EliteAPI/appsettings.Development.json`, an environment variable, or user secrets.
 2. Run the API and Website locally.
-3. Login to the local Website instance with your Discord account.
+3. Log in with that Discord account.
 4. Restart the API.
-5. You can now access the admin features, including granting other users roles on the `/admin` page of the Website.
-
-<h2 align="center">Docker Installation</h2>
-<hr>
-
-1. Clone the repository
-2. Make a copy of `.env.example` and rename it to `.env` in the same directory. Then fill in the environment variables in your new file. These variables are used in the containers.
-3. Make a copy of `EliteAPI/.env.example` and rename it to `.env` in the same directory. Then fill in the environment variables in your new file.
-4. Make a copy of `EliteAPI/appsettings.json` and rename it to `appsettings.Development.json` in the same directory.
-5. Fill in at least the database connection string in the `appsettings.Development.json` file, but it should work with the default settings if using the provided `docker-compose` file locally.
-6. Run `docker compose up` in the root directory of the repository.
-8. The API should now be running on `http://localhost:7008/` and can be put behind a reverse proxy if needed.
+5. Use `/admin` on the Website.

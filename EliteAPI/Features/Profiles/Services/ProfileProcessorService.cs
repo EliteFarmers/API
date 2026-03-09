@@ -77,10 +77,10 @@ public partial class ProfileProcessorService(
 	IMessageService messageService,
 	ILbService lbService,
 	ILeaderboardUpdateQueue leaderboardUpdateQueue,
-	IConfiguration configuration,
 	ISchedulerFactory schedulerFactory,
 	IOptions<ChocolateFactorySettings> cfOptions,
 	IOptions<ConfigCooldownSettings> coolDowns,
+	IOptions<ConfigLeaderboardSettings> leaderboardOptions,
 	IOptions<ConfigFarmingWeightSettings> farmingWeightOptions,
 	AutoMapper.IMapper mapper,
 	SkyBlockItemNetworthCalculator networthCalculator,
@@ -92,7 +92,7 @@ public partial class ProfileProcessorService(
 	private readonly ChocolateFactorySettings _cfSettings = cfOptions.Value;
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
 	private readonly ConfigFarmingWeightSettings _farmingWeightOptions = farmingWeightOptions.Value;
-	private readonly bool _enableAsyncLeaderboardUpdates = configuration.GetValue("Leaderboards:EnableAsyncUpdates", true);
+	private readonly bool _enableAsyncLeaderboardUpdates = leaderboardOptions.Value.EnableAsyncUpdates;
 
 	private readonly Func<DataContext, string, string, Task<ProfileMember?>> _fetchProfileMemberData =
 		EF.CompileAsyncQuery((DataContext c, string playerUuid, string profileUuid) =>

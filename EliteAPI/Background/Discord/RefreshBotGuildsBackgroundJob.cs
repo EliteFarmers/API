@@ -20,6 +20,7 @@ public class RefreshBotGuildsBackgroundJob(
 	DataContext context,
 	IHttpClientFactory httpClientFactory,
 	IOptions<ConfigCooldownSettings> coolDowns,
+	IOptions<DiscordSettings> discordOptions,
 	IMessageService messageService,
 	IGuildImageService guildImageService,
 	IImageService imageService
@@ -28,12 +29,8 @@ public class RefreshBotGuildsBackgroundJob(
 	public static readonly JobKey Key = new(nameof(RefreshBotGuildsBackgroundJob));
 	private const string ClientName = "EliteAPI";
 
-	private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN")
-	                                    ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");
-
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
-
-	private const string DiscordBaseUrl = "https://discord.com/api/v10";
+	private readonly DiscordSettings _discordSettings = discordOptions.Value;
 
 
 	public async Task Execute(IJobExecutionContext executionContext) {
@@ -121,13 +118,13 @@ public class RefreshBotGuildsBackgroundJob(
 
 	private async Task<List<DiscordGuild>> FetchBotGuildsRecursive(string? guildId, CancellationToken ct,
 		List<DiscordGuild>? guildList = null) {
-		var url = DiscordBaseUrl + "/users/@me/guilds?with_counts=true";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') + "/users/@me/guilds?with_counts=true";
 
 		if (guildId is not null) url += "&after=" + guildId;
 		guildList ??= [];
 
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
 		var response = await client.GetAsync(url, ct);
 

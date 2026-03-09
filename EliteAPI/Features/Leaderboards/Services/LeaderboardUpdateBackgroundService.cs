@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Leaderboards.Models;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Services;
 
@@ -17,16 +19,17 @@ public class LeaderboardUpdateBackgroundService : BackgroundService {
 		IServiceScopeFactory scopeFactory,
 		ILogger<LeaderboardUpdateBackgroundService> logger,
 		ILeaderboardCacheMetrics metrics,
-		IConfiguration configuration) {
+		IOptions<ConfigLeaderboardSettings> options) {
 		_queue = queue;
 		_scopeFactory = scopeFactory;
 		_logger = logger;
 		_metrics = metrics;
 		
-		var intervalSeconds = configuration.GetValue("Leaderboards:BatchIntervalSeconds", 5);
+		var settings = options.Value;
+		var intervalSeconds = settings.BatchIntervalSeconds;
 		_batchInterval = TimeSpan.FromSeconds(intervalSeconds);
-		_maxBatchSize = configuration.GetValue("Leaderboards:MaxBatchSize", 1000);
-		_enabled = configuration.GetValue("Leaderboards:EnableAsyncUpdates", true);
+		_maxBatchSize = settings.MaxBatchSize;
+		_enabled = settings.EnableAsyncUpdates;
 	}
 
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken) {

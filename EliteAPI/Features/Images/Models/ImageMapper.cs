@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Images.Services;
 using EliteAPI.Features.Textures.Models;
 using Riok.Mapperly.Abstractions;
@@ -10,17 +11,16 @@ public static partial class ImageMapper
 {
 	private static string _baseImageUrl = string.Empty;
 
-	public static void Initialize(IConfiguration configuration) {
-		_baseImageUrl = configuration["S3:PublicUrl"]
-		                ?? throw new InvalidOperationException("S3:PublicUrl not configured.");
+	public static void Initialize(ObjectStorageSettings settings) {
+		_baseImageUrl = settings.PublicUrl.TrimEnd('/');
 	}
 
 	public static string? ToPrimaryUrl(this Image? image) {
-		return image is null ? null : $"{_baseImageUrl}/{image.Path}";
+		return image is null ? null : BuildUrl(image.Path);
 	}
 	
 	public static string ToUrl(this HypixelItemTexture itemTexture) {
-		return $"{_baseImageUrl}/{itemTexture.Url}";
+		return BuildUrl(itemTexture.Url);
 	}
 
 	public static ImageAttachmentDto? ToDto(this Image? image) {
@@ -35,7 +35,7 @@ public static partial class ImageMapper
 				Width = int.TryParse(image.Metadata.GetValueOrDefault("width"), out var wi) ? wi : 0,
 				Height = int.TryParse(image.Metadata.GetValueOrDefault("height"), out var hi) ? hi : 0,
 				Sources = [],
-				Url = $"{_baseImageUrl}/{image.Path}"
+				Url = BuildUrl(image.Path)
 			};
 
 		var sources = new Dictionary<string, ImageSourceDto>();
@@ -46,14 +46,14 @@ public static partial class ImageMapper
 			if (!image.Metadata.TryGetValue($"path_{variant.Name}", out var path)) continue;
 
 			sources[variant.Name] = new ImageSourceDto {
-				Url = $"{_baseImageUrl}/{path}",
+				Url = BuildUrl(path),
 				Width = variant.Width
 			};
 
 			if (variant.Width >= smallestWidth) continue;
 
 			smallestWidth = variant.Width;
-			smallestUrl = $"{_baseImageUrl}/{path}";
+			smallestUrl = BuildUrl(path);
 		}
 
 		return new ImageAttachmentDto {
@@ -65,5 +65,12 @@ public static partial class ImageMapper
 			Sources = sources,
 			Url = smallestUrl
 		};
+	}
+
+	private static string BuildUrl(string path) {
+		var normalizedPath = path.TrimStart('/');
+		return string.IsNullOrWhiteSpace(_baseImageUrl)
+			? $"/{normalizedPath}"
+			: $"{_baseImageUrl}/{normalizedPath}";
 	}
 }

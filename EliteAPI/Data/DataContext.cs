@@ -29,7 +29,7 @@ using Npgsql;
 
 namespace EliteAPI.Data;
 
-public class DataContext(DbContextOptions<DataContext> options, IConfiguration config)
+public class DataContext(DbContextOptions<DataContext> options, IConfiguration config, IHostEnvironment environment)
 	: IdentityDbContext<ApiUser>(options)
 {
 	private static NpgsqlDataSource? Source { get; set; }
@@ -44,9 +44,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 		var connection = config.GetConnectionString("Postgres");
 
 		if (string.IsNullOrEmpty(connection)) {
-			Console.WriteLine("No connection string found. Quitting...");
-			Environment.Exit(1);
-			return;
+			throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
 		}
 
 		if (Source is null) {
@@ -55,8 +53,7 @@ public class DataContext(DbContextOptions<DataContext> options, IConfiguration c
 			Source = builder.Build();
 		}
 
-		optionsBuilder.EnableSensitiveDataLogging(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ==
-		                                          "Development");
+		optionsBuilder.EnableSensitiveDataLogging(environment.IsDevelopment());
 		optionsBuilder.UseNpgsql(Source, opt => { opt.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); });
 	}
 

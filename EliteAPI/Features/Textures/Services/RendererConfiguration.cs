@@ -1,5 +1,7 @@
+using EliteAPI.Configuration.Settings;
 using MinecraftRenderer;
 using MinecraftRenderer.Assets;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Textures.Services;
 
@@ -10,16 +12,14 @@ public static class RendererConfiguration
 		return services.BuildServiceProvider();
 	}
 
-	public static async Task DownloadMinecraftTexturesAsync(IConfiguration configuration) {
-		// Get assets path from configuration or use default
-		var assetsPath = configuration["MinecraftRenderer:AssetsPath"]
-		                 ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-			                 "EliteAPI", "minecraft");
+	public static async Task DownloadMinecraftTexturesAsync(IOptions<MinecraftRendererSettings> options) {
+		var settings = options.Value;
+		var assetsPath = settings.ResolveAssetsPath();
 
 		await MinecraftAssetDownloader.DownloadAndExtractAssets(
-			version: configuration["MinecraftRenderer:Version"] ?? "1.21.9",
+			version: settings.Version,
 			outputPath: assetsPath,
-			acceptEula: configuration["MinecraftRenderer:AcceptEula"]?.ToLower() == "true"
+			acceptEula: settings.AcceptEula
 		);
 	}
 }

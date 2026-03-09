@@ -11,6 +11,7 @@ using EliteAPI.Features.Textures.Services;
 using EliteAPI.Services;
 using EliteAPI.Services.Background;
 using EliteAPI.Services.Interfaces;
+using EliteAPI.Setup;
 using FastEndpoints.Security;
 using HypixelAPI.Networth.Calculators;
 using HypixelAPI.Networth.Interfaces;
@@ -71,7 +72,10 @@ public static class ServiceExtensions
 
 	public static IServiceCollection AddEliteAuthentication(this IServiceCollection services,
 		IConfiguration configuration) {
-		var secret = configuration["Jwt:Secret"] ?? throw new Exception("Jwt:Secret is not set in app settings");
+		var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
+		var secret = string.IsNullOrWhiteSpace(jwtSettings.Secret)
+			? "invalid-local-jwt-secret-placeholder"
+			: jwtSettings.Secret;
 
 		services.AddScoped<IAuthorizationHandler, GuildAdminHandler>();
 		services.AddScoped<IAdminSeeder, AdminSeeder>();
@@ -126,11 +130,14 @@ public static class ServiceExtensions
 	}
 
 	public static IServiceCollection AddEliteRedisCache(this IServiceCollection services, IConfiguration configuration) {
-		var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6380";
+		var redisConnectionString = configuration.GetConnectionString("Redis");
+		if (string.IsNullOrWhiteSpace(redisConnectionString)) {
+			redisConnectionString = "localhost:6380,password=missing";
+		}
+
 		var config = ConfigurationOptions.Parse(redisConnectionString);
 		config.AbortOnConnectFail = false;
 		config.ConnectRetry = 5;
-		var multiplexer = ConnectionMultiplexer.Connect(config);
 		
 		services.AddHybridCache(options =>
 		{
@@ -142,7 +149,7 @@ public static class ServiceExtensions
 		});
 
 		services
-			.AddSingleton<IConnectionMultiplexer>(multiplexer)
+			.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(config))
 			.AddOutputCache(options => {
 				options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
 
@@ -196,14 +203,31 @@ public static class ServiceExtensions
 		builder.Services.Configure<WebsiteGatewaySettings>(options => {
 			options.WebsiteSecret = builder.Configuration["WebsiteSecret"] ?? string.Empty;
 		});
+		builder.Services.Configure<DiscordSettings>(builder.Configuration.GetSection(DiscordSettings.SectionName));
+		builder.Services.Configure<HypixelSettings>(builder.Configuration.GetSection(HypixelSettings.SectionName));
+		builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+		builder.Services.Configure<MinecraftRendererSettings>(
+			builder.Configuration.GetSection(MinecraftRendererSettings.SectionName));
+		builder.Services.Configure<ObjectStorageSettings>(
+			builder.Configuration.GetSection(ObjectStorageSettings.SectionName));
+		builder.Services.Configure<SeedSettings>(builder.Configuration.GetSection(SeedSettings.SectionName));
+		builder.Services.Configure<SetupDiagnosticsSettings>(
+			builder.Configuration.GetSection(SetupDiagnosticsSettings.SectionName));
+		builder.Services.AddSingleton<IEliteSetupDoctor, EliteSetupDoctor>();
+		builder.Services.AddHealthChecks()
+			.AddCheck<EliteSetupReadinessHealthCheck>("setup-ready", tags: ["ready"]);
 
 		builder.Services.Configure<ConfigApiRateLimitSettings>(
 			builder.Configuration.GetSection(ConfigApiRateLimitSettings.RateLimitName));
 
 		builder.Configuration.GetSection(ConfigGlobalRateLimitSettings.RateLimitName)
 			.Bind(ConfigGlobalRateLimitSettings.Settings);
+		ConfigGlobalRateLimitSettings.Settings.WebsiteSecret = builder.Configuration["WebsiteSecret"] ?? string.Empty;
 
-		ImageMapper.Initialize(builder.Configuration);
+		var objectStorageSettings =
+			builder.Configuration.GetSection(ObjectStorageSettings.SectionName).Get<ObjectStorageSettings>() ??
+			new ObjectStorageSettings();
+		ImageMapper.Initialize(objectStorageSettings);
 
 		return builder;
 	}

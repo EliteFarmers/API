@@ -17,21 +17,15 @@ public class RefreshProductsBackgroundJob(
 	DataContext context,
 	IHttpClientFactory httpClientFactory,
 	IOptions<ConfigCooldownSettings> coolDowns,
+	IOptions<DiscordSettings> discordOptions,
 	IMessageService messageService
 ) : IJob
 {
 	public static readonly JobKey Key = new(nameof(RefreshProductsBackgroundJob));
 	private const string ClientName = "EliteAPI";
 
-	private readonly string _botToken = Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN")
-	                                    ?? throw new Exception("DISCORD_BOT_TOKEN env variable is not set.");
-
-	private readonly string _clientId = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID")
-	                                    ?? throw new Exception("DISCORD_CLIENT_ID env variable is not set.");
-
 	private readonly ConfigCooldownSettings _coolDowns = coolDowns.Value;
-
-	private const string DiscordBaseUrl = "https://discord.com/api/v10";
+	private readonly DiscordSettings _discordSettings = discordOptions.Value;
 
 	public async Task Execute(IJobExecutionContext executionContext) {
 		logger.LogInformation("Fetching products from Discord - {UtcNow}", DateTime.UtcNow);
@@ -94,10 +88,10 @@ public class RefreshProductsBackgroundJob(
 	}
 
 	private async Task<List<DiscordProduct>> FetchDiscordProducts(CancellationToken ct) {
-		var url = DiscordBaseUrl + $"/applications/{_clientId}/skus";
+		var url = _discordSettings.BaseUrl.TrimEnd('/') + $"/applications/{_discordSettings.ClientId}/skus";
 
 		var client = httpClientFactory.CreateClient(ClientName);
-		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _botToken);
+		client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bot", _discordSettings.BotToken);
 
 		var response = await client.GetAsync(url, ct);
 

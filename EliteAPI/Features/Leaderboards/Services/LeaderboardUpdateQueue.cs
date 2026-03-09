@@ -1,6 +1,8 @@
 using System.Threading.Channels;
+using EliteAPI.Configuration.Settings;
 using EliteAPI.Features.Leaderboards.Models;
 using FastEndpoints;
+using Microsoft.Extensions.Options;
 
 namespace EliteAPI.Features.Leaderboards.Services;
 
@@ -40,11 +42,11 @@ public class LeaderboardUpdateQueue : ILeaderboardUpdateQueue {
 	public LeaderboardUpdateQueue(
 		ILogger<LeaderboardUpdateQueue> logger,
 		ILeaderboardCacheMetrics metrics,
-		IConfiguration configuration) {
+		IOptions<ConfigLeaderboardSettings> options) {
 		_logger = logger;
 		_metrics = metrics;
 		
-		var capacity = configuration.GetValue("Leaderboards:QueueCapacity", 10_000);
+		var capacity = options.Value.QueueCapacity;
 		
 		_channel = Channel.CreateBounded<LeaderboardUpdateEntry>(new BoundedChannelOptions(capacity) {
 			FullMode = BoundedChannelFullMode.DropWrite,
