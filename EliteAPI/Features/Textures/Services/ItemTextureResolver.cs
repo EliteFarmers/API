@@ -90,6 +90,11 @@ public partial class ItemTextureResolver(
 			mappedId = LegacyItemMappings.MapNumericIdOrDefault(397, 3); // Player head
 		}
 
+		// Just use the skyblock id if it's a minecraft id, and we couldn't find a mapping
+		if (mappedId is null && skyblockId.StartsWith("minecraft:")) {
+			mappedId = skyblockId;
+		}
+
 		NbtCompound root;
 
 		if (mappedId is null) {

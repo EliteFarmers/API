@@ -2,7 +2,7 @@
 
 This is a package that contains an HttpClient for interacting with the [Hypixel API](https://developer.hypixel.net/). It
 is used by the Elite API
-which powers https://elitebot.dev.
+which powers https://eliteskyblock.com.
 
 Not affiliated with Mojang or Hypixel in any way.
 

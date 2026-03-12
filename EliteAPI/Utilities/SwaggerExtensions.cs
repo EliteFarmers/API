@@ -38,7 +38,7 @@ public static class SwaggerExtensions
 		});
 		app.MapScalarApiReference("/", opt => {
 			opt.Title = "Elite API Reference";
-			opt.Favicon = "https://elitebot.dev/favicon.ico";
+			opt.Favicon = "https://eliteskyblock.com/favicon.ico";
 			opt.Theme = ScalarTheme.DeepSpace;
 		});
 		return app;
@@ -47,9 +47,9 @@ public static class SwaggerExtensions
 	private static OpenApiInfo CreateInfoForApiVersion(string version) {
 		const string description =
 			"""
-			A backend API for https://elitebot.dev/ that provides Hypixel Skyblock data.
+			A backend API for https://eliteskyblock.com/ that provides Hypixel Skyblock data.
 			<br><br>
-			Use of this API requires following the [Elite API TOS](https://elitebot.dev/apiterms). This API is not affiliated with Hypixel or Mojang.
+			Use of this API requires following the [Elite API TOS](https://eliteskyblock.com/apiterms). This API is not affiliated with Hypixel or Mojang.
 			""";
 
 		var info = new OpenApiInfo {
@@ -63,7 +63,7 @@ public static class SwaggerExtensions
 				Name = "GPL-3.0",
 				Url = "https://github.com/EliteFarmers/API/blob/master/LICENSE.txt"
 			},
-			TermsOfService = "https://elitebot.dev/apiterms",
+			TermsOfService = "https://eliteskyblock.com/apiterms",
 			Description = description
 		};
 

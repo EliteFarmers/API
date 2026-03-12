@@ -56,7 +56,7 @@ builder.AddEliteBackgroundJobs();
 
 builder.Services.AddHypixelApi(opt => {
 	opt.ApiKey = hypixelSettings.ApiKey;
-	opt.UserAgent = "EliteAPI (+https://api.elitebot.dev)";
+	opt.UserAgent = "EliteAPI (+https://api.eliteskyblock.com)";
 }).AddStandardResilienceHandler();
 
 builder.Services.AddRouting(options => {
