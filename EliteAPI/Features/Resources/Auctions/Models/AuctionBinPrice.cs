@@ -27,8 +27,6 @@ public class AuctionBinPrice
 public class AuctionBinPriceConfiguration : IEntityTypeConfiguration<AuctionBinPrice>
 {
 	public void Configure(EntityTypeBuilder<AuctionBinPrice> builder) {
-		builder.HasIndex(e => new { e.SkyblockId, e.VariantKey, ListedAtUnixMillis = e.ListedAt });
-		builder.HasIndex(e => e.AuctionUuid);
 		builder.HasIndex(e => e.IngestedAt);
 	}
 }

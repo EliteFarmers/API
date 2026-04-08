@@ -4,8 +4,9 @@ namespace EliteAPI.Features.Resources.Auctions.Services;
 
 public static class PriceCalculationHelpers
 {
-	// Minimum samples to attempt robust IQR. If fewer, a simpler min is used.
+	// Minimum samples to attempt IQR. If fewer, a simpler min is used.
 	private const int MinSamplesForIqr = 5;
+	private const decimal IqrFenceMultiplier = 2.0m;
 
 	public static (decimal? LowestPrice, int Volume) GetRepresentativeLowestFromList(
 		List<decimal>? prices,
@@ -29,7 +30,7 @@ public static class PriceCalculationHelpers
 		decimal lowerBound;
 		decimal upperBound;
 
-		// Standard IQR outlier rule: Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
+		// Slightly relaxed IQR outlier rule to keep near-market lows in volatile samples
 		if (iqr == 0) // Handles cases where many prices are identical (e.g. Q1=Median=Q3)
 		{
 			// If IQR is 0, the "cluster" is effectively items priced at Q1.
@@ -44,8 +45,8 @@ public static class PriceCalculationHelpers
 				skyblockIdForLogging, variantKeyForLogging, q1);
 		}
 		else {
-			lowerBound = q1 - 1.5m * iqr;
-			upperBound = q3 + 1.5m * iqr;
+			lowerBound = q1 - IqrFenceMultiplier * iqr;
+			upperBound = q3 + IqrFenceMultiplier * iqr;
 		}
 
 		// Ensure lower bound is not negative after calculation, stick to positive prices.

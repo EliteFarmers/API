@@ -57,7 +57,6 @@ public class AuctionWorkItem
 public class AuctionConfiguration : IEntityTypeConfiguration<Auction>
 {
 	public void Configure(EntityTypeBuilder<Auction> builder) {
-		builder.HasIndex(e => e.Price);
 		builder.HasIndex(e => e.SoldAt);
 		builder.HasIndex(e => new { e.SkyblockId, Timestamp = e.SoldAt });
 		builder.HasIndex(e => new { e.SkyblockId, e.VariantKey, Timestamp = e.SoldAt });

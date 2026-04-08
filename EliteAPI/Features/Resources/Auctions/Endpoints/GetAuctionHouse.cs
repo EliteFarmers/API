@@ -25,13 +25,17 @@ internal sealed class GetAuctionHouseProductsEndpoint(
 			s.Description = "Get lowest auction house prices.";
 		});
 
-		ResponseCache(300);
-		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(10)).Tag("auctions")); });
+		ResponseCache(180);
+		Options(o => { o.CacheOutput(c => c.Expire(TimeSpan.FromMinutes(3)).Tag("auctions")); });
 	}
 
 	public override async Task HandleAsync(CancellationToken c) {
+		var recentCutoff = DateTime.UtcNow.AddDays(-_config.AggregationMaxLookbackDays);
+		var lastLowestCutoff = DateTime.UtcNow.AddYears(-1);
+
 		var data = await context.AuctionItems.AsNoTracking()
 			.Where(r => r.CalculatedAt >= DateTime.UtcNow.AddDays(-_config.AggregationMaxLookbackDays))
+			.Where(r => r.CalculatedAt >= recentCutoff || (r.LastLowestAt != null && r.LastLowestAt >= lastLowestCutoff))
 			.GroupBy(a => a.SkyblockId)
 			.ToListAsync(c);
 

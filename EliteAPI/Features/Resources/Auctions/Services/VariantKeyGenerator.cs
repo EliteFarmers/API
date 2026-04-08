@@ -31,6 +31,38 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 			variedBy.Pet = itemDto.PetInfo.Type;
 			variedBy.PetLevel = GenerateFromPetLevel(itemDto);
 		}
+		
+		// Variant by the single enchantment on enchanted books
+		if (skyblockId == "ENCHANTED_BOOK" && itemDto.Enchantments is { Count: 1 }) {
+			var enchantment = itemDto.Enchantments.First();
+			variedBy.Enchantments = new Dictionary<string, int> {
+				{ enchantment.Key.ToUpperInvariant(), enchantment.Value }
+			};
+		}
+
+		// Variant by potion name and level
+		if (skyblockId == "POTION" && itemDto.Attributes is not null) {
+			var potionName = itemDto.Attributes["potion_name"] ?? itemDto.Attributes["potion"];
+			var potionLevelStr = itemDto.Attributes["potion_level"];
+			var potionType = itemDto.Attributes["potion_type"];
+
+			if (!string.IsNullOrEmpty(potionName) && int.TryParse(potionLevelStr, out var potionLevel)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["potion"] = potionName.ToUpperInvariant().Replace(" ", "_") + ":" + potionLevel;
+			} else if (!string.IsNullOrEmpty(potionType)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["potion"] = potionType.ToUpperInvariant().Replace(" ", "_");
+			}
+		}
+
+		// Variant by cake year
+		if (skyblockId == "NEW_YEAR_CAKE" && itemDto.Attributes is not null) {
+			var cakeYear = itemDto.Attributes["new_years_cake"];
+			if (!string.IsNullOrEmpty(cakeYear)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["new_years_cake"] = cakeYear;
+			}
+		}
 
 		// Not checking cultivating because it could be applied to a lot of items and isn't worth the variation
 		if (itemDto.Attributes is not null) {
@@ -42,6 +74,16 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 					variedBy.Extra[MinedCrops] = digits.ToString();
 				}
 			}
+			
+			if (itemDto.Attributes.TryGetValue("baseStatBoostPercentage", out var baseStatBoost) && baseStatBoost == "50") {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["baseStatBoostPercentage"] = baseStatBoost;
+			}
+
+			if (itemDto.SkyblockId == "ABICASE" && itemDto.Attributes.TryGetValue("model", out var model)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["model"] = model;
+			}
 
 			if (itemDto.Attributes.TryGetValue("party_hat_color", out var partyHatColor)) {
 				variedBy.Extra ??= new Dictionary<string, string>();
@@ -51,6 +93,11 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 			if (itemDto.Attributes.TryGetValue("party_hat_emoji", out var partyHatEmoji)) {
 				variedBy.Extra ??= new Dictionary<string, string>();
 				variedBy.Extra["party_hat_emoji"] = partyHatEmoji;
+			}
+			
+			if (itemDto.Attributes.TryGetValue("party_hat_year", out var partyHatYear)) {
+				variedBy.Extra ??= new Dictionary<string, string>();
+				variedBy.Extra["party_hat_year"] = partyHatYear;
 			}
 
 			if (itemDto.SkyblockId is "RUNE" or "UNIQUE_RUNE") {
@@ -68,24 +115,8 @@ public class VariantKeyGenerator(IOptions<AuctionHouseSettings> settings, ILogge
 				variedBy.Extra["scrolls"] = scrolls;
 			}
 		}
-		
-		// if (itemDto.ItemAttributes is not null && itemDto.ItemAttributes.Count > 0)
-		// {
-		//     variedBy.ItemAttributes = GenerateFromItemAttributes(itemDto);
-		// }
 
 		return variedBy;
-	}
-
-	[Obsolete("Hypixel removed item attributes, this method is no longer used.")]
-	private static Dictionary<string, string>? GenerateFromItemAttributes(ItemDto itemDto) {
-		if (itemDto.ItemAttributes == null || itemDto.ItemAttributes.Count == 0) return null;
-		var sortedAttributes = itemDto.ItemAttributes
-			.OrderBy(kvp => kvp.Key)
-			.ToDictionary(k => k.Key.ToLowerInvariant().Replace(":", "-"),
-				v => v.Value.ToString().ToLowerInvariant().Replace(":", "-"));
-
-		return sortedAttributes;
 	}
 
 	private AuctionItemVariation.PetLevelGroup? GenerateFromPetLevel(ItemDto itemDto) {

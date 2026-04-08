@@ -22,6 +22,17 @@ public class AuctionItem
 
 	public decimal? Lowest7Day { get; set; }
 	public int Lowest7DayVolume { get; set; }
+	
+	/// <summary>
+	/// Absolute cheapest current BIN listing (no outlier filtering)
+	/// </summary>
+	public decimal? RawLowest { get; set; }
+	
+	/// <summary>
+	/// Last known valid lowest price, persists even after item stops being auctioned
+	/// </summary>
+	public decimal? LastLowest { get; set; }
+	public DateTimeOffset? LastLowestAt { get; set; }
 
 	public DateTimeOffset CalculatedAt { get; set; }
 }

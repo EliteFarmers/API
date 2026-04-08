@@ -10,7 +10,7 @@ public class AuctionPriceHistoryJob(DataContext context, ILogger<AuctionPriceHis
 {
 	public static readonly JobKey Key = new(nameof(AuctionPriceHistoryJob));
 	private const long HourBucketSizeMilliseconds = 60L * 60L * 1000L;
-	private static readonly TimeSpan LookbackWindow = TimeSpan.FromDays(30);
+	private static readonly TimeSpan IncrementalWindow = TimeSpan.FromHours(36);
 
 	public static void Configure(IServiceCollectionQuartzConfigurator quartz, ConfigurationManager configuration)
 	{
@@ -29,7 +29,7 @@ public class AuctionPriceHistoryJob(DataContext context, ILogger<AuctionPriceHis
 	{
 		var cancellationToken = executionContext.CancellationToken;
 		var now = DateTimeOffset.UtcNow;
-		var cutoff = now.Subtract(LookbackWindow).ToUnixTimeMilliseconds();
+		var cutoff = now.Subtract(IncrementalWindow).ToUnixTimeMilliseconds();
 
 		var aggregates = new Dictionary<(string SkyblockId, string VariantKey, long BucketStart), AggregateState>(StringTupleComparer.Instance);
 

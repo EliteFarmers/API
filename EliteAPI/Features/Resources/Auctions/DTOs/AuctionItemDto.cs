@@ -42,6 +42,16 @@ public class AuctionItemDto
 	/// Volume of prices ued to get lowest 3 day price
 	/// </summary>
 	public int Lowest7DayVolume { get; set; }
+	
+	/// <summary>
+	/// Last known valid lowest price, persists up to a year after item stops being auctioned
+	/// </summary>
+	public decimal Last { get; set; } = -1;
+	
+	/// <summary>
+	/// Absolute cheapest current BIN listing (no outlier filtering)
+	/// </summary>
+	public decimal RawLowest { get; set; } = -1;
 }
 
 [Mapper]
@@ -49,5 +59,7 @@ public static partial class AuctionItemMapper
 {
 	[MapperIgnoreSource(nameof(AuctionItem.CalculatedAt))]
 	[MapperIgnoreSource(nameof(AuctionItem.LowestObservedAt))]
+	[MapperIgnoreSource(nameof(AuctionItem.LastLowestAt))]
+	[MapProperty(nameof(AuctionItem.LastLowest), nameof(AuctionItemDto.Last))]
 	public static partial AuctionItemDto ToDto(this AuctionItem auctionItem);
 }
