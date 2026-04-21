@@ -57,17 +57,16 @@ internal sealed class GetAuctionHouseNeuEndpoint(
 		var result = new Dictionary<string, long>();
 
 		foreach (var item in items) {
-			var neuName = NeuInternalNameConverter.ToNeuInternalName(item.SkyblockId, item.VariantKey);
-			if (neuName is null) continue;
-
 			var price = useRaw ? GetRawPrice(item) : GetSmoothedPrice(item);
 			if (price is null or <= 0) continue;
 
 			var longPrice = (long)price.Value;
 
-			// If multiple variants map to same NEU name, keep lowest price
-			if (!result.TryGetValue(neuName, out var existing) || longPrice < existing) {
-				result[neuName] = longPrice;
+			foreach (var neuName in GetNeuInternalNames(item.SkyblockId, item.VariantKey)) {
+				// If multiple variants map to same NEU name, keep lowest price
+				if (!result.TryGetValue(neuName, out var existing) || longPrice < existing) {
+					result[neuName] = longPrice;
+				}
 			}
 		}
 
@@ -86,5 +85,17 @@ internal sealed class GetAuctionHouseNeuEndpoint(
 		if (item.Lowest7Day is > 0) return item.Lowest7Day;
 		if (item.LastLowest is > 0) return item.LastLowest;
 		return null;
+	}
+
+	internal static IEnumerable<string> GetNeuInternalNames(string skyblockId, string variantKey) {
+		var neuName = NeuInternalNameConverter.ToNeuInternalName(skyblockId, variantKey);
+		if (neuName is null) yield break;
+
+		yield return neuName;
+
+		var plusIndex = neuName.IndexOf('+');
+		if (plusIndex > 0) {
+			yield return neuName[..plusIndex];
+		}
 	}
 }
