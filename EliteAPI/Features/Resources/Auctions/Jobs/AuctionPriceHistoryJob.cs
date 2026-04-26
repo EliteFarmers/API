@@ -106,11 +106,11 @@ public class AuctionPriceHistoryJob(DataContext context, ILogger<AuctionPriceHis
 		long cutoff, CancellationToken cancellationToken) {
 		var binListings = await context.AuctionBinPrices
 			.AsNoTracking()
-			.Where(p => p.ListedAt >= cutoff)
+			.Where(p => p.LastSeenAt >= cutoff)
 			.Select(p => new {
 				SkyblockId = p.SkyblockId!,
 				VariantKey = p.VariantKey ?? string.Empty,
-				BucketStart = p.ListedAt - (p.ListedAt % HourBucketSizeMilliseconds),
+				BucketStart = p.LastSeenAt - (p.LastSeenAt % HourBucketSizeMilliseconds),
 				p.Price
 			})
 			.ToListAsync(cancellationToken);

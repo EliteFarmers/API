@@ -18,7 +18,9 @@ public class AuctionBinPrice
 	public decimal Price { get; set; }
 
 	public long ListedAt { get; set; }
-
+	
+	public long LastSeenAt { get; set; }
+	
 	[Required] public required Guid AuctionUuid { get; set; }
 
 	public DateTimeOffset IngestedAt { get; set; }
@@ -28,5 +30,7 @@ public class AuctionBinPriceConfiguration : IEntityTypeConfiguration<AuctionBinP
 {
 	public void Configure(EntityTypeBuilder<AuctionBinPrice> builder) {
 		builder.HasIndex(e => e.IngestedAt);
+		builder.HasIndex(e => e.AuctionUuid).IsUnique();
+		builder.HasIndex(e => new { e.SkyblockId, e.VariantKey, e.LastSeenAt });
 	}
 }

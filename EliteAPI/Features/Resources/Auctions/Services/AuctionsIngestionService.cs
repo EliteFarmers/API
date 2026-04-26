@@ -29,15 +29,13 @@ public class AuctionsIngestionService(
 	private readonly AuctionHouseSettings _config = auctionHouseSettings.Value;
 	private readonly Dictionary<int, long> _pagesLastUpdated = new();
 
-	private const string BinPriceSeenKeyPrefix = "ah:seen:";
-	private static readonly TimeSpan BinPriceSeenKeyTtl = TimeSpan.FromHours(4);
-
 	public async Task IngestAndStageAuctionDataAsync(int maxPages, CancellationToken cancellationToken = default) {
 		logger.LogInformation("Starting auction data ingestion and staging...");
 		var newRawPrices = new List<AuctionBinPrice>();
 		var totalPages = 10;
 		var ingestionTime = DateTimeOffset.UtcNow;
-		var db = redis.GetDatabase();
+		var ingestionTimeMs = ingestionTime.ToUnixTimeMilliseconds();
+		var updatedExistingCount = 0;
 		var batchSize = _config.PageBatchSize > 0 ? _config.PageBatchSize : 10;
 
 		for (var batchStart = 0; batchStart < totalPages; batchStart += batchSize) {
@@ -93,19 +91,16 @@ public class AuctionsIngestionService(
 				var existingAuctions = await context.Auctions
 					.Where(a => newAuctionIds.Contains(a.AuctionId))
 					.ToDictionaryAsync(a => a.AuctionId, cancellationToken);
-
-				// Check which BIN auction UUIDs we've already ingested
+				
 				var binAuctions = apiResponse.Auctions.Where(a => a.Bin).ToList();
-				var binRedisKeys = binAuctions.Select(a => (RedisKey)(BinPriceSeenKeyPrefix + a.Uuid)).ToArray();
-				RedisValue[] existingValues = [];
-				if (binRedisKeys.Length > 0) {
-					existingValues = await db.StringGetAsync(binRedisKeys);
-				}
+				var binAuctionGuids = binAuctions.Select(a => Guid.Parse(a.Uuid)).ToList();
+				var existingBinPrices = binAuctionGuids.Count > 0
+					? await context.AuctionBinPrices
+						.Where(p => binAuctionGuids.Contains(p.AuctionUuid))
+						.ToDictionaryAsync(p => p.AuctionUuid, cancellationToken)
+					: new Dictionary<Guid, AuctionBinPrice>();
 
-				var newBinKeys = new List<RedisKey>();
-				for (var i = 0; i < binAuctions.Count; i++) {
-					var auction = binAuctions[i];
-					if (existingValues.Length > i && !existingValues[i].IsNull) continue;
+				foreach (var auction in binAuctions) {
 					if (!auctionItems.TryGetValue(auction.Uuid, out var itemDto)) continue;
 					if (itemDto?.SkyblockId is null) continue;
 
@@ -114,29 +109,27 @@ public class AuctionsIngestionService(
 
 					var count = itemDto.Count > 0 ? itemDto.Count : 1;
 					var price = (decimal)auction.StartingBid / count;
+					var auctionGuid = Guid.Parse(auction.Uuid);
 
-					newRawPrices.Add(new AuctionBinPrice {
-						SkyblockId = itemDto.SkyblockId,
-						VariantKey = variedBy.ToKey(),
-						Price = price,
-						ListedAt = auction.Start,
-						AuctionUuid = Guid.Parse(auction.Uuid),
-						IngestedAt = ingestionTime
-					});
-
-					newBinKeys.Add(BinPriceSeenKeyPrefix + auction.Uuid);
-				}
-
-				if (newBinKeys.Count > 0) {
-					var batch = db.CreateBatch();
-					foreach (var key in newBinKeys) {
-						_ = batch.StringSetAsync(key, RedisValue.EmptyString, BinPriceSeenKeyTtl);
+					if (existingBinPrices.TryGetValue(auctionGuid, out var existingPrice)) {
+						existingPrice.Price = price;
+						existingPrice.LastSeenAt = ingestionTimeMs;
+						existingPrice.IngestedAt = ingestionTime;
+						updatedExistingCount++;
 					}
-
-					batch.Execute();
+					else {
+						newRawPrices.Add(new AuctionBinPrice {
+							SkyblockId = itemDto.SkyblockId,
+							VariantKey = variedBy.ToKey(),
+							Price = price,
+							ListedAt = auction.Start,
+							LastSeenAt = ingestionTimeMs,
+							AuctionUuid = auctionGuid,
+							IngestedAt = ingestionTime
+						});
+					}
 				}
 
-				// Upsert Auction records
 				foreach (var auction in apiResponse.Auctions) {
 					if (!auction.Bin) continue;
 					if (!auctionItems.TryGetValue(auction.Uuid, out var itemDto)) continue;
@@ -185,11 +178,16 @@ public class AuctionsIngestionService(
 
 		if (newRawPrices.Count != 0) {
 			await context.AuctionBinPrices.AddRangeAsync(newRawPrices, cancellationToken);
+		}
+
+		if (newRawPrices.Count != 0 || updatedExistingCount > 0 || context.ChangeTracker.HasChanges()) {
 			await context.SaveChangesAsync(cancellationToken);
-			logger.LogInformation("Staged {Count} new raw BIN auction prices", newRawPrices.Count);
+			logger.LogInformation(
+				"Staged {NewCount} new and refreshed {UpdatedCount} existing BIN auction prices",
+				newRawPrices.Count, updatedExistingCount);
 		}
 		else {
-			logger.LogInformation("No new raw BIN auction prices were staged");
+			logger.LogInformation("No BIN auction price changes were staged");
 		}
 
 		await AggregateAuctionDataAsync(cancellationToken);
@@ -207,15 +205,15 @@ public class AuctionsIngestionService(
 			? _config.RecentFallbackMaxLookbackHours
 			: _config.RecentFallbackMaxLookbackDays * 24d;
 		var fallbackWindowMs = now.AddHours(-fallbackLookbackHours).ToUnixTimeMilliseconds();
-
+		
 		var todayUtc = now.UtcDateTime.Date;
-		var freshCutoffDate = todayUtc.AddDays(-1);
+		var freshCutoffDate = todayUtc.AddDays(-1); // Yesterday 00:00 UTC — still receiving data
 		var lookback7DayDate = todayUtc.AddDays(-_config.LongTermRepresentativeLowestDays);
 		
 		var freshCutoffMs = new DateTimeOffset(freshCutoffDate, TimeSpan.Zero).ToUnixTimeMilliseconds();
 		var freshPrices = await context.AuctionBinPrices
-			.Where(r => r.ListedAt >= freshCutoffMs && r.Price > 0)
-			.Select(r => new { r.SkyblockId, r.VariantKey, r.ListedAt, r.Price })
+			.Where(r => r.LastSeenAt >= freshCutoffMs && r.Price > 0)
+			.Select(r => new { r.SkyblockId, r.VariantKey, LastSeenAt = r.LastSeenAt, r.Price })
 			.ToListAsync(cancellationToken);
 
 		var cachedPrices = new List<CachedBinPrice>();
@@ -225,7 +223,7 @@ public class AuctionsIngestionService(
 
 			if (dayEnd <= lookback7DayMs) continue;
 
-			var cacheKey = $"auction-prices:daily:{date:yyyy-MM-dd}";
+			var cacheKey = $"auction-prices:daily:v2:{date:yyyy-MM-dd}";
 			var cached = await db.StringGetAsync(cacheKey);
 
 			if (cached.HasValue) {
@@ -237,8 +235,8 @@ public class AuctionsIngestionService(
 			}
 
 			var dayDbPrices = await context.AuctionBinPrices
-				.Where(r => r.ListedAt >= dayStart && r.ListedAt < dayEnd && r.Price > 0)
-				.Select(r => new CachedBinPrice(r.SkyblockId, r.VariantKey, r.ListedAt, r.Price))
+				.Where(r => r.LastSeenAt >= dayStart && r.LastSeenAt < dayEnd && r.Price > 0)
+				.Select(r => new CachedBinPrice(r.SkyblockId, r.VariantKey, r.LastSeenAt, r.Price))
 				.ToListAsync(cancellationToken);
 
 			var serialized = JsonSerializer.Serialize(dayDbPrices);
@@ -251,7 +249,7 @@ public class AuctionsIngestionService(
 
 		// Combine fresh and cached prices then group by variant
 		var allPrices = freshPrices
-			.Select(p => new CachedBinPrice(p.SkyblockId, p.VariantKey, p.ListedAt, p.Price))
+			.Select(p => new CachedBinPrice(p.SkyblockId, p.VariantKey, p.LastSeenAt, p.Price))
 			.Concat(cachedPrices)
 			.ToList();
 
@@ -289,8 +287,8 @@ public class AuctionsIngestionService(
 
 			// Calculate all three price windows from cached data
 			var prices7Day = variantPrices.Select(p => p.Price).ToList();
-			var prices3Day = variantPrices.Where(p => p.ListedAt >= lookback3DayMs).Select(p => p.Price).ToList();
-			var recentPrices = variantPrices.Where(p => p.ListedAt >= recentWindowMs).Select(p => p.Price).ToList();
+			var prices3Day = variantPrices.Where(p => p.LastSeenAt >= lookback3DayMs).Select(p => p.Price).ToList();
+			var recentPrices = variantPrices.Where(p => p.LastSeenAt >= recentWindowMs).Select(p => p.Price).ToList();
 
 			var (lowest7Day, volume7Day) = PriceCalculationHelpers.GetRepresentativeLowestFromList(
 				prices7Day, logger, skyblockId, variantKey);
@@ -303,8 +301,8 @@ public class AuctionsIngestionService(
 			var rawLowest = recentPrices.Count > 0 ? recentPrices.Min() : (decimal?)null;
 			if (!recentLowest.HasValue || recentVolume < _config.MinRecentVolumeThreshold) {
 				var fallbackPrices = variantPrices
-					.Where(p => p.ListedAt >= fallbackWindowMs)
-					.OrderByDescending(p => p.ListedAt)
+					.Where(p => p.LastSeenAt >= fallbackWindowMs)
+					.OrderByDescending(p => p.LastSeenAt)
 					.Take(_config.RecentFallbackTakeCount)
 					.Select(p => p.Price)
 					.ToList();
@@ -354,8 +352,8 @@ public class AuctionsIngestionService(
 		logger.LogInformation("Auction data aggregation complete for {Count} processed variants", grouped.Count);
 		await CleanUpOldRawAuctionDataAsync(TimeSpan.FromDays(_config.RawDataRetentionDays), cancellationToken);
 	}
-
-	private record CachedBinPrice(string SkyblockId, string VariantKey, long ListedAt, decimal Price);
+	
+	private record CachedBinPrice(string SkyblockId, string VariantKey, long LastSeenAt, decimal Price);
 
 	public async Task TriggerUpdate() {
 		var db = redis.GetDatabase();
