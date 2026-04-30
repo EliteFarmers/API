@@ -53,7 +53,7 @@ services:
       retries: 20
 
   cache:
-    image: redis:8.4-alpine
+    image: redis:8.6-alpine
     restart: unless-stopped
     command: redis-server --save 300 10 --loglevel warning --requirepass ${REDIS_PASSWORD:-redis123}
     ports:
@@ -128,7 +128,7 @@ services:
 
   prometheus:
     profiles: [ "observability" ]
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:v3.11.2
     restart: unless-stopped
     ports:
       - "9090:9090"
