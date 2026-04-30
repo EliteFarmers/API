@@ -69,6 +69,18 @@ public class AuctionsIngestionService(
 
 				var lastUpdated = apiResponse.LastUpdated;
 				if (_pagesLastUpdated.TryGetValue(page, out var lastUpdate) && lastUpdate >= lastUpdated) {
+					// Mark auctions on skipped pages as seen still 
+					var skippedBinUuids = apiResponse.Auctions
+						.Where(a => a.Bin)
+						.Select(a => Guid.Parse(a.Uuid))
+						.ToList();
+					if (skippedBinUuids.Count > 0) {
+						await context.AuctionBinPrices
+							.Where(p => skippedBinUuids.Contains(p.AuctionUuid))
+							.ExecuteUpdateAsync(s => s
+								.SetProperty(p => p.LastSeenAt, ingestionTimeMs)
+								.SetProperty(p => p.IngestedAt, ingestionTime), cancellationToken);
+					}
 					logger.LogDebug("Skipping page {Page} as it has not been updated since last ingestion", page);
 					continue;
 				}
@@ -190,10 +202,11 @@ public class AuctionsIngestionService(
 			logger.LogInformation("No BIN auction price changes were staged");
 		}
 
-		await AggregateAuctionDataAsync(cancellationToken);
+		await AggregateAuctionDataAsync(ingestionTimeMs, cancellationToken);
 	}
 
-	public async Task AggregateAuctionDataAsync(CancellationToken cancellationToken = default) {
+	public async Task AggregateAuctionDataAsync(long? latestIngestionTimeMs = null,
+		CancellationToken cancellationToken = default) {
 		logger.LogInformation("Starting auction data aggregation...");
 		var now = DateTimeOffset.UtcNow;
 		var db = redis.GetDatabase();
@@ -297,8 +310,23 @@ public class AuctionsIngestionService(
 			var (recentLowest, recentVolume) = PriceCalculationHelpers.GetRepresentativeLowestFromList(
 				recentPrices, logger, skyblockId, variantKey);
 
-			// Absolute minimum of recent prices with no outlier filtering
-			var rawLowest = recentPrices.Count > 0 ? recentPrices.Min() : (decimal?)null;
+			// Only use still active auctions for the raw lowest if we have any
+			// Otherwise fallback to the recent window
+			decimal? rawLowest = null;
+			if (latestIngestionTimeMs is { } activeCutoffMs) {
+				var activePrices = variantPrices
+					.Where(p => p.LastSeenAt >= activeCutoffMs)
+					.Select(p => p.Price)
+					.ToList();
+				if (activePrices.Count > 0) {
+					rawLowest = activePrices.Min();
+				}
+			}
+			
+			if (rawLowest is null && recentPrices.Count > 0) {
+				rawLowest = recentPrices.Min();
+			}
+			
 			if (!recentLowest.HasValue || recentVolume < _config.MinRecentVolumeThreshold) {
 				var fallbackPrices = variantPrices
 					.Where(p => p.LastSeenAt >= fallbackWindowMs)
