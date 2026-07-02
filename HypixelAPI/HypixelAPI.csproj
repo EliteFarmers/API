@@ -21,7 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Refit" Version="10.0.1" />
+        <PackageReference Include="Refit" Version="12.1.0" />
         <PackageReference Include="Refit.HttpClientFactory" Version="10.0.1" />
         <PackageReference Include="System.Threading.RateLimiting" Version="10.0.3" />
     </ItemGroup>
