@@ -15,6 +15,10 @@ public class ItemResponse
 {
 	[JsonPropertyName("id")] public string? Id { get; set; }
 
+	[JsonPropertyName("item_model")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public string? ItemModel { get; set; }
+
 	[JsonPropertyName("material")]
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
 	public string? Material { get; set; }

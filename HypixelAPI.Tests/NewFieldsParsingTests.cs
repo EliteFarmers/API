@@ -6,6 +6,58 @@ namespace HypixelAPI.Tests;
 public class NewFieldsParsingTests
 {
 	[Fact]
+	public void Deserialize_ResourcePacks() {
+		const string json = """
+		                    {
+		                      "success": true,
+		                      "packs": [{
+		                        "id": "SkyBlock",
+		                        "lastUpdated": 1780790767000,
+		                        "deployId": "deploy-1",
+		                        "versions": [{
+		                          "packFormat": 88,
+		                          "hash": "5be210c4aa92ed283bd696cea5612a39408ace1e",
+		                          "url": "https://resourcepacks.hypixel.net/SkyBlock/deploy-1/88.zip"
+		                        }]
+		                      }]
+		                    }
+		                    """;
+
+		var parsed = JsonSerializer.Deserialize<ResourcePacksResponse>(json);
+
+		Assert.True(parsed!.Success);
+		var pack = Assert.Single(parsed.Packs);
+		Assert.Equal("SkyBlock", pack.Id);
+		Assert.Equal("deploy-1", pack.DeployId);
+		var version = Assert.Single(pack.Versions);
+		Assert.Equal(88, version.PackFormat);
+		Assert.Equal("5be210c4aa92ed283bd696cea5612a39408ace1e", version.Hash);
+	}
+
+	[Fact]
+	public void Deserialize_ItemModelFromResourcesItems() {
+		const string json = """
+		                    {
+		                      "success": true,
+		                      "lastUpdated": 123,
+		                      "items": [
+		                        {
+		                          "id": "ARACK",
+		                          "material": "IRON_SWORD",
+		                          "item_model": "hypixel_skyblock:item/combat_1/arack"
+		                        }
+		                      ]
+		                    }
+		                    """;
+
+		var parsed = JsonSerializer.Deserialize<ItemsResponse>(json);
+
+		var item = Assert.Single(parsed!.Items);
+		Assert.Equal("hypixel_skyblock:item/combat_1/arack", item.ItemModel);
+		Assert.False(item.ExtensionData?.ContainsKey("item_model") ?? false);
+	}
+
+	[Fact]
 	public void Deserialize_NewProfileMemberFields() {
 		const string json = """
 		                    {

@@ -71,6 +71,14 @@ public interface IHypixelApi
 	Task<ApiResponse<ItemsResponse>> FetchItemsAsync(CancellationToken ct = default);
 
 	/// <summary>
+	/// Fetches metadata for the active Hypixel resource packs.
+	/// </summary>
+	/// <param name="ct">Cancellation Token</param>
+	[Get("/resources/packs")]
+	[Headers("API-Key:")]
+	Task<ApiResponse<ResourcePacksResponse>> FetchResourcePacksAsync(CancellationToken ct = default);
+
+	/// <summary>
 	/// Fetches the Auction House data for the specified page.
 	/// <a href="https://api.hypixel.net/#tag/SkyBlock/paths/~1v2~1skyblock~1auctions/get">Hypixel API Documentation</a>
 	/// </summary>
