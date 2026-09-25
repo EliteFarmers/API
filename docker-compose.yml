@@ -128,7 +128,7 @@ services:
 
   prometheus:
     profiles: [ "observability" ]
-    image: prom/prometheus:v3.5.0
+    image: prom/prometheus:v3.14.0
     restart: unless-stopped
     ports:
       - "9090:9090"
